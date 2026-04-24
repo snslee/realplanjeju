@@ -147,7 +147,7 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📁</span><span class="nav-text">파일함</span></span>
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📈</span><span class="nav-text">보고서</span></span>
 </nav>
-<div class="sidebar-footer">admin v0.6 · Day 2</div>
+<div class="sidebar-footer">admin v0.7 · Day 2</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -222,29 +222,28 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 <div id="loading-overlay" hidden><div class="spinner"></div></div>
 <div id="toast-container" aria-live="polite"></div>
 <script>
-(function(){try{Object.defineProperty(navigator,'locks',{value:undefined,configurable:true,writable:true});}catch(e){try{delete navigator.locks;}catch(e2){}}console.info('[admin v0.6] navigator.locks disabled');})();
+(function(){try{Object.defineProperty(navigator,'locks',{value:undefined,configurable:true,writable:true});}catch(e){try{delete navigator.locks;}catch(e2){}}console.info('[admin v0.7] navigator.locks disabled');})();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1"></script>
 <script>
-/* admin v0.6 — PKCE code 수동 교환 */
+/* admin v0.7 — SDK 우회 수동 token 교환
+   핵심: fetch로 /auth/v1/token?grant_type=pkce 직접 호출
+         → Supabase SDK 내부 hang 완전 차단 */
 (function(){
 'use strict';
 const SUPABASE_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
+const PROJECT_REF='iodfqlkeiwxyuojwcozv';
 const ADMIN_WHITELIST=['snslee82@gmail.com','gomsook6805@gmail.com'];
 const SESSION_KEY='rpj_admin_session';
 const KEEP_KEY='rpj_admin_keep_login';
+const SB_AUTH_KEY='sb-'+PROJECT_REF+'-auth-token';
+const SB_VERIFIER_KEY='sb-'+PROJECT_REF+'-auth-token-code-verifier';
 const TTL_SHORT=24*60*60*1000;
 const TTL_LONG=30*24*60*60*1000;
 
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-  auth:{
-    detectSessionInUrl:false,
-    persistSession:true,
-    autoRefreshToken:true,
-    flowType:'pkce',
-    lock:(name,t,fn)=>fn()
-  }
+  auth:{detectSessionInUrl:false,persistSession:true,autoRefreshToken:true,flowType:'pkce',lock:(name,t,fn)=>fn()}
 });
 
 const state={user:null,session:null,ready:false};
@@ -280,7 +279,6 @@ function wipeSupabaseStorage(){
       if(k.startsWith('sb-')||k.startsWith('supabase.')||k===SESSION_KEY||k===KEEP_KEY)keys.push(k);
     }
     keys.forEach(k=>localStorage.removeItem(k));
-    console.info('[wipeStorage] cleared:',keys);
     return keys.length;
   }catch(e){return 0;}
 }
@@ -304,9 +302,45 @@ function loadLocalSession(){
 }
 function clearLocalSession(){try{localStorage.removeItem(SESSION_KEY);}catch(e){}}
 
+// v0.7 핵심: SDK 우회 수동 PKCE 교환
+async function manualExchangeCode(code){
+  const verifierRaw=localStorage.getItem(SB_VERIFIER_KEY);
+  if(!verifierRaw)throw new Error('code_verifier not found in localStorage');
+  let verifier=verifierRaw;
+  try{
+    const parsed=JSON.parse(verifierRaw);
+    if(typeof parsed==='string')verifier=parsed;
+    else if(parsed&&parsed.codeVerifier)verifier=parsed.codeVerifier;
+  }catch(e){}
+  const response=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=pkce',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},
+    body:JSON.stringify({auth_code:code,code_verifier:verifier})
+  });
+  if(!response.ok){
+    let errText='';try{errText=await response.text();}catch(e){}
+    throw new Error('token exchange failed ('+response.status+'): '+errText);
+  }
+  const tokenData=await response.json();
+  try{localStorage.removeItem(SB_VERIFIER_KEY);}catch(e){}
+  // SDK 표준 형식으로 localStorage 저장 (sb.rpc가 이 키에서 토큰 읽음)
+  const sessionObj={
+    access_token:tokenData.access_token,
+    token_type:tokenData.token_type||'bearer',
+    expires_in:tokenData.expires_in||3600,
+    expires_at:Math.floor(Date.now()/1000)+(tokenData.expires_in||3600),
+    refresh_token:tokenData.refresh_token,
+    user:tokenData.user,
+    provider_token:tokenData.provider_token||null,
+    provider_refresh_token:tokenData.provider_refresh_token||null
+  };
+  try{localStorage.setItem(SB_AUTH_KEY,JSON.stringify(sessionObj));}catch(e){}
+  return sessionObj;
+}
+
 async function logAccess(action,reason){
   try{
-    await sb.rpc('rpc_log_admin_action',{_action:action,_reason:reason||null,_ip:null,_ua:navigator.userAgent});
+    await withTimeout(sb.rpc('rpc_log_admin_action',{_action:action,_reason:reason||null,_ip:null,_ua:navigator.userAgent}),5000,'rpc_log');
   }catch(err){console.warn('[logAccess fail]',action,err);}
 }
 
@@ -325,27 +359,27 @@ async function loginWithGoogle(){
   }
 }
 
-async function onAuthenticated(session){
-  const user=session.user;
-  const email=(user.email||'').toLowerCase();
+async function acceptSession(session){
+  const email=(session.user.email||'').toLowerCase();
   if(!ADMIN_WHITELIST.includes(email)){
     await logAccess('LOGIN_DENIED_NOT_WHITELIST','비허가: '+email);
-    await sb.auth.signOut();
+    try{localStorage.removeItem(SB_AUTH_KEY);}catch(e){}
     clearLocalSession();
     showLoginView();
     showLoginError('접근 권한이 없는 계정입니다.');
-    return;
+    return false;
   }
   const keep=(()=>{try{return localStorage.getItem(KEEP_KEY)==='1';}catch(e){return false;}})();
-  state.user=user;state.session=session;
-  saveLocalSession(user,keep);
-  await logAccess('LOGIN_SUCCESS',keep?'30일 · OAuth':'24시간 · OAuth');
-  enterApp();
+  state.user=session.user;
+  state.session=session;
+  return {keep};
 }
 
 async function logout(){
   if(state.user)await logAccess('LOGOUT',null);
-  try{await sb.auth.signOut();}catch(e){}
+  try{await withTimeout(sb.auth.signOut(),5000,'signOut');}catch(e){}
+  try{localStorage.removeItem(SB_AUTH_KEY);}catch(e){}
+  try{localStorage.removeItem(SB_VERIFIER_KEY);}catch(e){}
   clearLocalSession();
   state.user=null;state.session=null;
   location.hash='';
@@ -408,11 +442,17 @@ function bindEvents(){
   window.addEventListener('hashchange',()=>{if(state.ready&&state.user)handleRoute();});
 }
 
-sb.auth.onAuthStateChange(async(event,session)=>{
-  if(event==='SIGNED_IN'&&session&&!state.user){await onAuthenticated(session);}
-  else if(event==='TOKEN_REFRESHED'&&session){state.session=session;}
-  else if(event==='SIGNED_OUT'){state.user=null;state.session=null;clearLocalSession();showLoginView();}
-});
+// localStorage에서 직접 session 읽기 (SDK getSession 우회)
+function readLocalAuthSession(){
+  try{
+    const raw=localStorage.getItem(SB_AUTH_KEY);
+    if(!raw)return null;
+    const s=JSON.parse(raw);
+    if(!s||!s.access_token||!s.user)return null;
+    if(s.expires_at&&s.expires_at*1000<Date.now())return null;
+    return s;
+  }catch(e){return null;}
+}
 
 async function init(){
   bindEvents();
@@ -420,23 +460,26 @@ async function init(){
   showLoading();
 
   let session=null;
+  let isFreshOAuth=false;
 
-  // [v0.6 핵심] URL에 code가 있으면 먼저 수동 교환
+  // Step 1: URL에 code 있으면 수동 교환 (SDK 우회 fetch)
   const urlObj=new URL(window.location.href);
   const urlCode=urlObj.searchParams.get('code');
   if(urlCode){
-    console.info('[init] OAuth code detected, exchanging manually...');
-    // URL 정리 (중복 교환 방지)
+    console.info('[init v0.7] urlCode detected, manual exchange...');
     urlObj.searchParams.delete('code');
     urlObj.searchParams.delete('state');
     history.replaceState(null,'',urlObj.pathname+(urlObj.hash||''));
     try{
-      const ex=await withTimeout(sb.auth.exchangeCodeForSession(urlCode),10000,'exchangeCode');
-      if(ex&&ex.error)throw ex.error;
-      session=ex&&ex.data?ex.data.session:null;
-      console.info('[init] OAuth code exchanged successfully');
+      session=await withTimeout(manualExchangeCode(urlCode),10000,'manualExchange');
+      isFreshOAuth=true;
+      console.info('[init v0.7] manual exchange success');
+      // SDK에도 알림 (비동기, 실패해도 무관)
+      sb.auth.setSession({access_token:session.access_token,refresh_token:session.refresh_token}).catch(e=>{
+        console.warn('setSession warning (non-fatal):',e);
+      });
     }catch(err){
-      console.error('[init] exchangeCodeForSession failed:',err);
+      console.error('[init v0.7] manual exchange failed:',err);
       const RECOVERY_FLAG='__rpj_admin_recovery__';
       const already=(()=>{try{return sessionStorage.getItem(RECOVERY_FLAG)==='1';}catch(e){return false;}})();
       if(!already){
@@ -447,72 +490,49 @@ async function init(){
       }
       hideLoading();
       showLoginView();
-      showLoginError('OAuth 처리 실패: '+(err&&err.message?err.message:err)+' · 아래 버튼으로 초기화 후 재시도하세요.',true);
+      showLoginError('로그인 처리 실패: '+(err&&err.message?err.message:err)+' · 초기화 후 재시도.',true);
       state.ready=true;
       return;
     }
   }
 
-  // session이 없으면 일반 getSession 경로
+  // Step 2: session 없으면 localStorage에서 직접 읽기 (SDK getSession 우회)
   if(!session){
-    try{
-      const res=await withTimeout(sb.auth.getSession(),8000,'getSession');
-      if(res&&res.error)throw res.error;
-      session=res&&res.data?res.data.session:null;
-    }catch(err){
-      console.error('[init] getSession failed:',err);
-      const RECOVERY_FLAG='__rpj_admin_recovery__';
-      const already=(()=>{try{return sessionStorage.getItem(RECOVERY_FLAG)==='1';}catch(e){return false;}})();
-      if(!already){
-        try{sessionStorage.setItem(RECOVERY_FLAG,'1');}catch(e){}
-        wipeSupabaseStorage();
-        location.replace(window.location.pathname);
-        return;
-      }
-      hideLoading();
-      showLoginView();
-      showLoginError('세션 확인 실패: '+(err&&err.message?err.message:err)+' · 아래 버튼으로 초기화 후 재시도하세요.',true);
-      state.ready=true;
-      return;
-    }
+    session=readLocalAuthSession();
+    if(session)console.info('[init v0.7] session restored from localStorage');
   }
 
+  // Step 3: session 처리
   if(session){
-    const email=(session.user.email||'').toLowerCase();
-    if(!ADMIN_WHITELIST.includes(email)){
-      await logAccess('LOGIN_DENIED_NOT_WHITELIST','비허가: '+email);
-      await sb.auth.signOut();
-      clearLocalSession();
-      showLoginView();
-      showLoginError('접근 권한이 없는 계정입니다.');
-    }else{
-      const local=loadLocalSession();
-      const keep=local?local.keep:false;
-      if(local&&Date.now()>local.expiresAt){
-        await logAccess('SESSION_EXPIRED',null);
-        await sb.auth.signOut();
-        clearLocalSession();
-        showLoginView();
-        showLoginError('세션이 만료되었습니다. 다시 로그인해 주세요.');
+    const res=await acceptSession(session);
+    if(res){
+      const {keep}=res;
+      if(isFreshOAuth){
+        saveLocalSession(session.user,keep);
+        await logAccess('LOGIN_SUCCESS',keep?'30일 · OAuth':'24시간 · OAuth');
       }else{
-        const isFreshOAuth=!local;
-        state.user=session.user;
-        state.session=session;
-        if(isFreshOAuth){
-          saveLocalSession(session.user,keep);
-          await logAccess('LOGIN_SUCCESS',keep?'30일 · OAuth':'24시간 · OAuth');
-        }else{
-          await logAccess('SESSION_RESUMED',null);
+        const local=loadLocalSession();
+        if(local&&Date.now()>local.expiresAt){
+          await logAccess('SESSION_EXPIRED',null);
+          try{localStorage.removeItem(SB_AUTH_KEY);}catch(e){}
+          clearLocalSession();
+          state.user=null;state.session=null;
+          showLoginView();
+          showLoginError('세션이 만료되었습니다. 다시 로그인해 주세요.');
+          state.ready=true;
+          return;
         }
-        enterApp();
+        if(!local)saveLocalSession(session.user,keep);
+        await logAccess('SESSION_RESUMED',null);
       }
+      enterApp();
     }
   }else{
     hideLoading();
     showLoginView();
   }
 
-  // 복구 플래그 리셋 (성공 시)
+  // 복구 플래그 성공 시 리셋
   try{sessionStorage.removeItem('__rpj_admin_recovery__');}catch(e){}
   state.ready=true;
 }

@@ -607,26 +607,6 @@
       });
     });
 
-    /* --- 접수번호 생성 (TOUR-2026-NNN) --- */
-    async function generateReceiptNo(사업부) {
-      const prefix = PREFIX_MAP[사업부] || 'GEN';
-      const year = new Date().getFullYear();
-      // 해당 연도/사업부의 기존 최대 번호 조회
-      const like = `${prefix}-${year}-%`;
-      const { data, error } = await sb
-        .from('customers')
-        .select('접수번호')
-        .like('접수번호', like)
-        .order('접수번호', { ascending: false })
-        .limit(1);
-      let n = 1;
-      if (!error && data && data.length) {
-        const match = data[0]['접수번호'].match(/\-(\d+)$/);
-        if (match) n = parseInt(match[1], 10) + 1;
-      }
-      return `${prefix}-${year}-${String(n).padStart(3, '0')}`;
-    }
-
     /* --- 필드 유효성 검사 --- */
     function clearFieldError(field) { field.classList.remove('has-error'); }
     function showFieldError(field) { field.classList.add('has-error'); }
@@ -693,32 +673,28 @@
 
       try {
         const fd = new FormData(form);
-        const 사업부 = fd.get('사업부');
-        const 접수번호 = await generateReceiptNo(사업부);
 
-        const payload = {
-          접수번호,
-          구분: fd.get('구분'),
-          사업부,
-          회사명: fd.get('회사명').trim(),
-          담당자명: fd.get('담당자명').trim(),
-          연락처: fd.get('연락처').trim(),
-          이메일: fd.get('이메일').trim().toLowerCase(),
-          시작일: fd.get('시작일'),
-          종료일: fd.get('종료일'),
-          일정조율가능: fd.get('일정조율가능') === 'true',
-          희망지역: fd.get('희망지역').trim(),
-          예산: fd.get('예산').trim(),
-          유입경로: fd.get('유입경로'),
-          요청사항: (fd.get('요청사항') || '').trim() || null,
-          동의_개인정보: true,
-          동의_콘텐츠: form['동의_콘텐츠'].checked,
-          동의_마케팅: form['동의_마케팅'].checked
-        };
-
-        const { data, error } = await sb.from('customers').insert([payload]).select();
+        // 서버 측 RPC 호출 (접수번호 자동 생성 + INSERT 일괄)
+        const { data: 접수번호, error } = await sb.rpc('submit_inquiry', {
+          p_구분: fd.get('구분'),
+          p_사업부: fd.get('사업부'),
+          p_회사명: fd.get('회사명').trim(),
+          p_담당자명: fd.get('담당자명').trim(),
+          p_연락처: fd.get('연락처').trim(),
+          p_이메일: fd.get('이메일').trim().toLowerCase(),
+          p_시작일: fd.get('시작일'),
+          p_종료일: fd.get('종료일'),
+          p_일정조율가능: fd.get('일정조율가능') === 'true',
+          p_희망지역: fd.get('희망지역').trim(),
+          p_예산: fd.get('예산').trim(),
+          p_유입경로: fd.get('유입경로'),
+          p_요청사항: (fd.get('요청사항') || '').trim() || null,
+          p_동의_콘텐츠: form['동의_콘텐츠'].checked,
+          p_동의_마케팅: form['동의_마케팅'].checked
+        });
 
         if (error) throw error;
+        if (!접수번호) throw new Error('접수번호 생성 실패');
 
         // 성공 화면
         document.getElementById('formCard').style.display = 'none';

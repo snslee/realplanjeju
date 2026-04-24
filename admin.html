@@ -112,6 +112,16 @@
       font-size: 13px; text-align: left;
       border-left: 3px solid var(--error);
     }
+    .btn-recover {
+      margin-top: 12px; width: 100%;
+      padding: 9px 12px;
+      background: #fff; color: var(--text-light);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12.5px; font-weight: 600;
+      transition: var(--transition);
+    }
+    .btn-recover:hover { background: var(--bg-hover); color: var(--primary); border-color: var(--accent); border-style: solid; }
     .login-footer {
       margin-top: 24px; padding-top: 20px;
       border-top: 1px solid var(--border-light);
@@ -444,6 +454,8 @@
 
       <div class="login-error" id="login-error" hidden></div>
 
+      <button class="btn-recover" id="btn-recover" type="button" hidden>완전 초기화 후 재시도</button>
+
       <div class="login-footer">
         리얼플랜제주 주식회사 · 내부 관리자 전용<br>
         접근 권한이 필요한 경우 대표에게 문의하세요
@@ -488,7 +500,7 @@
             <span class="nav-text">보고서</span>
           </span>
         </nav>
-        <div class="sidebar-footer">admin v0.3 · Day 2</div>
+        <div class="sidebar-footer">admin v0.4 · Day 2</div>
       </aside>
 
       <main class="content">
@@ -686,11 +698,13 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
   /* =========================================================
-     리얼플랜제주 admin.html — v0.3 (Day 2 안정화 패치)
+     리얼플랜제주 admin.html — v0.4 (Day 2 안정화 + 자동복구)
      - lock pass-through (Navigator Locks deadlock 방지)
      - getSession 8초 timeout
      - 세션 복원 시에도 접근 로그 기록 (A-3)
      - enterApp에서 handleRoute() 즉시 호출 (대시보드 자동 렌더)
+     - [NEW v0.4] getSession timeout 발생 시 localStorage 자동 정리 + 1회 리로드
+     - [NEW v0.4] 로그인 화면에 "완전 초기화" 수동 복구 버튼
      ========================================================= */
   (function () {
     'use strict';
@@ -746,17 +760,22 @@
       }, ms);
     }
 
-    function showLoginError(msg) {
+    function showLoginError(msg, withRecover) {
       const el = $('#login-error');
       if (!el) return;
       el.textContent = msg;
       el.hidden = false;
+      // v0.4: 복구 버튼 표시 (세션 오류 / timeout 계열)
+      const rb = $('#btn-recover');
+      if (rb) rb.hidden = !withRecover;
     }
     function clearLoginError() {
       const el = $('#login-error');
       if (!el) return;
       el.textContent = '';
       el.hidden = true;
+      const rb = $('#btn-recover');
+      if (rb) rb.hidden = true;
     }
 
     // Promise timeout helper
@@ -768,6 +787,36 @@
           ms
         ))
       ]);
+    }
+
+    // [v0.4] Supabase · 앱 관련 localStorage 정리
+    // lock/token 잔재로 인한 deadlock·timeout 복구용
+    function wipeSupabaseStorage() {
+      try {
+        const toClear = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (!k) continue;
+          if (k.startsWith('sb-') || k.startsWith('supabase.') ||
+              k === SESSION_KEY || k === KEEP_KEY) {
+            toClear.push(k);
+          }
+        }
+        toClear.forEach(k => localStorage.removeItem(k));
+        console.info('[wipeSupabaseStorage] cleared keys:', toClear);
+        return toClear.length;
+      } catch (e) {
+        console.warn('[wipeSupabaseStorage] fail:', e);
+        return 0;
+      }
+    }
+
+    // [v0.4] 완전 초기화 + 리로드 (수동 복구용)
+    function forceRecoverAndReload() {
+      wipeSupabaseStorage();
+      try { sessionStorage.clear(); } catch (e) {}
+      // hash·query 제거 후 리로드
+      location.replace(window.location.pathname);
     }
 
     // ---------- Local Session ----------
@@ -967,6 +1016,7 @@
       $('#btn-logout')?.addEventListener('click', logout);
       $('#btn-back')?.addEventListener('click', () => { location.hash = '#customers'; });
       $('#err-retry')?.addEventListener('click', () => { logout(); });
+      $('#btn-recover')?.addEventListener('click', forceRecoverAndReload);
 
       window.addEventListener('hashchange', () => {
         if (state.ready && state.user) handleRoute();
@@ -1001,9 +1051,28 @@
         session = res && res.data ? res.data.session : null;
       } catch (err) {
         console.error('[init] getSession 실패:', err);
+
+        // [v0.4] 자동 복구: Supabase lock/token 잔재 정리 후 1회 자동 리로드
+        // sessionStorage 플래그로 무한 루프 방지 (탭 세션 동안만 유지)
+        const RECOVERY_FLAG = '__rpj_admin_recovery__';
+        const alreadyRecovered = (() => {
+          try { return sessionStorage.getItem(RECOVERY_FLAG) === '1'; } catch (e) { return false; }
+        })();
+
+        if (!alreadyRecovered) {
+          console.info('[init] 자동 복구 시도: localStorage 정리 후 리로드');
+          try { sessionStorage.setItem(RECOVERY_FLAG, '1'); } catch (e) {}
+          wipeSupabaseStorage();
+          location.replace(window.location.pathname);
+          return; // 페이지가 리로드되므로 이후 코드 실행 안 됨
+        }
+
+        // 자동 복구 이후에도 실패 — 사용자에게 알림 + 수동 복구 버튼
         hideLoading();
         showLoginView();
-        showLoginError('세션 확인 실패: ' + (err && err.message ? err.message : err) + ' · 새로고침하거나 시크릿창에서 시도해 주세요.');
+        const msg = '세션 확인 실패: ' + (err && err.message ? err.message : err) +
+                    ' · 아래 버튼을 누르거나 시크릿창(Ctrl+Shift+N)에서 접속해 주세요.';
+        showLoginError(msg, true);
         state.ready = true;
         return;
       }

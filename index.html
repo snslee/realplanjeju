@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1e3a5f">
+  <title>리얼플랜제주 | real people, real world. with realplan.</title>
+  <meta name="description" content="리얼플랜제주 주식회사 — 국내여행·행사이벤트·온라인마케팅·마케팅교육. 4개 사업부가 맞춤 기획으로 함께합니다.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="리얼플랜제주 주식회사">
+  <meta property="og:description" content="국내여행·행사이벤트·온라인마케팅·마케팅교육 전문">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://realplanjeju.com">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231e3a5f'/%3E%3Ctext x='50' y='68' font-size='60' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='900'%3ER%3C/text%3E%3C/svg%3E">
+  <style>
+    :root {
+      --primary: #1e3a5f;
+      --primary-dark: #152a46;
+      --primary-light: #2d5a8f;
+      --accent: #4a90c2;
+      --text: #1a2332;
+      --text-light: #5a6478;
+      --border: #d6dce5;
+      --bg: #f5f7fa;
+      --radius: 8px;
+      --shadow: 0 2px 8px rgba(30, 58, 95, 0.08);
+      --shadow-lg: 0 8px 24px rgba(30, 58, 95, 0.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .hero {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #fff;
+      padding: 80px 20px 70px;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-bottom: 12px;
+    }
+    .hero .tagline {
+      font-size: 15px;
+      opacity: 0.9;
+      letter-spacing: 1px;
+    }
+    .hero .sub {
+      max-width: 620px;
+      margin: 24px auto 0;
+      font-size: 16px;
+      line-height: 1.7;
+      opacity: 0.85;
+    }
+    .cta-row {
+      margin-top: 32px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-block;
+      padding: 14px 28px;
+      background: #fff;
+      color: var(--primary);
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 15px;
+      transition: transform 0.15s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn.outline {
+      background: transparent;
+      color: #fff;
+      border: 2px solid #fff;
+    }
+    main { max-width: 1080px; margin: -40px auto 0; padding: 0 20px 60px; }
+    .services {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-bottom: 40px;
+    }
+    @media (max-width: 740px) {
+      .hero h1 { font-size: 32px; }
+      .services { grid-template-columns: 1fr; }
+    }
+    .service-card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 28px 26px;
+      border-top: 4px solid var(--primary);
+      transition: transform 0.2s;
+    }
+    .service-card:hover { transform: translateY(-3px); }
+    .service-card h3 {
+      font-size: 20px;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    .service-card p {
+      color: var(--text-light);
+      font-size: 14.5px;
+      line-height: 1.7;
+    }
+    .service-card .tag {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 4px 10px;
+      background: #eef2f7;
+      color: var(--primary);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .cta-block {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 40px 28px;
+      text-align: center;
+    }
+    .cta-block h2 {
+      color: var(--primary);
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .cta-block p {
+      color: var(--text-light);
+      margin-bottom: 24px;
+    }
+    .cta-block .btn {
+      background: var(--primary);
+      color: #fff;
+    }
+    footer.site-footer {
+      background: var(--primary-dark);
+      color: rgba(255,255,255,0.75);
+      padding: 32px 20px;
+      font-size: 12.5px;
+      line-height: 1.7;
+    }
+    footer .footer-inner { max-width: 1080px; margin: 0 auto; }
+    footer .company-name { color: #fff; font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+    footer .footer-links { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.15); }
+    footer .footer-links a { color: #9fc0dd; text-decoration: none; margin-right: 14px; }
+    footer .footer-links a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <h1>리얼플랜제주</h1>
+    <div class="tagline">real people, real world. with realplan.</div>
+    <p class="sub">
+      제주에서 시작해 전국으로 — 여행, 행사, 마케팅, 교육.<br>
+      4개 사업부가 현장의 문제를 현장의 언어로 풀어갑니다.
+    </p>
+    <div class="cta-row">
+      <a href="contact.html" class="btn">문의하기</a>
+      <a href="#services" class="btn outline">서비스 보기</a>
+    </div>
+  </section>
+
+  <main>
+    <div class="services" id="services">
+      <div class="service-card">
+        <h3>국내여행</h3>
+        <p>대한민국 각 지역 특성을 살린 맞춤형 여행 상품. 기업·단체·개인 단위 기획부터 운영까지 원스톱으로 진행합니다.</p>
+        <span class="tag">맞춤 기획 · 전국</span>
+      </div>
+      <div class="service-card">
+        <h3>행사·이벤트</h3>
+        <p>기업·단체 행사의 콘셉트부터 현장 운영까지. 제주 현지 네트워크와 정확한 실행력으로 성공시켜 드립니다.</p>
+        <span class="tag">기획 · 진행 · 운영</span>
+      </div>
+      <div class="service-card">
+        <h3>온라인 마케팅</h3>
+        <p>SNS(유튜브·틱톡·인스타·페이스북·쓰레드) · 블로그 · 광고. 최신 알고리즘을 반영한 실전 운영.</p>
+        <span class="tag">SNS · 블로그 · 광고</span>
+      </div>
+      <div class="service-card">
+        <h3>마케팅 교육</h3>
+        <p>소상공인·기업 대상 실전 중심 교육과 컨설팅. 현장에서 바로 쓸 수 있는 전략을 전달합니다.</p>
+        <span class="tag">교육 · 컨설팅</span>
+      </div>
+    </div>
+
+    <div class="cta-block">
+      <h2>3분이면 충분합니다</h2>
+      <p>간단한 정보만 남겨주시면 영업시간 내 담당자가 연락드립니다.</p>
+      <a href="contact.html" class="btn">상담 신청</a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="company-name">리얼플랜제주 주식회사 (Real Plan Jeju Co., Ltd.)</div>
+      <div>
+        공동대표 이동환·김현숙 &nbsp;|&nbsp; 사업자등록번호 819-87-02344 &nbsp;|&nbsp; 법인등록번호 220111-0227223<br>
+        본점: 제주특별자치도 제주시 제원1길 5 (연동) &nbsp;|&nbsp; 이메일 snslee82@gmail.com<br>
+        개인정보보호책임자: 이동환
+      </div>
+      <div class="footer-links">
+        <a href="contact.html">문의</a>
+        <a href="privacy.html">개인정보처리방침</a>
+      </div>
+      <div style="margin-top:10px; opacity:0.55; font-size:11.5px;">
+        © 2026 Real Plan Jeju Co., Ltd. All rights reserved.
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

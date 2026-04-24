@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#1e3a5f">
+  <title>문의하기 | 리얼플랜제주</title>
+  <meta name="description" content="리얼플랜제주에 상담을 요청하세요. 국내여행·행사이벤트·온라인마케팅·마케팅교육 4개 사업부가 맞춤 기획으로 답변드립니다.">
+  <meta name="robots" content="index, follow">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231e3a5f'/%3E%3Ctext x='50' y='68' font-size='60' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='900'%3ER%3C/text%3E%3C/svg%3E">
+  <style>
+    :root {
+      --primary: #1e3a5f;       /* 미드블루 */
+      --primary-dark: #152a46;
+      --primary-light: #2d5a8f;
+      --accent: #4a90c2;
+      --text: #1a2332;
+      --text-light: #5a6478;
+      --border: #d6dce5;
+      --bg: #f5f7fa;
+      --bg-card: #ffffff;
+      --success: #2e7d5f;
+      --error: #c0392b;
+      --warning: #d68a00;
+      --radius: 8px;
+      --shadow: 0 2px 8px rgba(30, 58, 95, 0.08);
+      --shadow-lg: 0 8px 24px rgba(30, 58, 95, 0.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Header */
+    header.site-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #fff;
+      padding: 28px 20px 32px;
+      text-align: center;
+    }
+    header.site-header h1 {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+    header.site-header .tagline {
+      margin-top: 4px;
+      font-size: 13px;
+      opacity: 0.85;
+      letter-spacing: 0.5px;
+    }
+    /* Main */
+    main { max-width: 720px; margin: -20px auto 0; padding: 0 16px 40px; }
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 32px 28px;
+    }
+    @media (max-width: 600px) {
+      .card { padding: 24px 18px; }
+    }
+    h2 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .intro {
+      color: var(--text-light);
+      font-size: 14.5px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .intro strong { color: var(--primary); }
+    /* Form */
+    .field {
+      margin-bottom: 20px;
+    }
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 540px) {
+      .field-row { grid-template-columns: 1fr; }
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    label .required {
+      color: var(--error);
+      margin-left: 3px;
+    }
+    label .hint {
+      font-weight: 400;
+      font-size: 12.5px;
+      color: var(--text-light);
+      margin-left: 6px;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 11px 13px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--text);
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(74, 144, 194, 0.15);
+    }
+    input.invalid, select.invalid, textarea.invalid {
+      border-color: var(--error);
+    }
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+    .radio-group, .check-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .radio-group label, .check-group label {
+      flex: 1 1 auto;
+      min-width: 90px;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      text-align: center;
+      font-weight: 500;
+      transition: all 0.15s;
+      background: #fff;
+      user-select: none;
+    }
+    .radio-group input[type="radio"],
+    .check-group input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .radio-group label:has(input:checked),
+    .check-group label:has(input:checked) {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: #fff;
+    }
+    /* 동의 체크박스 블록 */
+    .consent-block {
+      background: #f9fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      margin-top: 8px;
+    }
+    .consent-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+    }
+    .consent-item input[type="checkbox"] {
+      margin-top: 2px;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      accent-color: var(--primary);
+    }
+    .consent-item label {
+      margin-bottom: 0;
+      font-weight: 500;
+      font-size: 14px;
+      flex: 1;
+    }
+    .consent-item label strong { color: var(--error); }
+    .consent-item .privacy-link {
+      font-size: 12.5px;
+      color: var(--primary);
+      text-decoration: underline;
+      margin-left: 6px;
+    }
+    /* 유연성 체크박스 */
+    .flex-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      padding: 8px 12px;
+      background: #f9fafc;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 13.5px;
+      color: var(--text-light);
+    }
+    .flex-check input { accent-color: var(--primary); }
+    /* 에러 메시지 */
+    .error-msg {
+      display: none;
+      color: var(--error);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .field.has-error .error-msg { display: block; }
+    /* 버튼 */
+    .submit-btn {
+      width: 100%;
+      padding: 15px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: background 0.15s;
+    }
+    .submit-btn:hover:not(:disabled) { background: var(--primary-dark); }
+    .submit-btn:disabled {
+      background: var(--text-light);
+      cursor: not-allowed;
+    }
+    /* 상태 화면 */
+    #successScreen, #errorScreen {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .status-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      font-weight: 900;
+    }
+    .icon-success { background: #e7f5ee; color: var(--success); }
+    .icon-error { background: #fdeeec; color: var(--error); }
+    #successScreen h3, #errorScreen h3 {
+      font-size: 22px;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+    #successScreen .receipt-no {
+      display: inline-block;
+      padding: 10px 18px;
+      background: #f0f4fa;
+      color: var(--primary);
+      font-weight: 700;
+      letter-spacing: 1px;
+      border-radius: var(--radius);
+      margin: 12px 0 20px;
+      font-family: 'SF Mono', Consolas, monospace;
+    }
+    .btn-secondary {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 10px 22px;
+      border: 1.5px solid var(--primary);
+      color: var(--primary);
+      background: #fff;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    /* 로딩 */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #fff;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    /* Footer */
+    footer.site-footer {
+      background: var(--primary-dark);
+      color: rgba(255,255,255,0.75);
+      padding: 28px 20px;
+      font-size: 12.5px;
+      line-height: 1.7;
+    }
+    footer .footer-inner { max-width: 720px; margin: 0 auto; }
+    footer .company-name { color: #fff; font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+    footer .biz-info { margin-bottom: 10px; }
+    footer .footer-links { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.15); }
+    footer .footer-links a { color: #9fc0dd; text-decoration: none; margin-right: 14px; }
+    footer .footer-links a:hover { color: #fff; text-decoration: underline; }
+    /* 쿠키 배너 */
+    .cookie-banner {
+      position: fixed;
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+      max-width: 720px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 16px 20px;
+      display: none;
+      align-items: center;
+      gap: 16px;
+      z-index: 100;
+      font-size: 13.5px;
+    }
+    .cookie-banner.show { display: flex; }
+    @media (max-width: 540px) {
+      .cookie-banner { flex-direction: column; align-items: stretch; }
+    }
+    .cookie-banner p { flex: 1; color: var(--text-light); }
+    .cookie-banner a { color: var(--primary); }
+    .cookie-banner button {
+      padding: 8px 16px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <h1>리얼플랜제주</h1>
+    <div class="tagline">real people, real world. with realplan.</div>
+  </header>
+
+  <main>
+    <div class="card" id="formCard">
+      <h2>문의하기</h2>
+      <p class="intro">
+        <strong>3분이면 충분합니다.</strong> 아래 내용만 남겨주시면 담당자가 영업시간(평일 09~18시) 내 연락드립니다.
+      </p>
+
+      <form id="contactForm" novalidate>
+
+        <!-- 1. 구분 -->
+        <div class="field" data-field="구분">
+          <label>구분<span class="required">*</span></label>
+          <div class="radio-group">
+            <label><input type="radio" name="구분" value="기업" required>기업</label>
+            <label><input type="radio" name="구분" value="단체" required>단체</label>
+            <label><input type="radio" name="구분" value="개인" required>개인</label>
+          </div>
+          <div class="error-msg">고객 구분을 선택해 주세요.</div>
+        </div>
+
+        <!-- 2. 사업부 -->
+        <div class="field" data-field="사업부">
+          <label>어떤 서비스가 필요하신가요?<span class="required">*</span></label>
+          <div class="radio-group">
+            <label><input type="radio" name="사업부" value="국내여행" required>국내여행</label>
+            <label><input type="radio" name="사업부" value="행사이벤트" required>행사·이벤트</label>
+            <label><input type="radio" name="사업부" value="온라인마케팅" required>온라인 마케팅</label>
+            <label><input type="radio" name="사업부" value="마케팅교육" required>마케팅 교육</label>
+          </div>
+          <div class="error-msg">사업부를 선택해 주세요.</div>
+        </div>
+
+        <!-- 3. 회사명 (라벨 자동 전환) -->
+        <div class="field" data-field="회사명">
+          <label id="labelCompany">회사/단체명 <span class="required">*</span></label>
+          <input type="text" id="회사명" name="회사명" maxlength="100" required placeholder="예: (주)리얼플랜제주">
+          <div class="error-msg">이 항목은 필수입니다.</div>
+        </div>
+
+        <!-- 4-5. 담당자명 + 연락처 -->
+        <div class="field-row">
+          <div class="field" data-field="담당자명">
+            <label>담당자명<span class="required">*</span></label>
+            <input type="text" name="담당자명" maxlength="50" required placeholder="홍길동">
+            <div class="error-msg">담당자명을 입력해 주세요.</div>
+          </div>
+          <div class="field" data-field="연락처">
+            <label>연락처<span class="required">*</span></label>
+            <input type="tel" name="연락처" maxlength="20" required placeholder="010-0000-0000" pattern="[0-9\-]+">
+            <div class="error-msg">연락처를 올바르게 입력해 주세요.</div>
+          </div>
+        </div>
+
+        <!-- 6. 이메일 -->
+        <div class="field" data-field="이메일">
+          <label>이메일<span class="required">*</span> <span class="hint">견적·안내 받으실 주소</span></label>
+          <input type="email" name="이메일" maxlength="100" required placeholder="example@email.com">
+          <div class="error-msg">이메일 주소를 올바르게 입력해 주세요.</div>
+        </div>
+
+        <!-- 7-8. 시작일 + 종료일 -->
+        <div class="field-row">
+          <div class="field" data-field="시작일">
+            <label>시작일<span class="required">*</span></label>
+            <input type="date" name="시작일" required>
+            <div class="error-msg">시작일을 선택해 주세요.</div>
+          </div>
+          <div class="field" data-field="종료일">
+            <label>종료일<span class="required">*</span></label>
+            <input type="date" name="종료일" required>
+            <div class="error-msg">종료일은 시작일 이후여야 합니다.</div>
+          </div>
+        </div>
+
+        <!-- 9. 일정조율가능 -->
+        <div class="field">
+          <label class="flex-check">
+            <input type="checkbox" name="일정조율가능" value="true">
+            일정 조율 가능합니다 (유연 일정)
+          </label>
+        </div>
+
+        <!-- 10. 희망지역 -->
+        <div class="field" data-field="희망지역">
+          <label>희망 지역<span class="required">*</span> <span class="hint">자유롭게 적어주세요</span></label>
+          <input type="text" name="희망지역" maxlength="200" required placeholder="예: 제주 전 지역, 서귀포 중문 일대, 성산 주변 등">
+          <div class="error-msg">희망 지역을 입력해 주세요.</div>
+        </div>
+
+        <!-- 11. 예산 -->
+        <div class="field" data-field="예산">
+          <label>예산<span class="required">*</span> <span class="hint">대략적인 금액 또는 범위</span></label>
+          <input type="text" name="예산" maxlength="200" required placeholder="예: 1인당 20만원, 총 500만원, 미정 등">
+          <div class="error-msg">예산을 입력해 주세요.</div>
+        </div>
+
+        <!-- 12. 유입경로 -->
+        <div class="field" data-field="유입경로">
+          <label>어떻게 알게 되셨나요?<span class="required">*</span></label>
+          <select name="유입경로" required>
+            <option value="">선택해 주세요</option>
+            <option value="블로그">블로그</option>
+            <option value="인스타그램">인스타그램</option>
+            <option value="페이스북">페이스북</option>
+            <option value="유튜브">유튜브</option>
+            <option value="틱톡">틱톡</option>
+            <option value="네이버 검색">네이버 검색</option>
+            <option value="구글 검색">구글 검색</option>
+            <option value="지인 추천">지인 추천</option>
+            <option value="재문의">재문의(기존 고객)</option>
+            <option value="기타">기타</option>
+          </select>
+          <div class="error-msg">유입경로를 선택해 주세요.</div>
+        </div>
+
+        <!-- 13. 요청사항 -->
+        <div class="field" data-field="요청사항">
+          <label>요청사항 <span class="hint">최대 200자 · 선택</span></label>
+          <textarea name="요청사항" maxlength="200" placeholder="참가 인원, 특별히 원하시는 컨셉, 참고 링크 등 자유롭게 적어주세요."></textarea>
+        </div>
+
+        <!-- 14-16. 동의 사항 -->
+        <div class="field">
+          <label>동의사항</label>
+          <div class="consent-block">
+            <div class="consent-item">
+              <input type="checkbox" id="동의_개인정보" name="동의_개인정보" required>
+              <label for="동의_개인정보">
+                <strong>[필수]</strong> 개인정보 수집·이용에 동의합니다.
+                <a href="privacy.html" class="privacy-link" target="_blank">전문보기</a>
+              </label>
+            </div>
+            <div class="consent-item">
+              <input type="checkbox" id="동의_콘텐츠" name="동의_콘텐츠">
+              <label for="동의_콘텐츠">[선택] 프로젝트 결과물(사진·영상)을 포트폴리오에 활용하는 것에 동의합니다.</label>
+            </div>
+            <div class="consent-item">
+              <input type="checkbox" id="동의_마케팅" name="동의_마케팅">
+              <label for="동의_마케팅">[선택] 이벤트·프로모션 마케팅 정보 수신에 동의합니다.</label>
+            </div>
+          </div>
+          <div class="error-msg" id="consent-error" style="display:none">개인정보 수집 동의가 필요합니다.</div>
+        </div>
+
+        <!-- 제출 -->
+        <button type="submit" class="submit-btn" id="submitBtn">
+          <span id="btnText">문의 보내기</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- 성공 화면 -->
+    <div class="card" id="successScreen">
+      <div class="status-icon icon-success">✓</div>
+      <h3>문의가 정상 접수되었습니다</h3>
+      <p style="color:var(--text-light)">접수번호를 꼭 기억해 주세요.<br>영업시간 내 담당자가 연락드립니다.</p>
+      <div class="receipt-no" id="receiptNo">TOUR-2026-001</div>
+      <p style="color:var(--text-light); font-size:13px;">
+        이메일로도 접수 내역이 전송될 예정입니다.<br>
+        문의: <a href="tel:064-000-0000" style="color:var(--primary)">064-000-0000</a>
+      </p>
+      <button type="button" class="btn-secondary" onclick="location.reload()">새 문의 작성</button>
+    </div>
+
+    <!-- 에러 화면 -->
+    <div class="card" id="errorScreen">
+      <div class="status-icon icon-error">!</div>
+      <h3>전송에 실패했습니다</h3>
+      <p style="color:var(--text-light)" id="errorMsg">잠시 후 다시 시도하시거나, 아래 연락처로 직접 문의 주세요.</p>
+      <p style="margin-top:16px; color:var(--text-light); font-size:13px;">
+        전화: <a href="tel:064-000-0000" style="color:var(--primary)">064-000-0000</a><br>
+        이메일: <a href="mailto:snslee82@gmail.com" style="color:var(--primary)">snslee82@gmail.com</a>
+      </p>
+      <button type="button" class="btn-secondary" onclick="location.reload()">다시 시도</button>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="company-name">리얼플랜제주 주식회사 (Real Plan Jeju Co., Ltd.)</div>
+      <div class="biz-info">
+        공동대표 이동환·김현숙 &nbsp;|&nbsp; 사업자등록번호 819-87-02344 &nbsp;|&nbsp; 법인등록번호 220111-0227223<br>
+        본점: 제주특별자치도 제주시 제원1길 5 (연동) &nbsp;|&nbsp; 전화 064-000-0000 &nbsp;|&nbsp; 이메일 snslee82@gmail.com<br>
+        개인정보보호책임자: 이동환
+      </div>
+      <div class="footer-links">
+        <a href="privacy.html">개인정보처리방침</a>
+        <a href="mailto:snslee82@gmail.com">문의</a>
+      </div>
+      <div style="margin-top:10px; opacity:0.55; font-size:11.5px;">
+        © 2026 Real Plan Jeju Co., Ltd. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <!-- 쿠키 배너 -->
+  <div class="cookie-banner" id="cookieBanner">
+    <p>
+      본 사이트는 서비스 개선을 위해 필수 쿠키만 사용합니다.
+      <a href="privacy.html">자세히</a>
+    </p>
+    <button type="button" onclick="acceptCookie()">확인</button>
+  </div>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <script>
+    /* ============================================================
+     * 리얼플랜제주 고객 문의 폼 · Supabase 연동
+     * ============================================================ */
+
+    const SUPABASE_URL = 'https://iodfqlkeiwxyuojwcozv.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
+
+    const PREFIX_MAP = {
+      '국내여행': 'TOUR',
+      '행사이벤트': 'EVENT',
+      '온라인마케팅': 'MKT',
+      '마케팅교육': 'EDU'
+    };
+
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+    /* --- 쿠키 배너 --- */
+    function acceptCookie() {
+      try { localStorage.setItem('cookieOk', '1'); } catch(e) {}
+      document.getElementById('cookieBanner').classList.remove('show');
+    }
+    (function() {
+      try {
+        if (!localStorage.getItem('cookieOk')) {
+          setTimeout(() => document.getElementById('cookieBanner').classList.add('show'), 500);
+        }
+      } catch(e) {}
+    })();
+
+    /* --- 라벨 자동 전환 (구분 → 회사명) --- */
+    document.querySelectorAll('input[name="구분"]').forEach(r => {
+      r.addEventListener('change', e => {
+        const label = document.getElementById('labelCompany');
+        const input = document.getElementById('회사명');
+        const map = { '기업': ['회사명', '예: (주)리얼플랜제주'], '단체': ['단체명', '예: 제주시청 관광과'], '개인': ['성함', '예: 홍길동'] };
+        const [name, ph] = map[e.target.value] || ['회사/단체명', ''];
+        label.innerHTML = name + ' <span class="required">*</span>';
+        input.placeholder = ph;
+      });
+    });
+
+    /* --- 접수번호 생성 (TOUR-2026-NNN) --- */
+    async function generateReceiptNo(사업부) {
+      const prefix = PREFIX_MAP[사업부] || 'GEN';
+      const year = new Date().getFullYear();
+      // 해당 연도/사업부의 기존 최대 번호 조회
+      const like = `${prefix}-${year}-%`;
+      const { data, error } = await sb
+        .from('customers')
+        .select('접수번호')
+        .like('접수번호', like)
+        .order('접수번호', { ascending: false })
+        .limit(1);
+      let n = 1;
+      if (!error && data && data.length) {
+        const match = data[0]['접수번호'].match(/\-(\d+)$/);
+        if (match) n = parseInt(match[1], 10) + 1;
+      }
+      return `${prefix}-${year}-${String(n).padStart(3, '0')}`;
+    }
+
+    /* --- 필드 유효성 검사 --- */
+    function clearFieldError(field) { field.classList.remove('has-error'); }
+    function showFieldError(field) { field.classList.add('has-error'); }
+
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+      el.addEventListener('input', () => {
+        const field = el.closest('.field');
+        if (field) clearFieldError(field);
+      });
+    });
+
+    /* --- 폼 제출 --- */
+    const form = document.getElementById('contactForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // 기본 HTML5 유효성
+      let valid = true;
+      const errorFields = [];
+      form.querySelectorAll('[required]').forEach(el => {
+        const field = el.closest('.field');
+        if (!el.checkValidity()) {
+          if (field) { showFieldError(field); errorFields.push(field); }
+          valid = false;
+        }
+      });
+      // 라디오 그룹 체크
+      ['구분','사업부'].forEach(n => {
+        const checked = form.querySelector(`input[name="${n}"]:checked`);
+        if (!checked) {
+          const field = form.querySelector(`[data-field="${n}"]`);
+          if (field) { showFieldError(field); errorFields.push(field); }
+          valid = false;
+        }
+      });
+      // 날짜 순서
+      const start = form['시작일'].value;
+      const end = form['종료일'].value;
+      if (start && end && end < start) {
+        const field = form.querySelector('[data-field="종료일"]');
+        showFieldError(field);
+        errorFields.push(field);
+        valid = false;
+      }
+      // 개인정보 동의
+      if (!form['동의_개인정보'].checked) {
+        document.getElementById('consent-error').style.display = 'block';
+        valid = false;
+      } else {
+        document.getElementById('consent-error').style.display = 'none';
+      }
+
+      if (!valid) {
+        if (errorFields.length) errorFields[0].scrollIntoView({ behavior:'smooth', block:'center' });
+        return;
+      }
+
+      // 제출 시작
+      submitBtn.disabled = true;
+      btnText.innerHTML = '<span class="spinner"></span> 전송 중...';
+
+      try {
+        const fd = new FormData(form);
+        const 사업부 = fd.get('사업부');
+        const 접수번호 = await generateReceiptNo(사업부);
+
+        const payload = {
+          접수번호,
+          구분: fd.get('구분'),
+          사업부,
+          회사명: fd.get('회사명').trim(),
+          담당자명: fd.get('담당자명').trim(),
+          연락처: fd.get('연락처').trim(),
+          이메일: fd.get('이메일').trim().toLowerCase(),
+          시작일: fd.get('시작일'),
+          종료일: fd.get('종료일'),
+          일정조율가능: fd.get('일정조율가능') === 'true',
+          희망지역: fd.get('희망지역').trim(),
+          예산: fd.get('예산').trim(),
+          유입경로: fd.get('유입경로'),
+          요청사항: (fd.get('요청사항') || '').trim() || null,
+          동의_개인정보: true,
+          동의_콘텐츠: form['동의_콘텐츠'].checked,
+          동의_마케팅: form['동의_마케팅'].checked
+        };
+
+        const { data, error } = await sb.from('customers').insert([payload]).select();
+
+        if (error) throw error;
+
+        // 성공 화면
+        document.getElementById('formCard').style.display = 'none';
+        document.getElementById('receiptNo').textContent = 접수번호;
+        document.getElementById('successScreen').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      } catch (err) {
+        console.error('[contact form] submit error', err);
+        document.getElementById('formCard').style.display = 'none';
+        document.getElementById('errorMsg').textContent =
+          err?.message ? `오류: ${err.message}` : '네트워크 오류입니다. 잠시 후 다시 시도해 주세요.';
+        document.getElementById('errorScreen').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } finally {
+        submitBtn.disabled = false;
+        btnText.innerHTML = '문의 보내기';
+      }
+    });
+
+    /* --- 날짜 기본값: 오늘 이후만 선택 가능 --- */
+    (function() {
+      const today = new Date().toISOString().split('T')[0];
+      form['시작일'].min = today;
+      form['종료일'].min = today;
+      form['시작일'].addEventListener('change', e => {
+        form['종료일'].min = e.target.value || today;
+      });
+    })();
+  </script>
+</body>
+</html>

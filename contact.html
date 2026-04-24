@@ -393,7 +393,7 @@
         <!-- 3. 회사명 (라벨 자동 전환) -->
         <div class="field" data-field="회사명">
           <label id="labelCompany">회사/단체명 <span class="required">*</span></label>
-          <input type="text" id="회사명" name="회사명" maxlength="100" required placeholder="예: (주)리얼플랜제주">
+          <input type="text" id="회사명" name="회사명" maxlength="100" required placeholder="예: ○○ 주식회사">
           <div class="error-msg">이 항목은 필수입니다.</div>
         </div>
 
@@ -600,7 +600,7 @@
       r.addEventListener('change', e => {
         const label = document.getElementById('labelCompany');
         const input = document.getElementById('회사명');
-        const map = { '기업': ['회사명', '예: (주)리얼플랜제주'], '단체': ['단체명', '예: 제주시청 관광과'], '개인': ['성함', '예: 홍길동'] };
+        const map = { '기업': ['회사명', '예: ○○ 주식회사'], '단체': ['단체명', '예: 제주시청 관광과'], '개인': ['성함', '예: 홍길동'] };
         const [name, ph] = map[e.target.value] || ['회사/단체명', ''];
         label.innerHTML = name + ' <span class="required">*</span>';
         input.placeholder = ph;

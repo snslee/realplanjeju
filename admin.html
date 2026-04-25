@@ -111,6 +111,26 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 .tab{padding:10px 18px;background:transparent;color:var(--text-light);font-size:14px;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:var(--transition)}
 .tab:hover{color:var(--primary)}.tab.active{color:var(--primary);border-bottom-color:var(--primary)}
 .tab-panel{display:none}.tab-panel.active{display:block}
+/* Day 4-3 v1.5 — 타임라인 탭 */
+.tl-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:6px 4px;border-bottom:1px solid var(--border-light)}
+.tl-title{font-size:14px;font-weight:600;color:var(--text-primary)}
+.tl-meta{font-size:12px;color:var(--text-muted)}
+.tl-list{display:flex;flex-direction:column;gap:8px;max-height:62vh;overflow-y:auto;padding-right:4px}
+.tl-item{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--border-light);border-radius:8px;background:#fff;transition:background .15s}
+.tl-item:hover{background:#fafbfd}
+.tl-icon{flex-shrink:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:14px;background:#f0f6fc;color:#2B5FB8}
+.tl-item.tl-status .tl-icon{background:#FFF1E0;color:#FF8C42}
+.tl-item.tl-quotation .tl-icon{background:#E8F4FF;color:#4A90E2}
+.tl-item.tl-contract .tl-icon{background:#E0F4E5;color:#28A745}
+.tl-body{flex:1;min-width:0}
+.tl-line1{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:3px}
+.tl-evtitle{font-size:13.5px;font-weight:600;color:var(--text-primary);overflow-wrap:anywhere}
+.tl-time{font-size:11px;color:var(--text-muted);flex-shrink:0;white-space:nowrap}
+.tl-line2{font-size:12.5px;color:#5A7090;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.tl-author{display:inline-block;margin-top:4px;padding:1px 6px;font-size:11px;background:#f0f6fc;color:#5A7090;border-radius:3px}
+.tl-more-wrap{margin-top:14px;text-align:center}
+.tl-empty{padding:36px 12px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:820px){.tl-list{max-height:none}.tl-line1{flex-direction:column;gap:2px}.tl-time{font-size:10px}}
 .detail-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:24px 28px}
 .empty-state{padding:40px 20px;text-align:center;color:var(--text-muted);font-size:13.5px}
 .empty-state .es-icon{font-size:32px;margin-bottom:8px;opacity:.5}
@@ -229,7 +249,7 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📁</span><span class="nav-text">파일함</span></span>
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📈</span><span class="nav-text">보고서</span></span>
 </nav>
-<div class="sidebar-footer">admin v0.8 · Day 3</div>
+<div class="sidebar-footer">admin v1.5 · Day 4-3</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -290,7 +310,7 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 </div>
 <div class="detail-card">
 <div id="tab-overview" class="tab-panel active"><div class="empty-state"><div class="es-icon">📝</div><div>개요 화면</div><div style="margin-top:6px;font-size:12px;">Day 4에서 구현됩니다.</div></div></div>
-<div id="tab-timeline" class="tab-panel"><div class="empty-state"><div class="es-icon">🕒</div><div>타임라인</div><div style="margin-top:6px;font-size:12px;">Day 4-3에서 구현됩니다.</div></div></div>
+<div id="tab-timeline" class="tab-panel"><div class="tl-head"><span class="tl-title">🕒 타임라인</span><span class="tl-meta" id="tl-meta">—</span></div><div id="tl-list" class="tl-list"><div class="empty-state"><div class="es-icon">⏳</div><div>불러오는 중…</div></div></div><div class="tl-more-wrap"><button id="tl-more" class="btn-secondary" hidden>더보기</button></div></div>
 <div id="tab-files" class="tab-panel"><div class="empty-state"><div class="es-icon">📎</div><div>파일 관리</div><div style="margin-top:6px;font-size:12px;">Day 5에서 구현됩니다.</div></div></div>
 <div id="tab-assignee" class="tab-panel"><div class="empty-state"><div class="es-icon">👤</div><div>담당자</div><div style="margin-top:6px;font-size:12px;">Day 4-4에서 구현됩니다.</div></div></div>
 </div>
@@ -325,7 +345,7 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
   auth:{detectSessionInUrl:false,persistSession:true,autoRefreshToken:true,flowType:'pkce',lock:(name,t,fn)=>fn()}
 });
 
-const state={user:null,session:null,ready:false,currentCustomerId:null,currentCustomerInq:null,currentCustomerBU:null};
+const state={user:null,session:null,ready:false,currentCustomerId:null,currentCustomerInq:null,currentCustomerBU:null,timelineOffset:0,timelineTotal:0,timelineLoading:false};
 
 /* ===== 사업부별 상담 체크리스트 4종 (v2.0 통합설계서 6장) ===== */
 function nowKR(){
@@ -769,6 +789,94 @@ function renderOverview(r){
     '</div>';
 }
 
+/* ===== Day 4-3 v1.5 · 타임라인 탭 (4 소스 UNION 시간순) ===== */
+const TL_LIMIT=30;
+const TL_ICONS={note:'📝',status:'🔄',quotation:'💰',contract:'📋'};
+
+function tlFmtTime(s){
+  if(!s)return '';
+  try{
+    const d=new Date(s);
+    if(isNaN(d.getTime()))return escapeHtml(String(s));
+    const now=new Date();
+    const sameDay=d.toDateString()===now.toDateString();
+    if(sameDay){
+      return d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    }
+    return d.toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  }catch(e){return escapeHtml(String(s));}
+}
+
+async function loadTimeline(reset){
+  if(!state.user||!state.currentCustomerId){return;}
+  if(state.timelineLoading)return;
+  if(reset){
+    state.timelineOffset=0;
+    state.timelineTotal=0;
+    const list=$('#tl-list');
+    if(list)list.innerHTML='<div class="empty-state"><div class="es-icon">⏳</div><div>불러오는 중…</div></div>';
+    const more=$('#tl-more');if(more)more.hidden=true;
+  }
+  state.timelineLoading=true;
+  try{
+    const {data,error}=await withTimeout(
+      sb.rpc('rpc_customer_timeline',{
+        '_customer_id':state.currentCustomerId,
+        '_limit':TL_LIMIT,
+        '_offset':state.timelineOffset
+      }),
+      8000,'customer_timeline'
+    );
+    if(error)throw error;
+    const rows=Array.isArray(data)?data:[];
+    if(rows.length>0){state.timelineTotal=rows[0].total_count||rows.length;}
+    renderTimeline(rows,!reset);
+    state.timelineOffset+=rows.length;
+    const more=$('#tl-more');
+    if(more){more.hidden=(state.timelineOffset>=state.timelineTotal);}
+    const meta=$('#tl-meta');
+    if(meta){meta.textContent='전체 '+state.timelineTotal+'건 · 표시 '+state.timelineOffset+'건';}
+  }catch(err){
+    console.error('[loadTimeline]',err);
+    const list=$('#tl-list');
+    if(list)list.innerHTML='<div class="tl-empty">불러오기 실패: '+escapeHtml(err.message||err)+'</div>';
+    toast('타임라인 로딩 실패: '+(err.message||err),'error');
+  }finally{
+    state.timelineLoading=false;
+  }
+}
+
+function renderTimeline(rows,append){
+  const list=$('#tl-list');
+  if(!list)return;
+  if(!append&&(!rows||rows.length===0)){
+    list.innerHTML='<div class="tl-empty">기록이 없습니다.</div>';
+    return;
+  }
+  const html=rows.map(r=>{
+    const t=r.event_type||'note';
+    const icon=TL_ICONS[t]||'•';
+    const cls='tl-'+t;
+    const title=escapeHtml(r['제목']||'-');
+    const detail=r['상세']?escapeHtml(r['상세']):'';
+    const time=tlFmtTime(r.event_at);
+    const author=r['작성자']?'<span class="tl-author">'+escapeHtml(r['작성자'])+'</span>':'';
+    return '<div class="tl-item '+cls+'">'+
+      '<div class="tl-icon">'+icon+'</div>'+
+      '<div class="tl-body">'+
+        '<div class="tl-line1"><span class="tl-evtitle">'+title+'</span><span class="tl-time">'+time+'</span></div>'+
+        (detail?'<div class="tl-line2">'+detail+'</div>':'')+
+        author+
+      '</div>'+
+    '</div>';
+  }).join('');
+  if(append){
+    list.insertAdjacentHTML('beforeend',html);
+  }else{
+    list.innerHTML=html;
+  }
+}
+
 /* ===== Day 4-2 v1.1 · 개요 하단 ⑧ 상담 메모 (단일 페이지 통합) ===== */
 async function loadNotes(){
   if(!state.user||!state.currentCustomerId)return;
@@ -1096,6 +1204,8 @@ function initTabs(){
       $$('.tab-panel').forEach(p=>p.classList.remove('active'));
       const target=$('#tab-'+name);if(target)target.classList.add('active');
       // Day 4-2 v1.1: 메모 탭 폐기 → 개요 탭 안에 ⑧ 상담 메모 통합 (loadCustomerDetail 진입 시 자동 로드)
+      // Day 4-3 v1.5: 타임라인 탭 클릭 시 1페이지부터 로드
+      if(name==='timeline'){loadTimeline(true);}
     });
   });
 }
@@ -1105,6 +1215,8 @@ function bindEvents(){
   const b2=$('#btn-logout');if(b2)b2.addEventListener('click',logout);
   const b3=$('#btn-back');if(b3)b3.addEventListener('click',()=>{location.hash='#customers';});
   const b5=$('#btn-recover');if(b5)b5.addEventListener('click',forceRecoverAndReload);
+  // Day 4-3 v1.5: 타임라인 [더보기] 버튼
+  const b6=$('#tl-more');if(b6)b6.addEventListener('click',()=>{loadTimeline(false);});
   window.addEventListener('hashchange',()=>{if(state.ready&&state.user)handleRoute();});
   // Day 3: 문의 목록 행 클릭 → 상세 (이벤트 위임)
   const tb=$('.customers-table tbody');

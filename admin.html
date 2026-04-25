@@ -86,7 +86,23 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 .customers-table tbody tr:last-child td{border-bottom:none}
 .placeholder-row td{text-align:center;color:var(--text-muted);padding:36px 16px!important;font-size:13px}
 .pagination{display:flex;justify-content:space-between;align-items:center;padding:14px 4px;font-size:12.5px;color:var(--text-light)}
-.status-badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.status-badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11.5px;font-weight:700;white-space:nowrap;background:#eaeef3;color:var(--text-light)}
+.status-badge.s-new{background:#e3f0fa;color:#1e3a5f}
+.status-badge.s-contact{background:#fff8e0;color:#5a4200}
+.status-badge.s-progress{background:#fef3d6;color:#7a4d00}
+.status-badge.s-quote{background:#ece9fa;color:#3a2c80}
+.status-badge.s-contract{background:#d4f0e0;color:#1a5a3f}
+.status-badge.s-done{background:#cee9d6;color:#1a5a3f}
+.status-badge.s-drop{background:#f5d6d6;color:#7a1f1f}
+.urgent-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.urgent-dot.lv24{background:var(--warn-24)}.urgent-dot.lv48{background:var(--warn-48)}.urgent-dot.lv72{background:var(--warn-72)}
+.urgent-dot.lvok{background:#cee9d6}
+.toast{background:var(--primary);color:#fff;padding:10px 16px;border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);font-size:13.5px;margin-top:8px}
+.toast.error{background:var(--error)}.toast.info{background:var(--primary)}.toast.success{background:var(--success)}
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:1000;display:flex;flex-direction:column;align-items:flex-end}
+#loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;z-index:999}
+.spinner{width:42px;height:42px;border:4px solid var(--border-light);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 .detail-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
 .btn-back{padding:6px 10px;background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;color:var(--text-light);transition:var(--transition)}
 .btn-back:hover{background:var(--bg-hover);color:var(--primary)}
@@ -147,7 +163,7 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📁</span><span class="nav-text">파일함</span></span>
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📈</span><span class="nav-text">보고서</span></span>
 </nav>
-<div class="sidebar-footer">admin v0.7 · Day 2</div>
+<div class="sidebar-footer">admin v0.8 · Day 3</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -167,7 +183,7 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 <div class="warn-badge w48"><span class="wb-label">48h 이상</span><span class="wb-count">-</span></div>
 <div class="warn-badge w72"><span class="wb-label">72h 이상 (치명)</span><span class="wb-count">-</span></div>
 </div>
-<div style="margin-top:14px;font-size:12px;color:var(--text-muted);">Day 2 — 실시간 값 연동은 Day 3에서 진행됩니다.</div>
+<div style="margin-top:14px;font-size:12px;color:var(--text-muted);">최근 미대응 경과 시간 — 24h: 즉시 확인 권장 · 48h: 우선 처리 · 72h+: 치명 (즉시 연락)</div>
 </div>
 </section>
 <section id="view-customers" class="page" hidden>
@@ -189,12 +205,11 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 <th style="width:100px;">담당자</th><th style="width:80px;text-align:right;">경과일</th>
 </tr></thead>
 <tbody><tr class="placeholder-row"><td colspan="7">
-<div>🛠 Day 2 단계입니다</div>
-<div style="margin-top:6px;font-size:12px;">필터·검색·정렬·페이지네이션은 Day 3에서 연결됩니다.</div>
+<div>⏳ 불러오는 중…</div>
 </td></tr></tbody>
 </table>
 </div>
-<div class="pagination"><span>페이지당 <b>20</b>건 · Day 3 구현 예정</span><span>1 / 1</span></div>
+<div class="pagination"><span>전체 <b>-</b>건 · 페이지당 20건</span><span>1 / 1</span></div>
 </section>
 <section id="view-customer-detail" class="page" hidden>
 <div class="detail-head">
@@ -344,6 +359,155 @@ async function logAccess(action,reason){
   }catch(err){console.warn('[logAccess fail]',action,err);}
 }
 
+// =============== Day 3 (a)+(c) 데이터 연동 ===============
+const STATUS_CLASS_MAP={
+  '신규문의':'s-new','접수확인':'s-contact','상담중':'s-progress',
+  '견적발송':'s-quote','계약대기':'s-quote','계약완료':'s-contract',
+  '진행중':'s-progress','진행완료':'s-done','이탈':'s-drop','보류':'s-drop'
+};
+const KPI_CARD_MAP={
+  new_count:'new',
+  unresponsive_count:'unresponsive',
+  in_progress_count:'in_progress',
+  completed_month:'completed',
+  dropout_rate_3m:'dropout',
+  top_business_unit:'top_bu'
+};
+function fmtKpi(key,val){
+  if(val===null||val===undefined||val==='')return '-';
+  if(key==='dropout_rate_3m')return Number(val).toFixed(1)+'%';
+  return String(val);
+}
+function elapsedDaysSince(iso){
+  if(!iso)return '-';
+  const t=new Date(iso).getTime();
+  if(isNaN(t))return '-';
+  const days=Math.floor((Date.now()-t)/(86400*1000));
+  return days+'일';
+}
+function levelToDot(level){
+  if(!level)return '';
+  const s=String(level);
+  if(s.indexOf('72')>=0)return '<span class="urgent-dot lv72" title="72h+ 미대응"></span>';
+  if(s.indexOf('48')>=0)return '<span class="urgent-dot lv48" title="48h+ 미대응"></span>';
+  if(s.indexOf('24')>=0)return '<span class="urgent-dot lv24" title="24h+ 미대응"></span>';
+  return '';
+}
+function escapeHtml(s){
+  if(s===null||s===undefined)return '';
+  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function loadDashboard(){
+  if(!state.user)return;
+  // KPI 6개
+  try{
+    const {data,error}=await withTimeout(sb.rpc('rpc_dashboard_kpis'),8000,'dashboard_kpis');
+    if(error)throw error;
+    renderKpis(data||{});
+  }catch(err){
+    console.error('[loadDashboard kpi]',err);
+    toast('대시보드 KPI 로딩 실패: '+(err.message||err),'error');
+  }
+  // 미응답 24/48/72h 분해 (list_customers의 unresponsive_level로 카운트)
+  try{
+    const {data,error}=await withTimeout(sb.rpc('rpc_list_customers',{
+      _search:null,_status:null,_business_unit:null,_admin_email:null,
+      _from_date:null,_to_date:null,_tags:null,_limit:1000,_offset:0
+    }),8000,'list_for_unresponsive');
+    if(error)throw error;
+    renderUnresponsiveBadges(data||[]);
+  }catch(err){
+    console.warn('[unresponsive bins fail]',err);
+  }
+  await logAccess('DASHBOARD_VIEW',null);
+}
+
+function renderKpis(json){
+  Object.keys(KPI_CARD_MAP).forEach(k=>{
+    const card=$('.kpi-card[data-kpi="'+KPI_CARD_MAP[k]+'"]');
+    if(!card)return;
+    const valEl=card.querySelector('.kpi-value');
+    if(valEl)valEl.textContent=fmtKpi(k,json[k]);
+  });
+}
+
+function renderUnresponsiveBadges(rows){
+  let c24=0,c48=0,c72=0;
+  for(const r of rows){
+    const lv=r.unresponsive_level;
+    if(!lv)continue;
+    const s=String(lv);
+    if(s==='ok')continue;
+    if(s.indexOf('72')>=0)c72++;
+    else if(s.indexOf('48')>=0)c48++;
+    else if(s.indexOf('24')>=0)c24++;
+  }
+  const set=(sel,v)=>{const e=$(sel);if(e)e.textContent=v;};
+  set('.warn-badge.w24 .wb-count',c24);
+  set('.warn-badge.w48 .wb-count',c48);
+  set('.warn-badge.w72 .wb-count',c72);
+}
+
+async function loadCustomers(){
+  if(!state.user)return;
+  const tbody=$('.customers-table tbody');
+  if(tbody)tbody.innerHTML='<tr class="placeholder-row"><td colspan="7"><div>⏳ 불러오는 중…</div></td></tr>';
+  try{
+    const {data,error}=await withTimeout(sb.rpc('rpc_list_customers',{
+      _search:null,_status:null,_business_unit:null,_admin_email:null,
+      _from_date:null,_to_date:null,_tags:null,_limit:20,_offset:0
+    }),8000,'list_customers');
+    if(error)throw error;
+    renderCustomersTable(data||[]);
+  }catch(err){
+    console.error('[loadCustomers]',err);
+    if(tbody)tbody.innerHTML='<tr class="placeholder-row"><td colspan="7"><div>❌ 불러오기 실패</div><div style="margin-top:6px;font-size:12px;">'+escapeHtml(err.message||err)+'</div></td></tr>';
+    toast('문의 목록 로딩 실패: '+(err.message||err),'error');
+  }
+  await logAccess('CUSTOMERS_VIEW',null);
+}
+
+function renderCustomersTable(rows){
+  const tbody=$('.customers-table tbody');
+  if(!tbody)return;
+  if(!rows||rows.length===0){
+    tbody.innerHTML='<tr class="placeholder-row"><td colspan="7"><div>📭 문의가 없습니다</div></td></tr>';
+    setPagination(0,1);
+    return;
+  }
+  const total=Number(rows[0].total_count)||rows.length;
+  const html=rows.map(r=>{
+    const inq=r['접수번호']||'';
+    const co=r['회사명']||'-';
+    const nm=r['담당자명']||'-';
+    const bu=r['사업부']||'-';
+    const st=r['고객상태']||'-';
+    const stCls=STATUS_CLASS_MAP[st]||'';
+    const owner=r['내부담당자']||'-';
+    const dot=levelToDot(r.unresponsive_level);
+    const elapsed=elapsedDaysSince(r['신청일시']);
+    return '<tr data-inq="'+escapeHtml(inq)+'" style="cursor:pointer;">'+
+      '<td>'+dot+'<b>'+escapeHtml(inq)+'</b></td>'+
+      '<td>'+escapeHtml(co)+'</td>'+
+      '<td>'+escapeHtml(nm)+'</td>'+
+      '<td>'+escapeHtml(bu)+'</td>'+
+      '<td><span class="status-badge '+stCls+'">'+escapeHtml(st)+'</span></td>'+
+      '<td>'+escapeHtml(owner)+'</td>'+
+      '<td style="text-align:right;">'+elapsed+'</td>'+
+    '</tr>';
+  }).join('');
+  tbody.innerHTML=html;
+  setPagination(total,1);
+}
+
+function setPagination(total,page){
+  const pgEl=$('.pagination');
+  if(!pgEl)return;
+  const pages=Math.max(1,Math.ceil((total||0)/20));
+  pgEl.innerHTML='<span>전체 <b>'+total+'</b>건 · 페이지당 20건</span><span>'+page+' / '+pages+'</span>';
+}
+
 async function loginWithGoogle(){
   clearLoginError();
   const keep=$('#chk-keep-login')&&$('#chk-keep-login').checked?'1':'0';
@@ -410,8 +574,16 @@ function handleRoute(){
   $$('.page').forEach(p=>p.hidden=true);
   $$('.nav-item[data-nav]').forEach(n=>n.classList.remove('active'));
   switch(page){
-    case 'dashboard':show('#view-dashboard');$('.nav-item[data-nav="dashboard"]').classList.add('active');break;
-    case 'customers':show('#view-customers');$('.nav-item[data-nav="customers"]').classList.add('active');break;
+    case 'dashboard':
+      show('#view-dashboard');
+      $('.nav-item[data-nav="dashboard"]').classList.add('active');
+      loadDashboard();
+      break;
+    case 'customers':
+      show('#view-customers');
+      $('.nav-item[data-nav="customers"]').classList.add('active');
+      loadCustomers();
+      break;
     case 'customer':
       if(!param){location.hash='#customers';return;}
       show('#view-customer-detail');
@@ -440,6 +612,15 @@ function bindEvents(){
   const b3=$('#btn-back');if(b3)b3.addEventListener('click',()=>{location.hash='#customers';});
   const b5=$('#btn-recover');if(b5)b5.addEventListener('click',forceRecoverAndReload);
   window.addEventListener('hashchange',()=>{if(state.ready&&state.user)handleRoute();});
+  // Day 3: 문의 목록 행 클릭 → 상세 (이벤트 위임)
+  const tb=$('.customers-table tbody');
+  if(tb)tb.addEventListener('click',(e)=>{
+    const tr=e.target.closest('tr[data-inq]');
+    if(tr){
+      const inq=tr.getAttribute('data-inq');
+      if(inq)location.hash='#customer/'+encodeURIComponent(inq);
+    }
+  });
 }
 
 // localStorage에서 직접 session 읽기 (SDK getSession 우회)

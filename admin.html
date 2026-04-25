@@ -111,6 +111,15 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 .tab{padding:10px 18px;background:transparent;color:var(--text-light);font-size:14px;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:var(--transition)}
 .tab:hover{color:var(--primary)}.tab.active{color:var(--primary);border-bottom-color:var(--primary)}
 .tab-panel{display:none}.tab-panel.active{display:block}
+/* Day 4-3 v1.6 — 고객 정보 한 줄 (4탭 공통 상단) */
+.customer-card-line{display:flex;align-items:center;gap:14px;padding:10px 14px;margin-bottom:14px;background:linear-gradient(0deg,#fff,#f0f6fc);border:1px solid var(--border-light);border-left:4px solid var(--accent);border-radius:var(--radius-sm);font-size:13.5px;flex-wrap:wrap}
+.ccl-item{display:inline-flex;align-items:center;gap:6px;color:var(--text)}
+.ccl-company{font-weight:700;color:var(--primary);font-size:14.5px}
+.ccl-divider{color:var(--text-muted);margin:0 2px}
+.ccl-empty{color:var(--text-muted);font-style:italic}
+.ccl-item a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.ccl-item a:hover{color:var(--primary)}
+@media(max-width:820px){.customer-card-line{gap:8px;font-size:12.5px;padding:8px 12px}.ccl-divider{display:none}}
 /* Day 4-3 v1.5 — 타임라인 탭 */
 .tl-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:6px 4px;border-bottom:1px solid var(--border-light)}
 .tl-title{font-size:14px;font-weight:600;color:var(--text-primary)}
@@ -249,7 +258,7 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📁</span><span class="nav-text">파일함</span></span>
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📈</span><span class="nav-text">보고서</span></span>
 </nav>
-<div class="sidebar-footer">admin v1.5 · Day 4-3</div>
+<div class="sidebar-footer">admin v1.6 · Day 4-3</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -302,6 +311,7 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 <button class="btn-back" id="btn-back">← 목록으로</button>
 <div class="detail-id" id="detail-id">-</div>
 </div>
+<div class="customer-card-line" id="customer-card-line"><span class="ccl-empty">고객 정보 불러오는 중…</span></div>
 <div class="tabs">
 <button class="tab active" data-tab="overview">개요</button>
 <button class="tab" data-tab="timeline">타임라인</button>
@@ -670,6 +680,7 @@ async function loadCustomerDetail(접수번호){
     state.currentCustomerId=row.id;
     state.currentCustomerInq=row['접수번호'];
     state.currentCustomerBU=row['사업부'];
+    renderCustomerCardLine(row);  // Day 4-3 v1.6: 4탭 공통 한 줄 명함
     renderOverview(row);
     await loadNotes();  // 개요 하단 메모 섹션 자동 로드 (v2.0 원안: 한 화면에 표시)
     await logAccess('CUSTOMER_DETAIL_VIEW',접수번호);
@@ -678,6 +689,18 @@ async function loadCustomerDetail(접수번호){
     if(root)root.innerHTML='<div class="empty-state"><div class="es-icon">❌</div><div>불러오기 실패</div><div style="margin-top:6px;font-size:12px;">'+escapeHtml(err.message||err)+'</div></div>';
     toast('상세 로딩 실패: '+(err.message||err),'error');
   }
+}
+
+function renderCustomerCardLine(r){
+  const el=$('#customer-card-line');
+  if(!el)return;
+  if(!r){el.innerHTML='<span class="ccl-empty">고객 정보 없음</span>';return;}
+  const company=r['회사명']?'<span class="ccl-item ccl-company">🏢 '+escapeHtml(r['회사명'])+'</span>':'';
+  const person=r['담당자명']?'<span class="ccl-item">👤 '+escapeHtml(r['담당자명'])+'</span>':'';
+  const tel=r['연락처']?'<span class="ccl-item">📞 <a href="tel:'+escapeHtml(r['연락처'])+'">'+escapeHtml(r['연락처'])+'</a></span>':'';
+  const mail=r['이메일']?'<span class="ccl-item">✉ <a href="mailto:'+escapeHtml(r['이메일'])+'">'+escapeHtml(r['이메일'])+'</a></span>':'';
+  const parts=[company,person,tel,mail].filter(Boolean);
+  el.innerHTML=parts.length?parts.join('<span class="ccl-divider">·</span>'):'<span class="ccl-empty">정보 없음</span>';
 }
 
 function renderOverview(r){
@@ -1183,6 +1206,8 @@ function handleRoute(){
       $('.nav-item[data-nav="customers"]').classList.add('active');
       const inq=decodeURIComponent(param);
       $('#detail-id').textContent=inq;
+      // Day 4-3 v1.6: 새 고객 진입 시 명함 라인 placeholder
+      const ccl=$('#customer-card-line');if(ccl)ccl.innerHTML='<span class="ccl-empty">고객 정보 불러오는 중…</span>';
       // 진입 시 항상 '개요' 탭으로 초기화
       $$('.tab').forEach(t=>t.classList.remove('active'));
       const ovTab=$('.tab[data-tab="overview"]');if(ovTab)ovTab.classList.add('active');

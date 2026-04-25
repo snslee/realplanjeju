@@ -491,10 +491,6 @@
               </label>
             </div>
             <div class="consent-item">
-              <input type="checkbox" id="동의_콘텐츠" name="동의_콘텐츠">
-              <label for="동의_콘텐츠">[선택] 프로젝트 결과물(사진·영상)을 포트폴리오에 활용하는 것에 동의합니다.</label>
-            </div>
-            <div class="consent-item">
               <input type="checkbox" id="동의_마케팅" name="동의_마케팅">
               <label for="동의_마케팅">[선택] 이벤트·프로모션 마케팅 정보 수신에 동의합니다.</label>
             </div>
@@ -689,7 +685,8 @@
           p_예산: fd.get('예산').trim(),
           p_유입경로: fd.get('유입경로'),
           p_요청사항: (fd.get('요청사항') || '').trim() || null,
-          p_동의_콘텐츠: form['동의_콘텐츠'].checked,
+          // 포트폴리오 활용 동의는 초기 상담 단계에서 받지 않음 → 계약 시점에 계약서에서 별도 동의 (결정 #21)
+          p_동의_콘텐츠: false,
           p_동의_마케팅: form['동의_마케팅'].checked
         });
 

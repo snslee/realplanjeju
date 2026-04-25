@@ -120,6 +120,24 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 .ccl-item a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
 .ccl-item a:hover{color:var(--primary)}
 @media(max-width:820px){.customer-card-line{gap:8px;font-size:12.5px;padding:8px 12px}.ccl-divider{display:none}}
+/* Day 4-1B v1.7 — 인라인 편집 모드 */
+.ccl-edit-actions{margin-left:auto;display:flex;gap:6px}
+.btn-edit-toggle{padding:5px 12px;background:var(--accent-light);color:var(--primary);border:1px solid var(--accent);border-radius:var(--radius-sm);font-size:12.5px;font-weight:700;cursor:pointer;transition:var(--transition)}
+.btn-edit-toggle:hover{background:var(--primary);color:#fff}
+.btn-edit-save{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-edit-save:hover{background:#226b50}
+.btn-edit-cancel{background:#fff;color:var(--text-light);border-color:var(--border)}
+.btn-edit-cancel:hover{background:var(--bg-hover);color:var(--text)}
+.edit-input,.edit-select,.edit-textarea{width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;outline:none;background:#fff;transition:var(--transition)}
+.edit-input:focus,.edit-select:focus,.edit-textarea:focus{border-color:var(--accent);box-shadow:var(--shadow-focus)}
+.edit-textarea{min-height:60px;resize:vertical;line-height:1.5}
+.edit-checkbox{width:16px;height:16px;cursor:pointer;vertical-align:middle}
+.edit-locked{display:inline-flex;align-items:center;gap:4px;color:var(--text-muted);font-size:12.5px}
+.edit-locked-icon{font-size:11px}
+.dg-row.editing .dg-value{padding:2px 0}
+body.edit-mode .detail-grid{padding-bottom:80px}
+.edit-banner{position:sticky;top:60px;z-index:40;margin:-8px 0 12px;padding:10px 14px;background:linear-gradient(0deg,#fff,#fff8e0);border:1px solid var(--warning);border-left:4px solid var(--warning);border-radius:var(--radius-sm);font-size:13px;color:#5a4200;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(--shadow)}
+.edit-banner-msg{font-weight:600}
 /* Day 4-3 v1.5 — 타임라인 탭 */
 .tl-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:6px 4px;border-bottom:1px solid var(--border-light)}
 .tl-title{font-size:14px;font-weight:600;color:var(--text-primary)}
@@ -258,7 +276,7 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📁</span><span class="nav-text">파일함</span></span>
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📈</span><span class="nav-text">보고서</span></span>
 </nav>
-<div class="sidebar-footer">admin v1.6 · Day 4-3</div>
+<div class="sidebar-footer">admin v1.7 · Day 4-1B</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -355,7 +373,7 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
   auth:{detectSessionInUrl:false,persistSession:true,autoRefreshToken:true,flowType:'pkce',lock:(name,t,fn)=>fn()}
 });
 
-const state={user:null,session:null,ready:false,currentCustomerId:null,currentCustomerInq:null,currentCustomerBU:null,timelineOffset:0,timelineTotal:0,timelineLoading:false};
+const state={user:null,session:null,ready:false,currentCustomerId:null,currentCustomerInq:null,currentCustomerBU:null,timelineOffset:0,timelineTotal:0,timelineLoading:false,editMode:false,currentRow:null,lastUpdatedAt:null};
 
 /* ===== 사업부별 상담 체크리스트 4종 (v2.0 통합설계서 6장) ===== */
 function nowKR(){
@@ -680,6 +698,8 @@ async function loadCustomerDetail(접수번호){
     state.currentCustomerId=row.id;
     state.currentCustomerInq=row['접수번호'];
     state.currentCustomerBU=row['사업부'];
+    state.currentRow=row;  // Day 4-1B v1.7: 편집 시 원본 보존
+    state.lastUpdatedAt=row.updated_at;  // 낙관적 락 비교용
     renderCustomerCardLine(row);  // Day 4-3 v1.6: 4탭 공통 한 줄 명함
     renderOverview(row);
     await loadNotes();  // 개요 하단 메모 섹션 자동 로드 (v2.0 원안: 한 화면에 표시)
@@ -700,12 +720,139 @@ function renderCustomerCardLine(r){
   const tel=r['연락처']?'<span class="ccl-item">📞 <a href="tel:'+escapeHtml(r['연락처'])+'">'+escapeHtml(r['연락처'])+'</a></span>':'';
   const mail=r['이메일']?'<span class="ccl-item">✉ <a href="mailto:'+escapeHtml(r['이메일'])+'">'+escapeHtml(r['이메일'])+'</a></span>':'';
   const parts=[company,person,tel,mail].filter(Boolean);
-  el.innerHTML=parts.length?parts.join('<span class="ccl-divider">·</span>'):'<span class="ccl-empty">정보 없음</span>';
+  // Day 4-1B v1.7 — 편집 모드 토글 버튼
+  const editBtns=state.editMode
+    ? '<div class="ccl-edit-actions"><button class="btn-edit-toggle btn-edit-cancel" id="btn-edit-cancel">취소</button><button class="btn-edit-toggle btn-edit-save" id="btn-edit-save">저장</button></div>'
+    : '<div class="ccl-edit-actions"><button class="btn-edit-toggle" id="btn-edit-enter">✏ 편집</button></div>';
+  el.innerHTML=(parts.length?parts.join('<span class="ccl-divider">·</span>'):'<span class="ccl-empty">정보 없음</span>')+editBtns;
+  const eb=$('#btn-edit-enter');if(eb)eb.addEventListener('click',enterEditMode);
+  const sb=$('#btn-edit-save');if(sb)sb.addEventListener('click',saveCustomerEdit);
+  const cb=$('#btn-edit-cancel');if(cb)cb.addEventListener('click',cancelCustomerEdit);
+}
+
+/* ===== Day 4-1B v1.7 · 편집 모드 ===== */
+const EDITABLE_FIELDS=['구분','사업부','회사명','담당자명','연락처','이메일','시작일','종료일','일정조율가능','희망지역','예산','유입경로','요청사항','동의_콘텐츠','동의_마케팅','내부담당자','태그','비고'];
+const LOCKED_FIELDS=['접수번호','신청일시','동의_개인정보','고객상태'];
+const BU_OPTIONS=['국내여행','행사이벤트','온라인마케팅','마케팅교육'];
+const GUBUN_OPTIONS=['기업','단체','개인'];
+const SOURCE_OPTIONS=['블로그','유튜브','인스타그램','틱톡','페이스북','쓰레드','네이버검색','구글검색','지인소개','기타'];
+
+function enterEditMode(){
+  if(!state.currentRow)return;
+  state.editMode=true;
+  document.body.classList.add('edit-mode');
+  renderCustomerCardLine(state.currentRow);
+  renderOverview(state.currentRow);
+  toast('편집 모드 진입 — 변경 후 [저장] 또는 [취소]','info');
+}
+
+function cancelCustomerEdit(){
+  state.editMode=false;
+  document.body.classList.remove('edit-mode');
+  renderCustomerCardLine(state.currentRow);
+  renderOverview(state.currentRow);
+  toast('편집 취소','info');
+}
+
+function collectEditUpdates(){
+  // form input/select/textarea/checkbox 모아서 _updates jsonb 빌드
+  const updates={};
+  const inputs=document.querySelectorAll('[data-field]');
+  inputs.forEach(el=>{
+    const f=el.getAttribute('data-field');
+    if(!f||LOCKED_FIELDS.includes(f))return;
+    let v;
+    if(el.type==='checkbox')v=el.checked;
+    else if(el.type==='date')v=el.value||null;
+    else if(f==='태그'){
+      v=(el.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+    }
+    else v=el.value!==undefined?el.value.trim():null;
+    if(v==='')v=null;
+    updates[f]=v;
+  });
+  return updates;
+}
+
+async function saveCustomerEdit(){
+  if(!state.currentCustomerId||!state.currentRow)return;
+  const updates=collectEditUpdates();
+
+  // 변경된 필드만 추출 (원본 비교)
+  const orig=state.currentRow;
+  const changed={};
+  let changeCount=0;
+  Object.keys(updates).forEach(f=>{
+    let oldVal=orig[f];
+    let newVal=updates[f];
+    // 배열 비교 (태그)
+    if(Array.isArray(oldVal)||Array.isArray(newVal)){
+      const a=JSON.stringify(oldVal||[]);const b=JSON.stringify(newVal||[]);
+      if(a!==b){changed[f]=newVal;changeCount++;}
+      return;
+    }
+    // 일반 비교 (null·boolean·date·string)
+    const a=oldVal===null||oldVal===undefined?'':String(oldVal);
+    const b=newVal===null||newVal===undefined?'':String(newVal);
+    if(a!==b){changed[f]=newVal;changeCount++;}
+  });
+
+  if(changeCount===0){
+    toast('변경 사항 없음','info');
+    cancelCustomerEdit();
+    return;
+  }
+
+  // 사업부·구분 변경 시 확인
+  if(changed['사업부']&&!confirm('사업부를 "'+orig['사업부']+'" → "'+changed['사업부']+'"(으)로 변경합니다. 계속할까요?\n\n주의: 사업부 변경 시 상담 템플릿이 달라집니다.')){
+    return;
+  }
+  if(changed['구분']&&!confirm('구분을 "'+orig['구분']+'" → "'+changed['구분']+'"(으)로 변경합니다. 계속할까요?')){
+    return;
+  }
+
+  try{
+    const {data,error}=await withTimeout(
+      sb.rpc('rpc_update_customer',{
+        '_customer_id':state.currentCustomerId,
+        '_updates':changed,
+        '_expected_updated_at':state.lastUpdatedAt
+      }),
+      10000,'update_customer'
+    );
+    if(error)throw error;
+    const newRow=Array.isArray(data)&&data.length>0?data[0]:null;
+    if(!newRow)throw new Error('서버 응답 없음');
+    toast(changeCount+'개 필드 저장됨 ✓','success');
+    state.editMode=false;
+    document.body.classList.remove('edit-mode');
+    state.currentRow=newRow;
+    state.lastUpdatedAt=newRow.updated_at;
+    renderCustomerCardLine(newRow);
+    renderOverview(newRow);
+    // 타임라인이 활성 탭이면 reload (변경 이력 합류)
+    const tlActive=$('.tab[data-tab="timeline"]')?.classList?.contains('active');
+    if(tlActive)loadTimeline(true);
+  }catch(err){
+    console.error('[saveCustomerEdit]',err);
+    const msg=String(err.message||err);
+    if(msg.indexOf('concurrent edit')>=0){
+      if(confirm('다른 분이 먼저 저장했습니다. 다시 불러올까요?\n("취소" = 현재 입력값 유지)')){
+        loadCustomerDetail(state.currentCustomerInq);
+      }
+    }else if(msg.indexOf('locked')>=0){
+      toast('잠금 필드는 변경할 수 없습니다.','error');
+    }else{
+      toast('저장 실패: '+msg,'error');
+    }
+  }
 }
 
 function renderOverview(r){
   const root=$('#tab-overview');
   if(!root)return;
+  // Day 4-1B v1.7 — 편집 모드 분기
+  if(state.editMode){return renderOverviewEdit(r);}
   const v=(x)=>(x===null||x===undefined||x==='')?'<span class="dg-empty">—</span>':escapeHtml(String(x));
   const consent=(b)=>b?'<span class="consent-icon" title="동의">✅</span>':'<span class="consent-icon" title="미동의">⬜</span>';
   const yn=(b)=>b?'예':'아니오';
@@ -898,6 +1045,94 @@ function renderTimeline(rows,append){
   }else{
     list.innerHTML=html;
   }
+}
+
+/* ===== Day 4-1B v1.7 · 편집 모드 렌더러 ===== */
+function renderOverviewEdit(r){
+  const root=$('#tab-overview');
+  if(!root)return;
+  const esc=(s)=>(s===null||s===undefined)?'':escapeHtml(String(s));
+  const lockBadge=(label,val)=>'<span class="edit-locked"><span class="edit-locked-icon">🔒</span> '+esc(val||'—')+'</span>';
+  const inp=(field,val,type)=>{
+    type=type||'text';
+    return '<input class="edit-input" type="'+type+'" data-field="'+field+'" value="'+esc(val||'')+'" placeholder="(비어있음)">';
+  };
+  const sel=(field,val,opts)=>{
+    const o=opts.map(x=>'<option value="'+esc(x)+'"'+(val===x?' selected':'')+'>'+esc(x)+'</option>').join('');
+    return '<select class="edit-select" data-field="'+field+'"><option value="">(선택 안함)</option>'+o+'</select>';
+  };
+  const chk=(field,val)=>'<input class="edit-checkbox" type="checkbox" data-field="'+field+'"'+(val?' checked':'')+'>';
+  const ta=(field,val)=>'<textarea class="edit-textarea" data-field="'+field+'" placeholder="(비어있음)">'+esc(val||'')+'</textarea>';
+  const fmtDT=(s)=>{if(!s)return '—';try{const d=new Date(s);return d.toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return String(s);}};
+  const tagsStr=Array.isArray(r['태그'])?r['태그'].join(', '):'';
+
+  root.innerHTML=''+
+    '<div class="edit-banner"><span class="edit-banner-msg">✏ 편집 모드 — 변경 후 상단의 [저장] 또는 [취소] 클릭</span><span style="font-size:11.5px;color:#5a4200">잠금 4종(접수번호·신청일시·동의_개인정보·고객상태)은 별도 변경 절차</span></div>'+
+    '<div class="detail-grid">'+
+      '<div class="detail-group dg-primary">'+
+        '<div class="dg-title">① 접수 정보</div>'+
+        '<div class="dg-rows">'+
+          '<div class="dg-row"><span class="dg-label">접수번호</span><span class="dg-value">'+lockBadge('접수번호',r['접수번호'])+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">신청일시</span><span class="dg-value">'+lockBadge('신청일시',fmtDT(r['신청일시']))+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">고객상태</span><span class="dg-value">'+lockBadge('고객상태',r['고객상태'])+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">내부담당자</span><span class="dg-value">'+inp('내부담당자',r['내부담당자'])+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">재문의여부</span><span class="dg-value">'+(r['재문의여부']?'예':'아니오')+' <span class="edit-locked-icon">(자동)</span></span></div>'+
+          '<div class="dg-row"><span class="dg-label">이전접수번호</span><span class="dg-value">'+esc(r['이전접수번호']||'—')+' <span class="edit-locked-icon">(자동)</span></span></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="detail-group">'+
+        '<div class="dg-title">② 사업부 · 구분</div>'+
+        '<div class="dg-rows">'+
+          '<div class="dg-row"><span class="dg-label">사업부</span><span class="dg-value">'+sel('사업부',r['사업부'],BU_OPTIONS)+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">구분</span><span class="dg-value">'+sel('구분',r['구분'],GUBUN_OPTIONS)+'</span></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="detail-group">'+
+        '<div class="dg-title">③ 고객 연락처</div>'+
+        '<div class="dg-rows">'+
+          '<div class="dg-row"><span class="dg-label">회사 / 단체명</span><span class="dg-value">'+inp('회사명',r['회사명'])+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">담당자명</span><span class="dg-value">'+inp('담당자명',r['담당자명'])+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">연락처</span><span class="dg-value">'+inp('연락처',r['연락처'],'tel')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">이메일</span><span class="dg-value">'+inp('이메일',r['이메일'],'email')+'</span></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="detail-group">'+
+        '<div class="dg-title">④ 일정</div>'+
+        '<div class="dg-rows">'+
+          '<div class="dg-row"><span class="dg-label">시작일</span><span class="dg-value">'+inp('시작일',r['시작일'],'date')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">종료일</span><span class="dg-value">'+inp('종료일',r['종료일'],'date')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">일정 조율 가능</span><span class="dg-value">'+chk('일정조율가능',r['일정조율가능'])+' <span style="font-size:11.5px;color:var(--text-muted)">(체크 = 가능)</span></span></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="detail-group">'+
+        '<div class="dg-title">⑤ 요청 내용</div>'+
+        '<div class="dg-rows">'+
+          '<div class="dg-row"><span class="dg-label">희망지역</span><span class="dg-value">'+inp('희망지역',r['희망지역'])+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">예산</span><span class="dg-value">'+inp('예산',r['예산'])+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">유입경로</span><span class="dg-value">'+sel('유입경로',r['유입경로'],SOURCE_OPTIONS)+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">요청사항</span><span class="dg-value">'+ta('요청사항',r['요청사항'])+'</span></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="detail-group">'+
+        '<div class="dg-title">⑥ 동의 (3종)</div>'+
+        '<div class="dg-rows">'+
+          '<div class="dg-row"><span class="dg-label">개인정보 (필수)</span><span class="dg-value">'+lockBadge('동의_개인정보','✅ 동의')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">콘텐츠 활용</span><span class="dg-value">'+chk('동의_콘텐츠',r['동의_콘텐츠'])+' <span style="font-size:11.5px;color:var(--text-muted)">(체크 = 동의)</span></span></div>'+
+          '<div class="dg-row"><span class="dg-label">마케팅 수신</span><span class="dg-value">'+chk('동의_마케팅',r['동의_마케팅'])+' <span style="font-size:11.5px;color:var(--text-muted)">(체크 = 동의)</span></span></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="detail-group dg-meta">'+
+        '<details open><summary><span class="dg-title">⑦ 시스템 메타 + 태그·비고</span></summary>'+
+        '<div class="dg-rows">'+
+          '<div class="dg-row"><span class="dg-label">태그 (쉼표 구분)</span><span class="dg-value">'+inp('태그',tagsStr)+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">비고</span><span class="dg-value">'+ta('비고',r['비고'])+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">생성일시</span><span class="dg-value">'+esc(fmtDT(r['created_at']))+' <span class="edit-locked-icon">(자동)</span></span></div>'+
+          '<div class="dg-row"><span class="dg-label">수정일시</span><span class="dg-value">'+esc(fmtDT(r['updated_at']))+' <span class="edit-locked-icon">(자동)</span></span></div>'+
+          '<div class="dg-row"><span class="dg-label">마지막접촉</span><span class="dg-value">'+esc(fmtDT(r['마지막접촉일시'])||'—')+' <span class="edit-locked-icon">(자동)</span></span></div>'+
+        '</div>'+
+        '</details>'+
+      '</div>'+
+    '</div>';
 }
 
 /* ===== Day 4-2 v1.1 · 개요 하단 ⑧ 상담 메모 (단일 페이지 통합) ===== */
@@ -1208,6 +1443,9 @@ function handleRoute(){
       $('#detail-id').textContent=inq;
       // Day 4-3 v1.6: 새 고객 진입 시 명함 라인 placeholder
       const ccl=$('#customer-card-line');if(ccl)ccl.innerHTML='<span class="ccl-empty">고객 정보 불러오는 중…</span>';
+      // Day 4-1B v1.7: 새 고객 진입 시 편집 모드 reset
+      state.editMode=false;state.currentRow=null;state.lastUpdatedAt=null;
+      document.body.classList.remove('edit-mode');
       // 진입 시 항상 '개요' 탭으로 초기화
       $$('.tab').forEach(t=>t.classList.remove('active'));
       const ovTab=$('.tab[data-tab="overview"]');if(ovTab)ovTab.classList.add('active');

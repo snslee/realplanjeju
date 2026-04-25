@@ -138,6 +138,37 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 body.edit-mode .detail-grid{padding-bottom:80px}
 .edit-banner{position:sticky;top:60px;z-index:40;margin:-8px 0 12px;padding:10px 14px;background:linear-gradient(0deg,#fff,#fff8e0);border:1px solid var(--warning);border-left:4px solid var(--warning);border-radius:var(--radius-sm);font-size:13px;color:#5a4200;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(--shadow)}
 .edit-banner-msg{font-weight:600}
+/* Day 4-5 v1.8 — 고객상태 변경 모달 */
+.status-modal{position:fixed;inset:0;z-index:1100;display:flex;align-items:center;justify-content:center;padding:20px}
+.scm-backdrop{position:absolute;inset:0;background:rgba(20,30,50,.45);backdrop-filter:blur(2px)}
+.scm-box{position:relative;width:100%;max-width:480px;background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);overflow:hidden;animation:scmIn .15s ease-out}
+@keyframes scmIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.scm-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border-light);background:linear-gradient(0deg,#fff,#f0f6fc)}
+.scm-title{font-size:15px;font-weight:800;color:var(--primary)}
+.scm-close{font-size:22px;line-height:1;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:2px 8px;border-radius:4px;transition:var(--transition)}
+.scm-close:hover{background:var(--bg-hover);color:var(--error)}
+.scm-body{padding:18px;display:flex;flex-direction:column;gap:14px}
+.scm-row{display:flex;flex-direction:column;gap:6px}
+.scm-label{font-size:12.5px;font-weight:700;color:var(--text-light)}
+.scm-optional{font-weight:400;color:var(--text-muted);font-size:11.5px}
+.scm-required{color:var(--error);font-weight:700}
+.scm-current{display:inline-block;padding:6px 10px;background:var(--bg);border-radius:var(--radius-sm);font-size:13px;color:var(--text);width:fit-content}
+.scm-select,.scm-textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;outline:none;transition:var(--transition)}
+.scm-select:focus,.scm-textarea:focus{border-color:var(--accent);box-shadow:var(--shadow-focus)}
+.scm-textarea{min-height:70px;resize:vertical;line-height:1.5}
+.scm-reason-wrap.scm-required-active .scm-textarea{border-color:var(--error);background:#fff8f8}
+.scm-counter{font-size:11.5px;color:var(--text-muted);text-align:right}
+.scm-counter.over{color:var(--error)}
+.scm-foot{display:flex;gap:8px;justify-content:flex-end;padding:12px 18px;border-top:1px solid var(--border-light);background:var(--bg)}
+.scm-btn{padding:8px 18px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:700;cursor:pointer;border:1px solid var(--border);transition:var(--transition)}
+.scm-btn-cancel{background:#fff;color:var(--text-light)}
+.scm-btn-cancel:hover{background:var(--bg-hover);color:var(--text)}
+.scm-btn-confirm{background:var(--primary);color:#fff;border-color:var(--primary)}
+.scm-btn-confirm:hover{background:var(--primary-dark)}
+.scm-btn-confirm:disabled{opacity:.5;cursor:not-allowed}
+/* 고객상태 옆 [변경] 버튼 (개요 ① 카드) */
+.btn-status-change{margin-left:8px;padding:2px 8px;background:var(--accent-light);color:var(--primary);border:1px solid var(--accent);border-radius:4px;font-size:11.5px;font-weight:700;cursor:pointer;transition:var(--transition)}
+.btn-status-change:hover{background:var(--primary);color:#fff}
 /* Day 4-3 v1.5 — 타임라인 탭 */
 .tl-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:6px 4px;border-bottom:1px solid var(--border-light)}
 .tl-title{font-size:14px;font-weight:600;color:var(--text-primary)}
@@ -276,7 +307,7 @@ body.edit-mode .detail-grid{padding-bottom:80px}
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📁</span><span class="nav-text">파일함</span></span>
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📈</span><span class="nav-text">보고서</span></span>
 </nav>
-<div class="sidebar-footer">admin v1.7 · Day 4-1B</div>
+<div class="sidebar-footer">admin v1.8 · Day 4-5</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -348,6 +379,42 @@ body.edit-mode .detail-grid{padding-bottom:80px}
 </div>
 <div id="loading-overlay" hidden><div class="spinner"></div></div>
 <div id="toast-container" aria-live="polite"></div>
+<!-- Day 4-5 v1.8 — 고객상태 변경 모달 -->
+<div id="status-modal" class="status-modal" hidden>
+<div class="scm-backdrop" id="scm-backdrop"></div>
+<div class="scm-box" role="dialog" aria-labelledby="scm-title">
+<div class="scm-head">
+<div class="scm-title" id="scm-title">고객상태 변경</div>
+<button class="scm-close" id="scm-close" aria-label="닫기">×</button>
+</div>
+<div class="scm-body">
+<div class="scm-row"><span class="scm-label">현재 상태</span><span class="scm-current" id="scm-current">-</span></div>
+<div class="scm-row"><span class="scm-label">새 상태</span>
+<select id="scm-new-status" class="scm-select">
+<option value="신규문의">신규문의</option>
+<option value="접수">접수</option>
+<option value="확인">확인</option>
+<option value="상담중">상담중</option>
+<option value="견적발송">견적발송</option>
+<option value="계약대기">계약대기</option>
+<option value="계약완료">계약완료</option>
+<option value="진행중">진행중</option>
+<option value="종료">종료</option>
+<option value="이탈">이탈</option>
+<option value="취소">취소</option>
+</select>
+</div>
+<div class="scm-row scm-reason-wrap"><span class="scm-label" id="scm-reason-label">변경사유 <span class="scm-optional">(선택)</span></span>
+<textarea id="scm-reason" class="scm-textarea" maxlength="500" rows="3" placeholder="변경 사유를 입력하세요 (취소·이탈 시 필수)"></textarea>
+<div class="scm-counter"><span id="scm-counter">0</span> / 500</div>
+</div>
+</div>
+<div class="scm-foot">
+<button class="scm-btn scm-btn-cancel" id="scm-btn-cancel">취소</button>
+<button class="scm-btn scm-btn-confirm" id="scm-btn-confirm">확정</button>
+</div>
+</div>
+</div>
 <script>
 (function(){try{Object.defineProperty(navigator,'locks',{value:undefined,configurable:true,writable:true});}catch(e){try{delete navigator.locks;}catch(e2){}}console.info('[admin v0.7] navigator.locks disabled');})();
 </script>
@@ -730,6 +797,119 @@ function renderCustomerCardLine(r){
   const cb=$('#btn-edit-cancel');if(cb)cb.addEventListener('click',cancelCustomerEdit);
 }
 
+/* ===== Day 4-5 v1.8 · 고객상태 변경 모달 ===== */
+const STATUS_REQUIRE_REASON=['취소','이탈'];
+
+function openStatusModal(){
+  if(!state.currentRow)return;
+  const modal=$('#status-modal');
+  if(!modal)return;
+  // 현재 상태 표시
+  const cur=state.currentRow['고객상태']||'-';
+  const curEl=$('#scm-current');
+  if(curEl){
+    const cls=STATUS_CLASS_MAP[cur]||'';
+    curEl.innerHTML='<span class="status-badge '+cls+'">'+escapeHtml(cur)+'</span>';
+  }
+  // 새 상태 셀렉트는 현재 상태로 초기화 + 변경 감지
+  const sel=$('#scm-new-status');
+  if(sel){sel.value=cur; updateScmRequiredUI();}
+  // 사유 초기화
+  const ta=$('#scm-reason');if(ta){ta.value='';}
+  const cnt=$('#scm-counter');if(cnt){cnt.textContent='0';}
+  // 표시
+  modal.hidden=false;
+  // 포커스
+  setTimeout(()=>{const s=$('#scm-new-status');if(s)s.focus();},50);
+}
+
+function closeStatusModal(){
+  const modal=$('#status-modal');
+  if(modal)modal.hidden=true;
+}
+
+function updateScmRequiredUI(){
+  const sel=$('#scm-new-status');
+  const wrap=$('.scm-reason-wrap');
+  const lbl=$('#scm-reason-label');
+  if(!sel||!wrap||!lbl)return;
+  const newStatus=sel.value;
+  if(STATUS_REQUIRE_REASON.indexOf(newStatus)>=0){
+    wrap.classList.add('scm-required-active');
+    lbl.innerHTML='변경사유 <span class="scm-required">(필수 — 취소·이탈)</span>';
+  }else{
+    wrap.classList.remove('scm-required-active');
+    lbl.innerHTML='변경사유 <span class="scm-optional">(선택)</span>';
+  }
+}
+
+async function confirmStatusChange(){
+  if(!state.currentCustomerId)return;
+  const newStatus=$('#scm-new-status')?.value;
+  const reason=($('#scm-reason')?.value||'').trim();
+  const cur=state.currentRow?.['고객상태'];
+  if(!newStatus){toast('새 상태를 선택하세요','error');return;}
+  if(newStatus===cur){toast('현재 상태와 동일합니다','info');closeStatusModal();return;}
+  if(STATUS_REQUIRE_REASON.indexOf(newStatus)>=0&&!reason){
+    toast('취소·이탈 변경 시 변경사유 필수','error');
+    $('#scm-reason')?.focus();return;
+  }
+  // 확정 버튼 비활성화 (중복 클릭 방지)
+  const btn=$('#scm-btn-confirm');if(btn)btn.disabled=true;
+  try{
+    const {data,error}=await withTimeout(
+      sb.rpc('rpc_update_customer_status',{
+        '_customer_id':state.currentCustomerId,
+        '_new_status':newStatus,
+        '_reason':reason||null
+      }),
+      10000,'update_status'
+    );
+    if(error)throw error;
+    const newRow=Array.isArray(data)&&data.length>0?data[0]:null;
+    if(!newRow)throw new Error('서버 응답 없음');
+    toast(cur+' → '+newStatus+' 변경 완료 ✓','success');
+    closeStatusModal();
+    // 다시 로드 (명함 라인·status badge·타임라인 자동 갱신)
+    state.currentRow=newRow;
+    state.lastUpdatedAt=newRow.updated_at;
+    renderCustomerCardLine(newRow);
+    renderOverview(newRow);
+    // 타임라인이 활성 탭이면 reload
+    const tlActive=$('.tab[data-tab="timeline"]')?.classList?.contains('active');
+    if(tlActive)loadTimeline(true);
+  }catch(err){
+    console.error('[confirmStatusChange]',err);
+    const msg=String(err.message||err);
+    if(msg.indexOf('필수')>=0){toast('변경사유 필수: '+msg,'error');}
+    else if(msg.indexOf('invalid status')>=0){toast('잘못된 상태값','error');}
+    else{toast('상태 변경 실패: '+msg,'error');}
+  }finally{
+    if(btn)btn.disabled=false;
+  }
+}
+
+function bindStatusModal(){
+  const close=$('#scm-close');if(close)close.addEventListener('click',closeStatusModal);
+  const cancel=$('#scm-btn-cancel');if(cancel)cancel.addEventListener('click',closeStatusModal);
+  const confirm=$('#scm-btn-confirm');if(confirm)confirm.addEventListener('click',confirmStatusChange);
+  const backdrop=$('#scm-backdrop');if(backdrop)backdrop.addEventListener('click',closeStatusModal);
+  const sel=$('#scm-new-status');if(sel)sel.addEventListener('change',updateScmRequiredUI);
+  const ta=$('#scm-reason');
+  if(ta)ta.addEventListener('input',()=>{
+    const cnt=$('#scm-counter');
+    if(cnt){
+      const len=ta.value.length;
+      cnt.textContent=String(len);
+      cnt.classList.toggle('over',len>500);
+    }
+  });
+  // ESC 키로 모달 닫기
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='Escape'){const m=$('#status-modal');if(m&&!m.hidden)closeStatusModal();}
+  });
+}
+
 /* ===== Day 4-1B v1.7 · 편집 모드 ===== */
 const EDITABLE_FIELDS=['구분','사업부','회사명','담당자명','연락처','이메일','시작일','종료일','일정조율가능','희망지역','예산','유입경로','요청사항','동의_콘텐츠','동의_마케팅','내부담당자','태그','비고'];
 const LOCKED_FIELDS=['접수번호','신청일시','동의_개인정보','고객상태'];
@@ -892,7 +1072,7 @@ function renderOverview(r){
         '<div class="dg-rows">'+
           '<div class="dg-row"><span class="dg-label">접수번호</span><span class="dg-value"><b>'+escapeHtml(r['접수번호']||'-')+'</b></span></div>'+
           '<div class="dg-row"><span class="dg-label">신청일시</span><span class="dg-value">'+fmtDT(r['신청일시'])+'</span></div>'+
-          '<div class="dg-row"><span class="dg-label">고객상태</span><span class="dg-value">'+statusBadge+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">고객상태</span><span class="dg-value">'+statusBadge+'<button class="btn-status-change" id="btn-status-change" type="button">변경</button></span></div>'+
           '<div class="dg-row"><span class="dg-label">내부담당자</span><span class="dg-value">'+v(r['내부담당자'])+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">재문의여부</span><span class="dg-value">'+yn(r['재문의여부'])+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">이전접수번호</span><span class="dg-value">'+v(r['이전접수번호'])+'</span></div>'+
@@ -957,6 +1137,9 @@ function renderOverview(r){
         '<div id="notes-mount"><div class="empty-state"><div class="es-icon">⏳</div><div>메모 로드 대기 중…</div></div></div>'+
       '</div>'+
     '</div>';
+  // Day 4-5 v1.8: [변경] 버튼 클릭 → 상태 변경 모달
+  const sb=$('#btn-status-change');
+  if(sb)sb.addEventListener('click',openStatusModal);
 }
 
 /* ===== Day 4-3 v1.5 · 타임라인 탭 (4 소스 UNION 시간순) ===== */
@@ -1507,6 +1690,7 @@ function readLocalAuthSession(){
 async function init(){
   bindEvents();
   initTabs();
+  bindStatusModal();  // Day 4-5 v1.8
   showLoading();
 
   let session=null;

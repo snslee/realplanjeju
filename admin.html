@@ -324,7 +324,7 @@ body.edit-mode .detail-grid{padding-bottom:80px}
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📁</span><span class="nav-text">파일함</span></span>
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📈</span><span class="nav-text">보고서</span></span>
 </nav>
-<div class="sidebar-footer">admin v1.9 · 검색·필터</div>
+<div class="sidebar-footer">admin v1.9.1 · 검색·필터</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -357,7 +357,7 @@ body.edit-mode .detail-grid{padding-bottom:80px}
 <select id="flt-status" class="filter-select"><option value="">상태 (전체)</option><option value="신규문의">신규문의</option><option value="접수">접수</option><option value="확인">확인</option><option value="상담중">상담중</option><option value="견적발송">견적발송</option><option value="계약대기">계약대기</option><option value="계약완료">계약완료</option><option value="진행중">진행중</option><option value="종료">종료</option><option value="이탈">이탈</option><option value="취소">취소</option></select>
 <select id="flt-bu" class="filter-select"><option value="">사업부 (전체)</option><option value="국내여행">국내여행</option><option value="행사이벤트">행사이벤트</option><option value="온라인마케팅">온라인마케팅</option><option value="마케팅교육">마케팅교육</option></select>
 <select id="flt-owner" class="filter-select"><option value="">담당자 (전체)</option><option value="snslee82@gmail.com">이동환</option><option value="gomsook6805@gmail.com">김현숙</option><option value="__none__">미배정</option></select>
-<select id="flt-period" class="filter-select"><option value="">기간 (전체)</option><option value="today">오늘</option><option value="week">이번 주</option><option value="month">이번 달</option><option value="3m">3개월</option><option value="custom">커스텀…</option></select>
+<select id="flt-period" class="filter-select"><option value="">기간 (전체)</option><option value="today">오늘</option><option value="week">이번 주 (월~일)</option><option value="month">이번 달</option><option value="3m">3개월</option><option value="custom">커스텀…</option></select>
 <input type="date" id="flt-from" class="filter-date" hidden>
 <input type="date" id="flt-to" class="filter-date" hidden>
 <button class="filter-reset" id="flt-reset" type="button">초기화</button>
@@ -719,9 +719,11 @@ function buildListRpcArgs(){
     const d=new Date(yyyy,mm,dd); fromDate=d.toISOString();
     const e=new Date(yyyy,mm,dd,23,59,59); toDate=e.toISOString();
   }else if(f.period==='week'){
-    const dayIdx=today.getDay(); // 0=일
-    const start=new Date(yyyy,mm,dd-dayIdx); fromDate=start.toISOString();
-    toDate=new Date(yyyy,mm,dd-dayIdx+6,23,59,59).toISOString();
+    // v1.9.1 fix — 한국 표준 월~일 (이전: 일~토 버그)
+    const dayIdx=today.getDay(); // 0=일, 1=월, ..., 6=토
+    const offsetToMon=(dayIdx+6)%7; // 월요일까지 거리 (일=6, 월=0, 화=1, ..., 토=5)
+    const start=new Date(yyyy,mm,dd-offsetToMon); fromDate=start.toISOString();
+    toDate=new Date(yyyy,mm,dd-offsetToMon+6,23,59,59).toISOString();
   }else if(f.period==='month'){
     fromDate=new Date(yyyy,mm,1).toISOString();
     toDate=new Date(yyyy,mm+1,0,23,59,59).toISOString();

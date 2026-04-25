@@ -138,7 +138,15 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 .tag-chip{display:inline-block;padding:2px 9px;border-radius:10px;background:var(--accent-light);color:var(--primary);font-size:11.5px;font-weight:600;margin:0 3px 3px 0}
 .bu-badge{display:inline-block;padding:3px 10px;border-radius:6px;background:var(--primary);color:#fff;font-size:12px;font-weight:700}
 .gubun-badge{display:inline-block;padding:3px 10px;border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;font-weight:700;border:1px solid var(--border)}
-/* Day 4-2: 문의 상세 [메모 탭] 댓글형 누적 */
+/* Day 4-2: 문의 상세 ⑧ 상담 메모 (v1.1: 개요 탭에 통합) */
+.detail-group.dg-notes-section{grid-column:1 / -1;border-left:4px solid var(--success);background:linear-gradient(0deg,#fff 60%,#f0f9f3)}
+.dg-title-sub{font-weight:400;font-size:11.5px;color:var(--text-muted);margin-left:6px}
+.notes-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.notes-tpl-btn{padding:6px 12px;background:#fff;color:var(--primary);border:1px solid var(--accent);border-radius:var(--radius-sm);font-size:12.5px;font-weight:700;cursor:pointer;transition:var(--transition);white-space:nowrap}
+.notes-tpl-btn:hover{background:var(--accent-light);border-color:var(--primary);transform:translateY(-1px)}
+.notes-tpl-btn:active{transform:translateY(0)}
+.notes-tpl-hint{font-size:11.5px;color:var(--text-muted)}
+.notes-tpl-hint b{color:var(--primary);font-weight:700}
 .notes-form{background:var(--bg);border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:12px;margin-bottom:18px}
 .notes-form textarea{width:100%;min-height:70px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13.5px;font-family:inherit;outline:none;resize:vertical;line-height:1.5;transition:var(--transition)}
 .notes-form textarea:focus{border-color:var(--accent);box-shadow:var(--shadow-focus)}
@@ -277,15 +285,13 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 <button class="tab active" data-tab="overview">개요</button>
 <button class="tab" data-tab="timeline">타임라인</button>
 <button class="tab" data-tab="files">파일</button>
-<button class="tab" data-tab="notes">메모</button>
 <button class="tab" data-tab="assignee">담당자</button>
 </div>
 <div class="detail-card">
 <div id="tab-overview" class="tab-panel active"><div class="empty-state"><div class="es-icon">📝</div><div>개요 화면</div><div style="margin-top:6px;font-size:12px;">Day 4에서 구현됩니다.</div></div></div>
-<div id="tab-timeline" class="tab-panel"><div class="empty-state"><div class="es-icon">🕒</div><div>타임라인</div><div style="margin-top:6px;font-size:12px;">Day 4에서 구현됩니다.</div></div></div>
+<div id="tab-timeline" class="tab-panel"><div class="empty-state"><div class="es-icon">🕒</div><div>타임라인</div><div style="margin-top:6px;font-size:12px;">Day 4-3에서 구현됩니다.</div></div></div>
 <div id="tab-files" class="tab-panel"><div class="empty-state"><div class="es-icon">📎</div><div>파일 관리</div><div style="margin-top:6px;font-size:12px;">Day 5에서 구현됩니다.</div></div></div>
-<div id="tab-notes" class="tab-panel"><div class="empty-state"><div class="es-icon">💬</div><div>메모</div><div style="margin-top:6px;font-size:12px;">Day 4에서 구현됩니다.</div></div></div>
-<div id="tab-assignee" class="tab-panel"><div class="empty-state"><div class="es-icon">👤</div><div>담당자</div><div style="margin-top:6px;font-size:12px;">Day 4에서 구현됩니다.</div></div></div>
+<div id="tab-assignee" class="tab-panel"><div class="empty-state"><div class="es-icon">👤</div><div>담당자</div><div style="margin-top:6px;font-size:12px;">Day 4-4에서 구현됩니다.</div></div></div>
 </div>
 </section>
 </main>
@@ -318,7 +324,63 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
   auth:{detectSessionInUrl:false,persistSession:true,autoRefreshToken:true,flowType:'pkce',lock:(name,t,fn)=>fn()}
 });
 
-const state={user:null,session:null,ready:false,currentCustomerId:null,currentCustomerInq:null};
+const state={user:null,session:null,ready:false,currentCustomerId:null,currentCustomerInq:null,currentCustomerBU:null};
+
+/* ===== 사업부별 상담 체크리스트 4종 (v2.0 통합설계서 6장) ===== */
+function nowKR(){
+  const d=new Date();
+  const p=(n)=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());
+}
+function getConsultationTemplate(bu){
+  const ts=nowKR();
+  const TEMPLATES={
+    '국내여행':
+      '[상담 일시] '+ts+' / 담당자:\n'+
+      '\n[여행 기본]\n- 여행 유형:\n- 여행 목적:\n- 총 인원(성인/청소년/유아):\n- 연령대:\n- 일정 확정 여부:\n'+
+      '\n[항공]\n- 항공 예약:\n- 출발공항 → 도착공항:\n- 출발시간 → 도착시간:\n'+
+      '\n[숙소·교통]\n- 숙소 유형:\n- 객실 수:\n- 연회장·조식·만찬:\n- 교통수단:\n'+
+      '\n[식당·체험]\n- 조식/점심/석식 횟수:\n- 식단 특이사항:\n- 체험 프로그램:\n'+
+      '\n[예산]\n- 총 예산(부가세 포함):\n- 1인 예산:\n- 결제 방식:\n- 계약금 비율:\n'+
+      '\n[특이사항]\n- 알레르기·이동제약:\n- 환불 규정 안내 여부:\n'+
+      '\n[영업 체크]\n- 경쟁사 비교:\n- 의사결정권자:\n- 결정 예정 시점:',
+    '행사이벤트':
+      '[상담 일시] '+ts+' / 담당자:\n'+
+      '\n[행사 기본]\n- 행사 유형:\n- 행사 목적·컨셉:\n- 타깃 참가자:\n'+
+      '\n[일정·장소]\n- 행사 예정일:\n- 시간대·소요시간:\n- 행사 지역·장소:\n- 장소 확정 여부:\n'+
+      '\n[규모]\n- 예상 참가 인원:\n- VIP 수:\n'+
+      '\n[운영]\n- 운영 범위(턴키/일부):\n- 대행 영역:\n'+
+      '\n[무대·기술]\n- 무대·음향·조명:\n- 특수효과·LED:\n'+
+      '\n[인력·출연]\n- MC·축하공연:\n- 의전·스텝:\n'+
+      '\n[식음·홍보]\n- 식사·주류:\n- 현수막·초대장·기념품·촬영:\n'+
+      '\n[예산]\n- 총 예산(부가세 포함):\n- 결제 방식·계약금:\n'+
+      '\n[리스크]\n- 우천 대책·보험·안전 관리:\n'+
+      '\n[영업 체크]\n- 경쟁사·의사결정권자·결정 시점:',
+    '온라인마케팅':
+      '[상담 일시] '+ts+' / 담당자:\n'+
+      '\n[사업 정보]\n- 업종·사업장 지역:\n- 홈페이지·SNS URL:\n'+
+      '\n[현재 상황]\n- 운영 방식(직접/대행사/없음):\n- 현재 월 예산:\n- 기존 대행사 만족도:\n'+
+      '\n[타깃]\n- 성별·연령대·지역:\n- 페르소나:\n'+
+      '\n[경쟁사]\n- 동종 업계:\n- 벤치마킹 대상:\n'+
+      '\n[목표·KPI]\n- 마케팅 목표:\n- 핵심 지표·목표 수치:\n'+
+      '\n[서비스]\n- 운영 희망 채널:\n- 원하는 서비스:\n- 발행 빈도·광고 집행:\n'+
+      '\n[운영 기간]\n- 계약 기간:\n- 시작 희망일:\n'+
+      '\n[예산]\n- 월 광고 예산:\n- 월 대행 수수료:\n- 결제 방식·세금계산서:\n'+
+      '\n[영업 체크]\n- 의사결정권자·결정 시점:',
+    '마케팅교육':
+      '[상담 일시] '+ts+' / 담당자:\n'+
+      '\n[교육 기본]\n- 교육 유형:\n- 교육 주제:\n- 교육 목적:\n'+
+      '\n[대상]\n- 교육 대상:\n- 교육 인원:\n- 사전 지식 수준:\n- 실습 여부:\n'+
+      '\n[일정]\n- 교육 예정일:\n- 교육 시간:\n- 시간대:\n'+
+      '\n[장소·장비]\n- 교육 지역·장소:\n- 장비 준비 여부:\n'+
+      '\n[운영]\n- 교재 제공:\n- 수료증·녹화·복습 자료:\n'+
+      '\n[강사]\n- 희망 강사:\n- 보조 강사 필요 여부:\n'+
+      '\n[예산]\n- 교육 예산:\n- 1인당 교육비:\n- 결제 방식·세금계산서:\n'+
+      '\n[후속]\n- 교육 후 컨설팅 연계:\n- 정기 교육 의향:\n'+
+      '\n[영업 체크]\n- 의사결정권자·결정 시점:'
+  };
+  return TEMPLATES[bu]||null;
+}
 const $=(s,p=document)=>p.querySelector(s);
 const $$=(s,p=document)=>Array.from(p.querySelectorAll(s));
 const show=el=>{if(typeof el==='string')el=$(el);if(el)el.hidden=false;};
@@ -586,7 +648,9 @@ async function loadCustomerDetail(접수번호){
     }
     state.currentCustomerId=row.id;
     state.currentCustomerInq=row['접수번호'];
+    state.currentCustomerBU=row['사업부'];
     renderOverview(row);
+    await loadNotes();  // 개요 하단 메모 섹션 자동 로드 (v2.0 원안: 한 화면에 표시)
     await logAccess('CUSTOMER_DETAIL_VIEW',접수번호);
   }catch(err){
     console.error('[loadCustomerDetail]',err);
@@ -696,19 +760,28 @@ function renderOverview(r){
           '<div class="dg-row"><span class="dg-label">deleted_at</span><span class="dg-value dg-mono">'+fmtDT(r['deleted_at'])+'</span></div>'+
         '</div>'+
       '</details>'+
+      // ⑧ 상담 메모 (v1.1: 메모 탭 폐기 → 개요에 통합 · v2.0 5장 단일 페이지 원안)
+      '<div class="detail-group dg-notes-section" id="overview-notes-section" style="grid-column:1 / -1;">'+
+        '<div class="dg-title">⑧ 상담 메모 <span class="dg-title-sub">— 통화 중 항목별 입력 (체크리스트 자동 삽입 가능)</span></div>'+
+        '<div id="notes-mount"><div class="empty-state"><div class="es-icon">⏳</div><div>메모 로드 대기 중…</div></div></div>'+
+      '</div>'+
     '</div>';
 }
 
-/* ===== Day 4-2 · 문의 상세 [메모 탭] consultation_notes 댓글형 누적 ===== */
+/* ===== Day 4-2 v1.1 · 개요 하단 ⑧ 상담 메모 (단일 페이지 통합) ===== */
 async function loadNotes(){
   if(!state.user||!state.currentCustomerId)return;
-  const root=$('#tab-notes');
+  const root=$('#notes-mount');
   if(!root)return;
-  // 입력창 + 목록 컨테이너 골격 (없으면 생성)
+  // 입력창 + 템플릿 버튼 + 목록 컨테이너 골격 (없으면 생성)
   if(!$('#notes-form-area',root)){
     root.innerHTML=''+
       '<div class="notes-form" id="notes-form-area">'+
-        '<textarea id="note-input" placeholder="새 메모를 입력하세요... (최대 2000자)" maxlength="2000"></textarea>'+
+        '<div class="notes-tools">'+
+          '<button class="notes-tpl-btn" id="note-tpl-btn" type="button" title="사업부별 상담 체크리스트를 입력창에 채워줍니다">📋 상담 템플릿 삽입</button>'+
+          '<span class="notes-tpl-hint">사업부: <b id="note-bu-hint">'+escapeHtml(state.currentCustomerBU||'-')+'</b></span>'+
+        '</div>'+
+        '<textarea id="note-input" placeholder="새 메모를 입력하세요... (최대 2000자)&#10;&#10;상담 시작 시 [📋 상담 템플릿 삽입] 버튼을 누르면 사업부별 체크리스트가 자동 입력됩니다." maxlength="2000"></textarea>'+
         '<div class="notes-form-row">'+
           '<span class="notes-form-counter" id="note-counter">0 / 2000</span>'+
           '<button class="notes-add-btn" id="note-add-btn" disabled>메모 추가</button>'+
@@ -720,6 +793,7 @@ async function loadNotes(){
     const ta=$('#note-input',root);
     const cnt=$('#note-counter',root);
     const btn=$('#note-add-btn',root);
+    const tplBtn=$('#note-tpl-btn',root);
     ta.addEventListener('input',()=>{
       const len=ta.value.length;
       cnt.textContent=len+' / 2000';
@@ -727,6 +801,7 @@ async function loadNotes(){
       btn.disabled=(len===0||len>2000);
     });
     btn.addEventListener('click',addNote);
+    tplBtn.addEventListener('click',insertTemplate);
   }
   const listEl=$('#notes-list-area',root);
   if(listEl)listEl.innerHTML='<div class="notes-empty"><div class="ne-icon">⏳</div><div>불러오는 중…</div></div>';
@@ -789,6 +864,33 @@ function fmtRelative(s){
     if(diff<604800)return Math.floor(diff/86400)+'일 전';
     return d.toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
   }catch(e){return escapeHtml(String(s));}
+}
+
+function insertTemplate(){
+  const ta=$('#note-input');
+  if(!ta)return;
+  const bu=state.currentCustomerBU;
+  if(!bu){toast('사업부 정보를 찾을 수 없습니다.','error');return;}
+  const tpl=getConsultationTemplate(bu);
+  if(!tpl){toast('해당 사업부 템플릿이 없습니다: '+bu,'error');return;}
+  // v2.0 5.2 원칙: 기존 메모가 있으면 보호 (덮어쓰기 없음 → 끝에 추가)
+  const cur=(ta.value||'').trim();
+  if(cur){
+    if(!confirm('입력 중인 메모가 있습니다. 템플릿을 끝에 추가할까요?\n(취소하면 그대로 유지됩니다.)'))return;
+    ta.value=cur+'\n\n──────────────\n'+tpl;
+  }else{
+    ta.value=tpl;
+  }
+  // 카운터 + 버튼 상태 갱신
+  const cnt=$('#note-counter');
+  const btn=$('#note-add-btn');
+  if(cnt){cnt.textContent=ta.value.length+' / 2000';cnt.classList.toggle('over',ta.value.length>2000);}
+  if(btn)btn.disabled=(ta.value.length===0||ta.value.length>2000);
+  ta.focus();
+  // 입력란 끝으로 커서 이동 + 화면 스크롤
+  ta.setSelectionRange(ta.value.length,ta.value.length);
+  ta.scrollIntoView({behavior:'smooth',block:'center'});
+  toast(bu+' 템플릿 삽입됨','success');
 }
 
 async function addNote(){
@@ -992,8 +1094,7 @@ function initTabs(){
       tab.classList.add('active');
       $$('.tab-panel').forEach(p=>p.classList.remove('active'));
       const target=$('#tab-'+name);if(target)target.classList.add('active');
-      // Day 4-2: 메모 탭 활성화 시 메모 목록 로드
-      if(name==='notes')loadNotes();
+      // Day 4-2 v1.1: 메모 탭 폐기 → 개요 탭 안에 ⑧ 상담 메모 통합 (loadCustomerDetail 진입 시 자동 로드)
     });
   });
 }

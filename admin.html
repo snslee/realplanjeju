@@ -78,6 +78,23 @@ input,select,textarea{font-family:inherit;font-size:inherit}[hidden]{display:non
 .list-btn:hover{border-color:var(--accent);color:var(--primary)}
 .list-btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
 .list-btn.primary:hover{background:var(--primary-dark)}
+/* v1.9 — 검색·필터 */
+.filter-select,.filter-date{padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;background:#fff;color:var(--text);outline:none;transition:var(--transition);cursor:pointer;min-width:120px}
+.filter-select:focus,.filter-date:focus{border-color:var(--accent);box-shadow:var(--shadow-focus)}
+.filter-select.active,.filter-date.active{border-color:var(--accent);background:var(--accent-light);color:var(--primary);font-weight:700}
+.filter-date{cursor:text;min-width:140px;padding:7px 10px}
+.filter-reset{padding:7px 12px;background:var(--bg);color:var(--text-muted);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px;cursor:pointer;transition:var(--transition)}
+.filter-reset:hover{background:var(--error-bg);color:var(--error);border-color:var(--error)}
+.filter-summary{flex:0 0 100%;font-size:12px;color:var(--text-muted);padding:4px 2px}
+.filter-summary b{color:var(--primary)}
+/* 페이지네이션 보강 */
+.pagination{flex-wrap:wrap;gap:12px}
+.page-nav{display:flex;gap:4px;align-items:center}
+.page-btn{padding:5px 10px;background:#fff;color:var(--text-light);border:1px solid var(--border);border-radius:4px;font-size:12.5px;cursor:pointer;transition:var(--transition);min-width:32px}
+.page-btn:hover:not(:disabled){border-color:var(--accent);color:var(--primary)}
+.page-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);font-weight:700}
+.page-btn:disabled{opacity:.4;cursor:not-allowed}
+.page-ellipsis{padding:0 4px;color:var(--text-muted);font-size:12px}
 .table-wrap{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
 table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 .customers-table thead th{background:var(--bg);color:var(--text-light);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;text-align:left;padding:12px 16px;border-bottom:1px solid var(--border);white-space:nowrap}
@@ -307,7 +324,7 @@ body.edit-mode .detail-grid{padding-bottom:80px}
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📁</span><span class="nav-text">파일함</span></span>
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📈</span><span class="nav-text">보고서</span></span>
 </nav>
-<div class="sidebar-footer">admin v1.8 · Day 4-5</div>
+<div class="sidebar-footer">admin v1.9 · 검색·필터</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -336,10 +353,14 @@ body.edit-mode .detail-grid{padding-bottom:80px}
 <div><button class="list-btn">엑셀 내보내기</button></div>
 </div>
 <div class="list-toolbar">
-<input type="search" class="list-search" placeholder="회사명·이름·전화·접수번호로 검색" disabled>
-<button class="list-btn" disabled>상태</button><button class="list-btn" disabled>사업부</button>
-<button class="list-btn" disabled>담당자</button><button class="list-btn" disabled>기간</button>
-<button class="list-btn" disabled>태그</button>
+<input type="search" id="flt-search" class="list-search" placeholder="회사·이름·전화·접수번호·이메일 검색">
+<select id="flt-status" class="filter-select"><option value="">상태 (전체)</option><option value="신규문의">신규문의</option><option value="접수">접수</option><option value="확인">확인</option><option value="상담중">상담중</option><option value="견적발송">견적발송</option><option value="계약대기">계약대기</option><option value="계약완료">계약완료</option><option value="진행중">진행중</option><option value="종료">종료</option><option value="이탈">이탈</option><option value="취소">취소</option></select>
+<select id="flt-bu" class="filter-select"><option value="">사업부 (전체)</option><option value="국내여행">국내여행</option><option value="행사이벤트">행사이벤트</option><option value="온라인마케팅">온라인마케팅</option><option value="마케팅교육">마케팅교육</option></select>
+<select id="flt-owner" class="filter-select"><option value="">담당자 (전체)</option><option value="snslee82@gmail.com">이동환</option><option value="gomsook6805@gmail.com">김현숙</option><option value="__none__">미배정</option></select>
+<select id="flt-period" class="filter-select"><option value="">기간 (전체)</option><option value="today">오늘</option><option value="week">이번 주</option><option value="month">이번 달</option><option value="3m">3개월</option><option value="custom">커스텀…</option></select>
+<input type="date" id="flt-from" class="filter-date" hidden>
+<input type="date" id="flt-to" class="filter-date" hidden>
+<button class="filter-reset" id="flt-reset" type="button">초기화</button>
 </div>
 <div class="table-wrap">
 <table class="customers-table">
@@ -440,7 +461,11 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
   auth:{detectSessionInUrl:false,persistSession:true,autoRefreshToken:true,flowType:'pkce',lock:(name,t,fn)=>fn()}
 });
 
-const state={user:null,session:null,ready:false,currentCustomerId:null,currentCustomerInq:null,currentCustomerBU:null,timelineOffset:0,timelineTotal:0,timelineLoading:false,editMode:false,currentRow:null,lastUpdatedAt:null};
+const state={user:null,session:null,ready:false,currentCustomerId:null,currentCustomerInq:null,currentCustomerBU:null,timelineOffset:0,timelineTotal:0,timelineLoading:false,editMode:false,currentRow:null,lastUpdatedAt:null,
+// v1.9 — 검색·필터·페이지네이션
+filters:{search:'',status:'',bu:'',owner:'',period:'',from:null,to:null},
+listPage:1,listTotal:0,listSearchTimer:null};
+const PAGE_SIZE=50;
 
 /* ===== 사업부별 상담 체크리스트 4종 (v2.0 통합설계서 6장) ===== */
 function nowKR(){
@@ -684,17 +709,56 @@ function renderUnresponsiveBadges(rows){
   set('.warn-badge.w72 .wb-count',c72);
 }
 
+/* v1.9 — 필터 → RPC 파라미터 변환 */
+function buildListRpcArgs(){
+  const f=state.filters;
+  // 기간 빠른선택 → from/to
+  let fromDate=null, toDate=null;
+  const today=new Date(); const yyyy=today.getFullYear(); const mm=today.getMonth(); const dd=today.getDate();
+  if(f.period==='today'){
+    const d=new Date(yyyy,mm,dd); fromDate=d.toISOString();
+    const e=new Date(yyyy,mm,dd,23,59,59); toDate=e.toISOString();
+  }else if(f.period==='week'){
+    const dayIdx=today.getDay(); // 0=일
+    const start=new Date(yyyy,mm,dd-dayIdx); fromDate=start.toISOString();
+    toDate=new Date(yyyy,mm,dd-dayIdx+6,23,59,59).toISOString();
+  }else if(f.period==='month'){
+    fromDate=new Date(yyyy,mm,1).toISOString();
+    toDate=new Date(yyyy,mm+1,0,23,59,59).toISOString();
+  }else if(f.period==='3m'){
+    fromDate=new Date(yyyy,mm-3,dd).toISOString();
+    toDate=new Date(yyyy,mm,dd,23,59,59).toISOString();
+  }else if(f.period==='custom'){
+    if(f.from)fromDate=new Date(f.from+'T00:00:00').toISOString();
+    if(f.to)toDate=new Date(f.to+'T23:59:59').toISOString();
+  }
+  // 담당자 미배정 처리
+  let adminEmail=null;
+  if(f.owner==='__none__')adminEmail='__none__';
+  else if(f.owner)adminEmail=f.owner;
+  return {
+    _search:f.search||null,
+    _status:f.status?[f.status]:null,
+    _business_unit:f.bu?[f.bu]:null,
+    _admin_email:adminEmail,
+    _from_date:fromDate,
+    _to_date:toDate,
+    _tags:null,
+    _limit:PAGE_SIZE,
+    _offset:(state.listPage-1)*PAGE_SIZE
+  };
+}
+
 async function loadCustomers(){
   if(!state.user)return;
   const tbody=$('.customers-table tbody');
   if(tbody)tbody.innerHTML='<tr class="placeholder-row"><td colspan="7"><div>⏳ 불러오는 중…</div></td></tr>';
   try{
-    const {data,error}=await withTimeout(sb.rpc('rpc_list_customers',{
-      _search:null,_status:null,_business_unit:null,_admin_email:null,
-      _from_date:null,_to_date:null,_tags:null,_limit:20,_offset:0
-    }),8000,'list_customers');
+    const args=buildListRpcArgs();
+    const {data,error}=await withTimeout(sb.rpc('rpc_list_customers',args),8000,'list_customers');
     if(error)throw error;
     renderCustomersTable(data||[]);
+    updateFilterSummary();
   }catch(err){
     console.error('[loadCustomers]',err);
     if(tbody)tbody.innerHTML='<tr class="placeholder-row"><td colspan="7"><div>❌ 불러오기 실패</div><div style="margin-top:6px;font-size:12px;">'+escapeHtml(err.message||err)+'</div></td></tr>';
@@ -703,15 +767,27 @@ async function loadCustomers(){
   await logAccess('CUSTOMERS_VIEW',null);
 }
 
+function updateFilterSummary(){
+  // 활성 필터 표시
+  const f=state.filters;
+  const setActive=(id,active)=>{const el=$('#'+id);if(el)el.classList.toggle('active',!!active);};
+  setActive('flt-status',f.status);
+  setActive('flt-bu',f.bu);
+  setActive('flt-owner',f.owner);
+  setActive('flt-period',f.period);
+}
+
 function renderCustomersTable(rows){
   const tbody=$('.customers-table tbody');
   if(!tbody)return;
   if(!rows||rows.length===0){
-    tbody.innerHTML='<tr class="placeholder-row"><td colspan="7"><div>📭 문의가 없습니다</div></td></tr>';
-    setPagination(0,1);
+    tbody.innerHTML='<tr class="placeholder-row"><td colspan="7"><div>📭 검색 결과 없음</div><div style="margin-top:6px;font-size:12px;">필터 조건을 변경하거나 [초기화]를 눌러보세요</div></td></tr>';
+    state.listTotal=0;
+    setPagination(0,state.listPage);
     return;
   }
   const total=Number(rows[0].total_count)||rows.length;
+  state.listTotal=total;
   const html=rows.map(r=>{
     const inq=r['접수번호']||'';
     const co=r['회사명']||'-';
@@ -733,14 +809,47 @@ function renderCustomersTable(rows){
     '</tr>';
   }).join('');
   tbody.innerHTML=html;
-  setPagination(total,1);
+  setPagination(total,state.listPage);
 }
 
+/* v1.9 — 페이지 번호 + 이전/다음 + ... 줄임표 */
 function setPagination(total,page){
   const pgEl=$('.pagination');
   if(!pgEl)return;
-  const pages=Math.max(1,Math.ceil((total||0)/20));
-  pgEl.innerHTML='<span>전체 <b>'+total+'</b>건 · 페이지당 20건</span><span>'+page+' / '+pages+'</span>';
+  const pages=Math.max(1,Math.ceil((total||0)/PAGE_SIZE));
+  page=Math.min(Math.max(1,page),pages);
+  // 페이지 버튼 목록 생성 (1, 2, 3 ... N 형태)
+  const btns=[];
+  const win=2; // 현재 페이지 좌우 2개씩
+  const addBtn=(p,label,extra)=>btns.push('<button class="page-btn'+(extra?' '+extra:'')+'" data-page="'+p+'"'+(extra==='disabled'?' disabled':'')+(p===page?' data-active="1"':'')+'>'+label+'</button>');
+  const addEll=()=>btns.push('<span class="page-ellipsis">…</span>');
+  // 이전 버튼
+  addBtn(page-1,'‹ 이전',page<=1?'disabled':'');
+  // 1번
+  if(pages>0)addBtn(1,'1',page===1?'active':'');
+  // 시작 줄임표
+  if(page-win>2)addEll();
+  // 가운데 페이지
+  for(let p=Math.max(2,page-win);p<=Math.min(pages-1,page+win);p++){
+    addBtn(p,String(p),p===page?'active':'');
+  }
+  // 끝 줄임표
+  if(page+win<pages-1)addEll();
+  // 마지막 페이지
+  if(pages>1)addBtn(pages,String(pages),page===pages?'active':'');
+  // 다음 버튼
+  addBtn(page+1,'다음 ›',page>=pages?'disabled':'');
+
+  // 줄임표 안의 active 표시는 data-active 속성으로 처리
+  const html=btns.join('').replace(/data-active="1"/g,'');
+  // 다시 active 클래스 적용
+  pgEl.innerHTML='<span>전체 <b>'+total+'</b>건 · 페이지 <b>'+page+'</b> / '+pages+' · 페이지당 '+PAGE_SIZE+'건</span>'+
+    '<span class="page-nav">'+html+'</span>';
+  // active 클래스 직접 부여
+  $$('.page-btn').forEach(b=>{
+    if(parseInt(b.getAttribute('data-page'))===page&&!b.disabled&&b.textContent.trim()===String(page))
+      b.classList.add('active');
+  });
 }
 
 /* ===== Day 4-1 · 문의 상세 [개요 탭] 기본정보 카드 ===== */
@@ -1671,6 +1780,81 @@ function bindEvents(){
     if(tr){
       const inq=tr.getAttribute('data-inq');
       if(inq)location.hash='#customer/'+encodeURIComponent(inq);
+    }
+  });
+  // v1.9: 검색·필터·페이지네이션
+  bindFilters();
+}
+
+/* v1.9 — 필터·검색·페이지 이벤트 */
+function bindFilters(){
+  const search=$('#flt-search');
+  if(search)search.addEventListener('input',()=>{
+    clearTimeout(state.listSearchTimer);
+    state.listSearchTimer=setTimeout(()=>{
+      state.filters.search=search.value.trim();
+      state.listPage=1;
+      loadCustomers();
+    },300);  // debounce 300ms
+  });
+  const sStatus=$('#flt-status');
+  if(sStatus)sStatus.addEventListener('change',()=>{
+    state.filters.status=sStatus.value;state.listPage=1;loadCustomers();
+  });
+  const sBu=$('#flt-bu');
+  if(sBu)sBu.addEventListener('change',()=>{
+    state.filters.bu=sBu.value;state.listPage=1;loadCustomers();
+  });
+  const sOwner=$('#flt-owner');
+  if(sOwner)sOwner.addEventListener('change',()=>{
+    state.filters.owner=sOwner.value;state.listPage=1;loadCustomers();
+  });
+  const sPeriod=$('#flt-period');
+  if(sPeriod)sPeriod.addEventListener('change',()=>{
+    state.filters.period=sPeriod.value;state.listPage=1;
+    const customMode=sPeriod.value==='custom';
+    const f=$('#flt-from');const t=$('#flt-to');
+    if(f)f.hidden=!customMode;
+    if(t)t.hidden=!customMode;
+    if(!customMode){
+      state.filters.from=null;state.filters.to=null;
+      if(f)f.value='';if(t)t.value='';
+    }
+    loadCustomers();
+  });
+  const fFrom=$('#flt-from');
+  if(fFrom)fFrom.addEventListener('change',()=>{
+    state.filters.from=fFrom.value||null;state.listPage=1;loadCustomers();
+  });
+  const fTo=$('#flt-to');
+  if(fTo)fTo.addEventListener('change',()=>{
+    state.filters.to=fTo.value||null;state.listPage=1;loadCustomers();
+  });
+  const reset=$('#flt-reset');
+  if(reset)reset.addEventListener('click',()=>{
+    state.filters={search:'',status:'',bu:'',owner:'',period:'',from:null,to:null};
+    state.listPage=1;
+    if(search)search.value='';
+    if(sStatus)sStatus.value='';
+    if(sBu)sBu.value='';
+    if(sOwner)sOwner.value='';
+    if(sPeriod)sPeriod.value='';
+    const f=$('#flt-from');const t=$('#flt-to');
+    if(f){f.value='';f.hidden=true;}
+    if(t){t.value='';t.hidden=true;}
+    loadCustomers();
+    toast('필터 초기화','info');
+  });
+  // 페이지 버튼 (이벤트 위임)
+  const pg=$('.pagination');
+  if(pg)pg.addEventListener('click',(e)=>{
+    const btn=e.target.closest('.page-btn');
+    if(!btn||btn.disabled)return;
+    const p=parseInt(btn.getAttribute('data-page'));
+    if(p>=1&&p!==state.listPage){
+      state.listPage=p;
+      loadCustomers();
+      window.scrollTo({top:0,behavior:'smooth'});
     }
   });
 }

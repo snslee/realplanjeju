@@ -538,18 +538,20 @@ async function loadCustomerDetail(접수번호){
   const root=$('#tab-overview');
   if(root)root.innerHTML='<div class="empty-state"><div class="es-icon">⏳</div><div>불러오는 중…</div></div>';
   try{
+    // SECURITY DEFINER RPC (rpc_get_customer) 경유 — RLS·GRANT 우회·admin 검증 일원화
     const {data,error}=await withTimeout(
-      sb.from('customers').select('*').eq('접수번호',접수번호).is('deleted_at',null).maybeSingle(),
+      sb.rpc('rpc_get_customer',{'_접수번호':접수번호}),
       8000,'customer_detail'
     );
     if(error)throw error;
-    if(!data){
+    const row=Array.isArray(data)&&data.length>0?data[0]:null;
+    if(!row){
       toast('접수번호를 찾을 수 없습니다: '+접수번호,'error');
       if(root)root.innerHTML='<div class="empty-state"><div class="es-icon">🔍</div><div>해당 접수번호의 문의를 찾을 수 없습니다.</div><div style="margin-top:6px;font-size:12px;">'+escapeHtml(접수번호)+'</div></div>';
       setTimeout(()=>{location.hash='#customers';},1200);
       return;
     }
-    renderOverview(data);
+    renderOverview(row);
     await logAccess('CUSTOMER_DETAIL_VIEW',접수번호);
   }catch(err){
     console.error('[loadCustomerDetail]',err);

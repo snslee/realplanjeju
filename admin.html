@@ -725,7 +725,7 @@ function renderCustomerCardLine(r){
     ? '<div class="ccl-edit-actions"><button class="btn-edit-toggle btn-edit-cancel" id="btn-edit-cancel">취소</button><button class="btn-edit-toggle btn-edit-save" id="btn-edit-save">저장</button></div>'
     : '<div class="ccl-edit-actions"><button class="btn-edit-toggle" id="btn-edit-enter">✏ 편집</button></div>';
   el.innerHTML=(parts.length?parts.join('<span class="ccl-divider">·</span>'):'<span class="ccl-empty">정보 없음</span>')+editBtns;
-  const eb=$('#btn-edit-enter');if(eb)eb.addEventListener('click',enterEditMode);
+  const eb=$('#btn-edit-enter');if(eb)eb.addEventListener('click',enterCustomerEdit);
   const sb=$('#btn-edit-save');if(sb)sb.addEventListener('click',saveCustomerEdit);
   const cb=$('#btn-edit-cancel');if(cb)cb.addEventListener('click',cancelCustomerEdit);
 }
@@ -737,7 +737,7 @@ const BU_OPTIONS=['국내여행','행사이벤트','온라인마케팅','마케�
 const GUBUN_OPTIONS=['기업','단체','개인'];
 const SOURCE_OPTIONS=['블로그','유튜브','인스타그램','틱톡','페이스북','쓰레드','네이버검색','구글검색','지인소개','기타'];
 
-function enterEditMode(){
+function enterCustomerEdit(){
   if(!state.currentRow)return;
   state.editMode=true;
   document.body.classList.add('edit-mode');

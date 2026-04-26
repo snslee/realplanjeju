@@ -2404,7 +2404,7 @@ function qtRenderItems(){
 <td><input type="text" value="${qtEsc(it.품명)}" oninput="qtUpdItem(${i},'품명',this.value)"></td>
 <td><input type="text" value="${qtEsc(it.내용)}" oninput="qtUpdItem(${i},'내용',this.value)"></td>
 <td class="narrow"><input type="number" value="${it.수량||1}" min="0" oninput="qtUpdItem(${i},'수량',this.value)"></td>
-<td class="narrow"><input type="number" value="${it.단가||0}" min="0" oninput="qtUpdItem(${i},'단가',this.value)"></td>
+<td class="narrow"><input type="text" inputmode="numeric" value="${qtFmt(it.단가||0)}" oninput="qtUpdItem(${i},'단가',this.value)" onfocus="this.value=String(state.qt.items[${i}]?.단가||0)" onblur="this.value=qtFmt(state.qt.items[${i}]?.단가||0)"></td>
 <td class="qt-item-amount">${qtFmt((it.수량||0)*(it.단가||0))}원</td>
 <td><input type="text" value="${qtEsc(it.단위)}" oninput="qtUpdItem(${i},'단위',this.value)"></td>
 <td><button class="qt-delbtn" onclick="qtDelItem(${i})">×</button></td>
@@ -2416,9 +2416,10 @@ function qtRenderItems(){
 
 function qtEsc(s){return (s||'').toString().replace(/"/g,'&quot;');}
 function qtFmt(n){return (n||0).toLocaleString('ko-KR');}
+function qtParseNum(s){return parseFloat(String(s||'').replace(/[^0-9.\-]/g,''))||0;}
 
 function qtUpdItem(i,field,val){
-  if(field==='수량'||field==='단가')val = parseFloat(val)||0;
+  if(field==='수량'||field==='단가')val = qtParseNum(val);
   state.qt.items[i][field] = val;
   // 입력 끊김 방지 — re-render 대신 amount 셀만 직접 갱신
   if(field==='수량'||field==='단가'){
@@ -2692,13 +2693,11 @@ async function qtSendQuotation(){
   }
 }
 
-/* qtBuildPdfBase64 — qtGeneratePDF 본체에서 doc.output('datauristring') 추출 (재사용) */
+/* qtBuildPdfBase64 — qtGeneratePDF(silent=true) 호출 → globalThis.__lastPdfBase64 반환 (Phase 2a v2.2 / 단계 4) */
 async function qtBuildPdfBase64(){
-  // qtGeneratePDF는 다운로드 트리거이므로 동일 흐름 + 마지막에 datauristring 반환하는 분기 필요
-  // 현재 qtGeneratePDF는 doc.save() 호출 → base64 반환 안 함
-  // 임시 — qtGeneratePDF가 globalThis.__lastPdfBase64에 저장하도록 수정 안 했으므로
-  // 단순화: 직접 jsPDF 인스턴스 만들지 않고 fallback 으로 빈 문자열 반환 (B안 학습 모드에서는 메타데이터 위주로 학습)
-  return '';  // 다음 세션에 qtGeneratePDF 분기 추가 후 실제 base64 채움
+  globalThis.__lastPdfBase64 = '';
+  await qtGeneratePDF(true);  // silent: doc.save 스킵, datauristring을 __lastPdfBase64에 저장
+  return globalThis.__lastPdfBase64 || '';
 }
 
 /* ============ Phase 2a v2.0: 영역 C — PDF 미리보기 (jsPDF) ============ */
@@ -2732,7 +2731,7 @@ async function qtLoadKoreanFont(){
 }
 
 /* qtGeneratePDF — 9영역 양식 PDF 생성 */
-async function qtGeneratePDF(){
+async function qtGeneratePDF(silent){
   if(!state.qt.bu){toast('사업부를 먼저 선택해 주세요','warn');return;}
   if(state.qt.items.length===0){toast('본문 항목을 1개 이상 추가해 주세요','warn');return;}
 
@@ -2885,6 +2884,12 @@ async function qtGeneratePDF(){
       : (state.qt.recipient.co || '미지정').replace(/[\\/:*?"<>|]/g,'_');
     const qnoFile = qno.replace(/\s.*/,'').replace(/[(),]/g,'');
     const fname = `${qnoFile}_${cust}_${datePart}.pdf`;
+    if(silent){
+      const datauri = doc.output('datauristring');
+      globalThis.__lastPdfBase64 = (datauri.split(',')[1] || '');
+      hideLoading();
+      return;
+    }
     doc.save(fname);
     hideLoading();
     toast(`PDF 다운로드: ${fname}`, 'success');

@@ -285,6 +285,83 @@ body.edit-mode .detail-grid{padding-bottom:80px}
 @media(max-width:1100px){.detail-grid{grid-template-columns:repeat(2,1fr)}.detail-group.dg-primary{grid-column:1 / -1}}
 @media(max-width:820px){:root{--sidebar-w:60px}.top-header{padding:0 14px}.header-left .brand{display:none}.user-info .u-email{display:none}.sidebar{width:var(--sidebar-w)}.nav-item{justify-content:center;padding:12px 8px;font-size:0;gap:0}.nav-item .nav-icon{font-size:18px}.sidebar-section-title,.sidebar-footer{display:none}.content{padding:16px}.page-title{font-size:18px}.kpi-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}.kpi-card{padding:14px 16px}.kpi-value{font-size:22px}.customers-table thead th,.customers-table tbody td{padding:10px 10px;font-size:12.5px}.detail-grid{grid-template-columns:1fr}.detail-group.dg-primary{grid-column:1}.dg-row{grid-template-columns:110px 1fr;font-size:13px}.detail-card{padding:18px 16px}.notes-form textarea{min-height:160px}.note-edit-form textarea{min-height:160px}.note-btn{padding:9px 20px;font-size:13.5px;min-height:40px;min-width:72px}.note-actions{margin-top:12px}}
 @media(max-width:520px){.login-card{padding:32px 22px 26px}.user-info{display:none}.warn-badges{flex-direction:column}.dg-row{grid-template-columns:1fr;gap:2px}.dg-label{font-size:11.5px}}
+
+/* ============ Phase 2a v2.0: 견적 작성 UI ============ */
+.qt-wrap{display:grid;grid-template-columns:1fr 360px;gap:20px}
+@media(max-width:1100px){.qt-wrap{grid-template-columns:1fr}}
+.qt-panel{background:#fff;border:1px solid var(--border-light);border-radius:var(--radius-md);padding:18px 20px;margin-bottom:14px}
+.qt-panel h3{color:var(--primary);font-size:15px;border-bottom:2px solid var(--bg-hover);padding-bottom:6px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.qt-step-num{display:inline-flex;width:22px;height:22px;background:var(--primary);color:#fff;border-radius:50%;align-items:center;justify-content:center;font-size:11px;font-weight:bold}
+.qt-field{margin-bottom:10px}
+.qt-field label{display:block;font-size:11px;color:var(--text-muted);font-weight:bold;margin-bottom:3px}
+.qt-field input[type=text],.qt-field input[type=number],.qt-field textarea,.qt-field select{width:100%;padding:8px 10px;border:1px solid #C5D4E8;border-radius:4px;font-size:13px;font-family:inherit}
+.qt-field input:focus,.qt-field textarea:focus,.qt-field select:focus{outline:none;border-color:var(--primary)}
+.qt-field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qt-field-row-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:820px){.qt-field-row,.qt-field-row-4{grid-template-columns:1fr}}
+.qt-bu-group{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:820px){.qt-bu-group{grid-template-columns:repeat(2,1fr)}}
+.qt-bu-card{padding:12px 8px;border:2px solid #C5D4E8;border-radius:6px;text-align:center;cursor:pointer;transition:all .15s;background:#F8FBFF}
+.qt-bu-card:hover{border-color:var(--primary);background:var(--bg-hover)}
+.qt-bu-card.active{border-color:var(--primary);background:var(--primary);color:#fff}
+.qt-bu-card .qt-bu-name{font-weight:bold;font-size:13px}
+.qt-bu-card .qt-bu-prefix{font-size:10px;color:var(--text-muted);margin-top:2px}
+.qt-bu-card.active .qt-bu-prefix{color:#A8D5FF}
+.qt-toggle-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.qt-toggle{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#F8FBFF;border-radius:4px;font-size:12px;cursor:pointer;border:1px solid var(--bg-hover)}
+.qt-toggle input{margin:0}
+.qt-toggle.on{background:#D4EDDA;border-color:#28A745;color:#155724}
+.qt-radio-group{display:flex;gap:8px}
+.qt-radio{flex:1;padding:6px 10px;background:#F8FBFF;border:1px solid var(--bg-hover);border-radius:4px;font-size:12px;text-align:center;cursor:pointer}
+.qt-radio.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.qt-slider-row{display:flex;align-items:center;gap:10px;margin-top:6px}
+.qt-slider-row input[type=range]{flex:1}
+.qt-slider-row .qt-val{font-weight:bold;color:var(--primary);min-width:50px;text-align:right;font-size:14px}
+.qt-cat-toggle{padding:8px 12px;background:var(--bg-hover);border:none;border-radius:4px;font-size:12px;color:var(--primary);cursor:pointer;font-weight:bold;margin-bottom:6px}
+.qt-cat-list{margin-bottom:10px;display:none}
+.qt-cat-list.open{display:block}
+.qt-cat-name{font-size:11px;color:var(--text-muted);font-weight:bold;margin:8px 0 4px;text-transform:uppercase}
+.qt-cat-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#F8FBFF;border-left:3px solid var(--primary);border-radius:4px;margin-bottom:4px;cursor:pointer;font-size:12px}
+.qt-cat-item:hover{background:var(--bg-hover)}
+.qt-cat-itemname{font-weight:bold;color:var(--text)}
+.qt-cat-itemcontent{color:var(--text-muted);font-size:10px}
+.qt-cat-itemunit{background:var(--primary);color:#fff;padding:1px 6px;border-radius:3px;font-size:10px}
+table.qt-items{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+table.qt-items th{background:var(--primary);color:#fff;padding:6px;font-size:10px;text-align:center}
+table.qt-items td{padding:4px;border-bottom:1px solid var(--bg-hover);vertical-align:middle}
+table.qt-items input{width:100%;padding:5px;border:1px solid #C5D4E8;border-radius:3px;font-size:12px}
+table.qt-items td.narrow input{text-align:right}
+.qt-delbtn{background:#D63437;color:#fff;border:none;border-radius:3px;cursor:pointer;padding:3px 8px;font-size:11px}
+.qt-item-amount{text-align:right;font-weight:bold;color:var(--primary)}
+.qt-add-row-btn{background:#28A745;color:#fff;border:none;border-radius:4px;padding:6px 14px;font-size:12px;cursor:pointer;margin-top:8px}
+.qt-summary{background:#F8FBFF;border:2px solid var(--primary);border-radius:6px;padding:14px;font-size:13px}
+.qt-summary-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted #C5D4E8}
+.qt-summary-row.total{font-weight:bold;font-size:16px;color:var(--primary);border-top:2px solid var(--primary);border-bottom:none;padding-top:8px;margin-top:6px}
+.qt-summary-row.total-trim{font-size:12px;color:var(--text-muted);font-style:italic}
+.qt-preview{background:#fff;border:1px solid var(--border-light);border-radius:var(--radius-md);padding:18px;position:sticky;top:14px}
+.qt-preview h4{color:var(--primary);font-size:14px;margin-bottom:8px}
+.qt-preview-info{font-size:11px;color:var(--text-muted);margin-bottom:6px;display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted var(--bg-hover)}
+.qt-preview-info b{color:var(--text)}
+.qt-btn-pdf{display:block;width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;margin-top:10px}
+.qt-btn-pdf:hover{background:var(--primary-dark)}
+.qt-btn-save{display:block;width:100%;padding:10px;background:#28A745;color:#fff;border:none;border-radius:4px;font-size:13px;font-weight:bold;cursor:pointer;margin-top:8px}
+.qt-btn-send{display:block;width:100%;padding:10px;background:#FF8C42;color:#fff;border:none;border-radius:4px;font-size:13px;font-weight:bold;cursor:pointer;margin-top:8px}
+.qt-btn-secondary{display:block;width:100%;padding:8px;background:#fff;color:var(--primary);border:1px solid var(--primary);border-radius:4px;font-size:12px;cursor:pointer;margin-top:6px}
+.qt-help{background:#FFF3CD;border-left:3px solid #FF8C42;padding:10px 14px;font-size:11px;border-radius:4px;color:#856404;margin-bottom:10px}
+.qt-list-card{background:#fff;border:1px solid var(--border-light);border-radius:var(--radius-md);padding:14px 18px;margin-bottom:10px;cursor:pointer;transition:var(--transition)}
+.qt-list-card:hover{border-color:var(--primary);background:var(--bg-hover)}
+.qt-list-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.qt-list-card-no{font-weight:bold;color:var(--primary);font-size:14px}
+.qt-list-card-status{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold}
+.qt-status-작성중{background:#E8EFF9;color:var(--primary)}
+.qt-status-발송완료{background:#D4EDDA;color:#155724}
+.qt-status-재발송{background:#FFF3CD;color:#856404}
+.qt-status-무효화{background:#F8D7DA;color:#721C24}
+.qt-status-수락{background:#28A745;color:#fff}
+.qt-status-거절{background:#5A7090;color:#fff}
+.qt-status-만료{background:#C5D4E8;color:#5A7090}
+.qt-list-card-body{font-size:12px;color:var(--text-muted)}
+/* ============ /Phase 2a v2.0 ============ */
 </style>
 </head>
 <body>
@@ -321,11 +398,12 @@ body.edit-mode .detail-grid{padding-bottom:80px}
 <nav>
 <a href="#dashboard" class="nav-item" data-nav="dashboard"><span class="nav-icon">📊</span><span class="nav-text">대시보드</span></a>
 <a href="#customers" class="nav-item" data-nav="customers"><span class="nav-icon">📋</span><span class="nav-text">문의 목록</span></a>
+<a href="#quotation" class="nav-item" data-nav="quotation"><span class="nav-icon">💰</span><span class="nav-text">견적</span></a>
 <div class="sidebar-section-title">추후 연결</div>
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📁</span><span class="nav-text">파일함</span></span>
 <span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📈</span><span class="nav-text">보고서</span></span>
 </nav>
-<div class="sidebar-footer">admin v1.9.2 · UX 보완</div>
+<div class="sidebar-footer">admin v2.0 · Phase 2a 견적</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -396,6 +474,37 @@ body.edit-mode .detail-grid{padding-bottom:80px}
 <div id="tab-assignee" class="tab-panel"><div class="empty-state"><div class="es-icon">👤</div><div>담당자</div><div style="margin-top:6px;font-size:12px;">Day 4-4에서 구현됩니다.</div></div></div>
 </div>
 </section>
+
+<!-- ============ Phase 2a v2.0: 견적 페이지 3종 ============ -->
+<section id="view-quotation-list" class="page" hidden>
+<div class="page-header">
+<div><div class="page-title">💰 견적 목록</div><div class="page-subtitle">발송 견적·작성중·재발송·무효화 한눈에 확인</div></div>
+<div><a href="#quotation/new" class="btn-primary">+ 신규 견적</a></div>
+</div>
+<div id="quotation-list-filters" class="qt-filters" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+<select id="qf-bu"><option value="">전체 사업부</option><option value="국내여행">국내여행</option><option value="행사이벤트">행사이벤트</option><option value="온라인마케팅">온라인마케팅</option><option value="마케팅교육">마케팅교육</option></select>
+<select id="qf-status"><option value="">전체 상태</option><option value="작성중">작성중</option><option value="발송완료">발송완료</option><option value="재발송">재발송</option><option value="무효화">무효화</option><option value="수락">수락</option><option value="거절">거절</option><option value="만료">만료</option></select>
+<select id="qf-period"><option value="">전체 기간</option><option value="7">최근 7일</option><option value="30">최근 30일</option><option value="90">최근 90일</option></select>
+</div>
+<div id="quotation-list" class="qt-list"><div class="empty-state"><div class="es-icon">⏳</div><div>불러오는 중…</div></div></div>
+</section>
+
+<section id="view-quotation-create" class="page" hidden>
+<div class="page-header">
+<div><div class="page-title">📝 견적 신규 작성</div><div class="page-subtitle">고객 선택 → 사업부 → 본문 → 옵션 → PDF 미리보기 / 임시저장 / 발송</div></div>
+<div><a href="#quotation" class="btn-secondary">← 목록</a></div>
+</div>
+<div id="quotation-create-body"><div class="empty-state"><div class="es-icon">⏳</div><div>견적 작성 폼 준비 중…</div></div></div>
+</section>
+
+<section id="view-quotation-detail" class="page" hidden>
+<div class="page-header">
+<div><div class="page-title" id="qt-detail-title">💰 견적 상세</div><div class="page-subtitle" id="qt-detail-sub">—</div></div>
+<div><a href="#quotation" class="btn-secondary">← 목록</a></div>
+</div>
+<div id="quotation-detail-body"><div class="empty-state"><div class="es-icon">⏳</div><div>불러오는 중…</div></div></div>
+</section>
+<!-- ============ /Phase 2a v2.0 ============ -->
 </main>
 </div>
 </div>
@@ -440,6 +549,8 @@ body.edit-mode .detail-grid{padding-bottom:80px}
 <script>
 (function(){try{Object.defineProperty(navigator,'locks',{value:undefined,configurable:true,writable:true});}catch(e){try{delete navigator.locks;}catch(e2){}}console.info('[admin v0.7] navigator.locks disabled');})();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1"></script>
 <script>
 /* admin v0.7 — SDK 우회 수동 token 교환
@@ -462,10 +573,46 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
   auth:{detectSessionInUrl:false,persistSession:true,autoRefreshToken:true,flowType:'pkce',lock:(name,t,fn)=>fn()}
 });
 
+/* Phase 2a v2.0: 견적 작성 상수 */
+const QT_DEFAULTS = {
+  "행사이벤트":{feeShow:true,vatShow:true,trim:"만",salePrice:false,tourReg:false,
+    payment:"계약금 30% (계약 시) / 중도금 40% (행사 30일 전) / 잔금 30% (행사 종료 후 7일 내)",
+    account:"NH농협 301-0384-9381-21  ·  예금주: 리얼플랜제주(주)"},
+  "온라인마케팅":{feeShow:false,vatShow:true,trim:"천",salePrice:false,tourReg:false,
+    payment:"월말 세금계산서 발행 / 익월 25일 입금",
+    account:"NH농협 301-0312-7698-71  ·  예금주: 리얼플랜제주(주)"},
+  "마케팅교육":{feeShow:true,vatShow:true,trim:"천",salePrice:false,tourReg:false,
+    payment:"강의·컨설팅 종료 후 7일 내 일괄 입금",
+    account:"NH농협 301-0312-7698-71  ·  예금주: 리얼플랜제주(주)"},
+  "국내여행":{feeShow:true,vatShow:false,trim:"없음",salePrice:true,tourReg:true,
+    payment:"계약금 30% (계약 시) / 중도금 40% (출발 30일 전) / 잔금 30% (복귀 후 7일 내)",
+    account:"NH농협 301-0345-1194-81  ·  예금주: 리얼플랜제주(주)"}
+};
+const QT_GOV_PAYMENT = "프로젝트 완료 후 7일 이내 전액 입금";
+const QT_PREFIX = {"행사이벤트":"EVENT","온라인마케팅":"MKT","마케팅교육":"EDU","국내여행":"TOUR"};
+const QT_BU_LIST = ["국내여행","행사이벤트","온라인마케팅","마케팅교육"];
 const state={user:null,session:null,ready:false,currentCustomerId:null,currentCustomerInq:null,currentCustomerBU:null,timelineOffset:0,timelineTotal:0,timelineLoading:false,editMode:false,currentRow:null,lastUpdatedAt:null,
 // v1.9 — 검색·필터·페이지네이션
 filters:{search:'',status:'',bu:'',owner:'',period:'',from:null,to:null},
 listPage:1,listTotal:0,listSearchTimer:null};
+/* Phase 2a v2.0: 견적 작성 state */
+state.qt = {
+  bu: null,
+  customerId: null,
+  customerInfo: null,
+  recipient: {co:'', dept:'', name:'', title:''},
+  title: '',
+  items: [],
+  catalog: {},
+  options: {feeShow:true, vatShow:true, salePrice:false, tourReg:false, trim:'없음', feeRate:7.5},
+  payment: '',
+  account: '',
+  note: '',
+  isGovernment: false,
+  attachments: {co:false, port:false, biz:false, tour:false, women:false, merge:false},
+  currentQuotationId: null
+};
+state.currentQuotationId = null;
 const PAGE_SIZE=50;
 
 /* ===== 사업부별 상담 체크리스트 4종 (v2.0 통합설계서 6장) ===== */
@@ -1749,6 +1896,22 @@ function handleRoute(){
       loadCustomerDetail(inq);
       break;
     }
+    /* Phase 2a v2.0: 견적 라우트 3종 */
+    case 'quotation':{
+      $('.nav-item[data-nav="quotation"]').classList.add('active');
+      if(!param){
+        show('#view-quotation-list');
+        if(typeof loadQuotationList==='function')loadQuotationList();
+      } else if(param==='new'){
+        show('#view-quotation-create');
+        if(typeof loadQuotationCreate==='function')loadQuotationCreate();
+      } else {
+        show('#view-quotation-detail');
+        state.currentQuotationId=decodeURIComponent(param);
+        if(typeof renderQuotationDetail==='function')renderQuotationDetail(state.currentQuotationId);
+      }
+      break;
+    }
     default:location.hash='#dashboard';
   }
 }
@@ -1957,6 +2120,1034 @@ async function init(){
   try{sessionStorage.removeItem('__rpj_admin_recovery__');}catch(e){}
   state.ready=true;
 }
+
+
+/* ============ Phase 2a v2.0: 견적 작성 함수 ============ */
+
+/* loadQuotationCreate — 신규 작성 페이지 진입 */
+async function loadQuotationCreate(){
+  // state.qt 리셋
+  state.qt = {
+    bu:null, customerId:null, customerInfo:null,
+    recipient:{co:'',dept:'',name:'',title:''},
+    title:'', items:[], catalog:{},
+    options:{feeShow:true,vatShow:true,salePrice:false,tourReg:false,trim:'없음',feeRate:7.5},
+    payment:'', account:'', note:'', isGovernment:false,
+    attachments:{co:false,port:false,biz:false,tour:false,women:false,merge:false},
+    currentQuotationId:null
+  };
+  // 폼 마크업 주입
+  $('#quotation-create-body').innerHTML = qtBuildCreateForm();
+  // 고객 드롭다운 채움
+  await qtLoadCustomers();
+  qtRenderItems();
+  qtUpdateAll();
+  qtUpdateBuPreview();
+  // 영역 E — 복사 모드 진입 시 원본 데이터 적용
+  if(state.qtCopySource){
+    qtApplyCopySource(state.qtCopySource);
+    state.qtCopySource = null;
+  }
+}
+
+/* qtBuildCreateForm — HTML 마크업 생성 */
+function qtBuildCreateForm(){
+  return `
+<div class="qt-wrap">
+<div>
+<div class="qt-help">📌 [임시 저장] = DB에 작성중 상태로 저장 / [PDF 미리보기] = 영역 C 단계 / [발송] = 단계 4 (Make SMTP) 완료 후 가동</div>
+<div class="qt-panel">
+<h3><span class="qt-step-num">1</span>고객 + 사업부 선택</h3>
+<div class="qt-field"><label>📋 고객 (문의 등록 고객 중 선택)</label>
+<select id="qt-customer" onchange="qtSelectCustomer(this.value)">
+<option value="">-- 고객 선택 --</option>
+</select></div>
+<div class="qt-field"><label>💼 사업부 (선택 시 옵션·결제조건·계좌 자동 셋팅)</label>
+<div class="qt-bu-group" id="qt-bu-group">
+<div class="qt-bu-card" data-bu="국내여행" onclick="qtSelectBU('국내여행')"><div class="qt-bu-name">🏝 국내여행</div><div class="qt-bu-prefix">TOUR</div></div>
+<div class="qt-bu-card" data-bu="행사이벤트" onclick="qtSelectBU('행사이벤트')"><div class="qt-bu-name">🎤 행사·이벤트</div><div class="qt-bu-prefix">EVENT</div></div>
+<div class="qt-bu-card" data-bu="온라인마케팅" onclick="qtSelectBU('온라인마케팅')"><div class="qt-bu-name">📱 온라인 마케팅</div><div class="qt-bu-prefix">MKT</div></div>
+<div class="qt-bu-card" data-bu="마케팅교육" onclick="qtSelectBU('마케팅교육')"><div class="qt-bu-name">📚 마케팅 교육</div><div class="qt-bu-prefix">EDU</div></div>
+</div>
+</div>
+</div>
+
+<div class="qt-panel">
+<h3><span class="qt-step-num">2</span>수신처 (4단계) + 제목</h3>
+<div class="qt-field-row-4">
+<div class="qt-field"><label>회사명</label><input type="text" id="qt-recip-co" placeholder="예: 제주특별자치도청" oninput="qtUpdRecipient()"></div>
+<div class="qt-field"><label>부서</label><input type="text" id="qt-recip-dept" placeholder="예: 관광정책과" oninput="qtUpdRecipient()"></div>
+<div class="qt-field"><label>담당자</label><input type="text" id="qt-recip-name" placeholder="예: 김○○" oninput="qtUpdRecipient()"></div>
+<div class="qt-field"><label>직위</label><input type="text" id="qt-recip-title" placeholder="예: 주무관" oninput="qtUpdRecipient()"></div>
+</div>
+<div class="qt-field"><label>제목</label><input type="text" id="qt-title" placeholder="예: 2026 제주 관광 박람회 기획·운영 견적의 건" oninput="state.qt.title=this.value"></div>
+</div>
+
+<div class="qt-panel">
+<h3><span class="qt-step-num">3</span>본문 항목 (카탈로그 클릭 또는 자유 입력)</h3>
+<div id="qt-catalog-area"><div class="qt-help">먼저 사업부를 선택하면 카탈로그가 표시됩니다.</div></div>
+<table class="qt-items" id="qt-items-table">
+<thead><tr><th style="width:24%">품명</th><th style="width:30%">내용</th><th style="width:9%">수량</th><th style="width:13%">단가</th><th style="width:14%">금액</th><th style="width:6%">단위</th><th style="width:4%"></th></tr></thead>
+<tbody id="qt-items-body"></tbody>
+</table>
+<button class="qt-add-row-btn" onclick="qtAddRow()">＋ 빈 행 추가 (자유 입력)</button>
+</div>
+
+<div class="qt-panel">
+<h3><span class="qt-step-num">4</span>옵션 (사업부 자동 / 케이스별 수정 가능)</h3>
+<div class="qt-toggle-grid">
+<label class="qt-toggle" id="qt-t-fee"><input type="checkbox" id="qt-opt-fee" onchange="qtUpdateAll()"> 대행료 표기</label>
+<label class="qt-toggle" id="qt-t-vat"><input type="checkbox" id="qt-opt-vat" onchange="qtUpdateAll()"> VAT(10%) 표기</label>
+<label class="qt-toggle" id="qt-t-sale"><input type="checkbox" id="qt-opt-sale" onchange="qtUpdateAll()"> 판매가 컬럼</label>
+<label class="qt-toggle" id="qt-t-tour"><input type="checkbox" id="qt-opt-tour" onchange="qtUpdateAll()"> 여행업 등록번호 표기</label>
+</div>
+<div style="margin-top:12px"><label style="font-size:11px;color:var(--text-muted);font-weight:bold">절사 단위</label>
+<div class="qt-radio-group" id="qt-trim-group">
+<div class="qt-radio" data-trim="없음" onclick="qtSetTrim('없음')">없음</div>
+<div class="qt-radio" data-trim="천" onclick="qtSetTrim('천')">천단위</div>
+<div class="qt-radio" data-trim="만" onclick="qtSetTrim('만')">만단위</div>
+</div></div>
+<div style="margin-top:12px"><label style="font-size:11px;color:var(--text-muted);font-weight:bold">대행료율 (5~10% 권장)</label>
+<div class="qt-slider-row">
+<input type="range" id="qt-fee-rate" min="0" max="15" step="0.5" value="7.5" oninput="qtUpdateAll()">
+<div class="qt-val"><span id="qt-fee-rate-val">7.5</span>%</div>
+</div>
+<div style="font-size:10px;color:var(--text-muted);margin-top:3px">100만↓ 10% / 100~500만 7~8% / 500~1,000만 6~7% / 1,000만↑ 5%</div>
+</div>
+</div>
+
+<div class="qt-panel">
+<h3><span class="qt-step-num">5</span>결제조건 + 입금 계좌 + 비고</h3>
+<label class="qt-toggle" id="qt-t-gov" style="margin-bottom:10px"><input type="checkbox" id="qt-opt-gov" onchange="qtToggleGov()"> 관공서·학교·공기업 거래 (ON 시 후불 100%로 자동 변경)</label>
+<div class="qt-field"><label>결제·지급 조건</label><textarea id="qt-payment" rows="2" oninput="state.qt.payment=this.value"></textarea></div>
+<div class="qt-field"><label>입금 계좌 (사업부 자동 / 수정 가능)</label><input type="text" id="qt-account" oninput="state.qt.account=this.value"></div>
+<div class="qt-field"><label>비고·특이사항 (선택)</label><textarea id="qt-note" rows="2" oninput="state.qt.note=this.value" placeholder="자유 입력"></textarea></div>
+</div>
+
+<div class="qt-panel">
+<h3><span class="qt-step-num">6</span>첨부 옵션 (영역 F에서 자동 매칭 + 합본)</h3>
+<div class="qt-toggle-grid">
+<label class="qt-toggle"><input type="checkbox" id="qt-att-co" onchange="qtUpdAttach()"> 회사소개서</label>
+<label class="qt-toggle"><input type="checkbox" id="qt-att-port" onchange="qtUpdAttach()"> 포트폴리오</label>
+<label class="qt-toggle"><input type="checkbox" id="qt-att-biz" onchange="qtUpdAttach()"> 사업자등록증</label>
+<label class="qt-toggle" id="qt-t-att-tour"><input type="checkbox" id="qt-att-tour" onchange="qtUpdAttach()"> 관광사업등록증 (제2023-5호) — 여행 자동</label>
+<label class="qt-toggle" id="qt-t-att-women"><input type="checkbox" id="qt-att-women" onchange="qtUpdAttach()"> 여성기업확인서 — 관공서 자동 권장</label>
+<label class="qt-toggle"><input type="checkbox" id="qt-att-merge" onchange="qtUpdAttach()"> 합본 PDF로 발송</label>
+</div>
+</div>
+</div>
+
+<div>
+<div class="qt-preview">
+<h4>📊 견적 정보</h4>
+<div class="qt-preview-info"><span>고객</span><b id="qt-pv-customer">— 미선택 —</b></div>
+<div class="qt-preview-info"><span>사업부</span><b id="qt-pv-bu">— 미선택 —</b></div>
+<div class="qt-preview-info"><span>견적번호 (가상)</span><b id="qt-pv-no">Q-???-2026-001</b></div>
+<div class="qt-preview-info"><span>본문 항목</span><b id="qt-pv-items">0개</b></div>
+<div class="qt-preview-info"><span>입금 계좌</span><b id="qt-pv-account" style="font-size:10px">— 사업부 선택 시 —</b></div>
+
+<h4 style="margin-top:14px">💰 합계</h4>
+<div class="qt-summary">
+<div class="qt-summary-row"><span>소계</span><b id="qt-s-subtotal">0원</b></div>
+<div class="qt-summary-row" id="qt-s-fee-row"><span id="qt-s-fee-label">대행료(7.5%)</span><b id="qt-s-fee">0원</b></div>
+<div class="qt-summary-row"><span>공급가액</span><b id="qt-s-supply">0원</b></div>
+<div class="qt-summary-row" id="qt-s-vat-row"><span>부가세(10%)</span><b id="qt-s-vat">0원</b></div>
+<div class="qt-summary-row total"><span>총 합 계</span><b id="qt-s-total">0원</b></div>
+<div class="qt-summary-row total-trim" id="qt-s-trim-row" style="display:none"><span id="qt-s-trim-label">절사 적용</span><b id="qt-s-total-orig">—</b></div>
+</div>
+
+<button class="qt-btn-pdf" onclick="qtGeneratePDF()">📄 PDF 미리보기 / 다운로드</button>
+<button class="qt-btn-save" onclick="qtSaveDraft()">💾 임시 저장 (DB INSERT)</button>
+<button class="qt-btn-send" onclick="qtSendPlaceholder()">✉ 발송 (단계 4 완료 후)</button>
+<button class="qt-btn-secondary" onclick="qtResetAll()">⟲ 처음부터 다시</button>
+</div>
+</div>
+</div>`;
+}
+
+/* qtLoadCustomers — 고객 드롭다운 채움 (rpc_list_customers) */
+async function qtLoadCustomers(){
+  try {
+    const {data,error} = await sb.rpc('rpc_list_customers',{
+      _search:null, _status:null, _business_unit:null, _admin_email:null,
+      _from_date:null, _to_date:null, _tags:null, _limit:200, _offset:0
+    });
+    if(error)throw error;
+    const sel = $('#qt-customer'); if(!sel)return;
+    sel.innerHTML = '<option value="">-- 고객 선택 --</option>';
+    (data||[]).forEach(c=>{
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.dataset.bu = c.사업부||'';
+      opt.dataset.회사명 = c.회사명||'';
+      opt.dataset.담당자 = c.담당자명||'';
+      opt.dataset.접수번호 = c.접수번호||'';
+      opt.textContent = `[${c.접수번호}] ${c.회사명||'(회사명 없음)'} / ${c.담당자명||''} (${c.사업부||'-'})`;
+      sel.appendChild(opt);
+    });
+  } catch(e){
+    console.error('[qtLoadCustomers]',e);
+    toast('고객 목록 불러오기 실패: '+(e.message||e),'error');
+  }
+}
+
+/* qtSelectCustomer — 고객 선택 시 state + 사업부 자동 */
+function qtSelectCustomer(customerId){
+  if(!customerId){state.qt.customerId=null;state.qt.customerInfo=null;qtUpdateBuPreview();return;}
+  const opt = $('#qt-customer').querySelector('option[value="'+customerId+'"]');
+  if(!opt)return;
+  state.qt.customerId = customerId;
+  state.qt.customerInfo = {
+    회사명: opt.dataset.회사명, 담당자: opt.dataset.담당자, 접수번호: opt.dataset.접수번호
+  };
+  // 수신_회사명 자동 채움
+  const recCo = $('#qt-recip-co');
+  if(recCo && !recCo.value)recCo.value = opt.dataset.회사명||'';
+  const recName = $('#qt-recip-name');
+  if(recName && !recName.value)recName.value = opt.dataset.담당자||'';
+  qtUpdRecipient();
+  // 사업부 자동
+  const bu = opt.dataset.bu;
+  if(bu && QT_BU_LIST.includes(bu) && state.qt.bu !== bu)qtSelectBU(bu);
+  qtUpdateBuPreview();
+}
+
+/* qtSelectBU — 사업부 선택 + 옵션 자동 셋팅 */
+function qtSelectBU(bu){
+  state.qt.bu = bu;
+  $$('.qt-bu-card').forEach(c=>c.classList.toggle('active',c.dataset.bu===bu));
+  const d = QT_DEFAULTS[bu];
+  state.qt.options.feeShow = d.feeShow;
+  state.qt.options.vatShow = d.vatShow;
+  state.qt.options.salePrice = d.salePrice;
+  state.qt.options.tourReg = d.tourReg;
+  state.qt.options.trim = d.trim;
+  state.qt.payment = d.payment;
+  state.qt.account = d.account;
+  state.qt.isGovernment = false;
+  // DOM 반영
+  const $f=$('#qt-opt-fee'); if($f)$f.checked=d.feeShow;
+  const $v=$('#qt-opt-vat'); if($v)$v.checked=d.vatShow;
+  const $s=$('#qt-opt-sale'); if($s)$s.checked=d.salePrice;
+  const $t=$('#qt-opt-tour'); if($t)$t.checked=d.tourReg;
+  const $g=$('#qt-opt-gov'); if($g)$g.checked=false;
+  const $pay=$('#qt-payment'); if($pay)$pay.value=d.payment;
+  const $acc=$('#qt-account'); if($acc)$acc.value=d.account;
+  // 첨부 자동 (영역 F) — 회사소개서·사업자등록증 default ON / 여행=관광등록증 자동
+  const $atCo=$('#qt-att-co'); if($atCo)$atCo.checked=true;
+  const $atBiz=$('#qt-att-biz'); if($atBiz)$atBiz.checked=true;
+  state.qt.attachments.co = true;
+  state.qt.attachments.biz = true;
+  const $at=$('#qt-att-tour'); if($at)$at.checked=(bu==='국내여행');
+  state.qt.attachments.tour = (bu==='국내여행');
+  qtSetTrim(d.trim);
+  qtRenderCatalog(bu);
+  qtUpdateBuPreview();
+  qtUpdateAll();
+}
+
+/* qtRenderCatalog — rpc_list_catalog 호출 → 펼치기 UI */
+async function qtRenderCatalog(bu){
+  const area = $('#qt-catalog-area');
+  if(!area)return;
+  area.innerHTML = '<div class="qt-help">⏳ 카탈로그 불러오는 중…</div>';
+  try {
+    const {data,error} = await sb.rpc('rpc_list_catalog',{_사업부:bu});
+    if(error)throw error;
+    const cat = {};
+    (data||[]).forEach(r=>{
+      if(!cat[r.카테고리])cat[r.카테고리]=[];
+      cat[r.카테고리].push({품명:r.품명,내용:r.내용||'',단위:r.기본_단위||'',단가:r.기본_단가||0});
+    });
+    state.qt.catalog = cat;
+    let html='';
+    Object.keys(cat).forEach((k,i)=>{
+      html+=`<button type="button" class="qt-cat-toggle" onclick="qtToggleCat(${i})">▼ ${k} (${cat[k].length})</button>`;
+      html+=`<div class="qt-cat-list" id="qt-cat-list-${i}">`;
+      cat[k].forEach(it=>{
+        const escName = (it.품명||'').replace(/'/g,'&#39;');
+        const escContent = (it.내용||'').replace(/'/g,'&#39;');
+        const escUnit = (it.단위||'').replace(/'/g,'&#39;');
+        html+=`<div class="qt-cat-item" onclick="qtAddCatItem('${escName}','${escContent}','${escUnit}',${it.단가||0})">
+<div><div class="qt-cat-itemname">${escName}</div><div class="qt-cat-itemcontent">${escContent}</div></div>
+<span class="qt-cat-itemunit">${escUnit}</span></div>`;
+      });
+      html+='</div>';
+    });
+    area.innerHTML = html || '<div class="qt-help">카탈로그 데이터 없음</div>';
+  } catch(e){
+    console.error('[qtRenderCatalog]',e);
+    area.innerHTML = '<div class="qt-help" style="border-color:#D63437;color:#721C24;background:#F8D7DA">카탈로그 로드 실패: '+(e.message||e)+'</div>';
+  }
+}
+
+function qtToggleCat(i){
+  const el = $('#qt-cat-list-'+i);
+  if(el)el.classList.toggle('open');
+}
+
+function qtAddCatItem(name,content,unit,price){
+  state.qt.items.push({품명:name,내용:content,수량:1,단가:price||0,단위:unit,비고:''});
+  qtRenderItems(); qtUpdateAll();
+}
+
+function qtAddRow(){
+  state.qt.items.push({품명:'',내용:'',수량:1,단가:0,단위:'',비고:''});
+  qtRenderItems();
+}
+
+function qtRenderItems(){
+  const tb = $('#qt-items-body'); if(!tb)return;
+  let html='';
+  state.qt.items.forEach((it,i)=>{
+    html+=`<tr>
+<td><input type="text" value="${qtEsc(it.품명)}" oninput="qtUpdItem(${i},'품명',this.value)"></td>
+<td><input type="text" value="${qtEsc(it.내용)}" oninput="qtUpdItem(${i},'내용',this.value)"></td>
+<td class="narrow"><input type="number" value="${it.수량||1}" min="0" oninput="qtUpdItem(${i},'수량',this.value)"></td>
+<td class="narrow"><input type="number" value="${it.단가||0}" min="0" oninput="qtUpdItem(${i},'단가',this.value)"></td>
+<td class="qt-item-amount">${qtFmt((it.수량||0)*(it.단가||0))}원</td>
+<td><input type="text" value="${qtEsc(it.단위)}" oninput="qtUpdItem(${i},'단위',this.value)"></td>
+<td><button class="qt-delbtn" onclick="qtDelItem(${i})">×</button></td>
+</tr>`;
+  });
+  if(state.qt.items.length===0)html='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">본문 항목이 없습니다. 카탈로그 클릭 또는 [빈 행 추가]</td></tr>';
+  tb.innerHTML = html;
+}
+
+function qtEsc(s){return (s||'').toString().replace(/"/g,'&quot;');}
+function qtFmt(n){return (n||0).toLocaleString('ko-KR');}
+
+function qtUpdItem(i,field,val){
+  if(field==='수량'||field==='단가')val = parseFloat(val)||0;
+  state.qt.items[i][field] = val;
+  qtRenderItems(); qtUpdateAll();
+}
+
+function qtDelItem(i){
+  state.qt.items.splice(i,1);
+  qtRenderItems(); qtUpdateAll();
+}
+
+function qtToggleGov(){
+  const isGov = $('#qt-opt-gov').checked;
+  state.qt.isGovernment = isGov;
+  if(isGov){
+    state.qt.payment = QT_GOV_PAYMENT;
+    const $p=$('#qt-payment'); if($p)$p.value=QT_GOV_PAYMENT;
+    // 여성기업확인서 자동
+    const $w=$('#qt-att-women'); if($w)$w.checked=true;
+    state.qt.attachments.women = true;
+  } else if(state.qt.bu){
+    const d = QT_DEFAULTS[state.qt.bu];
+    state.qt.payment = d.payment;
+    const $p=$('#qt-payment'); if($p)$p.value=d.payment;
+  }
+  qtUpdateAll();
+}
+
+function qtSetTrim(t){
+  state.qt.options.trim = t;
+  $$('#qt-trim-group .qt-radio').forEach(r=>r.classList.toggle('on',r.dataset.trim===t));
+  qtUpdateAll();
+}
+
+function qtUpdRecipient(){
+  state.qt.recipient = {
+    co: ($('#qt-recip-co')||{}).value||'',
+    dept: ($('#qt-recip-dept')||{}).value||'',
+    name: ($('#qt-recip-name')||{}).value||'',
+    title: ($('#qt-recip-title')||{}).value||''
+  };
+}
+
+function qtUpdAttach(){
+  state.qt.attachments = {
+    co: ($('#qt-att-co')||{}).checked||false,
+    port: ($('#qt-att-port')||{}).checked||false,
+    biz: ($('#qt-att-biz')||{}).checked||false,
+    tour: ($('#qt-att-tour')||{}).checked||false,
+    women: ($('#qt-att-women')||{}).checked||false,
+    merge: ($('#qt-att-merge')||{}).checked||false
+  };
+}
+
+function qtUpdateAll(){
+  // 토글 ON/OFF DOM 반영
+  state.qt.options.feeShow = ($('#qt-opt-fee')||{}).checked||false;
+  state.qt.options.vatShow = ($('#qt-opt-vat')||{}).checked||false;
+  state.qt.options.salePrice = ($('#qt-opt-sale')||{}).checked||false;
+  state.qt.options.tourReg = ($('#qt-opt-tour')||{}).checked||false;
+  const fr = $('#qt-fee-rate');
+  if(fr)state.qt.options.feeRate = parseFloat(fr.value)||7.5;
+  const frv = $('#qt-fee-rate-val'); if(frv)frv.textContent = state.qt.options.feeRate.toFixed(1);
+  // toggle 색
+  const $tFee=$('#qt-t-fee'); if($tFee)$tFee.classList.toggle('on',state.qt.options.feeShow);
+  const $tVat=$('#qt-t-vat'); if($tVat)$tVat.classList.toggle('on',state.qt.options.vatShow);
+  const $tSale=$('#qt-t-sale'); if($tSale)$tSale.classList.toggle('on',state.qt.options.salePrice);
+  const $tTour=$('#qt-t-tour'); if($tTour)$tTour.classList.toggle('on',state.qt.options.tourReg);
+  const $tGov=$('#qt-t-gov'); if($tGov)$tGov.classList.toggle('on',state.qt.isGovernment);
+  // 합계
+  const sub = state.qt.items.reduce((a,it)=>a+((+it.수량||0)*(+it.단가||0)),0);
+  const fee = state.qt.options.feeShow ? Math.round(sub*state.qt.options.feeRate/100) : 0;
+  const supply = sub + fee;
+  const vat = state.qt.options.vatShow ? Math.round(supply*0.1) : 0;
+  let total = supply + vat;
+  let totalOrig = total;
+  if(state.qt.options.trim==='천')total = Math.floor(total/1000)*1000;
+  else if(state.qt.options.trim==='만')total = Math.floor(total/10000)*10000;
+  // DOM 반영
+  const set=(id,v)=>{const e=$(id); if(e)e.textContent=qtFmt(v)+'원';};
+  set('#qt-s-subtotal',sub);
+  set('#qt-s-fee',fee);
+  set('#qt-s-supply',supply);
+  set('#qt-s-vat',vat);
+  set('#qt-s-total',total);
+  const feeLabel=$('#qt-s-fee-label'); if(feeLabel)feeLabel.textContent=`대행료(${state.qt.options.feeRate.toFixed(1)}%)`;
+  const feeRow=$('#qt-s-fee-row'); if(feeRow)feeRow.style.display=state.qt.options.feeShow?'flex':'none';
+  const vatRow=$('#qt-s-vat-row'); if(vatRow)vatRow.style.display=state.qt.options.vatShow?'flex':'none';
+  const trimRow=$('#qt-s-trim-row');
+  if(state.qt.options.trim!=='없음' && total!==totalOrig){
+    if(trimRow){trimRow.style.display='flex';
+      const lab=$('#qt-s-trim-label'); if(lab)lab.textContent=`절사 전 (${state.qt.options.trim}단위)`;
+      const orig=$('#qt-s-total-orig'); if(orig)orig.textContent=qtFmt(totalOrig)+'원';
+    }
+  } else if(trimRow){trimRow.style.display='none';}
+  // 견적 정보 패널
+  const items=$('#qt-pv-items'); if(items)items.textContent=state.qt.items.length+'개';
+}
+
+function qtUpdateBuPreview(){
+  const pvBu=$('#qt-pv-bu');
+  if(pvBu)pvBu.textContent = state.qt.bu||'— 미선택 —';
+  const pvNo=$('#qt-pv-no');
+  if(pvNo){
+    const pre=state.qt.bu?QT_PREFIX[state.qt.bu]:'???';
+    pvNo.textContent=`Q-${pre}-2026-001 (가상)`;
+  }
+  const pvCust=$('#qt-pv-customer');
+  if(pvCust)pvCust.textContent = state.qt.customerInfo?(state.qt.customerInfo.회사명||'-'):'— 미선택 —';
+  const pvAcc=$('#qt-pv-account');
+  if(pvAcc)pvAcc.textContent = state.qt.account?state.qt.account.split('·')[0].trim():'— 사업부 선택 시 —';
+}
+
+/* qtSaveDraft — rpc_create_quotation 호출 */
+async function qtSaveDraft(){
+  if(!state.qt.customerId){toast('고객을 먼저 선택해 주세요','warn');return;}
+  if(!state.qt.bu){toast('사업부를 선택해 주세요','warn');return;}
+  if(state.qt.items.length===0){toast('본문 항목을 1개 이상 추가해 주세요','warn');return;}
+  if(!state.qt.title.trim()){toast('제목을 입력해 주세요','warn');return;}
+  qtUpdRecipient(); qtUpdAttach();
+  const _수신 = {
+    회사명: state.qt.recipient.co, 부서: state.qt.recipient.dept,
+    담당자: state.qt.recipient.name, 직위: state.qt.recipient.title
+  };
+  const _options = {
+    대행료_표기: state.qt.options.feeShow,
+    vat_표기: state.qt.options.vatShow,
+    판매가_컬럼: state.qt.options.salePrice,
+    여행업등록_표기: state.qt.options.tourReg,
+    절사_단위: state.qt.options.trim,
+    대행료율: state.qt.options.feeRate,
+    is_government: state.qt.isGovernment,
+    payment: state.qt.payment,
+    account: state.qt.account,
+    note: state.qt.note,
+    attachments: state.qt.attachments
+  };
+  showLoading('견적 저장 중…');
+  try {
+    const {data,error} = await sb.rpc('rpc_create_quotation',{
+      _customer_id: state.qt.customerId,
+      _사업부: state.qt.bu,
+      _제목: state.qt.title,
+      _수신: _수신,
+      _items: state.qt.items,
+      _options: _options,
+      _parent_id: state.qt.parentId || null
+    });
+    if(error)throw error;
+    const row = (data&&data[0])||{};
+    hideLoading();
+    toast(`견적 저장 완료: ${row.견적번호||'(번호 없음)'} / ${(row.견적금액||0).toLocaleString('ko-KR')}원`,'success');
+    state.qt.currentQuotationId = row.id;
+    // 미리보기 패널의 가상 견적번호를 실제값으로 갱신
+    const pvNo=$('#qt-pv-no');
+    if(pvNo)pvNo.textContent=row.견적번호||pvNo.textContent;
+  } catch(e){
+    hideLoading();
+    console.error('[qtSaveDraft]',e);
+    toast('견적 저장 실패: '+(e.message||e),'error');
+  }
+}
+
+function qtSendPlaceholder(){
+  toast('📌 발송 기능은 단계 4 (Make SMTP 시나리오) 완료 후 활성화됩니다','info');
+}
+
+/* ============ Phase 2a v2.0: 영역 C — PDF 미리보기 (jsPDF) ============ */
+const QT_FONT_LS_KEY = 'qt_font_NotoSansKR_v1';
+const QT_FONT_URL = '/assets/NotoSansKR-Korean.ttf';
+
+/* qtLoadKoreanFont — fetch + LocalStorage 캐싱 (실패 시 null) */
+async function qtLoadKoreanFont(){
+  // LocalStorage 캐싱
+  try {
+    const cached = localStorage.getItem(QT_FONT_LS_KEY);
+    if(cached && cached.length > 1000)return cached;
+  } catch(e){}
+  try {
+    const res = await fetch(QT_FONT_URL);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const buf = await res.arrayBuffer();
+    // ArrayBuffer → base64
+    const bin = new Uint8Array(buf);
+    let s='';
+    for(let i=0;i<bin.length;i+=8192){
+      s += String.fromCharCode.apply(null, bin.subarray(i,i+8192));
+    }
+    const b64 = btoa(s);
+    try { localStorage.setItem(QT_FONT_LS_KEY, b64); } catch(e){ console.warn('font cache failed (LS quota?)',e); }
+    return b64;
+  } catch(e){
+    console.warn('[qtLoadKoreanFont] 폰트 로드 실패 →', e.message);
+    return null;
+  }
+}
+
+/* qtGeneratePDF — 9영역 양식 PDF 생성 */
+async function qtGeneratePDF(){
+  if(!state.qt.bu){toast('사업부를 먼저 선택해 주세요','warn');return;}
+  if(state.qt.items.length===0){toast('본문 항목을 1개 이상 추가해 주세요','warn');return;}
+
+  showLoading('PDF 생성 중…');
+  try {
+    if(!window.jspdf){toast('jsPDF 라이브러리 로드 실패','error');hideLoading();return;}
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({format:'a4',unit:'mm'});
+
+    // 한글 폰트 로드
+    const fontB64 = await qtLoadKoreanFont();
+    let fontFamily = 'helvetica';
+    if(fontB64){
+      try {
+        doc.addFileToVFS('NotoSansKR.ttf', fontB64);
+        doc.addFont('NotoSansKR.ttf', 'NotoSansKR', 'normal');
+        fontFamily = 'NotoSansKR';
+      } catch(e){ console.warn('font register failed',e); }
+    } else {
+      toast('⚠ 한글 폰트 로드 실패 — /assets/NotoSansKR-Korean.ttf 업로드 필요. 한글이 깨질 수 있습니다.','warn');
+    }
+    doc.setFont(fontFamily,'normal');
+
+    // ===== ① 제목 =====
+    const qno = state.qt.currentQuotationId
+      ? ($('#qt-pv-no').textContent || ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001'))
+      : ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001 (가상)');
+    doc.setFontSize(20);
+    doc.text('견 적 서', 105, 22, {align:'center'});
+    doc.setFontSize(10);
+    doc.text(qno, 105, 30, {align:'center'});
+
+    // ===== ② 발신·수신 =====
+    const today = new Date();
+    const ymd = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+    const valid = new Date(today.getTime()+30*86400000);
+    const validYmd = valid.getFullYear()+'-'+String(valid.getMonth()+1).padStart(2,'0')+'-'+String(valid.getDate()).padStart(2,'0');
+    doc.setFontSize(9);
+    doc.text(`발신일: ${ymd}    유효기간: ${validYmd} (발행 후 30일)`, 14, 42);
+    const r = state.qt.recipient;
+    const recipLine = [r.co, r.dept, r.name, r.title].filter(Boolean).join(' / ');
+    doc.text(`수신: ${recipLine || '—'}`, 14, 49);
+    doc.text(`제목: ${state.qt.title || '—'}`, 14, 56);
+
+    // ===== ③ 회사 정보 헤더 =====
+    const buUpjong = {
+      '국내여행':'국내여행업',
+      '행사이벤트':'행사기획 및 대행',
+      '온라인마케팅':'온라인홍보 및 광고대행업',
+      '마케팅교육':'마케팅 대행/교육/컨설팅'
+    };
+    doc.setFontSize(8);
+    doc.setDrawColor(43,95,184);
+    doc.setFillColor(232,239,249);
+    doc.rect(14, 62, 182, 22, 'F');
+    doc.text('리얼플랜제주 주식회사  |  사업자: 819-87-02344  |  대표: 이동환·김현숙', 16, 68);
+    doc.text('주소: 제주특별자치도 제주시 제원1길 5 (연동)  |  T: 1577-2296  |  realplan01@naver.com', 16, 73);
+    doc.text(`업종: ${buUpjong[state.qt.bu]||'-'}`, 16, 78);
+    if(state.qt.options.tourReg){
+      doc.text('국내여행업 등록번호: 제2023-5호 (제주시장)', 16, 83);
+    }
+
+    // ===== ④ 본문 항목 (AutoTable) =====
+    const head = state.qt.options.salePrice
+      ? [['No','품명','내용','수량','단가','판매가','금액','단위']]
+      : [['No','품명','내용','수량','단가','금액','단위']];
+    const rows = state.qt.items.map((it,i)=>{
+      const amt = (+it.수량||0)*(+it.단가||0);
+      const base = [
+        i+1, it.품명||'', it.내용||'',
+        (it.수량||0).toLocaleString(),
+        (it.단가||0).toLocaleString()
+      ];
+      if(state.qt.options.salePrice)base.push((it.판매가||it.단가||0).toLocaleString());
+      base.push(amt.toLocaleString(), it.단위||'');
+      return base;
+    });
+    doc.autoTable({
+      startY: 90, head, body: rows,
+      styles: { font: fontFamily, fontSize: 9, cellPadding: 1.5 },
+      headStyles: { fillColor: [43,95,184], textColor: 255 },
+      columnStyles: {0:{halign:'center',cellWidth:8}, 3:{halign:'right'}, 4:{halign:'right'}, 5:{halign:'right'}}
+    });
+
+    // ===== ⑤ 합계 =====
+    const sub = state.qt.items.reduce((a,it)=>a+((+it.수량||0)*(+it.단가||0)),0);
+    const fee = state.qt.options.feeShow ? Math.round(sub*state.qt.options.feeRate/100) : 0;
+    const supply = sub + fee;
+    const vat = state.qt.options.vatShow ? Math.round(supply*0.1) : 0;
+    let total = supply + vat;
+    let totalOrig = total;
+    if(state.qt.options.trim==='천')total = Math.floor(total/1000)*1000;
+    else if(state.qt.options.trim==='만')total = Math.floor(total/10000)*10000;
+
+    let y = doc.lastAutoTable.finalY + 6;
+    doc.setFontSize(9);
+    doc.text(`소계: ${sub.toLocaleString()}원`, 196, y, {align:'right'}); y+=5;
+    if(state.qt.options.feeShow){
+      doc.text(`대행료(${state.qt.options.feeRate.toFixed(1)}%): ${fee.toLocaleString()}원`, 196, y, {align:'right'}); y+=5;
+    }
+    doc.text(`공급가액: ${supply.toLocaleString()}원`, 196, y, {align:'right'}); y+=5;
+    if(state.qt.options.vatShow){
+      doc.text(`부가세(10%): ${vat.toLocaleString()}원`, 196, y, {align:'right'}); y+=5;
+    }
+    doc.setFontSize(11); doc.setTextColor(43,95,184);
+    doc.text(`총 합 계: ${total.toLocaleString()}원`, 196, y, {align:'right'}); y+=6;
+    doc.setTextColor(0,0,0); doc.setFontSize(8);
+    if(total !== totalOrig){
+      doc.text(`(절사 전: ${totalOrig.toLocaleString()}원 / ${state.qt.options.trim}단위)`, 196, y, {align:'right'}); y+=5;
+    }
+    if(state.qt.options.vatShow === false){
+      doc.text('※ 본 견적 금액은 부가세 별도 / 또는 부가세 미포함 거래입니다', 14, y); y+=5;
+    }
+
+    // ===== ⑥ 결제·지급 조건 + 입금 계좌 =====
+    y += 4;
+    doc.setFontSize(10); doc.setTextColor(43,95,184);
+    doc.text('결제·지급 조건', 14, y); y+=5;
+    doc.setFontSize(9); doc.setTextColor(0,0,0);
+    const payText = state.qt.payment || '-';
+    doc.text(payText, 14, y, {maxWidth:182}); y += 6 + Math.floor(payText.length/55)*4;
+    doc.setFontSize(9);
+    doc.text(`입금 계좌: ${state.qt.account || '-'}`, 14, y); y+=6;
+
+    // ===== ⑦ 비고 =====
+    if(state.qt.note && state.qt.note.trim()){
+      doc.setFontSize(10); doc.setTextColor(43,95,184);
+      doc.text('비고·특이사항', 14, y); y+=5;
+      doc.setFontSize(9); doc.setTextColor(0,0,0);
+      doc.text(state.qt.note, 14, y, {maxWidth:182}); y += 6 + Math.floor(state.qt.note.length/55)*4;
+    }
+
+    // ===== ⑧ 직인·서명 (공동대표 2인) =====
+    if(y > 240) { doc.addPage(); y = 20; doc.setFont(fontFamily,'normal'); }
+    y = Math.max(y+14, 248);
+    doc.setFontSize(11);
+    doc.text('리얼플랜제주 주식회사', 196, y, {align:'right'}); y+=8;
+    doc.setFontSize(10);
+    doc.text('대표이사  이  동  환', 196, y, {align:'right'}); y+=6;
+    doc.text('대표이사  김  현  숙   [직인PNG]', 196, y, {align:'right'});
+
+    // ===== ⑨ 푸터 =====
+    doc.setFontSize(8); doc.setTextColor(90,112,144);
+    doc.text('문의: realplan01@naver.com  |  T: 1577-2296', 105, 290, {align:'center'});
+
+    // ===== 다운로드 =====
+    const datePart = ymd.replace(/-/g,'');
+    const cust = (state.qt.customerInfo && state.qt.customerInfo.회사명)
+      ? state.qt.customerInfo.회사명.replace(/[\\/:*?"<>|]/g,'_')
+      : (state.qt.recipient.co || '미지정').replace(/[\\/:*?"<>|]/g,'_');
+    const qnoFile = qno.replace(/\s.*/,'').replace(/[(),]/g,'');
+    const fname = `${qnoFile}_${cust}_${datePart}.pdf`;
+    doc.save(fname);
+    hideLoading();
+    toast(`PDF 다운로드: ${fname}`, 'success');
+  } catch(e){
+    hideLoading();
+    console.error('[qtGeneratePDF]', e);
+    toast('PDF 생성 실패: '+(e.message||e), 'error');
+  }
+}
+/* ============ /Phase 2a v2.0 영역 C ============ */
+
+function qtResetAll(){
+  if(!confirm('작성 중인 견적 정보가 모두 초기화됩니다. 진행할까요?'))return;
+  loadQuotationCreate();
+  toast('초기화 완료','info');
+}
+
+/* ============ Phase 2a v2.0 영역 D — 견적 목록 ============ */
+function qtFormatYMD(s){
+  if(!s)return '-';
+  try{const d=new Date(s);const p=(n)=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}catch(e){return String(s);}
+}
+function qtFormatYMDHM(s){
+  if(!s)return '-';
+  try{const d=new Date(s);const p=(n)=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());}catch(e){return String(s);}
+}
+function qtStatusColor(s){
+  if(s==='작성중')return 'background:#E3F2FD;color:#1565C0';
+  if(s==='발송완료')return 'background:#E8F5E9;color:#2E7D32';
+  if(s==='재발송')return 'background:#FFF3E0;color:#E65100';
+  if(s==='무효화')return 'background:#FFEBEE;color:#C62828';
+  if(s==='수락')return 'background:#E0F2F1;color:#00695C';
+  if(s==='거절')return 'background:#FFEBEE;color:#C62828';
+  if(s==='만료')return 'background:#ECEFF1;color:#455A64';
+  return 'background:#ECEFF1;color:#455A64';
+}
+
+async function loadQuotationList(){
+  const filt = $('#quotation-list-filters');
+  const area = $('#quotation-list');
+  if(!filt || !area)return;
+  // state.qtList 지연 초기화
+  if(!state.qtList) state.qtList = {customerId:'', customers:null, items:[], filters:{bu:'',status:'',period:''}};
+  // 고객 셀렉트 prepend (1회)
+  if(!$('#qf-customer')){
+    const cs = document.createElement('select');
+    cs.id = 'qf-customer';
+    cs.style.minWidth = '260px';
+    cs.innerHTML = '<option value="">-- 고객 선택 (필수) --</option>';
+    cs.addEventListener('change', ()=>{
+      state.qtList.customerId = cs.value;
+      loadQuotationList();
+    });
+    filt.insertBefore(cs, filt.firstChild);
+  }
+  // 고객 목록 1회 채움
+  if(!state.qtList.customers){
+    try {
+      const {data,error} = await withTimeout(sb.rpc('rpc_list_customers',{
+        _search:null,_status:null,_business_unit:null,_admin_email:null,
+        _from_date:null,_to_date:null,_tags:null,_limit:200,_offset:0
+      }),8000,'list_customers_qf');
+      if(error)throw error;
+      state.qtList.customers = data||[];
+      const sel = $('#qf-customer');
+      (state.qtList.customers).forEach(c=>{
+        const opt=document.createElement('option');
+        opt.value=c.id;
+        opt.textContent='['+(c.접수번호||'')+'] '+(c.회사명||'(회사명 없음)')+' / '+(c.담당자명||'')+' ('+(c.사업부||'-')+')';
+        sel.appendChild(opt);
+      });
+      // 사업부·상태·기간 필터 이벤트 1회 부착
+      ['bu','status','period'].forEach(k=>{
+        const e=$('#qf-'+k);
+        if(e && !e.dataset.bound){
+          e.addEventListener('change',()=>{
+            state.qtList.filters[k] = e.value;
+            qtRenderQuotationCards();
+          });
+          e.dataset.bound='1';
+        }
+      });
+    } catch(e){
+      console.error('[loadQuotationList customers]',e);
+      area.innerHTML = '<div class="qt-help" style="border-color:#D63437;color:#721C24;background:#F8D7DA">고객 목록 로드 실패: '+escapeHtml(e.message||String(e))+'</div>';
+      return;
+    }
+  }
+  // 고객 미선택 안내
+  if(!state.qtList.customerId){
+    area.innerHTML = '<div class="qt-help">📌 고객을 먼저 선택하면 해당 고객의 견적 목록이 표시됩니다. <br>(rpc_list_quotations는 _customer_id 필수 — 고객 단위 조회 UX)</div>';
+    return;
+  }
+  // 견적 호출
+  area.innerHTML = '<div class="qt-help">⏳ 견적 목록 불러오는 중…</div>';
+  try {
+    const {data,error} = await withTimeout(sb.rpc('rpc_list_quotations',{_customer_id:state.qtList.customerId}),8000,'list_quotations');
+    if(error)throw error;
+    state.qtList.items = data||[];
+    qtRenderQuotationCards();
+  } catch(e){
+    console.error('[loadQuotationList items]',e);
+    area.innerHTML = '<div class="qt-help" style="border-color:#D63437;color:#721C24;background:#F8D7DA">견적 목록 로드 실패: '+escapeHtml(e.message||String(e))+'</div>';
+  }
+}
+
+function qtRenderQuotationCards(){
+  const area = $('#quotation-list');
+  if(!area)return;
+  if(!state.qtList){area.innerHTML='';return;}
+  let items = (state.qtList.items||[]).slice();
+  const f = state.qtList.filters;
+  if(f.bu) items = items.filter(it=>it.사업부===f.bu);
+  if(f.status) items = items.filter(it=>it.상태===f.status);
+  if(f.period){
+    const days = parseInt(f.period,10);
+    if(days>0){
+      const cutoff = new Date(Date.now() - days*86400000);
+      items = items.filter(it=>{
+        const d = it.created_at ? new Date(it.created_at) : null;
+        return d && d >= cutoff;
+      });
+    }
+  }
+  if(items.length===0){
+    area.innerHTML = '<div class="empty-state"><div class="es-icon">📭</div><div>해당 조건의 견적이 없습니다.</div></div>';
+    return;
+  }
+  // 버전 트리 그룹핑 (1단 깊이)
+  items.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+  const idMap = {};
+  items.forEach(it=>{idMap[it.id]=it;});
+  const heads = items.filter(it=>!it.parent_quotation_id || !idMap[it.parent_quotation_id]);
+  let html = '<div class="qt-help" style="background:#E8F5E9;color:#1B5E20;border-left-color:#2E7D32">총 '+items.length+'건 표시</div>';
+  heads.forEach(head=>{
+    html += qtBuildListCardHtml(head, false);
+    const children = items.filter(it=>it.parent_quotation_id===head.id);
+    children.forEach(ch=>{ html += qtBuildListCardHtml(ch, true); });
+  });
+  area.innerHTML = html;
+}
+
+function qtBuildListCardHtml(it, isChild){
+  const sent = it.발송일시 ? '발송 '+qtFormatYMD(it.발송일시) : '미발송';
+  const indent = isChild ? 'margin-left:24px;border-left:3px solid var(--primary)' : '';
+  const verNum = (it.수정차수 && it.수정차수>0) ? ' -v'+(it.수정차수+1) : '';
+  return '<div class="qt-list-card" style="'+indent+'" onclick="location.hash=\'#quotation/'+it.id+'\'">'+
+    '<div class="qt-list-card-head">'+
+      '<div class="qt-list-card-no">'+escapeHtml(it.견적번호||'(번호없음)')+verNum+'</div>'+
+      '<div class="qt-list-card-status" style="'+qtStatusColor(it.상태)+'">'+escapeHtml(it.상태||'-')+'</div>'+
+    '</div>'+
+    '<div class="qt-list-card-body">'+
+      '<div style="font-weight:600;color:var(--text)">'+escapeHtml(it.제목||'(제목 없음)')+'</div>'+
+      '<div style="margin-top:4px;display:flex;gap:12px;flex-wrap:wrap">'+
+        '<span>['+escapeHtml(it.사업부||'-')+']</span>'+
+        '<span style="color:var(--primary);font-weight:600">'+(it.견적금액||0).toLocaleString('ko-KR')+'원</span>'+
+        '<span>'+escapeHtml(sent)+'</span>'+
+        '<span>작성: '+escapeHtml(it.작성자||'-')+'</span>'+
+        '<span style="color:var(--text-muted)">생성 '+escapeHtml(qtFormatYMD(it.created_at))+'</span>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+/* ============ /Phase 2a v2.0 영역 D ============ */
+
+/* ============ Phase 2a v2.0 영역 E — 견적 상세 ============ */
+async function renderQuotationDetail(qid){
+  const body = $('#quotation-detail-body');
+  if(!body)return;
+  body.innerHTML = '<div class="qt-help">⏳ 견적 상세 불러오는 중…</div>';
+  try {
+    const {data,error} = await withTimeout(sb.rpc('rpc_get_quotation',{_quotation_id:qid}),8000,'get_quotation');
+    if(error)throw error;
+    const r = (data && data[0]) || null;
+    if(!r){
+      body.innerHTML = '<div class="qt-help" style="border-color:#D63437;color:#721C24;background:#F8D7DA">견적을 찾을 수 없습니다. id='+escapeHtml(qid)+'</div>';
+      return;
+    }
+    state.currentQuotationId = qid;
+    state.qtDetailRow = r;
+    const verNum = (r.수정차수 && r.수정차수>0) ? ' -v'+(r.수정차수+1) : '';
+    const t1 = $('#qt-detail-title'); if(t1) t1.textContent = '💰 ' + (r.견적번호||'견적 상세') + verNum;
+    const t2 = $('#qt-detail-sub');
+    if(t2) t2.textContent = (r.제목||'(제목 없음)') + ' / ' + (r.사업부||'-') + ' / ' + (r.상태||'-');
+
+    const items = Array.isArray(r.항목) ? r.항목 : [];
+    const opts = r.첨부_옵션 || {};
+    const att = opts.attachments || {};
+    const itemsRows = items.length===0 ?
+      '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:14px">항목 없음</td></tr>' :
+      items.map((it,i)=>(
+        '<tr>'+
+          '<td style="padding:6px 8px">'+(i+1)+'</td>'+
+          '<td style="padding:6px 8px">'+escapeHtml(it.품명||'')+'</td>'+
+          '<td style="padding:6px 8px;color:var(--text-muted);font-size:12px">'+escapeHtml(it.내용||'')+'</td>'+
+          '<td style="padding:6px 8px;text-align:right">'+(+it.수량||0)+escapeHtml(it.단위||'')+'</td>'+
+          '<td style="padding:6px 8px;text-align:right">'+((+it.단가||0).toLocaleString('ko-KR'))+'원</td>'+
+          '<td style="padding:6px 8px;text-align:right;font-weight:600">'+(((+it.수량||0)*(+it.단가||0)).toLocaleString('ko-KR'))+'원</td>'+
+        '</tr>'
+      )).join('');
+    const attChips = Object.keys(att).filter(k=>att[k]).map(k=>'<span class="qt-toggle on" style="cursor:default">'+escapeHtml(k)+'</span>').join(' ') || '<span style="color:var(--text-muted)">첨부 선택 없음</span>';
+    const sectStyle = 'background:var(--bg-soft);border:1px solid var(--border-light);border-radius:var(--radius-md);padding:14px 18px';
+    const sectTitleStyle = 'font-weight:bold;color:var(--primary);font-size:13px;margin-bottom:10px;border-bottom:1px solid var(--border-light);padding-bottom:6px';
+    const parentLine = r.parent_quotation_id ? ('<div class="dg-row"><span class="dg-label">원본 견적</span><span class="dg-value" style="font-family:monospace;font-size:11px">'+escapeHtml(r.parent_quotation_id)+' (이 견적은 -v'+((r.수정차수||0)+1)+')</span></div>') : '';
+
+    body.innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+
+        '<div style="'+sectStyle+'"><div style="'+sectTitleStyle+'">📌 개요</div><div class="dg-rows">'+
+          '<div class="dg-row"><span class="dg-label">견적번호</span><span class="dg-value" style="font-weight:600">'+escapeHtml(r.견적번호||'-')+verNum+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">사업부</span><span class="dg-value">'+escapeHtml(r.사업부||'-')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">상태</span><span class="dg-value"><span style="'+qtStatusColor(r.상태)+';padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold">'+escapeHtml(r.상태||'-')+'</span></span></div>'+
+          '<div class="dg-row"><span class="dg-label">제목</span><span class="dg-value">'+escapeHtml(r.제목||'-')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">관공서 거래</span><span class="dg-value">'+(r.is_government?'☑ ON':'☐ OFF')+'</span></div>'+
+          parentLine +
+        '</div></div>'+
+        '<div style="'+sectStyle+'"><div style="'+sectTitleStyle+'">📩 수신처</div><div class="dg-rows">'+
+          '<div class="dg-row"><span class="dg-label">회사명</span><span class="dg-value">'+escapeHtml(r.수신_회사명||'-')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">부서</span><span class="dg-value">'+escapeHtml(r.수신_부서||'-')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">담당자</span><span class="dg-value">'+escapeHtml(r.수신_담당자||'-')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">직위</span><span class="dg-value">'+escapeHtml(r.수신_직위||'-')+'</span></div>'+
+        '</div></div>'+
+      '</div>'+
+      '<div style="'+sectStyle+';margin-top:14px"><div style="'+sectTitleStyle+'">📋 본문 항목</div>'+
+        '<table style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="background:var(--bg-hover)"><th style="padding:8px;text-align:left">No</th><th style="padding:8px;text-align:left">품명</th><th style="padding:8px;text-align:left">내용</th><th style="padding:8px;text-align:right">수량</th><th style="padding:8px;text-align:right">단가</th><th style="padding:8px;text-align:right">금액</th></tr></thead>'+
+        '<tbody>'+itemsRows+'</tbody></table>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">'+
+        '<div style="'+sectStyle+'"><div style="'+sectTitleStyle+'">💰 합계</div><div class="dg-rows">'+
+          '<div class="dg-row"><span class="dg-label">대행료율</span><span class="dg-value">'+(r.대행료율||0)+'%</span></div>'+
+          '<div class="dg-row"><span class="dg-label">대행료 표기</span><span class="dg-value">'+(r.대행료_표기?'ON':'OFF')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">VAT 표기</span><span class="dg-value">'+(r.vat_표기?'ON':'OFF')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">절사 단위</span><span class="dg-value">'+escapeHtml(r.절사_단위||'없음')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">총 견적금액</span><span class="dg-value" style="font-weight:bold;color:var(--primary);font-size:16px">'+((r.견적금액||0).toLocaleString('ko-KR'))+'원</span></div>'+
+        '</div></div>'+
+        '<div style="'+sectStyle+'"><div style="'+sectTitleStyle+'">💳 결제·계좌</div><div class="dg-rows">'+
+          '<div class="dg-row"><span class="dg-label">결제 조건</span><span class="dg-value" style="white-space:pre-wrap">'+escapeHtml((opts.payment)||'-')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">입금 계좌</span><span class="dg-value">'+escapeHtml((opts.account)||'-')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">비고</span><span class="dg-value" style="white-space:pre-wrap">'+escapeHtml((opts.note)||'-')+'</span></div>'+
+        '</div></div>'+
+      '</div>'+
+      '<div style="'+sectStyle+';margin-top:14px"><div style="'+sectTitleStyle+'">📎 첨부</div>'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">'+attChips+'</div>'+
+      '</div>'+
+      '<div style="'+sectStyle+';margin-top:14px"><div style="'+sectTitleStyle+'">⚙ 시스템 메타</div><div class="dg-rows">'+
+        '<div class="dg-row"><span class="dg-label">생성일시</span><span class="dg-value">'+escapeHtml(qtFormatYMDHM(r.created_at))+'</span></div>'+
+        '<div class="dg-row"><span class="dg-label">수정일시</span><span class="dg-value">'+escapeHtml(qtFormatYMDHM(r.updated_at))+'</span></div>'+
+        '<div class="dg-row"><span class="dg-label">발송일시</span><span class="dg-value">'+escapeHtml(r.발송일시 ? qtFormatYMDHM(r.발송일시) : '미발송')+'</span></div>'+
+        '<div class="dg-row"><span class="dg-label">작성자</span><span class="dg-value">'+escapeHtml(r.작성자||'-')+'</span></div>'+
+        (r.발송_실패_사유?'<div class="dg-row"><span class="dg-label">발송 실패 사유</span><span class="dg-value" style="color:#D63437;white-space:pre-wrap">'+escapeHtml(r.발송_실패_사유)+'</span></div>':'')+
+      '</div></div>'+
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">'+
+        '<button class="qt-btn-pdf" onclick="qtDetailGeneratePDF()">📄 PDF 미리보기 / 다운로드</button>'+
+        '<button class="qt-btn-secondary" onclick="qtSendPlaceholder()">✉ 메일 재발송 (단계 4 후)</button>'+
+        (r.상태!=='무효화' ? '<button class="qt-btn-secondary" style="border-color:#D63437;color:#D63437" onclick="qtVoidQuotation(\''+qid+'\')">🚫 무효화</button>' : '<span style="padding:10px 14px;color:#C62828;font-weight:600">🚫 무효화 견적</span>')+
+        '<button class="qt-btn-secondary" onclick="qtCopyQuotation(\''+qid+'\')">📋 복사하여 새 견적</button>'+
+      '</div>';
+  } catch(e){
+    console.error('[renderQuotationDetail]',e);
+    body.innerHTML = '<div class="qt-help" style="border-color:#D63437;color:#721C24;background:#F8D7DA">견적 상세 로드 실패: '+escapeHtml(e.message||String(e))+'</div>';
+  }
+}
+
+/* qtDetailGeneratePDF — 상세 화면에서 PDF 미리보기 (state.qtDetailRow → state.qt 임시 매핑) */
+async function qtDetailGeneratePDF(){
+  const r = state.qtDetailRow;
+  if(!r){toast('견적 정보를 불러오지 못했습니다','error');return;}
+  const opts = r.첨부_옵션 || {};
+  state.qt.bu = r.사업부;
+  state.qt.title = r.제목 || '';
+  state.qt.recipient = {
+    co: r.수신_회사명||'', dept: r.수신_부서||'',
+    name: r.수신_담당자||'', title: r.수신_직위||''
+  };
+  state.qt.items = Array.isArray(r.항목) ? r.항목 : [];
+  state.qt.options.feeShow = !!r.대행료_표기;
+  state.qt.options.vatShow = !!r.vat_표기;
+  state.qt.options.salePrice = !!r.판매가_컬럼;
+  state.qt.options.tourReg = (r.사업부==='국내여행');
+  state.qt.options.trim = r.절사_단위||'없음';
+  state.qt.options.feeRate = parseFloat(r.대행료율)||7.5;
+  state.qt.payment = opts.payment||'';
+  state.qt.account = opts.account||'';
+  state.qt.note = opts.note||'';
+  state.qt.isGovernment = !!r.is_government;
+  state.qt.attachments = opts.attachments || state.qt.attachments;
+  state.qt.currentQuotationId = r.id;
+  state.qt.customerInfo = state.qt.customerInfo || {회사명:r.수신_회사명};
+  await qtGeneratePDF();
+}
+
+/* qtVoidQuotation — 무효화 (admin_all_quotations RLS 통과 직접 UPDATE) */
+async function qtVoidQuotation(qid){
+  if(!qid)return;
+  const reason = prompt('무효화 사유를 입력해 주세요. (필수)','');
+  if(reason===null) return;
+  if(!reason.trim()){toast('사유를 입력해 주세요','warn');return;}
+  if(!confirm('견적을 무효화하시겠습니까? 사유: '+reason)) return;
+  showLoading('무효화 처리 중…');
+  try {
+    const {error} = await sb.from('quotations')
+      .update({상태:'무효화', 발송_실패_사유:'[무효화] '+reason})
+      .eq('id',qid);
+    if(error)throw error;
+    hideLoading();
+    toast('무효화 완료','success');
+    renderQuotationDetail(qid);
+  } catch(e){
+    hideLoading();
+    console.error('[qtVoidQuotation]',e);
+    toast('무효화 실패: '+(e.message||e),'error');
+  }
+}
+
+/* qtCopyQuotation — 복사하여 새 견적 진입 (qtCopySource 보관 후 #quotation/new) */
+function qtCopyQuotation(qid){
+  if(!qid)return;
+  const r = state.qtDetailRow;
+  if(!r){toast('원본 정보 부재','error');return;}
+  if(!confirm('이 견적을 복사하여 새 견적(-v2)을 생성하시겠습니까? 작성 페이지로 이동합니다.')) return;
+  state.qtCopySource = r;
+  location.hash = '#quotation/new';
+}
+
+/* qtApplyCopySource — loadQuotationCreate 후속 hook (영역 E 복사) */
+function qtApplyCopySource(r){
+  if(!r)return;
+  const opts = r.첨부_옵션 || {};
+  state.qt.customerId = r.customer_id;
+  state.qt.bu = r.사업부;
+  state.qt.title = (r.제목||'')+' (복사본)';
+  state.qt.recipient = {
+    co: r.수신_회사명||'', dept: r.수신_부서||'',
+    name: r.수신_담당자||'', title: r.수신_직위||''
+  };
+  state.qt.items = Array.isArray(r.항목) ? JSON.parse(JSON.stringify(r.항목)) : [];
+  state.qt.options.feeShow = !!r.대행료_표기;
+  state.qt.options.vatShow = !!r.vat_표기;
+  state.qt.options.salePrice = !!r.판매가_컬럼;
+  state.qt.options.tourReg = (r.사업부==='국내여행');
+  state.qt.options.trim = r.절사_단위||'없음';
+  state.qt.options.feeRate = parseFloat(r.대행료율)||7.5;
+  state.qt.payment = opts.payment||'';
+  state.qt.account = opts.account||'';
+  state.qt.note = opts.note||'';
+  state.qt.isGovernment = !!r.is_government;
+  state.qt.attachments = opts.attachments || state.qt.attachments;
+  state.qt.parentId = r.id;
+  // DOM 동기화
+  const $ = (s)=>document.querySelector(s);
+  const tit=$('#qt-title'); if(tit)tit.value=state.qt.title;
+  const co=$('#qt-recip-co'); if(co)co.value=state.qt.recipient.co;
+  const dp=$('#qt-recip-dept'); if(dp)dp.value=state.qt.recipient.dept;
+  const nm=$('#qt-recip-name'); if(nm)nm.value=state.qt.recipient.name;
+  const tt=$('#qt-recip-title'); if(tt)tt.value=state.qt.recipient.title;
+  const pay=$('#qt-payment'); if(pay)pay.value=state.qt.payment;
+  const acc=$('#qt-account'); if(acc)acc.value=state.qt.account;
+  const note=$('#qt-note'); if(note)note.value=state.qt.note;
+  const cust=$('#qt-customer'); if(cust && state.qt.customerId){cust.value=state.qt.customerId;}
+  const gov=$('#qt-opt-gov'); if(gov)gov.checked=state.qt.isGovernment;
+  // 사업부 active 표시
+  document.querySelectorAll('.qt-bu-card').forEach(c=>c.classList.toggle('active',c.dataset.bu===state.qt.bu));
+  // 첨부 체크박스 동기화
+  ['co','port','biz','tour','women','merge'].forEach(k=>{
+    const e=$('#qt-att-'+k); if(e)e.checked=!!state.qt.attachments[k];
+  });
+  // 옵션 토글 DOM
+  const f=$('#qt-opt-fee'); if(f)f.checked=state.qt.options.feeShow;
+  const v=$('#qt-opt-vat'); if(v)v.checked=state.qt.options.vatShow;
+  const s=$('#qt-opt-sale'); if(s)s.checked=state.qt.options.salePrice;
+  const tr=$('#qt-opt-tour'); if(tr)tr.checked=state.qt.options.tourReg;
+  const fr=$('#qt-fee-rate'); if(fr)fr.value=state.qt.options.feeRate;
+  qtSetTrim(state.qt.options.trim);
+  if(state.qt.bu) qtRenderCatalog(state.qt.bu);
+  qtRenderItems();
+  qtUpdateAll();
+  qtUpdateBuPreview();
+  toast('원본 데이터를 작성 페이지에 복사했습니다. 수정 후 [임시 저장] 또는 [발송]','success');
+}
+/* ============ /Phase 2a v2.0 영역 E ============ */
+/* ============ /Phase 2a v2.0 영역 B ============ */
 
 document.addEventListener('DOMContentLoaded',init);
 })();

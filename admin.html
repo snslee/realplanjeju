@@ -3278,7 +3278,7 @@ async function qtDetailGeneratePDF(docType){
   await qtGeneratePDF(false, docType);
 }
 
-/* qtVoidQuotation — 무효화 (admin_all_quotations RLS 통과 직접 UPDATE) */
+/* qtVoidQuotation — v2.6.1 RPC 전환 (rpc_update_quotation_status) */
 async function qtVoidQuotation(qid){
   if(!qid)return;
   const reason = prompt('무효화 사유를 입력해 주세요. (필수)','');
@@ -3287,13 +3287,26 @@ async function qtVoidQuotation(qid){
   if(!confirm('견적을 무효화하시겠습니까? 사유: '+reason)) return;
   showLoading('무효화 처리 중…');
   try {
-    const {error} = await sb.from('quotations')
-      .update({상태:'무효화', 발송_실패_사유:'[무효화] '+reason})
-      .eq('id',qid);
+    const {data,error} = await withTimeout(
+      sb.rpc('rpc_update_quotation_status',{
+        _quotation_id: qid,
+        _new_status: '무효화',
+        _reason: reason
+      }),
+      8000,'update_quotation_status'
+    );
     if(error)throw error;
     hideLoading();
     toast('무효화 완료','success');
-    renderQuotationDetail(qid);
+    // 견적 상세 페이지에서 호출되었을 경우 reload
+    if(typeof renderQuotationDetail==='function' && state.currentQuotationId===qid){
+      renderQuotationDetail(qid);
+    }
+    // 고객 상세 견적 탭에서 호출되었을 경우 reload (이슈 A·B)
+    if(state.currentCustomerInq){
+      await loadCustomerDetail(state.currentCustomerInq);
+      await loadCustomerQuotations(state.currentCustomerInq);
+    }
   } catch(e){
     hideLoading();
     console.error('[qtVoidQuotation]',e);
@@ -3514,7 +3527,7 @@ async function qtSendFromCard(qid){
   }
 }
 
-/* qtChangeStatus — 견적 상태 변경 (수락/거절/만료 통합) */
+/* qtChangeStatus — v2.6.1 RPC 전환 (rpc_update_quotation_status) */
 async function qtChangeStatus(qid, newStatus, reason){
   if(!qid || !newStatus)return;
   const labelMap = {'수락':'✓ 수락','거절':'✗ 거절','만료':'⏱ 만료'};
@@ -3526,17 +3539,25 @@ async function qtChangeStatus(qid, newStatus, reason){
   if(!confirm('이 견적을 \''+newStatus+'\' 상태로 변경하시겠습니까?'))return;
   showLoading(label+' 처리 중…');
   try {
-    const updates = {상태: newStatus};
-    if(newStatus==='거절' && actualReason){
-      updates['발송_실패_사유'] = '[거절] '+actualReason;
-    }
-    const {error} = await sb.from('quotations').update(updates).eq('id',qid);
+    const {data,error} = await withTimeout(
+      sb.rpc('rpc_update_quotation_status',{
+        _quotation_id: qid,
+        _new_status: newStatus,
+        _reason: actualReason || null
+      }),
+      8000,'update_quotation_status'
+    );
     if(error)throw error;
     hideLoading();
     toast(label+' 완료','success');
+    // 고객 상세 견적 탭 reload (이슈 A·B)
     if(state.currentCustomerInq){
       await loadCustomerDetail(state.currentCustomerInq);
       await loadCustomerQuotations(state.currentCustomerInq);
+    }
+    // 견적 상세 페이지에서 호출되었을 경우 reload
+    if(typeof renderQuotationDetail==='function' && state.currentQuotationId===qid){
+      renderQuotationDetail(qid);
     }
   } catch(e){
     hideLoading();

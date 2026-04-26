@@ -2258,7 +2258,7 @@ function qtBuildCreateForm(){
 
 <button class="qt-btn-pdf" onclick="qtGeneratePDF()">📄 PDF 미리보기 / 다운로드</button>
 <button class="qt-btn-save" onclick="qtSaveDraft()">💾 임시 저장 (DB INSERT)</button>
-<button class="qt-btn-send" onclick="qtSendQuotation()">✉ 발송 (Make 시나리오 학습 모드)</button>
+<button class="qt-btn-send" onclick="qtSendQuotation()">✉ 발송 (Naver SMTP / PDF 첨부)</button>
 <button class="qt-btn-secondary" onclick="qtResetAll()">⟲ 처음부터 다시</button>
 </div>
 </div>
@@ -2590,8 +2590,8 @@ async function qtSaveDraft(){
   }
 }
 
-/* Phase 2a 단계 4 — Make Webhook URL (B안 데이터 학습 모드 / 모듈 1/9) */
-const QT_WEBHOOK_URL = 'https://hook.us2.make.com/wvkto6nsi54uf6ysu06aavb8wtanwtwu';
+/* Phase 2a 단계 4 v2.3 — Supabase Edge Function (Make 폐기 / hook.us2.make.com 다운으로 전환) */
+const QT_SEND_ENDPOINT = SUPABASE_URL + '/functions/v1/send-quotation';
 
 /* qtSendPlaceholder — 호환 래퍼 (영역 E 상세 화면 [재발송] 버튼) */
 function qtSendPlaceholder(){
@@ -2633,7 +2633,7 @@ async function qtSendQuotation(){
   }
 
   // 5) Webhook POST (Make S-12)
-  showLoading('Make 시나리오 호출 중…');
+  showLoading('메일 발송 중…');
   const payload = {
     quotation_id: quotationId,
     견적번호: state.qt.bu ? ('Q-' + (QT_PREFIX[state.qt.bu]||'???') + '-2026-???') : null,
@@ -2668,36 +2668,40 @@ async function qtSendQuotation(){
     pdf_base64: pdfBase64,
     pdf_filename: 'quotation_' + (quotationId||'preview') + '.pdf',
     sent_at: new Date().toISOString(),
-    test_mode: true,  // B안 데이터 학습 모드 표시
+    test_mode: false,
     schema_version: 'v1.0'
   };
 
   try {
-    const res = await fetch(QT_WEBHOOK_URL, {
+    const res = await fetch(QT_SEND_ENDPOINT, {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      headers: {
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+SUPABASE_ANON_KEY,
+        'apikey':SUPABASE_ANON_KEY
+      },
       body: JSON.stringify(payload)
     });
     hideLoading();
     if(res.ok){
-      toast('✅ Webhook 호출 성공 (Make 시나리오 1/9 모듈 가동 / 실제 메일 발송은 다음 세션 모듈 추가 후)','success');
-      console.log('[qtSendQuotation] webhook OK status=',res.status);
+      toast('✅ 메일 발송 성공','success');
+      console.log('[qtSendQuotation] send OK status=',res.status);
     } else {
-      toast('⚠ Webhook 응답 비정상: HTTP '+res.status,'warn');
+      toast('⚠ 메일 발송 비정상: HTTP '+res.status+' '+(await res.text().catch(()=>'')).slice(0,200),'warn');
       console.warn('[qtSendQuotation] non-2xx',res.status, await res.text().catch(()=>''));
     }
   } catch(e){
     hideLoading();
     console.error('[qtSendQuotation fetch]',e);
-    toast('Webhook 호출 실패: '+(e.message||e),'error');
+    toast('메일 발송 실패: '+(e.message||e),'error');
   }
 }
 
-/* qtBuildPdfBase64 — v2.2.1 hotfix: Make Free 40s timeout 회피 위해 PDF 첨부 임시 비활성 (PDF 최적화 후 v2.3에서 재활성화) */
+/* qtBuildPdfBase64 — v2.3 복원: Edge Function은 2분 timeout이라 PDF 첨부 가능 */
 async function qtBuildPdfBase64(){
-  // v2.2.1: qtGeneratePDF 호출 스킵 (NotoSansKR 2.4MB 임베드 → base64 3MB+ → SMTP 40초 초과)
-  // PDF 첨부는 admin 화면 [PDF 미리보기/다운로드] 버튼으로 별도 전달
-  return '';
+  globalThis.__lastPdfBase64 = '';
+  await qtGeneratePDF(true);  // silent: doc.save 스킵, datauristring을 __lastPdfBase64에 저장
+  return globalThis.__lastPdfBase64 || '';
 }
 
 /* ============ Phase 2a v2.0: 영역 C — PDF 미리보기 (jsPDF) ============ */

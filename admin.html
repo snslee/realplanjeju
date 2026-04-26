@@ -2693,11 +2693,11 @@ async function qtSendQuotation(){
   }
 }
 
-/* qtBuildPdfBase64 — qtGeneratePDF(silent=true) 호출 → globalThis.__lastPdfBase64 반환 (Phase 2a v2.2 / 단계 4) */
+/* qtBuildPdfBase64 — v2.2.1 hotfix: Make Free 40s timeout 회피 위해 PDF 첨부 임시 비활성 (PDF 최적화 후 v2.3에서 재활성화) */
 async function qtBuildPdfBase64(){
-  globalThis.__lastPdfBase64 = '';
-  await qtGeneratePDF(true);  // silent: doc.save 스킵, datauristring을 __lastPdfBase64에 저장
-  return globalThis.__lastPdfBase64 || '';
+  // v2.2.1: qtGeneratePDF 호출 스킵 (NotoSansKR 2.4MB 임베드 → base64 3MB+ → SMTP 40초 초과)
+  // PDF 첨부는 admin 화면 [PDF 미리보기/다운로드] 버튼으로 별도 전달
+  return '';
 }
 
 /* ============ Phase 2a v2.0: 영역 C — PDF 미리보기 (jsPDF) ============ */

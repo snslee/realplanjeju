@@ -2420,7 +2420,16 @@ function qtFmt(n){return (n||0).toLocaleString('ko-KR');}
 function qtUpdItem(i,field,val){
   if(field==='수량'||field==='단가')val = parseFloat(val)||0;
   state.qt.items[i][field] = val;
-  qtRenderItems(); qtUpdateAll();
+  // 입력 끊김 방지 — re-render 대신 amount 셀만 직접 갱신
+  if(field==='수량'||field==='단가'){
+    const amt = (+state.qt.items[i].수량||0) * (+state.qt.items[i].단가||0);
+    const tb = document.getElementById('qt-items-body');
+    if(tb && tb.children[i]){
+      const amtCell = tb.children[i].querySelector('.qt-item-amount');
+      if(amtCell) amtCell.textContent = qtFmt(amt) + '원';
+    }
+  }
+  qtUpdateAll();  // 합계 갱신 (input 포커스 영향 없음)
 }
 
 function qtDelItem(i){

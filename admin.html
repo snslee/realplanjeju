@@ -128,6 +128,7 @@ table.customers-table{width:100%;border-collapse:collapse;font-size:13.5px}
 .tab{padding:10px 18px;background:transparent;color:var(--text-light);font-size:14px;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:var(--transition)}
 .tab:hover{color:var(--primary)}.tab.active{color:var(--primary);border-bottom-color:var(--primary)}
 .tab-panel{display:none}.tab-panel.active{display:block}
+.qt-tab-badge{display:inline-block;background:#E8F5E9;color:#1B5E20;padding:1px 7px;border-radius:9px;font-size:11px;font-weight:600;margin-left:4px;vertical-align:middle}
 /* Day 4-3 v1.6 — 고객 정보 한 줄 (4탭 공통 상단) */
 .customer-card-line{display:flex;align-items:center;gap:14px;padding:10px 14px;margin-bottom:14px;background:linear-gradient(0deg,#fff,#f0f6fc);border:1px solid var(--border-light);border-left:4px solid var(--accent);border-radius:var(--radius-sm);font-size:13.5px;flex-wrap:wrap}
 .ccl-item{display:inline-flex;align-items:center;gap:6px;color:var(--text)}
@@ -462,16 +463,18 @@ table.qt-items td.narrow input{text-align:right}
 </div>
 <div class="customer-card-line" id="customer-card-line"><span class="ccl-empty">고객 정보 불러오는 중…</span></div>
 <div class="tabs">
-<button class="tab active" data-tab="overview">개요</button>
-<button class="tab" data-tab="timeline">타임라인</button>
+<button class="tab active" data-tab="overview">고객</button>
+<button class="tab" data-tab="quotations">견적 <span id="cust-qt-count" class="qt-tab-badge" hidden>0</span></button>
 <button class="tab" data-tab="files">파일</button>
 <button class="tab" data-tab="assignee">담당자</button>
+<button class="tab" data-tab="timeline">타임라인</button>
 </div>
 <div class="detail-card">
-<div id="tab-overview" class="tab-panel active"><div class="empty-state"><div class="es-icon">📝</div><div>개요 화면</div><div style="margin-top:6px;font-size:12px;">Day 4에서 구현됩니다.</div></div></div>
-<div id="tab-timeline" class="tab-panel"><div class="tl-head"><span class="tl-title">🕒 타임라인</span><span class="tl-meta" id="tl-meta">—</span></div><div id="tl-list" class="tl-list"><div class="empty-state"><div class="es-icon">⏳</div><div>불러오는 중…</div></div></div><div class="tl-more-wrap"><button id="tl-more" class="btn-secondary" hidden>더보기</button></div></div>
+<div id="tab-overview" class="tab-panel active"><div class="empty-state"><div class="es-icon">📝</div><div>고객 정보</div><div style="margin-top:6px;font-size:12px;">Day 4에서 구현됩니다.</div></div></div>
+<div id="tab-quotations" class="tab-panel"><div id="cust-qt-list"><div class="empty-state"><div class="es-icon">⏳</div><div>견적 불러오는 중…</div></div></div></div>
 <div id="tab-files" class="tab-panel"><div class="empty-state"><div class="es-icon">📎</div><div>파일 관리</div><div style="margin-top:6px;font-size:12px;">Day 5에서 구현됩니다.</div></div></div>
 <div id="tab-assignee" class="tab-panel"><div class="empty-state"><div class="es-icon">👤</div><div>담당자</div><div style="margin-top:6px;font-size:12px;">Day 4-4에서 구현됩니다.</div></div></div>
+<div id="tab-timeline" class="tab-panel"><div class="tl-head"><span class="tl-title">🕒 타임라인</span><span class="tl-meta" id="tl-meta">—</span></div><div id="tl-list" class="tl-list"><div class="empty-state"><div class="es-icon">⏳</div><div>불러오는 중…</div></div></div><div class="tl-more-wrap"><button id="tl-more" class="btn-secondary" hidden>더보기</button></div></div>
 </div>
 </section>
 
@@ -1927,6 +1930,7 @@ function initTabs(){
       // Day 4-2 v1.1: 메모 탭 폐기 → 개요 탭 안에 ⑧ 상담 메모 통합 (loadCustomerDetail 진입 시 자동 로드)
       // Day 4-3 v1.5: 타임라인 탭 클릭 시 1페이지부터 로드
       if(name==='timeline'){loadTimeline(true);}
+      if(name==='quotations' && state.currentCustomerInq){loadCustomerQuotations(state.currentCustomerInq);}
     });
   });
 }
@@ -2598,8 +2602,11 @@ function qtSendPlaceholder(){
   qtSendQuotation();
 }
 
-/* qtSendQuotation — 견적 발송: Webhook POST + DB 상태 업데이트 (학습 모드) */
-async function qtSendQuotation(){
+/* qtSendQuotation — v2.6 docType 분기 (quote / delivery) */
+async function qtSendQuotation(docType){
+  docType = docType || 'quote';
+  const isDelivery = (docType === 'delivery');
+  const docLabel = isDelivery ? '납품서' : '견적서';
   // 1) 작성 화면 검증 (state.qt 기반)
   if(!state.qt.customerId){toast('고객을 먼저 선택해 주세요','warn');return;}
   if(!state.qt.bu){toast('사업부를 선택해 주세요','warn');return;}
@@ -2616,7 +2623,8 @@ async function qtSendQuotation(){
   }
 
   // 3) 수신자 이메일 확보 (간단 prompt — 다음 세션에 customers 테이블 email 필드로 대체)
-  const recipient = prompt('수신자 이메일 (테스트는 본인 메일 권장)','snslee82@gmail.com');
+  const _defaultEmail = (state.currentRow && state.currentRow['이메일']) || (state.qt.customerInfo && state.qt.customerInfo['이메일']) || 'snslee82@gmail.com';
+  const recipient = prompt('수신자 이메일 ('+docLabel+' 발송)', _defaultEmail);
   if(!recipient){return;}
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(recipient.trim())){toast('이메일 형식 오류','warn');return;}
 
@@ -2624,7 +2632,7 @@ async function qtSendQuotation(){
   showLoading('PDF 생성 중…');
   let pdfBase64 = null;
   try {
-    pdfBase64 = await qtBuildPdfBase64();
+    pdfBase64 = await qtBuildPdfBase64(docType);
   } catch(e){
     console.error('[qtSendQuotation pdf]',e);
     hideLoading();
@@ -2636,7 +2644,8 @@ async function qtSendQuotation(){
   showLoading('메일 발송 중…');
   const payload = {
     quotation_id: quotationId,
-    견적번호: state.qt.bu ? ('Q-' + (QT_PREFIX[state.qt.bu]||'???') + '-2026-???') : null,
+    doc_type: docType,
+    견적번호: state.qt.bu ? ((isDelivery ? 'D-' : 'Q-') + (QT_PREFIX[state.qt.bu]||'???') + '-2026-???') : null,
     사업부: state.qt.bu,
     제목: state.qt.title,
     수신자: {
@@ -2666,7 +2675,7 @@ async function qtSendQuotation(){
       attachments: state.qt.attachments
     },
     pdf_base64: pdfBase64,
-    pdf_filename: 'quotation_' + (quotationId||'preview') + '.pdf',
+    pdf_filename: (isDelivery ? 'delivery_' : 'quotation_') + (quotationId||'preview') + '.pdf',
     sent_at: new Date().toISOString(),
     test_mode: false,
     schema_version: 'v1.0'
@@ -2684,7 +2693,7 @@ async function qtSendQuotation(){
     });
     hideLoading();
     if(res.ok){
-      toast('✅ 메일 발송 성공','success');
+      toast('✅ ' + docLabel + ' 메일 발송 성공','success');
       console.log('[qtSendQuotation] send OK status=',res.status);
     } else {
       toast('⚠ 메일 발송 비정상: HTTP '+res.status+' '+(await res.text().catch(()=>'')).slice(0,200),'warn');
@@ -2697,10 +2706,10 @@ async function qtSendQuotation(){
   }
 }
 
-/* qtBuildPdfBase64 — v2.3 복원: Edge Function은 2분 timeout이라 PDF 첨부 가능 */
-async function qtBuildPdfBase64(){
+/* qtBuildPdfBase64 — v2.6 docType 인자 추가 */
+async function qtBuildPdfBase64(docType){
   globalThis.__lastPdfBase64 = '';
-  await qtGeneratePDF(true);  // silent: doc.save 스킵, datauristring을 __lastPdfBase64에 저장
+  await qtGeneratePDF(true, docType);
   return globalThis.__lastPdfBase64 || '';
 }
 
@@ -2762,8 +2771,10 @@ async function qtLoadSeal(){
   }
 }
 
-/* qtGeneratePDF — v2.4 양식 (회사정보 최상단 / 합계 테이블 통합 / 결제 블록 / 직인 PNG) */
-async function qtGeneratePDF(silent){
+/* qtGeneratePDF — v2.6 docType 분기 (quote / delivery) */
+async function qtGeneratePDF(silent, docType){
+  docType = docType || 'quote';
+  const docTitle = docType === 'delivery' ? '납 품 서' : '견 적 서';
   if(!state.qt.bu){toast('사업부를 먼저 선택해 주세요','warn');return;}
   if(state.qt.items.length===0){toast('본문 항목을 1개 이상 추가해 주세요','warn');return;}
 
@@ -2823,10 +2834,11 @@ async function qtGeneratePDF(silent){
     const titleY = 14 + headerH + 8;
     doc.setTextColor(0,0,0);
     doc.setFontSize(20);
-    doc.text('견 적 서', 105, titleY, {align:'center'});
-    const qno = state.qt.currentQuotationId
+    doc.text(docTitle, 105, titleY, {align:'center'});
+    const qnoBase = state.qt.currentQuotationId
       ? ($('#qt-pv-no').textContent || ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001'))
       : ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001 (가상)');
+    const qno = (docType === 'delivery') ? qnoBase.replace(/^Q-/, 'D-').replace(/\(가상\)/, '(납품서)') : qnoBase;
     doc.setFontSize(10);
     doc.text(qno, 105, titleY+7, {align:'center'});
 
@@ -3226,8 +3238,9 @@ async function renderQuotationDetail(qid){
         (r.발송_실패_사유?'<div class="dg-row"><span class="dg-label">발송 실패 사유</span><span class="dg-value" style="color:#D63437;white-space:pre-wrap">'+escapeHtml(r.발송_실패_사유)+'</span></div>':'')+
       '</div></div>'+
       '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">'+
-        '<button class="qt-btn-pdf" onclick="qtDetailGeneratePDF()">📄 PDF 미리보기 / 다운로드</button>'+
-        '<button class="qt-btn-secondary" onclick="qtSendPlaceholder()">✉ 메일 재발송 (단계 4 후)</button>'+
+        '<button class="qt-btn-pdf" onclick="qtDetailGeneratePDF(\'quote\')">📄 견적서 PDF</button>'+
+        ((r.상태==='수락'||r.상태==='발송완료'||r.상태==='재발송') ? '<button class="qt-btn-pdf" onclick="qtDetailGeneratePDF(\'delivery\')">📦 납품서 PDF</button>' : '')+
+        '<button class="qt-btn-secondary" onclick="qtSendPlaceholder()">✉ 메일 재발송</button>'+
         (r.상태!=='무효화' ? '<button class="qt-btn-secondary" style="border-color:#D63437;color:#D63437" onclick="qtVoidQuotation(\''+qid+'\')">🚫 무효화</button>' : '<span style="padding:10px 14px;color:#C62828;font-weight:600">🚫 무효화 견적</span>')+
         '<button class="qt-btn-secondary" onclick="qtCopyQuotation(\''+qid+'\')">📋 복사하여 새 견적</button>'+
       '</div>';
@@ -3237,8 +3250,8 @@ async function renderQuotationDetail(qid){
   }
 }
 
-/* qtDetailGeneratePDF — 상세 화면에서 PDF 미리보기 (state.qtDetailRow → state.qt 임시 매핑) */
-async function qtDetailGeneratePDF(){
+/* qtDetailGeneratePDF — v2.6 docType 인자 추가 */
+async function qtDetailGeneratePDF(docType){
   const r = state.qtDetailRow;
   if(!r){toast('견적 정보를 불러오지 못했습니다','error');return;}
   const opts = r.첨부_옵션 || {};
@@ -3262,7 +3275,7 @@ async function qtDetailGeneratePDF(){
   state.qt.attachments = opts.attachments || state.qt.attachments;
   state.qt.currentQuotationId = r.id;
   state.qt.customerInfo = state.qt.customerInfo || {회사명:r.수신_회사명};
-  await qtGeneratePDF();
+  await qtGeneratePDF(false, docType);
 }
 
 /* qtVoidQuotation — 무효화 (admin_all_quotations RLS 통과 직접 UPDATE) */
@@ -3356,6 +3369,183 @@ function qtApplyCopySource(r){
 /* ============ /Phase 2a v2.0 영역 E ============ */
 /* ============ /Phase 2a v2.0 영역 B ============ */
 
+/* ============ Phase 2a v2.6 영역 G — 고객 상세 견적 카드 ============ */
+/* loadCustomerQuotations — 고객 [견적] 탭 진입 시 카드 렌더 */
+async function loadCustomerQuotations(접수번호){
+  const area = $('#cust-qt-list');
+  if(!area)return;
+  if(!state.currentCustomerId){
+    area.innerHTML = '<div class="qt-help">고객 정보가 로드되지 않았습니다. 잠시 후 다시 시도하세요.</div>';
+    return;
+  }
+  area.innerHTML = '<div class="qt-help">⏳ 견적 목록 불러오는 중…</div>';
+  try {
+    const {data,error} = await withTimeout(
+      sb.rpc('rpc_list_quotations',{_customer_id:state.currentCustomerId}),
+      8000,'cust_list_quotations'
+    );
+    if(error)throw error;
+    const items = Array.isArray(data) ? data : [];
+    state.custQtList = items;
+    const badge = $('#cust-qt-count');
+    if(badge){
+      if(items.length>0){badge.textContent = items.length; badge.hidden = false;}
+      else{badge.hidden = true;}
+    }
+    if(items.length === 0){
+      area.innerHTML = '<div class="empty-state"><div class="es-icon">📭</div><div>이 고객에게 발행된 견적이 없습니다.</div><div style="margin-top:10px"><a href="#quotation/new" class="btn-primary">+ 신규 견적 작성</a></div></div>';
+      return;
+    }
+    items.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+    const idMap = {};
+    items.forEach(it=>{idMap[it.id]=it;});
+    const heads = items.filter(it=>!it.parent_quotation_id || !idMap[it.parent_quotation_id]);
+    let html = '<div class="qt-help" style="background:#E8F5E9;color:#1B5E20;border-left-color:#2E7D32">총 '+items.length+'건 표시 · 최신순</div>';
+    heads.forEach(head=>{
+      html += qtBuildCustomerCard(head, false);
+      const children = items.filter(it=>it.parent_quotation_id===head.id);
+      children.forEach(ch=>{ html += qtBuildCustomerCard(ch, true); });
+    });
+    area.innerHTML = html;
+  } catch(e){
+    console.error('[loadCustomerQuotations]',e);
+    area.innerHTML = '<div class="qt-help" style="border-color:#D63437;color:#721C24;background:#F8D7DA">견적 목록 로드 실패: '+escapeHtml(e.message||String(e))+' <button class="btn-secondary" onclick="loadCustomerQuotations(state.currentCustomerInq)" style="margin-left:8px">다시 시도</button></div>';
+  }
+}
+
+/* qtBuildCustomerCard — 고객 상세 카드 (옵션 2: [발송][상태] 2버튼) */
+function qtBuildCustomerCard(it, isChild){
+  const sent = it.발송일시 ? '발송 '+qtFormatYMD(it.발송일시) : '미발송';
+  const indent = isChild ? 'margin-left:24px;border-left:3px solid var(--primary)' : '';
+  const verNum = (it.수정차수 && it.수정차수>0) ? ' -v'+(it.수정차수+1) : '';
+  const status = it.상태 || '-';
+  const qid = it.id;
+  const sendable = (status==='발송완료'||status==='재발송'||status==='거절'||status==='만료'||status==='수락');
+  const isDelivery = (status==='수락');
+  const sendLabel = isDelivery ? '📤 납품서 발송' : '✉ 견적서 재발송';
+
+  let statusMenu = '';
+  if(status==='발송완료' || status==='재발송'){
+    statusMenu = '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'수락\')">✓ 수락</button>'+
+                 '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#A32D2D;border-color:#A32D2D" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'거절\')">✗ 거절</button>'+
+                 '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#5F5E5A;border-color:#888780" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'만료\')">⏱ 만료</button>'+
+                 '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#D63437;border-color:#D63437" onclick="event.stopPropagation();qtVoidQuotation(\''+qid+'\')">🚫 무효화</button>';
+  } else if(status==='거절'){
+    statusMenu = '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'수락\')">✓ 수락</button>'+
+                 '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#5F5E5A;border-color:#888780" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'만료\')">⏱ 만료</button>'+
+                 '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#D63437;border-color:#D63437" onclick="event.stopPropagation();qtVoidQuotation(\''+qid+'\')">🚫 무효화</button>';
+  } else if(status==='만료'){
+    statusMenu = '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'수락\')">✓ 수락</button>'+
+                 '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#D63437;border-color:#D63437" onclick="event.stopPropagation();qtVoidQuotation(\''+qid+'\')">🚫 무효화</button>';
+  } else if(status==='수락'){
+    statusMenu = '<span style="font-size:11px;color:#0C447C;padding:5px 10px">✓ 수락 완료 — 상태 변경 잠김</span>';
+  } else if(status==='무효화'){
+    statusMenu = '<span style="font-size:11px;color:#444441;padding:5px 10px">🚫 무효화 — 액션 잠김</span>';
+  } else if(status==='작성중'){
+    statusMenu = '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#D63437;border-color:#D63437" onclick="event.stopPropagation();qtVoidQuotation(\''+qid+'\')">🚫 무효화</button>';
+  }
+
+  const sendBtn = sendable
+    ? '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;border-color:var(--primary);color:var(--primary);font-weight:600" onclick="event.stopPropagation();qtSendFromCard(\''+qid+'\')">'+sendLabel+'</button>'
+    : '<span style="font-size:11px;color:#5F5E5A;padding:5px 10px">발송 불가 (상태: '+escapeHtml(status)+')</span>';
+
+  return '<div class="qt-list-card" style="'+indent+'" onclick="location.hash=\'#quotation/'+qid+'\'">'+
+    '<div class="qt-list-card-head">'+
+      '<div class="qt-list-card-no">'+escapeHtml(it.견적번호||'(번호없음)')+verNum+'</div>'+
+      '<div class="qt-list-card-status" style="'+qtStatusColor(status)+'">'+escapeHtml(status)+'</div>'+
+    '</div>'+
+    '<div class="qt-list-card-body">'+
+      '<div style="font-weight:600;color:var(--text)">'+escapeHtml(it.제목||'(제목 없음)')+'</div>'+
+      '<div style="margin-top:4px;display:flex;gap:12px;flex-wrap:wrap">'+
+        '<span>['+escapeHtml(it.사업부||'-')+']</span>'+
+        '<span style="color:var(--primary);font-weight:600">'+(it.견적금액||0).toLocaleString('ko-KR')+'원</span>'+
+        '<span>'+escapeHtml(sent)+'</span>'+
+        '<span>작성: '+escapeHtml(it.작성자||'-')+'</span>'+
+      '</div>'+
+      '<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border-light);display:flex;flex-wrap:wrap;gap:6px;align-items:center">'+
+        sendBtn + statusMenu +
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+
+/* qtSendFromCard — 카드에서 발송 (상태 기반 docType 자동 분기) */
+async function qtSendFromCard(qid){
+  if(!qid)return;
+  showLoading('견적 정보 로드 중…');
+  try {
+    const {data,error} = await withTimeout(sb.rpc('rpc_get_quotation',{_quotation_id:qid}),8000,'get_quotation');
+    if(error)throw error;
+    const r = (data && data[0]) || null;
+    if(!r){hideLoading(); toast('견적 정보를 찾을 수 없습니다','error'); return;}
+    const opts = r.첨부_옵션 || {};
+    state.qt.bu = r.사업부;
+    state.qt.title = r.제목 || '';
+    state.qt.recipient = {
+      co: r.수신_회사명||'', dept: r.수신_부서||'',
+      name: r.수신_담당자||'', title: r.수신_직위||''
+    };
+    state.qt.items = Array.isArray(r.항목) ? r.항목 : [];
+    state.qt.options.feeShow = !!r.대행료_표기;
+    state.qt.options.vatShow = !!r.vat_표기;
+    state.qt.options.salePrice = !!r.판매가_컬럼;
+    state.qt.options.tourReg = (r.사업부==='국내여행');
+    state.qt.options.trim = r.절사_단위||'없음';
+    state.qt.options.feeRate = parseFloat(r.대행료율)||7.5;
+    state.qt.payment = opts.payment||'';
+    state.qt.account = opts.account||'';
+    state.qt.note = opts.note||'';
+    state.qt.isGovernment = !!r.is_government;
+    state.qt.attachments = opts.attachments || state.qt.attachments;
+    state.qt.currentQuotationId = r.id;
+    state.qt.customerId = r.customer_id;
+    state.qt.customerInfo = state.qt.customerInfo || {회사명:r.수신_회사명};
+    hideLoading();
+    const docType = (r.상태==='수락') ? 'delivery' : 'quote';
+    await qtSendQuotation(docType);
+    if(state.currentCustomerInq){
+      await loadCustomerDetail(state.currentCustomerInq);
+      await loadCustomerQuotations(state.currentCustomerInq);
+    }
+  } catch(e){
+    hideLoading();
+    console.error('[qtSendFromCard]',e);
+    toast('발송 준비 실패: '+(e.message||e),'error');
+  }
+}
+
+/* qtChangeStatus — 견적 상태 변경 (수락/거절/만료 통합) */
+async function qtChangeStatus(qid, newStatus, reason){
+  if(!qid || !newStatus)return;
+  const labelMap = {'수락':'✓ 수락','거절':'✗ 거절','만료':'⏱ 만료'};
+  const label = labelMap[newStatus] || newStatus;
+  let actualReason = reason;
+  if(newStatus==='거절' && actualReason===undefined){
+    actualReason = prompt('거절 사유를 입력해 주세요. (선택, 빈값 가능)','') || '';
+  }
+  if(!confirm('이 견적을 \''+newStatus+'\' 상태로 변경하시겠습니까?'))return;
+  showLoading(label+' 처리 중…');
+  try {
+    const updates = {상태: newStatus};
+    if(newStatus==='거절' && actualReason){
+      updates['발송_실패_사유'] = '[거절] '+actualReason;
+    }
+    const {error} = await sb.from('quotations').update(updates).eq('id',qid);
+    if(error)throw error;
+    hideLoading();
+    toast(label+' 완료','success');
+    if(state.currentCustomerInq){
+      await loadCustomerDetail(state.currentCustomerInq);
+      await loadCustomerQuotations(state.currentCustomerInq);
+    }
+  } catch(e){
+    hideLoading();
+    console.error('[qtChangeStatus]',e);
+    toast('상태 변경 실패: '+(e.message||e),'error');
+  }
+}
+/* ============ /Phase 2a v2.6 영역 G ============ */
+
 /* HOTFIX 2026-04-26 — IIFE 스코프 함수를 window에 노출 (onclick 인라인 핸들러용) */
 Object.assign(window, {
   // state 객체 — oninput 인라인 핸들러용 (state.qt.xxx 직접 접근)
@@ -3372,7 +3562,9 @@ Object.assign(window, {
   qtFormatYMD, qtFormatYMDHM, qtStatusColor,
   // 상세 (영역 E)
   renderQuotationDetail, qtDetailGeneratePDF, qtVoidQuotation,
-  qtCopyQuotation, qtApplyCopySource
+  qtCopyQuotation, qtApplyCopySource,
+  // v2.6 영역 G — 고객 상세 견적 카드
+  loadCustomerQuotations, qtBuildCustomerCard, qtSendFromCard, qtChangeStatus
 });
 
 document.addEventListener('DOMContentLoaded',init);

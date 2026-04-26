@@ -2258,7 +2258,7 @@ function qtBuildCreateForm(){
 
 <button class="qt-btn-pdf" onclick="qtGeneratePDF()">📄 PDF 미리보기 / 다운로드</button>
 <button class="qt-btn-save" onclick="qtSaveDraft()">💾 임시 저장 (DB INSERT)</button>
-<button class="qt-btn-send" onclick="qtSendPlaceholder()">✉ 발송 (단계 4 완료 후)</button>
+<button class="qt-btn-send" onclick="qtSendQuotation()">✉ 발송 (Make 시나리오 학습 모드)</button>
 <button class="qt-btn-secondary" onclick="qtResetAll()">⟲ 처음부터 다시</button>
 </div>
 </div>
@@ -2580,8 +2580,116 @@ async function qtSaveDraft(){
   }
 }
 
+/* Phase 2a 단계 4 — Make Webhook URL (B안 데이터 학습 모드 / 모듈 1/9) */
+const QT_WEBHOOK_URL = 'https://hook.us2.make.com/wvkto6nsi54uf6ysu06aavb8wtanwtwu';
+
+/* qtSendPlaceholder — 호환 래퍼 (영역 E 상세 화면 [재발송] 버튼) */
 function qtSendPlaceholder(){
-  toast('📌 발송 기능은 단계 4 (Make SMTP 시나리오) 완료 후 활성화됩니다','info');
+  qtSendQuotation();
+}
+
+/* qtSendQuotation — 견적 발송: Webhook POST + DB 상태 업데이트 (학습 모드) */
+async function qtSendQuotation(){
+  // 1) 작성 화면 검증 (state.qt 기반)
+  if(!state.qt.customerId){toast('고객을 먼저 선택해 주세요','warn');return;}
+  if(!state.qt.bu){toast('사업부를 선택해 주세요','warn');return;}
+  if(state.qt.items.length===0){toast('본문 항목을 1개 이상 추가해 주세요','warn');return;}
+  if(!state.qt.title.trim()){toast('제목을 입력해 주세요','warn');return;}
+
+  // 2) qtSaveDraft 같이 quotations row 보장 (없으면 INSERT)
+  let quotationId = state.qt.currentQuotationId;
+  if(!quotationId){
+    if(!confirm('아직 임시 저장이 되지 않았습니다. 먼저 저장하고 발송할까요?'))return;
+    await qtSaveDraft();
+    quotationId = state.qt.currentQuotationId;
+    if(!quotationId){toast('저장 실패로 발송 중단','error');return;}
+  }
+
+  // 3) 수신자 이메일 확보 (간단 prompt — 다음 세션에 customers 테이블 email 필드로 대체)
+  const recipient = prompt('수신자 이메일 (테스트는 본인 메일 권장)','snslee82@gmail.com');
+  if(!recipient){return;}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(recipient.trim())){toast('이메일 형식 오류','warn');return;}
+
+  // 4) PDF base64 생성 (jsPDF)
+  showLoading('PDF 생성 중…');
+  let pdfBase64 = null;
+  try {
+    pdfBase64 = await qtBuildPdfBase64();
+  } catch(e){
+    console.error('[qtSendQuotation pdf]',e);
+    hideLoading();
+    toast('PDF 생성 실패: '+(e.message||e),'error');
+    return;
+  }
+
+  // 5) Webhook POST (Make S-12)
+  showLoading('Make 시나리오 호출 중…');
+  const payload = {
+    quotation_id: quotationId,
+    견적번호: state.qt.bu ? ('Q-' + (QT_PREFIX[state.qt.bu]||'???') + '-2026-???') : null,
+    사업부: state.qt.bu,
+    제목: state.qt.title,
+    수신자: {
+      email: recipient.trim(),
+      회사명: state.qt.recipient.co,
+      부서: state.qt.recipient.dept,
+      담당자: state.qt.recipient.name,
+      직위: state.qt.recipient.title
+    },
+    발신자: {
+      이메일: 'realplan01@naver.com',
+      이름: '리얼플랜제주',
+      전화: '1577-2296'
+    },
+    items: state.qt.items,
+    options: {
+      대행료_표기: state.qt.options.feeShow,
+      vat_표기: state.qt.options.vatShow,
+      판매가_컬럼: state.qt.options.salePrice,
+      여행업등록_표기: state.qt.options.tourReg,
+      절사_단위: state.qt.options.trim,
+      대행료율: state.qt.options.feeRate,
+      is_government: state.qt.isGovernment,
+      payment: state.qt.payment,
+      account: state.qt.account,
+      note: state.qt.note,
+      attachments: state.qt.attachments
+    },
+    pdf_base64: pdfBase64,
+    pdf_filename: 'quotation_' + (quotationId||'preview') + '.pdf',
+    sent_at: new Date().toISOString(),
+    test_mode: true,  // B안 데이터 학습 모드 표시
+    schema_version: 'v1.0'
+  };
+
+  try {
+    const res = await fetch(QT_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    hideLoading();
+    if(res.ok){
+      toast('✅ Webhook 호출 성공 (Make 시나리오 1/9 모듈 가동 / 실제 메일 발송은 다음 세션 모듈 추가 후)','success');
+      console.log('[qtSendQuotation] webhook OK status=',res.status);
+    } else {
+      toast('⚠ Webhook 응답 비정상: HTTP '+res.status,'warn');
+      console.warn('[qtSendQuotation] non-2xx',res.status, await res.text().catch(()=>''));
+    }
+  } catch(e){
+    hideLoading();
+    console.error('[qtSendQuotation fetch]',e);
+    toast('Webhook 호출 실패: '+(e.message||e),'error');
+  }
+}
+
+/* qtBuildPdfBase64 — qtGeneratePDF 본체에서 doc.output('datauristring') 추출 (재사용) */
+async function qtBuildPdfBase64(){
+  // qtGeneratePDF는 다운로드 트리거이므로 동일 흐름 + 마지막에 datauristring 반환하는 분기 필요
+  // 현재 qtGeneratePDF는 doc.save() 호출 → base64 반환 안 함
+  // 임시 — qtGeneratePDF가 globalThis.__lastPdfBase64에 저장하도록 수정 안 했으므로
+  // 단순화: 직접 jsPDF 인스턴스 만들지 않고 fallback 으로 빈 문자열 반환 (B안 학습 모드에서는 메타데이터 위주로 학습)
+  return '';  // 다음 세션에 qtGeneratePDF 분기 추가 후 실제 base64 채움
 }
 
 /* ============ Phase 2a v2.0: 영역 C — PDF 미리보기 (jsPDF) ============ */

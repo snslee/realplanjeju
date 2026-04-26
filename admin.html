@@ -3268,6 +3268,8 @@ function qtApplyCopySource(r){
 
 /* HOTFIX 2026-04-26 — IIFE 스코프 함수를 window에 노출 (onclick 인라인 핸들러용) */
 Object.assign(window, {
+  // state 객체 — oninput 인라인 핸들러용 (state.qt.xxx 직접 접근)
+  state,
   // 작성 페이지 (영역 B)
   qtSelectCustomer, qtSelectBU, qtToggleCat, qtAddCatItem, qtAddRow,
   qtUpdItem, qtDelItem, qtToggleGov, qtSetTrim, qtUpdateAll,

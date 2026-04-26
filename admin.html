@@ -3257,6 +3257,23 @@ function qtApplyCopySource(r){
 /* ============ /Phase 2a v2.0 영역 E ============ */
 /* ============ /Phase 2a v2.0 영역 B ============ */
 
+/* HOTFIX 2026-04-26 — IIFE 스코프 함수를 window에 노출 (onclick 인라인 핸들러용) */
+Object.assign(window, {
+  // 작성 페이지 (영역 B)
+  qtSelectCustomer, qtSelectBU, qtToggleCat, qtAddCatItem, qtAddRow,
+  qtUpdItem, qtDelItem, qtToggleGov, qtSetTrim, qtUpdateAll,
+  qtUpdRecipient, qtUpdAttach, qtSaveDraft, qtSendPlaceholder, qtSendQuotation,
+  qtBuildPdfBase64, qtResetAll, qtFmt,
+  // PDF (영역 C)
+  qtGeneratePDF, qtLoadKoreanFont,
+  // 목록 (영역 D)
+  loadQuotationList, qtRenderQuotationCards, qtBuildListCardHtml,
+  qtFormatYMD, qtFormatYMDHM, qtStatusColor,
+  // 상세 (영역 E)
+  renderQuotationDetail, qtDetailGeneratePDF, qtVoidQuotation,
+  qtCopyQuotation, qtApplyCopySource
+});
+
 document.addEventListener('DOMContentLoaded',init);
 })();
 </script>

@@ -2734,7 +2734,35 @@ async function qtLoadKoreanFont(){
   }
 }
 
-/* qtGeneratePDF — 9영역 양식 PDF 생성 */
+/* qtLoadSeal — /assets/seal.png fetch + LocalStorage 캐싱 → dataURL 반환 (실패 시 null) */
+const QT_SEAL_LS_KEY = 'qt_seal_v1';
+const QT_SEAL_URL = '/assets/seal.png';
+async function qtLoadSeal(){
+  try {
+    const cached = localStorage.getItem(QT_SEAL_LS_KEY);
+    if(cached && cached.length > 500)return cached;
+  } catch(e){}
+  try {
+    const res = await fetch(QT_SEAL_URL);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const blob = await res.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result;
+        try { localStorage.setItem(QT_SEAL_LS_KEY, dataUrl); } catch(e){ console.warn('seal cache failed (LS quota?)',e); }
+        resolve(dataUrl);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch(e){
+    console.warn('[qtLoadSeal] 직인 로드 실패 →', e.message);
+    return null;
+  }
+}
+
+/* qtGeneratePDF — v2.4 양식 (회사정보 최상단 / 합계 테이블 통합 / 결제 블록 / 직인 PNG) */
 async function qtGeneratePDF(silent){
   if(!state.qt.bu){toast('사업부를 먼저 선택해 주세요','warn');return;}
   if(state.qt.items.length===0){toast('본문 항목을 1개 이상 추가해 주세요','warn');return;}
@@ -2745,8 +2773,9 @@ async function qtGeneratePDF(silent){
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({format:'a4',unit:'mm'});
 
-    // 한글 폰트 로드
+    // 한글 폰트 + 직인 PNG 로드
     const fontB64 = await qtLoadKoreanFont();
+    const sealDataUrl = await qtLoadSeal();
     let fontFamily = 'helvetica';
     if(fontB64){
       try {
@@ -2759,49 +2788,63 @@ async function qtGeneratePDF(silent){
     }
     doc.setFont(fontFamily,'normal');
 
-    // ===== ① 제목 =====
-    const qno = state.qt.currentQuotationId
-      ? ($('#qt-pv-no').textContent || ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001'))
-      : ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001 (가상)');
-    doc.setFontSize(20);
-    doc.text('견 적 서', 105, 22, {align:'center'});
-    doc.setFontSize(10);
-    doc.text(qno, 105, 30, {align:'center'});
-
-    // ===== ② 발신·수신 =====
-    const today = new Date();
-    const ymd = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-    const valid = new Date(today.getTime()+30*86400000);
-    const validYmd = valid.getFullYear()+'-'+String(valid.getMonth()+1).padStart(2,'0')+'-'+String(valid.getDate()).padStart(2,'0');
-    doc.setFontSize(9);
-    doc.text(`발신일: ${ymd}    유효기간: ${validYmd} (발행 후 30일)`, 14, 42);
-    const r = state.qt.recipient;
-    const recipLine = [r.co, r.dept, r.name, r.title].filter(Boolean).join(' / ');
-    doc.text(`수신: ${recipLine || '—'}`, 14, 49);
-    doc.text(`제목: ${state.qt.title || '—'}`, 14, 56);
-
-    // ===== ③ 회사 정보 헤더 =====
     const buUpjong = {
       '국내여행':'국내여행업',
       '행사이벤트':'행사기획 및 대행',
       '온라인마케팅':'온라인홍보 및 광고대행업',
       '마케팅교육':'마케팅 대행/교육/컨설팅'
     };
-    doc.setFontSize(8);
+
+    // ===== ① 회사 정보 헤더 (최상단) =====
+    const isTourReg = !!state.qt.options.tourReg;
+    const headerH = isTourReg ? 28 : 24;
     doc.setDrawColor(43,95,184);
     doc.setFillColor(232,239,249);
-    doc.rect(14, 62, 182, 22, 'F');
-    doc.text('리얼플랜제주 주식회사  |  사업자: 819-87-02344  |  대표: 이동환·김현숙', 16, 68);
-    doc.text('주소: 제주특별자치도 제주시 제원1길 5 (연동)  |  T: 1577-2296  |  realplan01@naver.com', 16, 73);
-    doc.text(`업종: ${buUpjong[state.qt.bu]||'-'}`, 16, 78);
-    if(state.qt.options.tourReg){
-      doc.text('국내여행업 등록번호: 제2023-5호 (제주시장)', 16, 83);
+    doc.rect(14, 14, 182, headerH, 'F');
+    doc.setFontSize(8); doc.setTextColor(0,0,0);
+    doc.text('사업자: 819-87-02344  |  대표: 이동환·김현숙', 16, 20);
+    doc.text(`업종: ${buUpjong[state.qt.bu]||'-'}`, 16, 25);
+    doc.text('주소: 제주특별자치도 제주시 제원1길 5 (연동)', 16, 30);
+    doc.text('T: 1577-2296  |  F: 070-7966-8631  |  realplan01@naver.com', 16, 35);
+    if(isTourReg){
+      doc.text('국내여행업 등록번호: 제2023-5호 (제주시장)', 16, 40);
     }
+    doc.setFontSize(11); doc.setTextColor(43,95,184);
+    doc.text('리얼플랜제주 주식회사', 194, 25, {align:'right'});
+    doc.setFontSize(8); doc.setTextColor(120,120,120);
+    doc.text('Real Plan Jeju Co., Ltd.', 194, 30, {align:'right'});
 
-    // ===== ④ 본문 항목 (AutoTable) =====
+    // ===== ② 견적서 제목 + 견적번호 =====
+    const titleY = 14 + headerH + 8;
+    doc.setTextColor(0,0,0);
+    doc.setFontSize(20);
+    doc.text('견 적 서', 105, titleY, {align:'center'});
+    const qno = state.qt.currentQuotationId
+      ? ($('#qt-pv-no').textContent || ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001'))
+      : ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001 (가상)');
+    doc.setFontSize(10);
+    doc.text(qno, 105, titleY+7, {align:'center'});
+
+    // ===== ③ 메타 (발신일·유효기간·수신·제목) =====
+    const today = new Date();
+    const ymd = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+    const valid = new Date(today.getTime()+30*86400000);
+    const validYmd = valid.getFullYear()+'-'+String(valid.getMonth()+1).padStart(2,'0')+'-'+String(valid.getDate()).padStart(2,'0');
+    let metaY = titleY + 14;
+    doc.setFontSize(9); doc.setTextColor(0,0,0);
+    doc.text(`발신일: ${ymd}    유효기간: ${validYmd} (발행 후 30일)`, 14, metaY); metaY+=6;
+    const r = state.qt.recipient;
+    const recipLine = [r.co, r.dept, r.name, r.title].filter(Boolean).join(' / ');
+    doc.text(`수신: ${recipLine || '—'}`, 14, metaY); metaY+=6;
+    doc.text(`제목: ${state.qt.title || '—'}`, 14, metaY); metaY+=4;
+
+    // ===== ④ 본문 항목 + 합계 통합 (AutoTable) =====
     const head = state.qt.options.salePrice
       ? [['No','품명','내용','수량','단가','판매가','금액','단위']]
       : [['No','품명','내용','수량','단가','금액','단위']];
+    const colCount = state.qt.options.salePrice ? 8 : 7;
+    const labelColSpan = colCount - 2;  // 라벨이 차지할 칼럼 수 (금액·단위 제외)
+
     const rows = state.qt.items.map((it,i)=>{
       const amt = (+it.수량||0)*(+it.단가||0);
       const base = [
@@ -2813,14 +2856,7 @@ async function qtGeneratePDF(silent){
       base.push(amt.toLocaleString(), it.단위||'');
       return base;
     });
-    doc.autoTable({
-      startY: 90, head, body: rows,
-      styles: { font: fontFamily, fontSize: 9, cellPadding: 1.5 },
-      headStyles: { fillColor: [43,95,184], textColor: 255 },
-      columnStyles: {0:{halign:'center',cellWidth:8}, 3:{halign:'right'}, 4:{halign:'right'}, 5:{halign:'right'}}
-    });
 
-    // ===== ⑤ 합계 =====
     const sub = state.qt.items.reduce((a,it)=>a+((+it.수량||0)*(+it.단가||0)),0);
     const fee = state.qt.options.feeShow ? Math.round(sub*state.qt.options.feeRate/100) : 0;
     const supply = sub + fee;
@@ -2830,37 +2866,84 @@ async function qtGeneratePDF(silent){
     if(state.qt.options.trim==='천')total = Math.floor(total/1000)*1000;
     else if(state.qt.options.trim==='만')total = Math.floor(total/10000)*10000;
 
-    let y = doc.lastAutoTable.finalY + 6;
-    doc.setFontSize(9);
-    doc.text(`소계: ${sub.toLocaleString()}원`, 196, y, {align:'right'}); y+=5;
+    // 소계 라벨: (1) 또는 (1)+(2)+...+(N)
+    const subLabel = state.qt.items.length === 1
+      ? '소계 (1)'
+      : '소계 ' + state.qt.items.map((_,i)=>'('+(i+1)+')').join('+');
+
+    const sumStyle  = { halign:'right', fontStyle:'bold', fillColor:[245,248,253] };
+    const sumStyleR = { halign:'right', fontStyle:'bold', fillColor:[245,248,253] };
+    const sumStyleU = { halign:'center', fillColor:[245,248,253] };
+    const totalStyle  = { halign:'right', fontStyle:'bold', textColor:[43,95,184], fillColor:[232,239,249] };
+    const totalStyleR = { halign:'right', fontStyle:'bold', textColor:[43,95,184], fillColor:[232,239,249] };
+    const totalStyleU = { halign:'center', fontStyle:'bold', textColor:[43,95,184], fillColor:[232,239,249] };
+
+    const sumRows = [];
+    sumRows.push([
+      { content: subLabel, colSpan: labelColSpan, styles: sumStyle },
+      { content: sub.toLocaleString(), styles: sumStyleR },
+      { content: '원', styles: sumStyleU }
+    ]);
     if(state.qt.options.feeShow){
-      doc.text(`대행료(${state.qt.options.feeRate.toFixed(1)}%): ${fee.toLocaleString()}원`, 196, y, {align:'right'}); y+=5;
+      sumRows.push([
+        { content: `대행료 (${state.qt.options.feeRate.toFixed(1)}%)`, colSpan: labelColSpan, styles: sumStyle },
+        { content: fee.toLocaleString(), styles: sumStyleR },
+        { content: '원', styles: sumStyleU }
+      ]);
     }
-    doc.text(`공급가액: ${supply.toLocaleString()}원`, 196, y, {align:'right'}); y+=5;
+    sumRows.push([
+      { content: '공급가액', colSpan: labelColSpan, styles: sumStyle },
+      { content: supply.toLocaleString(), styles: sumStyleR },
+      { content: '원', styles: sumStyleU }
+    ]);
     if(state.qt.options.vatShow){
-      doc.text(`부가세(10%): ${vat.toLocaleString()}원`, 196, y, {align:'right'}); y+=5;
+      sumRows.push([
+        { content: '부가세 (10%)', colSpan: labelColSpan, styles: sumStyle },
+        { content: vat.toLocaleString(), styles: sumStyleR },
+        { content: '원', styles: sumStyleU }
+      ]);
     }
-    doc.setFontSize(11); doc.setTextColor(43,95,184);
-    doc.text(`총 합 계: ${total.toLocaleString()}원`, 196, y, {align:'right'}); y+=6;
-    doc.setTextColor(0,0,0); doc.setFontSize(8);
+    sumRows.push([
+      { content: '총 합 계', colSpan: labelColSpan, styles: totalStyle },
+      { content: total.toLocaleString(), styles: totalStyleR },
+      { content: '원', styles: totalStyleU }
+    ]);
+
+    doc.autoTable({
+      startY: metaY + 4, head, body: [...rows, ...sumRows],
+      styles: { font: fontFamily, fontSize: 9, cellPadding: 1.5 },
+      headStyles: { fillColor: [43,95,184], textColor: 255 },
+      columnStyles: {0:{halign:'center',cellWidth:8}, 3:{halign:'right'}, 4:{halign:'right'}, 5:{halign:'right'}}
+    });
+
+    let y = doc.lastAutoTable.finalY + 4;
     if(total !== totalOrig){
-      doc.text(`(절사 전: ${totalOrig.toLocaleString()}원 / ${state.qt.options.trim}단위)`, 196, y, {align:'right'}); y+=5;
+      doc.setFontSize(8); doc.setTextColor(120,120,120);
+      doc.text(`(절사 전: ${totalOrig.toLocaleString()}원 / ${state.qt.options.trim}단위 절사)`, 196, y, {align:'right'}); y+=5;
+      doc.setTextColor(0,0,0);
     }
     if(state.qt.options.vatShow === false){
+      doc.setFontSize(8); doc.setTextColor(120,120,120);
       doc.text('※ 본 견적 금액은 부가세 별도 / 또는 부가세 미포함 거래입니다', 14, y); y+=5;
+      doc.setTextColor(0,0,0);
     }
 
-    // ===== ⑥ 결제·지급 조건 + 입금 계좌 =====
+    // ===== ⑤ 결제·지급 조건 (블록 박스) =====
     y += 4;
-    doc.setFontSize(10); doc.setTextColor(43,95,184);
-    doc.text('결제·지급 조건', 14, y); y+=5;
-    doc.setFontSize(9); doc.setTextColor(0,0,0);
     const payText = state.qt.payment || '-';
-    doc.text(payText, 14, y, {maxWidth:182}); y += 6 + Math.floor(payText.length/55)*4;
-    doc.setFontSize(9);
-    doc.text(`입금 계좌: ${state.qt.account || '-'}`, 14, y); y+=6;
+    const acctText = `입금 계좌: ${state.qt.account || '-'}`;
+    const payBlockH = 22 + Math.floor(payText.length/60)*4;
+    doc.setDrawColor(43,95,184);
+    doc.setFillColor(232,239,249);
+    doc.rect(14, y, 182, payBlockH, 'F');
+    doc.setFontSize(9); doc.setTextColor(43,95,184);
+    doc.text('결제·지급 조건', 16, y+5);
+    doc.setFontSize(9); doc.setTextColor(0,0,0);
+    doc.text(payText, 16, y+11, {maxWidth:178});
+    doc.text(acctText, 16, y+payBlockH-5);
+    y += payBlockH + 4;
 
-    // ===== ⑦ 비고 =====
+    // ===== ⑥ 비고 =====
     if(state.qt.note && state.qt.note.trim()){
       doc.setFontSize(10); doc.setTextColor(43,95,184);
       doc.text('비고·특이사항', 14, y); y+=5;
@@ -2868,16 +2951,27 @@ async function qtGeneratePDF(silent){
       doc.text(state.qt.note, 14, y, {maxWidth:182}); y += 6 + Math.floor(state.qt.note.length/55)*4;
     }
 
-    // ===== ⑧ 직인·서명 (공동대표 2인) =====
+    // ===== ⑦ 직인·서명 (공동대표 2인 + 직인 PNG) =====
     if(y > 240) { doc.addPage(); y = 20; doc.setFont(fontFamily,'normal'); }
     y = Math.max(y+14, 248);
-    doc.setFontSize(11);
-    doc.text('리얼플랜제주 주식회사', 196, y, {align:'right'}); y+=8;
+    doc.setFontSize(11); doc.setTextColor(0,0,0);
+    doc.text('리얼플랜제주 주식회사', 184, y, {align:'right'});
+    if(sealDataUrl){
+      try {
+        doc.addImage(sealDataUrl, 'PNG', 187, y-7, 16, 16);
+      } catch(e){
+        console.warn('seal addImage failed', e);
+        doc.text('[직인]', 196, y, {align:'right'});
+      }
+    } else {
+      doc.text('[직인PNG]', 196, y, {align:'right'});
+    }
+    y+=10;
     doc.setFontSize(10);
     doc.text('대표이사  이  동  환', 196, y, {align:'right'}); y+=6;
-    doc.text('대표이사  김  현  숙   [직인PNG]', 196, y, {align:'right'});
+    doc.text('대표이사  김  현  숙', 196, y, {align:'right'});
 
-    // ===== ⑨ 푸터 =====
+    // ===== ⑧ 푸터 =====
     doc.setFontSize(8); doc.setTextColor(90,112,144);
     doc.text('문의: realplan01@naver.com  |  T: 1577-2296', 105, 290, {align:'center'});
 
@@ -3285,7 +3379,7 @@ Object.assign(window, {
   qtUpdRecipient, qtUpdAttach, qtSaveDraft, qtSendPlaceholder, qtSendQuotation,
   qtBuildPdfBase64, qtResetAll, qtFmt,
   // PDF (영역 C)
-  qtGeneratePDF, qtLoadKoreanFont,
+  qtGeneratePDF, qtLoadKoreanFont, qtLoadSeal,
   // 목록 (영역 D)
   loadQuotationList, qtRenderQuotationCards, qtBuildListCardHtml,
   qtFormatYMD, qtFormatYMDHM, qtStatusColor,

@@ -2811,8 +2811,13 @@ async function qtGeneratePDF(silent){
     }
     doc.setFontSize(11); doc.setTextColor(43,95,184);
     doc.text('리얼플랜제주 주식회사', 194, 25, {align:'right'});
-    doc.setFontSize(8); doc.setTextColor(120,120,120);
-    doc.text('Real Plan Jeju Co., Ltd.', 194, 30, {align:'right'});
+    // 직인 글자 위 1/3 겹침 (한국 관행) — 영문 글씨 삭제로 자리 확보
+    if(sealDataUrl){
+      try {
+        // 직인 16x16, 우측 (180,17)~(196,33) → 회사명 baseline(y=25) 직인 중심부에 걸침
+        doc.addImage(sealDataUrl, 'PNG', 180, 17, 16, 16);
+      } catch(e){ console.warn('seal addImage (header) failed', e); }
+    }
 
     // ===== ② 견적서 제목 + 견적번호 =====
     const titleY = 14 + headerH + 8;
@@ -2951,25 +2956,7 @@ async function qtGeneratePDF(silent){
       doc.text(state.qt.note, 14, y, {maxWidth:182}); y += 6 + Math.floor(state.qt.note.length/55)*4;
     }
 
-    // ===== ⑦ 직인·서명 (공동대표 2인 + 직인 PNG) =====
-    if(y > 240) { doc.addPage(); y = 20; doc.setFont(fontFamily,'normal'); }
-    y = Math.max(y+14, 248);
-    doc.setFontSize(11); doc.setTextColor(0,0,0);
-    doc.text('리얼플랜제주 주식회사', 184, y, {align:'right'});
-    if(sealDataUrl){
-      try {
-        doc.addImage(sealDataUrl, 'PNG', 187, y-7, 16, 16);
-      } catch(e){
-        console.warn('seal addImage failed', e);
-        doc.text('[직인]', 196, y, {align:'right'});
-      }
-    } else {
-      doc.text('[직인PNG]', 196, y, {align:'right'});
-    }
-    y+=10;
-    doc.setFontSize(10);
-    doc.text('대표이사  이  동  환', 196, y, {align:'right'}); y+=6;
-    doc.text('대표이사  김  현  숙', 196, y, {align:'right'});
+    // ===== ⑦ (v2.5에서 하단 직인·서명 영역 삭제 — 상단 회사정보 박스에 직인 통합) =====
 
     // ===== ⑧ 푸터 =====
     doc.setFontSize(8); doc.setTextColor(90,112,144);

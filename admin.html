@@ -407,18 +407,16 @@ table.qt-items td.narrow input{text-align:right}
 <div class="app-body">
 <aside class="sidebar">
 <nav>
-<a href="#quotation" class="nav-item" data-nav="quotation" title="A 견적"><span class="nav-icon">📄</span><span class="nav-text">견적</span></a>
-<a href="#trade" class="nav-item nav-disabled" data-nav="trade" title="B 거래 (v2.8.1 / 5월 1일 예정)"><span class="nav-icon">💱</span><span class="nav-text">거래</span><span class="nav-phase">5/1</span></a>
-<a href="#customers" class="nav-item" data-nav="customers" title="C 고객"><span class="nav-icon">👥</span><span class="nav-text">고객</span></a>
-<a href="#expense" class="nav-item nav-disabled" data-nav="expense" title="D 지출결의 (v2.8.2 / 5월 3일 예정)"><span class="nav-icon">💳</span><span class="nav-text">지출결의</span><span class="nav-phase">5/3</span></a>
-<a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="E 인사 (v2.8.4 / 5월 7일 예정)"><span class="nav-icon">🧑</span><span class="nav-text">인사</span><span class="nav-phase">5/7</span></a>
-<a href="#approval" class="nav-item nav-disabled" data-nav="approval" title="F 결재 (v2.8.3 / 5월 5일 예정)"><span class="nav-icon">✅</span><span class="nav-text">결재</span><span class="nav-phase">5/5</span></a>
-<a href="#accounting" class="nav-item nav-disabled" data-nav="accounting" title="H 회계 (v2.8.5 / 5월 9일 예정)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">5/9</span></a>
-<a href="#admin" class="nav-item" data-nav="admin" title="I 관리자 (대시보드·KPI)"><span class="nav-icon">⚙</span><span class="nav-text">관리자</span></a>
-<div class="sidebar-section-title" style="margin-top:18px;">외부 시스템</div>
-<span class="nav-item nav-external-disabled" style="opacity:.45;cursor:not-allowed;" title="마케팅 시스템 (Day 14~17 / 5월 11일 예정)"><span class="nav-icon">🌐</span><span class="nav-text">마케팅 시스템</span><span class="nav-phase">5/11</span></span>
+<a href="#customers" class="nav-item" data-nav="customers" title="1. 고객 (마스터)"><span class="nav-icon">👥</span><span class="nav-text">고객</span></a>
+<a href="#trade" class="nav-item" data-nav="trade" title="2. 거래 (견적·납품·거래명세 통합 / v2.8 활성)"><span class="nav-icon">💼</span><span class="nav-text">거래</span></a>
+<a href="#approval" class="nav-item nav-disabled" data-nav="approval" title="3. 결재 (품의·지출결의·경비·인장 통합 / v2.9-B / Day 7~8)"><span class="nav-icon">📝</span><span class="nav-text">결재</span><span class="nav-phase">v2.9-B</span></a>
+<a href="#notice" class="nav-item nav-disabled" data-nav="notice" title="4. 공문 (B2G 착수계·완료계·결과보고 / Phase 2d)"><span class="nav-icon">📂</span><span class="nav-text">공문</span><span class="nav-phase">2d</span></a>
+<a href="#contract" class="nav-item nav-disabled" data-nav="contract" title="5. 계약 (4사업부 표준 계약서 + 전자서명 / Phase 2b)"><span class="nav-icon">📃</span><span class="nav-text">계약</span><span class="nav-phase">2b</span></a>
+<a href="#vendor" class="nav-item nav-disabled" data-nav="vendor" title="6. 거래처·외주 (매입 마스터·발주서·정산서·NDA / Phase 2c-1)"><span class="nav-icon">🏢</span><span class="nav-text">거래처·외주</span><span class="nav-phase">2c-1</span></a>
+<a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="7. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
+<a href="#accounting" class="nav-item nav-disabled" data-nav="accounting" title="8. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.8.0 셸 · 8영역 + 마케팅 분리</div>
+<div class="sidebar-footer">admin v2.8.0a · 8영역 (마스터 v1.0 정합)</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -470,25 +468,29 @@ table.qt-items td.narrow input{text-align:right}
 </div>
 <div class="pagination"><span>전체 <b>-</b>건 · 페이지당 20건</span><span>1 / 1</span></div>
 </section>
-<!-- v2.8.0 셸 — placeholder 5영역 (B·D·E·F·H) -->
-<section id="view-trade" class="page" hidden>
-  <div class="page-header"><div><div class="page-title">거래 (B)</div><div class="page-subtitle">거래 5단계 관리 — 영역 B</div></div></div>
-  <div class="placeholder-box" id="ph-trade"></div>
-</section>
-<section id="view-expense" class="page" hidden>
-  <div class="page-header"><div><div class="page-title">지출결의 (D)</div><div class="page-subtitle">지출결의 결재 — 영역 D</div></div></div>
-  <div class="placeholder-box" id="ph-expense"></div>
-</section>
-<section id="view-hr" class="page" hidden>
-  <div class="page-header"><div><div class="page-title">인사 (E)</div><div class="page-subtitle">직원·근태·계약 — 영역 E</div></div></div>
-  <div class="placeholder-box" id="ph-hr"></div>
-</section>
+<!-- v2.8.0a 마스터 v1.0 정합 placeholder 6영역 (결재·공문·계약·거래처·인사·회계) -->
 <section id="view-approval" class="page" hidden>
-  <div class="page-header"><div><div class="page-title">결재 (F)</div><div class="page-subtitle">결재 통합 (단일 엔진) — 영역 F</div></div></div>
+  <div class="page-header"><div><div class="page-title">결재 (3)</div><div class="page-subtitle">품의·지출결의·경비정산·인장 통합 인박스 — 마스터 #4</div></div></div>
   <div class="placeholder-box" id="ph-approval"></div>
 </section>
+<section id="view-notice" class="page" hidden>
+  <div class="page-header"><div><div class="page-title">공문 (4)</div><div class="page-subtitle">B2G 착수계·완료계·결과보고 — 마스터 #5</div></div></div>
+  <div class="placeholder-box" id="ph-notice"></div>
+</section>
+<section id="view-contract" class="page" hidden>
+  <div class="page-header"><div><div class="page-title">계약 (5)</div><div class="page-subtitle">4사업부 표준 계약서 + 전자서명 단계화 — 마스터 #6</div></div></div>
+  <div class="placeholder-box" id="ph-contract"></div>
+</section>
+<section id="view-vendor" class="page" hidden>
+  <div class="page-header"><div><div class="page-title">거래처·외주 (6)</div><div class="page-subtitle">매입 마스터·발주서·정산서·NDA — 마스터 #7</div></div></div>
+  <div class="placeholder-box" id="ph-vendor"></div>
+</section>
+<section id="view-hr" class="page" hidden>
+  <div class="page-header"><div><div class="page-title">인사 (7)</div><div class="page-subtitle">휴가·출장·근태·급여·근로계약 (본인분 RLS) — 마스터 #8</div></div></div>
+  <div class="placeholder-box" id="ph-hr"></div>
+</section>
 <section id="view-accounting" class="page" hidden>
-  <div class="page-header"><div><div class="page-title">회계 (H)</div><div class="page-subtitle">입출금·세무·재무제표 — 영역 H</div></div></div>
+  <div class="page-header"><div><div class="page-title">회계 (8)</div><div class="page-subtitle">통합 손익·매출·매입·세무사 export (1인 전용) — 마스터 #9</div></div></div>
   <div class="placeholder-box" id="ph-accounting"></div>
 </section>
 <section id="view-customer-detail" class="page" hidden>
@@ -652,12 +654,14 @@ state.qt = {
   currentQuotationNo: null
 };
 state.currentQuotationId = null;
-/* v2.8.0 셸 — state 5 네임스페이스 (placeholder 영역) */
-state.tx = state.tx || { mode:'placeholder', phase:'v2.8.1', date:'5월 1일' };
-state.hr = state.hr || { mode:'placeholder', phase:'v2.8.4', date:'5월 7일' };
-state.appr = state.appr || { mode:'placeholder', phase:'v2.8.3', date:'5월 5일' };
-state.acc = state.acc || { mode:'placeholder', phase:'v2.8.5', date:'5월 9일' };
-state.activeTab = 'quotation';
+/* v2.8.0a 정정 — state 마스터 v1.0 영역 정합 (거래는 view-quotation-list로 라벨 매핑 / placeholder 6 영역) */
+state.appr   = state.appr   || { mode:'placeholder', phase:'v2.9-B', when:'Day 7~8' };
+state.notice = state.notice || { mode:'placeholder', phase:'Phase 2d', when:'B2G 한정' };
+state.contract = state.contract || { mode:'placeholder', phase:'Phase 2b', when:'4사업부 표준' };
+state.vendor = state.vendor || { mode:'placeholder', phase:'Phase 2c-1', when:'매입 마스터' };
+state.hr     = state.hr     || { mode:'placeholder', phase:'Phase 2f', when:'급여 트리거' };
+state.acc    = state.acc    || { mode:'placeholder', phase:'Phase 2e', when:'회계 1인 전용' };
+state.activeTab = 'customers';
 const PAGE_SIZE=50;
 
 /* ===== 사업부별 상담 체크리스트 4종 (v2.0 통합설계서 6장) ===== */
@@ -1901,13 +1905,13 @@ function enterApp(){
   const nm=(u.user_metadata&&(u.user_metadata.full_name||u.user_metadata.name))||u.email;
   $('#user-name').textContent=nm;
   $('#user-email').textContent=u.email;
-  if(!location.hash||location.hash==='#login'||location.hash==='#')location.hash='#quotation';/* v2.8.0 Q3-C: 견적 = 대표님 본업 */
+  if(!location.hash||location.hash==='#login'||location.hash==='#')location.hash='#customers';/* v2.8.0a 마스터 v1.0 / 고객 = 사이드바 1번 */
   handleRoute();
 }
 
 function handleRoute(){
   if(!state.user){showLoginView();return;}
-  const raw=(location.hash||'').replace(/^#/,'')||'quotation';/* v2.8.0 Q3-C */
+  const raw=(location.hash||'').replace(/^#/,'')||'customers';/* v2.8.0a 마스터 v1.0 */
   const [page,param]=raw.split('/');
   $$('.page').forEach(p=>p.hidden=true);
   $$('.nav-item[data-nav]').forEach(n=>n.classList.remove('active'));
@@ -1918,6 +1922,7 @@ function handleRoute(){
       loadDashboard();
       break;
     case 'customers':
+      state.activeTab='customers';
       show('#view-customers');
       $('.nav-item[data-nav="customers"]').classList.add('active');
       loadCustomers();
@@ -1941,10 +1946,11 @@ function handleRoute(){
       loadCustomerDetail(inq);
       break;
     }
-    /* Phase 2a v2.0: 견적 라우트 3종 (영역 A) */
-    case 'quotation':{
-      state.activeTab='quotation';
-      $('.nav-item[data-nav="quotation"]').classList.add('active');
+    /* v2.8.0a — 거래 (마스터 #3 / 견적·납품·거래명세 통합) — 견적 view 그대로 라벨 매핑 */
+    case 'trade':
+    case 'quotation':{/* 백워드 호환 alias */
+      state.activeTab='trade';
+      $('.nav-item[data-nav="trade"]').classList.add('active');
       if(!param){
         show('#view-quotation-list');
         if(typeof loadQuotationList==='function')loadQuotationList();
@@ -1958,18 +1964,30 @@ function handleRoute(){
       }
       break;
     }
-    /* v2.8.0 셸 — placeholder 5영역 (B 거래 / D 지출결의 / E 인사 / F 결재 / H 회계) */
-    case 'trade':
-      state.activeTab='trade';
-      show('#view-trade');
-      $('.nav-item[data-nav="trade"]').classList.add('active');
-      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('trade');
+    /* v2.8.0a 마스터 v1.0 placeholder 6 영역 (결재·공문·계약·거래처·인사·회계) */
+    case 'approval':
+      state.activeTab='approval';
+      show('#view-approval');
+      $('.nav-item[data-nav="approval"]').classList.add('active');
+      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('approval');
       break;
-    case 'expense':
-      state.activeTab='expense';
-      show('#view-expense');
-      $('.nav-item[data-nav="expense"]').classList.add('active');
-      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('expense');
+    case 'notice':
+      state.activeTab='notice';
+      show('#view-notice');
+      $('.nav-item[data-nav="notice"]').classList.add('active');
+      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('notice');
+      break;
+    case 'contract':
+      state.activeTab='contract';
+      show('#view-contract');
+      $('.nav-item[data-nav="contract"]').classList.add('active');
+      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('contract');
+      break;
+    case 'vendor':
+      state.activeTab='vendor';
+      show('#view-vendor');
+      $('.nav-item[data-nav="vendor"]').classList.add('active');
+      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('vendor');
       break;
     case 'hr':
       state.activeTab='hr';
@@ -1977,37 +1995,32 @@ function handleRoute(){
       $('.nav-item[data-nav="hr"]').classList.add('active');
       if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('hr');
       break;
-    case 'approval':
-      state.activeTab='approval';
-      show('#view-approval');
-      $('.nav-item[data-nav="approval"]').classList.add('active');
-      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('approval');
-      break;
     case 'accounting':
       state.activeTab='accounting';
       show('#view-accounting');
       $('.nav-item[data-nav="accounting"]').classList.add('active');
       if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('accounting');
       break;
-    /* v2.8.0 셸 — admin alias = dashboard view 활용 (영역 I 관리자) */
+    /* v2.8.0a — admin·dashboard alias 보존 (사이드바에는 표시 X / 직접 URL 접근만) */
     case 'admin':
+    case 'dashboard':
       state.activeTab='admin';
       show('#view-dashboard');
-      $('.nav-item[data-nav="admin"]').classList.add('active');
       loadDashboard();
       break;
-    default:location.hash='#quotation';/* v2.8.0 Q3-C 기본 탭 */
+    default:location.hash='#customers';/* v2.8.0a 기본 탭 = 고객 (사이드바 1번) */
   }
 }
 
-/* v2.8.0 셸 — placeholder 렌더링 (5영역) */
+/* v2.8.0a 마스터 v1.0 정합 — placeholder 렌더링 (6 영역: 결재·공문·계약·거래처·인사·회계) */
 function qtRenderPlaceholder(tab){
   const meta = {
-    trade:      { title:'거래',     icon:'💱', phase:'v2.8.1', date:'5월 1일',  desc:'거래 5단계(견적→계약→진행→완료→정산) 관리.' },
-    expense:    { title:'지출결의', icon:'💳', phase:'v2.8.2', date:'5월 3일',  desc:'지출결의 작성·결재·증빙 관리.' },
-    approval:   { title:'결재',     icon:'✅', phase:'v2.8.3', date:'5월 5일',  desc:'결재 통합 (단일 엔진 / 부장 SKIP).' },
-    hr:         { title:'인사',     icon:'🧑', phase:'v2.8.4', date:'5월 7일',  desc:'직원·근태·계약·연차 관리.' },
-    accounting: { title:'회계',     icon:'💰', phase:'v2.8.5', date:'5월 9일',  desc:'입출금·세무·재무제표 통합.' }
+    approval:   { title:'결재',         icon:'📝', phase:'v2.9-B',     when:'Day 7~8',     desc:'품의·지출결의·경비정산·인장 통합 인박스 (단일 approvals 엔진 / 부장 SKIP / 사전 위임).' },
+    notice:     { title:'공문',         icon:'📂', phase:'Phase 2d',  when:'B2G 한정',     desc:'B2G(관공서) 착수계·완료계·결과보고 작성·발송 관리.' },
+    contract:   { title:'계약',         icon:'📃', phase:'Phase 2b',  when:'4사업부 표준', desc:'4사업부 표준 계약서 (행사·여행·마케팅·교육) + 전자서명 단계화.' },
+    vendor:     { title:'거래처·외주',  icon:'🏢', phase:'Phase 2c-1',when:'매입 마스터',  desc:'매입 거래처 마스터·발주서·정산서·NDA 관리.' },
+    hr:         { title:'인사',         icon:'👤', phase:'Phase 2f',  when:'급여 트리거',  desc:'휴가·출장·근태·급여·근로계약 (본인분 RLS / 회계 트리거).' },
+    accounting: { title:'회계',         icon:'💰', phase:'Phase 2e',  when:'1인 전용',     desc:'통합 손익·매출·매입·세무사 export (이동환 1인 전용 RLS / 가장 마지막).' }
   }[tab];
   if(!meta) return;
   const el = document.getElementById('ph-' + tab);
@@ -2015,8 +2028,8 @@ function qtRenderPlaceholder(tab){
   el.innerHTML =
     '<div class="ph-icon">' + meta.icon + '</div>' +
     '<div class="ph-title">' + meta.title + ' 영역 — 준비 중</div>' +
-    '<div class="ph-msg">' + meta.desc + '<br>해당 영역은 다음 패치(' + meta.phase + ', ' + meta.date + ' 예정)에서 활성화됩니다.</div>' +
-    '<div class="ph-phase">' + meta.phase + ' / ' + meta.date + ' 예정</div>';
+    '<div class="ph-msg">' + meta.desc + '<br>해당 영역은 ' + meta.phase + ' (' + meta.when + ') 단계에서 활성화됩니다.</div>' +
+    '<div class="ph-phase">' + meta.phase + ' / ' + meta.when + '</div>';
 }
 window.qtRenderPlaceholder = qtRenderPlaceholder;
 

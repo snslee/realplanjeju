@@ -2565,10 +2565,9 @@ async function qtSaveDraft(){
     절사_단위: state.qt.options.trim,
     대행료율: state.qt.options.feeRate,
     is_government: state.qt.isGovernment,
-    payment: state.qt.payment,
-    account: state.qt.account,
-    note: state.qt.note,
-    attachments: state.qt.attachments
+    결제조건: state.qt.payment,
+    비고: state.qt.note,
+    첨부: Object.assign({}, state.qt.attachments || {}, { account: state.qt.account || null })
   };
   showLoading('견적 저장 중…');
   try {
@@ -2699,6 +2698,13 @@ async function qtSendQuotation(docType){
     if(res.ok){
       toast('✅ ' + docLabel + ' 메일 발송 성공','success');
       console.log('[qtSendQuotation] send OK status=',res.status);
+      // v2.7-fix3: 발송 성공 후 견적 상세 자동 reload (DB 갱신 반영)
+      setTimeout(() => {
+        if (typeof renderQuotationDetail === 'function' && state.qt.currentQuotationId) {
+          renderQuotationDetail(state.qt.currentQuotationId);
+        }
+        if (typeof qtRenderQuotationCards === 'function') qtRenderQuotationCards();
+      }, 1500);
     } else {
       toast('⚠ 메일 발송 비정상: HTTP '+res.status+' '+(await res.text().catch(()=>'')).slice(0,200),'warn');
       console.warn('[qtSendQuotation] non-2xx',res.status, await res.text().catch(()=>''));

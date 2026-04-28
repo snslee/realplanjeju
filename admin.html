@@ -3587,9 +3587,10 @@ function qtBuildCustomerCard(it, isChild){
   const verNum = (it.수정차수 && it.수정차수>0) ? ' -v'+(it.수정차수+1) : '';
   const status = it.상태 || '-';
   const qid = it.id;
-  const sendable = (status==='발송완료'||status==='재발송'||status==='거절'||status==='만료'||status==='수락');
-  const isDelivery = (status==='수락');
-  const sendLabel = isDelivery ? '📤 납품서 발송' : '✉ 견적서 재발송';
+  // v2.8.0e — 견적서 재발송은 상세 화면 전용(중복 제거) / 카드는 납품서 발송(수락)만
+  const sendable = (status==='수락');
+  const isDelivery = true;
+  const sendLabel = '📤 납품서 발송';
 
   let statusMenu = '';
   if(status==='발송완료' || status==='재발송'){

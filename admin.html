@@ -2391,12 +2391,12 @@ function qtToggleCat(i){
 }
 
 function qtAddCatItem(name,content,unit,price){
-  state.qt.items.push({품명:name,내용:content,수량:1,단가:price||0,단위:unit,비고:''});
+  state.qt.items.push({품명:name,내용:content,수량:1,단가:price||0,금액:price||0,단위:unit,비고:''});
   qtRenderItems(); qtUpdateAll();
 }
 
 function qtAddRow(){
-  state.qt.items.push({품명:'',내용:'',수량:1,단가:0,단위:'',비고:''});
+  state.qt.items.push({품명:'',내용:'',수량:1,단가:0,금액:0,단위:'',비고:''});
   qtRenderItems();
 }
 
@@ -2428,6 +2428,7 @@ function qtUpdItem(i,field,val){
   // 입력 끊김 방지 — re-render 대신 amount 셀만 직접 갱신
   if(field==='수량'||field==='단가'){
     const amt = (+state.qt.items[i].수량||0) * (+state.qt.items[i].단가||0);
+    state.qt.items[i].금액 = amt;
     const tb = document.getElementById('qt-items-body');
     if(tb && tb.children[i]){
       const amtCell = tb.children[i].querySelector('.qt-item-amount');
@@ -2546,6 +2547,7 @@ function qtUpdateBuPreview(){
 
 /* qtSaveDraft — rpc_create_quotation 호출 */
 async function qtSaveDraft(){
+  state.qt.items.forEach(it => { it.금액 = (+it.수량||0) * (+it.단가||0); });
   if(!state.qt.customerId){toast('고객을 먼저 선택해 주세요','warn');return;}
   if(!state.qt.bu){toast('사업부를 선택해 주세요','warn');return;}
   if(state.qt.items.length===0){toast('본문 항목을 1개 이상 추가해 주세요','warn');return;}
@@ -2605,6 +2607,7 @@ function qtSendPlaceholder(){
 /* qtSendQuotation — v2.6 docType 분기 (quote / delivery) */
 async function qtSendQuotation(docType){
   docType = docType || 'quote';
+  state.qt.items.forEach(it => { it.금액 = (+it.수량||0) * (+it.단가||0); });
   const isDelivery = (docType === 'delivery');
   const isStatement = (docType === 'statement');
   const docLabel = isDelivery ? '납품서' : '견적서';

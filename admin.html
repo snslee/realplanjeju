@@ -2699,6 +2699,18 @@ async function qtSendQuotation(docType){
     if(res.ok){
       toast('✅ ' + docLabel + ' 메일 발송 성공','success');
       console.log('[qtSendQuotation] send OK status=',res.status);
+      // v2.7-fix6: EF의 RPC 호출 백업 - admin이 직접 rpc_send_quotation 호출 (docType='quote'만)
+      if (docType === 'quote') {
+        try {
+          const { error: rpcErr } = await sb.rpc('rpc_send_quotation', {
+            _quotation_id: quotationId,
+            _수신자이메일: recipient.trim(),
+            _attachments: []
+          });
+          if (rpcErr) console.warn('[rpc_send_quotation backup]', rpcErr);
+          else console.log('[rpc_send_quotation backup] OK - DB 발송일시 갱신');
+        } catch(e) { console.warn('[rpc_send_quotation backup ex]', e); }
+      }
       // v2.7-fix3: 발송 성공 후 견적 상세 자동 reload (DB 갱신 반영)
       setTimeout(() => {
         if (typeof renderQuotationDetail === 'function' && state.qt.currentQuotationId) {

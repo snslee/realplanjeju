@@ -2585,6 +2585,7 @@ async function qtSaveDraft(){
     hideLoading();
     toast(`견적 저장 완료: ${row.견적번호||'(번호 없음)'} / ${(row.견적금액||0).toLocaleString('ko-KR')}원`,'success');
     state.qt.currentQuotationId = row.id;
+    state.qt.currentQuotationNo = row.견적번호;
     // 미리보기 패널의 가상 견적번호를 실제값으로 갱신
     const pvNo=$('#qt-pv-no');
     if(pvNo)pvNo.textContent=row.견적번호||pvNo.textContent;
@@ -2648,7 +2649,7 @@ async function qtSendQuotation(docType){
   const payload = {
     quotation_id: quotationId,
     doc_type: docType,
-    견적번호: state.qt.bu ? ((isDelivery ? 'D-' : 'Q-') + (QT_PREFIX[state.qt.bu]||'???') + '-2026-???') : null,
+    견적번호: state.qt.currentQuotationNo || (state.qt.bu ? ((isDelivery ? 'D-' : 'Q-') + (QT_PREFIX[state.qt.bu]||'???') + '-2026-???') : null),
     사업부: state.qt.bu,
     제목: state.qt.title,
     수신자: {

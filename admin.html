@@ -29,7 +29,8 @@ input,select,textarea{font-family:inherit;font-size:inherit}[hidden]{display:non
 .login-footer{margin-top:24px;padding-top:20px;border-top:1px solid var(--border-light);font-size:12px;color:var(--text-muted)}
 #view-main{display:flex;flex-direction:column;min-height:100vh}
 .top-header{height:var(--header-h);background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
-.header-left{display:flex;align-items:center;gap:12px}
+.header-left{display:flex;align-items:center;gap:12px;cursor:pointer;text-decoration:none;transition:opacity .15s}
+.header-left:hover{opacity:.78}
 .header-left .logo{width:36px;height:36px;background:var(--primary);color:#fff;border-radius:8px;font-size:18px;font-weight:900;display:flex;align-items:center;justify-content:center}
 .header-left .brand{font-size:16px;font-weight:800;color:var(--primary)}
 .header-right{display:flex;align-items:center;gap:12px}
@@ -398,7 +399,7 @@ table.qt-items td.narrow input{text-align:right}
 </div>
 <div id="view-main" hidden>
 <header class="top-header">
-<div class="header-left"><div class="logo">R</div><div class="brand">리얼플랜제주 관리자</div></div>
+<a href="#dashboard" class="header-left" title="대시보드로 이동"><div class="logo">R</div><div class="brand">리얼플랜제주 관리자</div></a>
 <div class="header-right">
 <div class="user-info"><div class="u-name" id="user-name">관리자</div><div class="u-email" id="user-email">-</div></div>
 <button class="btn-logout" id="btn-logout" type="button">로그아웃</button>
@@ -407,16 +408,14 @@ table.qt-items td.narrow input{text-align:right}
 <div class="app-body">
 <aside class="sidebar">
 <nav>
-<a href="#customers" class="nav-item" data-nav="customers" title="1. 고객 (마스터)"><span class="nav-icon">👥</span><span class="nav-text">고객</span></a>
-<a href="#trade" class="nav-item" data-nav="trade" title="2. 거래 (견적·납품·거래명세 통합 / v2.8 활성)"><span class="nav-icon">💼</span><span class="nav-text">거래</span></a>
-<a href="#approval" class="nav-item nav-disabled" data-nav="approval" title="3. 결재 (품의·지출결의·경비·인장 통합 / v2.9-B / Day 7~8)"><span class="nav-icon">📝</span><span class="nav-text">결재</span><span class="nav-phase">v2.9-B</span></a>
-<a href="#notice" class="nav-item nav-disabled" data-nav="notice" title="4. 공문 (B2G 착수계·완료계·결과보고 / Phase 2d)"><span class="nav-icon">📂</span><span class="nav-text">공문</span><span class="nav-phase">2d</span></a>
-<a href="#contract" class="nav-item nav-disabled" data-nav="contract" title="5. 계약 (4사업부 표준 계약서 + 전자서명 / Phase 2b)"><span class="nav-icon">📃</span><span class="nav-text">계약</span><span class="nav-phase">2b</span></a>
-<a href="#vendor" class="nav-item nav-disabled" data-nav="vendor" title="6. 거래처·외주 (매입 마스터·발주서·정산서·NDA / Phase 2c-1)"><span class="nav-icon">🏢</span><span class="nav-text">거래처·외주</span><span class="nav-phase">2c-1</span></a>
-<a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="7. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
-<a href="#accounting" class="nav-item nav-disabled" data-nav="accounting" title="8. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
+<a href="#dashboard" class="nav-item" data-nav="dashboard" title="1. 대시보드 (KPI·미응답 알림)"><span class="nav-icon">📊</span><span class="nav-text">대시보드</span></a>
+<a href="#customers" class="nav-item" data-nav="customers" title="2. 고객 — 거래·공문·계약 통합 운영 (360° 뷰)"><span class="nav-icon">👥</span><span class="nav-text">고객</span></a>
+<a href="#approval" class="nav-item nav-disabled" data-nav="approval" title="3. 결재 — 품의·지출결의·경비·인장 통합 인박스 (v2.9-B / Day 7~8)"><span class="nav-icon">📝</span><span class="nav-text">결재</span><span class="nav-phase">v2.9-B</span></a>
+<a href="#vendor" class="nav-item nav-disabled" data-nav="vendor" title="4. 거래처·외주 (매입 마스터·발주서·정산서·NDA / Phase 2c-1)"><span class="nav-icon">🏢</span><span class="nav-text">거래처·외주</span><span class="nav-phase">2c-1</span></a>
+<a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="5. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
+<a href="#accounting" class="nav-item nav-disabled" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.8.0a · 8영역 (마스터 v1.0 정합)</div>
+<div class="sidebar-footer">admin v2.8.0c · 6영역 + 고객 360°</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -468,29 +467,21 @@ table.qt-items td.narrow input{text-align:right}
 </div>
 <div class="pagination"><span>전체 <b>-</b>건 · 페이지당 20건</span><span>1 / 1</span></div>
 </section>
-<!-- v2.8.0a 마스터 v1.0 정합 placeholder 6영역 (결재·공문·계약·거래처·인사·회계) -->
+<!-- v2.8.0c 사이드바 placeholder 4영역 (결재·거래처·인사·회계) -->
 <section id="view-approval" class="page" hidden>
-  <div class="page-header"><div><div class="page-title">결재 (3)</div><div class="page-subtitle">품의·지출결의·경비정산·인장 통합 인박스 — 마스터 #4</div></div></div>
+  <div class="page-header"><div><div class="page-title">결재</div><div class="page-subtitle">품의·지출결의·경비정산·인장 통합 인박스 (전사) — 마스터 #4</div></div></div>
   <div class="placeholder-box" id="ph-approval"></div>
 </section>
-<section id="view-notice" class="page" hidden>
-  <div class="page-header"><div><div class="page-title">공문 (4)</div><div class="page-subtitle">B2G 착수계·완료계·결과보고 — 마스터 #5</div></div></div>
-  <div class="placeholder-box" id="ph-notice"></div>
-</section>
-<section id="view-contract" class="page" hidden>
-  <div class="page-header"><div><div class="page-title">계약 (5)</div><div class="page-subtitle">4사업부 표준 계약서 + 전자서명 단계화 — 마스터 #6</div></div></div>
-  <div class="placeholder-box" id="ph-contract"></div>
-</section>
 <section id="view-vendor" class="page" hidden>
-  <div class="page-header"><div><div class="page-title">거래처·외주 (6)</div><div class="page-subtitle">매입 마스터·발주서·정산서·NDA — 마스터 #7</div></div></div>
+  <div class="page-header"><div><div class="page-title">거래처·외주</div><div class="page-subtitle">매입 마스터·발주서·정산서·NDA — 마스터 #7</div></div></div>
   <div class="placeholder-box" id="ph-vendor"></div>
 </section>
 <section id="view-hr" class="page" hidden>
-  <div class="page-header"><div><div class="page-title">인사 (7)</div><div class="page-subtitle">휴가·출장·근태·급여·근로계약 (본인분 RLS) — 마스터 #8</div></div></div>
+  <div class="page-header"><div><div class="page-title">인사</div><div class="page-subtitle">휴가·출장·근태·급여·근로계약 (본인분 RLS) — 마스터 #8</div></div></div>
   <div class="placeholder-box" id="ph-hr"></div>
 </section>
 <section id="view-accounting" class="page" hidden>
-  <div class="page-header"><div><div class="page-title">회계 (8)</div><div class="page-subtitle">통합 손익·매출·매입·세무사 export (1인 전용) — 마스터 #9</div></div></div>
+  <div class="page-header"><div><div class="page-title">회계</div><div class="page-subtitle">통합 손익·매출·매입·세무사 export (1인 전용) — 마스터 #9</div></div></div>
   <div class="placeholder-box" id="ph-accounting"></div>
 </section>
 <section id="view-customer-detail" class="page" hidden>
@@ -501,14 +492,18 @@ table.qt-items td.narrow input{text-align:right}
 <div class="customer-card-line" id="customer-card-line"><span class="ccl-empty">고객 정보 불러오는 중…</span></div>
 <div class="tabs">
 <button class="tab active" data-tab="overview">고객</button>
-<button class="tab" data-tab="quotations">견적 <span id="cust-qt-count" class="qt-tab-badge" hidden>0</span></button>
-<button class="tab" data-tab="files">파일</button>
-<button class="tab" data-tab="assignee">담당자</button>
-<button class="tab" data-tab="timeline">타임라인</button>
+<button class="tab" data-tab="quotations">💼 거래 <span id="cust-qt-count" class="qt-tab-badge" hidden>0</span></button>
+<button class="tab" data-tab="notice">📂 공문</button>
+<button class="tab" data-tab="contract">📃 계약</button>
+<button class="tab" data-tab="files">📎 파일</button>
+<button class="tab" data-tab="assignee">👤 담당자</button>
+<button class="tab" data-tab="timeline">🕒 타임라인</button>
 </div>
 <div class="detail-card">
 <div id="tab-overview" class="tab-panel active"><div class="empty-state"><div class="es-icon">📝</div><div>고객 정보</div><div style="margin-top:6px;font-size:12px;">Day 4에서 구현됩니다.</div></div></div>
-<div id="tab-quotations" class="tab-panel"><div id="cust-qt-list"><div class="empty-state"><div class="es-icon">⏳</div><div>견적 불러오는 중…</div></div></div></div>
+<div id="tab-quotations" class="tab-panel"><div id="cust-qt-list"><div class="empty-state"><div class="es-icon">⏳</div><div>거래 불러오는 중…</div></div></div></div>
+<div id="tab-notice" class="tab-panel"><div class="empty-state"><div class="es-icon">📂</div><div>공문 (B2G 한정)</div><div style="margin-top:6px;font-size:12px;">착수계·완료계·결과보고 — Phase 2d 활성화 예정.</div></div></div>
+<div id="tab-contract" class="tab-panel"><div class="empty-state"><div class="es-icon">📃</div><div>계약</div><div style="margin-top:6px;font-size:12px;">4사업부 표준 계약서 + 전자서명 단계화 — Phase 2b 활성화 예정.</div></div></div>
 <div id="tab-files" class="tab-panel"><div class="empty-state"><div class="es-icon">📎</div><div>파일 관리</div><div style="margin-top:6px;font-size:12px;">Day 5에서 구현됩니다.</div></div></div>
 <div id="tab-assignee" class="tab-panel"><div class="empty-state"><div class="es-icon">👤</div><div>담당자</div><div style="margin-top:6px;font-size:12px;">Day 4-4에서 구현됩니다.</div></div></div>
 <div id="tab-timeline" class="tab-panel"><div class="tl-head"><span class="tl-title">🕒 타임라인</span><span class="tl-meta" id="tl-meta">—</span></div><div id="tl-list" class="tl-list"><div class="empty-state"><div class="es-icon">⏳</div><div>불러오는 중…</div></div></div><div class="tl-more-wrap"><button id="tl-more" class="btn-secondary" hidden>더보기</button></div></div>
@@ -654,14 +649,13 @@ state.qt = {
   currentQuotationNo: null
 };
 state.currentQuotationId = null;
-/* v2.8.0a 정정 — state 마스터 v1.0 영역 정합 (거래는 view-quotation-list로 라벨 매핑 / placeholder 6 영역) */
-state.appr   = state.appr   || { mode:'placeholder', phase:'v2.9-B', when:'Day 7~8' };
-state.notice = state.notice || { mode:'placeholder', phase:'Phase 2d', when:'B2G 한정' };
-state.contract = state.contract || { mode:'placeholder', phase:'Phase 2b', when:'4사업부 표준' };
+/* v2.8.0c — state 마스터 v1.0 1-3 데이터 흐름도 정합 / 사이드바 6 영역 + 고객 360° */
+state.appr   = state.appr   || { mode:'placeholder', phase:'v2.9-B',    when:'Day 7~8' };
 state.vendor = state.vendor || { mode:'placeholder', phase:'Phase 2c-1', when:'매입 마스터' };
-state.hr     = state.hr     || { mode:'placeholder', phase:'Phase 2f', when:'급여 트리거' };
-state.acc    = state.acc    || { mode:'placeholder', phase:'Phase 2e', when:'회계 1인 전용' };
-state.activeTab = 'customers';
+state.hr     = state.hr     || { mode:'placeholder', phase:'Phase 2f',  when:'급여 트리거' };
+state.acc    = state.acc    || { mode:'placeholder', phase:'Phase 2e',  when:'회계 1인 전용' };
+/* 거래·공문·계약은 고객 상세 sub-tab으로 이동 (고객 종속 데이터) */
+state.activeTab = 'dashboard';
 const PAGE_SIZE=50;
 
 /* ===== 사업부별 상담 체크리스트 4종 (v2.0 통합설계서 6장) ===== */
@@ -1905,18 +1899,19 @@ function enterApp(){
   const nm=(u.user_metadata&&(u.user_metadata.full_name||u.user_metadata.name))||u.email;
   $('#user-name').textContent=nm;
   $('#user-email').textContent=u.email;
-  if(!location.hash||location.hash==='#login'||location.hash==='#')location.hash='#customers';/* v2.8.0a 마스터 v1.0 / 고객 = 사이드바 1번 */
+  if(!location.hash||location.hash==='#login'||location.hash==='#')location.hash='#dashboard';/* v2.8.0c — KPI 첫 화면 (마스터 1-1 #1) */
   handleRoute();
 }
 
 function handleRoute(){
   if(!state.user){showLoginView();return;}
-  const raw=(location.hash||'').replace(/^#/,'')||'customers';/* v2.8.0a 마스터 v1.0 */
+  const raw=(location.hash||'').replace(/^#/,'')||'dashboard';/* v2.8.0c — KPI 첫 화면 */
   const [page,param]=raw.split('/');
   $$('.page').forEach(p=>p.hidden=true);
   $$('.nav-item[data-nav]').forEach(n=>n.classList.remove('active'));
   switch(page){
     case 'dashboard':
+      state.activeTab='dashboard';
       show('#view-dashboard');
       $('.nav-item[data-nav="dashboard"]').classList.add('active');
       loadDashboard();
@@ -1946,42 +1941,29 @@ function handleRoute(){
       loadCustomerDetail(inq);
       break;
     }
-    /* v2.8.0a — 거래 (마스터 #3 / 견적·납품·거래명세 통합) — 견적 view 그대로 라벨 매핑 */
+    /* v2.8.0c — 거래·견적 (사이드바에 X / 고객 상세 sub-tab으로 이동) — 백워드 호환: 고객 상세 거래 sub-tab 또는 고객 목록으로 redirect */
     case 'trade':
-    case 'quotation':{/* 백워드 호환 alias */
-      state.activeTab='trade';
-      $('.nav-item[data-nav="trade"]').classList.add('active');
-      if(!param){
-        show('#view-quotation-list');
-        if(typeof loadQuotationList==='function')loadQuotationList();
-      } else if(param==='new'){
+    case 'quotation':{
+      if(!param){/* 사이드바 거래 영역 제거 → 고객 목록으로 이동 (대표님 명시) */
+        location.hash='#customers';return;
+      } else if(param==='new'){/* 신규 거래 작성 — 거래 페이지에서 고객 선택 (기존 동작 보존) */
+        state.activeTab='customers';
         show('#view-quotation-create');
         if(typeof loadQuotationCreate==='function')loadQuotationCreate();
-      } else {
+      } else {/* 기존 거래 상세 직접 URL — 백워드 호환 유지 */
+        state.activeTab='customers';
         show('#view-quotation-detail');
         state.currentQuotationId=decodeURIComponent(param);
         if(typeof renderQuotationDetail==='function')renderQuotationDetail(state.currentQuotationId);
       }
       break;
     }
-    /* v2.8.0a 마스터 v1.0 placeholder 6 영역 (결재·공문·계약·거래처·인사·회계) */
+    /* v2.8.0c — placeholder 4 사이드바 영역 (결재·거래처·인사·회계) */
     case 'approval':
       state.activeTab='approval';
       show('#view-approval');
       $('.nav-item[data-nav="approval"]').classList.add('active');
       if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('approval');
-      break;
-    case 'notice':
-      state.activeTab='notice';
-      show('#view-notice');
-      $('.nav-item[data-nav="notice"]').classList.add('active');
-      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('notice');
-      break;
-    case 'contract':
-      state.activeTab='contract';
-      show('#view-contract');
-      $('.nav-item[data-nav="contract"]').classList.add('active');
-      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('contract');
       break;
     case 'vendor':
       state.activeTab='vendor';
@@ -2001,23 +1983,25 @@ function handleRoute(){
       $('.nav-item[data-nav="accounting"]').classList.add('active');
       if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('accounting');
       break;
-    /* v2.8.0a — admin·dashboard alias 보존 (사이드바에는 표시 X / 직접 URL 접근만) */
+    /* v2.8.0c — 공문·계약은 고객 상세 sub-tab으로 이동 (고객 종속 데이터) — 직접 URL은 고객 목록으로 redirect */
+    case 'notice':
+    case 'contract':
+      location.hash='#customers';return;
+    /* admin alias = dashboard (백워드 호환) */
     case 'admin':
-    case 'dashboard':
-      state.activeTab='admin';
+      state.activeTab='dashboard';
       show('#view-dashboard');
+      $('.nav-item[data-nav="dashboard"]').classList.add('active');
       loadDashboard();
       break;
-    default:location.hash='#customers';/* v2.8.0a 기본 탭 = 고객 (사이드바 1번) */
+    default:location.hash='#dashboard';/* v2.8.0c 기본 = 대시보드 (KPI 첫 화면) */
   }
 }
 
-/* v2.8.0a 마스터 v1.0 정합 — placeholder 렌더링 (6 영역: 결재·공문·계약·거래처·인사·회계) */
+/* v2.8.0c — placeholder 렌더링 (4 사이드바 영역: 결재·거래처·인사·회계 / 공문·계약은 고객 상세 sub-tab으로 이동) */
 function qtRenderPlaceholder(tab){
   const meta = {
     approval:   { title:'결재',         icon:'📝', phase:'v2.9-B',     when:'Day 7~8',     desc:'품의·지출결의·경비정산·인장 통합 인박스 (단일 approvals 엔진 / 부장 SKIP / 사전 위임).' },
-    notice:     { title:'공문',         icon:'📂', phase:'Phase 2d',  when:'B2G 한정',     desc:'B2G(관공서) 착수계·완료계·결과보고 작성·발송 관리.' },
-    contract:   { title:'계약',         icon:'📃', phase:'Phase 2b',  when:'4사업부 표준', desc:'4사업부 표준 계약서 (행사·여행·마케팅·교육) + 전자서명 단계화.' },
     vendor:     { title:'거래처·외주',  icon:'🏢', phase:'Phase 2c-1',when:'매입 마스터',  desc:'매입 거래처 마스터·발주서·정산서·NDA 관리.' },
     hr:         { title:'인사',         icon:'👤', phase:'Phase 2f',  when:'급여 트리거',  desc:'휴가·출장·근태·급여·근로계약 (본인분 RLS / 회계 트리거).' },
     accounting: { title:'회계',         icon:'💰', phase:'Phase 2e',  when:'1인 전용',     desc:'통합 손익·매출·매입·세무사 export (이동환 1인 전용 RLS / 가장 마지막).' }

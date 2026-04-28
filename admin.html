@@ -45,6 +45,16 @@ input,select,textarea{font-family:inherit;font-size:inherit}[hidden]{display:non
 .nav-item:hover{background:var(--bg-hover);color:var(--primary)}
 .nav-item.active{background:var(--accent-light);color:var(--primary)}
 .nav-item .nav-icon{width:18px;text-align:center;font-size:15px}
+.nav-item.nav-disabled{opacity:.55;cursor:default;color:var(--text-muted)}
+.nav-item.nav-disabled:hover{background:transparent;color:var(--text-muted)}
+.nav-item .nav-phase{margin-left:auto;font-size:10.5px;color:var(--warning);font-weight:700;background:#fff7e6;padding:1px 6px;border-radius:8px}
+.nav-item.active .nav-phase{background:var(--accent-light);color:var(--primary)}
+.nav-item.nav-external-disabled{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;color:var(--text-muted)}
+.placeholder-box{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:380px;padding:60px 24px;background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow);text-align:center;color:var(--text-light)}
+.placeholder-box .ph-icon{font-size:64px;margin-bottom:18px;opacity:.4}
+.placeholder-box .ph-title{font-size:22px;font-weight:800;color:var(--primary);margin-bottom:10px}
+.placeholder-box .ph-msg{font-size:14.5px;line-height:1.7;max-width:520px;color:var(--text-light)}
+.placeholder-box .ph-phase{display:inline-block;margin-top:18px;padding:8px 16px;background:var(--accent-light);color:var(--primary);font-size:13px;font-weight:700;border-radius:20px}
 .sidebar-section-title{padding:12px 14px 4px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
 .sidebar-footer{padding:12px 16px;border-top:1px solid var(--border-light);font-size:11px;color:var(--text-muted);text-align:center}
 .content{flex:1;padding:24px 32px;min-width:0;overflow-x:auto}
@@ -397,14 +407,18 @@ table.qt-items td.narrow input{text-align:right}
 <div class="app-body">
 <aside class="sidebar">
 <nav>
-<a href="#dashboard" class="nav-item" data-nav="dashboard"><span class="nav-icon">📊</span><span class="nav-text">대시보드</span></a>
-<a href="#customers" class="nav-item" data-nav="customers"><span class="nav-icon">📋</span><span class="nav-text">문의 목록</span></a>
-<a href="#quotation" class="nav-item" data-nav="quotation"><span class="nav-icon">💰</span><span class="nav-text">견적</span></a>
-<div class="sidebar-section-title">추후 연결</div>
-<span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📁</span><span class="nav-text">파일함</span></span>
-<span class="nav-item" style="opacity:.45;cursor:not-allowed;"><span class="nav-icon">📈</span><span class="nav-text">보고서</span></span>
+<a href="#quotation" class="nav-item" data-nav="quotation" title="A 견적"><span class="nav-icon">📄</span><span class="nav-text">견적</span></a>
+<a href="#trade" class="nav-item nav-disabled" data-nav="trade" title="B 거래 (v2.8.1 / 5월 1일 예정)"><span class="nav-icon">💱</span><span class="nav-text">거래</span><span class="nav-phase">5/1</span></a>
+<a href="#customers" class="nav-item" data-nav="customers" title="C 고객"><span class="nav-icon">👥</span><span class="nav-text">고객</span></a>
+<a href="#expense" class="nav-item nav-disabled" data-nav="expense" title="D 지출결의 (v2.8.2 / 5월 3일 예정)"><span class="nav-icon">💳</span><span class="nav-text">지출결의</span><span class="nav-phase">5/3</span></a>
+<a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="E 인사 (v2.8.4 / 5월 7일 예정)"><span class="nav-icon">🧑</span><span class="nav-text">인사</span><span class="nav-phase">5/7</span></a>
+<a href="#approval" class="nav-item nav-disabled" data-nav="approval" title="F 결재 (v2.8.3 / 5월 5일 예정)"><span class="nav-icon">✅</span><span class="nav-text">결재</span><span class="nav-phase">5/5</span></a>
+<a href="#accounting" class="nav-item nav-disabled" data-nav="accounting" title="H 회계 (v2.8.5 / 5월 9일 예정)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">5/9</span></a>
+<a href="#admin" class="nav-item" data-nav="admin" title="I 관리자 (대시보드·KPI)"><span class="nav-icon">⚙</span><span class="nav-text">관리자</span></a>
+<div class="sidebar-section-title" style="margin-top:18px;">외부 시스템</div>
+<span class="nav-item nav-external-disabled" style="opacity:.45;cursor:not-allowed;" title="마케팅 시스템 (Day 14~17 / 5월 11일 예정)"><span class="nav-icon">🌐</span><span class="nav-text">마케팅 시스템</span><span class="nav-phase">5/11</span></span>
 </nav>
-<div class="sidebar-footer">admin v2.0 · Phase 2a 견적</div>
+<div class="sidebar-footer">admin v2.8.0 셸 · 8영역 + 마케팅 분리</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -455,6 +469,27 @@ table.qt-items td.narrow input{text-align:right}
 </table>
 </div>
 <div class="pagination"><span>전체 <b>-</b>건 · 페이지당 20건</span><span>1 / 1</span></div>
+</section>
+<!-- v2.8.0 셸 — placeholder 5영역 (B·D·E·F·H) -->
+<section id="view-trade" class="page" hidden>
+  <div class="page-header"><div><div class="page-title">거래 (B)</div><div class="page-subtitle">거래 5단계 관리 — 영역 B</div></div></div>
+  <div class="placeholder-box" id="ph-trade"></div>
+</section>
+<section id="view-expense" class="page" hidden>
+  <div class="page-header"><div><div class="page-title">지출결의 (D)</div><div class="page-subtitle">지출결의 결재 — 영역 D</div></div></div>
+  <div class="placeholder-box" id="ph-expense"></div>
+</section>
+<section id="view-hr" class="page" hidden>
+  <div class="page-header"><div><div class="page-title">인사 (E)</div><div class="page-subtitle">직원·근태·계약 — 영역 E</div></div></div>
+  <div class="placeholder-box" id="ph-hr"></div>
+</section>
+<section id="view-approval" class="page" hidden>
+  <div class="page-header"><div><div class="page-title">결재 (F)</div><div class="page-subtitle">결재 통합 (단일 엔진) — 영역 F</div></div></div>
+  <div class="placeholder-box" id="ph-approval"></div>
+</section>
+<section id="view-accounting" class="page" hidden>
+  <div class="page-header"><div><div class="page-title">회계 (H)</div><div class="page-subtitle">입출금·세무·재무제표 — 영역 H</div></div></div>
+  <div class="placeholder-box" id="ph-accounting"></div>
 </section>
 <section id="view-customer-detail" class="page" hidden>
 <div class="detail-head">
@@ -613,9 +648,16 @@ state.qt = {
   note: '',
   isGovernment: false,
   attachments: {co:false, port:false, biz:false, tour:false, women:false, merge:false},
-  currentQuotationId: null
+  currentQuotationId: null,
+  currentQuotationNo: null
 };
 state.currentQuotationId = null;
+/* v2.8.0 셸 — state 5 네임스페이스 (placeholder 영역) */
+state.tx = state.tx || { mode:'placeholder', phase:'v2.8.1', date:'5월 1일' };
+state.hr = state.hr || { mode:'placeholder', phase:'v2.8.4', date:'5월 7일' };
+state.appr = state.appr || { mode:'placeholder', phase:'v2.8.3', date:'5월 5일' };
+state.acc = state.acc || { mode:'placeholder', phase:'v2.8.5', date:'5월 9일' };
+state.activeTab = 'quotation';
 const PAGE_SIZE=50;
 
 /* ===== 사업부별 상담 체크리스트 4종 (v2.0 통합설계서 6장) ===== */
@@ -1859,13 +1901,13 @@ function enterApp(){
   const nm=(u.user_metadata&&(u.user_metadata.full_name||u.user_metadata.name))||u.email;
   $('#user-name').textContent=nm;
   $('#user-email').textContent=u.email;
-  if(!location.hash||location.hash==='#login'||location.hash==='#')location.hash='#dashboard';
+  if(!location.hash||location.hash==='#login'||location.hash==='#')location.hash='#quotation';/* v2.8.0 Q3-C: 견적 = 대표님 본업 */
   handleRoute();
 }
 
 function handleRoute(){
   if(!state.user){showLoginView();return;}
-  const raw=(location.hash||'').replace(/^#/,'')||'dashboard';
+  const raw=(location.hash||'').replace(/^#/,'')||'quotation';/* v2.8.0 Q3-C */
   const [page,param]=raw.split('/');
   $$('.page').forEach(p=>p.hidden=true);
   $$('.nav-item[data-nav]').forEach(n=>n.classList.remove('active'));
@@ -1899,8 +1941,9 @@ function handleRoute(){
       loadCustomerDetail(inq);
       break;
     }
-    /* Phase 2a v2.0: 견적 라우트 3종 */
+    /* Phase 2a v2.0: 견적 라우트 3종 (영역 A) */
     case 'quotation':{
+      state.activeTab='quotation';
       $('.nav-item[data-nav="quotation"]').classList.add('active');
       if(!param){
         show('#view-quotation-list');
@@ -1915,9 +1958,67 @@ function handleRoute(){
       }
       break;
     }
-    default:location.hash='#dashboard';
+    /* v2.8.0 셸 — placeholder 5영역 (B 거래 / D 지출결의 / E 인사 / F 결재 / H 회계) */
+    case 'trade':
+      state.activeTab='trade';
+      show('#view-trade');
+      $('.nav-item[data-nav="trade"]').classList.add('active');
+      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('trade');
+      break;
+    case 'expense':
+      state.activeTab='expense';
+      show('#view-expense');
+      $('.nav-item[data-nav="expense"]').classList.add('active');
+      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('expense');
+      break;
+    case 'hr':
+      state.activeTab='hr';
+      show('#view-hr');
+      $('.nav-item[data-nav="hr"]').classList.add('active');
+      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('hr');
+      break;
+    case 'approval':
+      state.activeTab='approval';
+      show('#view-approval');
+      $('.nav-item[data-nav="approval"]').classList.add('active');
+      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('approval');
+      break;
+    case 'accounting':
+      state.activeTab='accounting';
+      show('#view-accounting');
+      $('.nav-item[data-nav="accounting"]').classList.add('active');
+      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('accounting');
+      break;
+    /* v2.8.0 셸 — admin alias = dashboard view 활용 (영역 I 관리자) */
+    case 'admin':
+      state.activeTab='admin';
+      show('#view-dashboard');
+      $('.nav-item[data-nav="admin"]').classList.add('active');
+      loadDashboard();
+      break;
+    default:location.hash='#quotation';/* v2.8.0 Q3-C 기본 탭 */
   }
 }
+
+/* v2.8.0 셸 — placeholder 렌더링 (5영역) */
+function qtRenderPlaceholder(tab){
+  const meta = {
+    trade:      { title:'거래',     icon:'💱', phase:'v2.8.1', date:'5월 1일',  desc:'거래 5단계(견적→계약→진행→완료→정산) 관리.' },
+    expense:    { title:'지출결의', icon:'💳', phase:'v2.8.2', date:'5월 3일',  desc:'지출결의 작성·결재·증빙 관리.' },
+    approval:   { title:'결재',     icon:'✅', phase:'v2.8.3', date:'5월 5일',  desc:'결재 통합 (단일 엔진 / 부장 SKIP).' },
+    hr:         { title:'인사',     icon:'🧑', phase:'v2.8.4', date:'5월 7일',  desc:'직원·근태·계약·연차 관리.' },
+    accounting: { title:'회계',     icon:'💰', phase:'v2.8.5', date:'5월 9일',  desc:'입출금·세무·재무제표 통합.' }
+  }[tab];
+  if(!meta) return;
+  const el = document.getElementById('ph-' + tab);
+  if(!el) return;
+  el.innerHTML =
+    '<div class="ph-icon">' + meta.icon + '</div>' +
+    '<div class="ph-title">' + meta.title + ' 영역 — 준비 중</div>' +
+    '<div class="ph-msg">' + meta.desc + '<br>해당 영역은 다음 패치(' + meta.phase + ', ' + meta.date + ' 예정)에서 활성화됩니다.</div>' +
+    '<div class="ph-phase">' + meta.phase + ' / ' + meta.date + ' 예정</div>';
+}
+window.qtRenderPlaceholder = qtRenderPlaceholder;
 
 function initTabs(){
   $$('.tab').forEach(tab=>{
@@ -2858,8 +2959,9 @@ async function qtGeneratePDF(silent, docType){
     doc.setTextColor(0,0,0);
     doc.setFontSize(20);
     doc.text(docTitle, 105, titleY, {align:'center'});
+    /* v2.8.0 셸 — DOM 참조 0건 / state.qt.currentQuotationNo 우선 (textContent null 근본 해결) */
     const qnoBase = state.qt.currentQuotationId
-      ? ($('#qt-pv-no').textContent || ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001'))
+      ? (state.qt.currentQuotationNo || ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001'))
       : ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001 (가상)');
     const qno = (docType === 'statement') ? qnoBase.replace(/^Q-/, 'T-').replace(/\(가상\)/, '(거래명세서)') : (docType === 'delivery') ? qnoBase.replace(/^Q-/, 'D-').replace(/\(가상\)/, '(납품서)') : qnoBase;
     doc.setFontSize(10);

@@ -3264,7 +3264,9 @@ async function renderQuotationDetail(qid){
         '<button class="qt-btn-pdf" onclick="qtDetailGeneratePDF(\'quote\')">📄 견적서 PDF</button>'+
         ((r.상태==='수락'||r.상태==='발송완료'||r.상태==='재발송') ? '<button class="qt-btn-pdf" onclick="qtDetailGeneratePDF(\'delivery\')">📦 납품서 PDF</button>' : '')+
         ((r.상태==='수락'||r.상태==='발송완료'||r.상태==='재발송') ? '<button class="qt-btn-pdf" onclick="qtDetailGeneratePDF(\'statement\')">📊 거래명세서 PDF</button>' : '')+
-        '<button class="qt-btn-secondary" onclick="qtSendPlaceholder()">✉ 메일 재발송</button>'+
+        '<button class="qt-btn-secondary" onclick="qtSendFromDetail(\'quote\')">✉ 견적서 재발송</button>'+
+        ((r.상태==='수락'||r.상태==='발송완료'||r.상태==='재발송') ? '<button class="qt-btn-secondary" onclick="qtSendFromDetail(\'delivery\')">✉ 납품서 발송</button>' : '')+
+        ((r.상태==='수락'||r.상태==='발송완료'||r.상태==='재발송') ? '<button class="qt-btn-secondary" onclick="qtSendFromDetail(\'statement\')">✉ 거래명세서 발송</button>' : '')+
         (r.상태!=='무효화' ? '<button class="qt-btn-secondary" style="border-color:#D63437;color:#D63437" onclick="qtVoidQuotation(\''+qid+'\')">🚫 무효화</button>' : '<span style="padding:10px 14px;color:#C62828;font-weight:600">🚫 무효화 견적</span>')+
         '<button class="qt-btn-secondary" onclick="qtCopyQuotation(\''+qid+'\')">📋 복사하여 새 견적</button>'+
       '</div>';
@@ -3272,6 +3274,33 @@ async function renderQuotationDetail(qid){
     console.error('[renderQuotationDetail]',e);
     body.innerHTML = '<div class="qt-help" style="border-color:#D63437;color:#721C24;background:#F8D7DA">견적 상세 로드 실패: '+escapeHtml(e.message||String(e))+'</div>';
   }
+}
+
+
+/* v2.7-fix7: 견적 상세에서 발송 — state.qtDetailRow 데이터로 state.qt 채운 후 qtSendQuotation 호출 */
+async function qtSendFromDetail(docType){
+  const r = state.qtDetailRow;
+  if(!r){ toast('견적 정보 로드 실패','error'); return; }
+  // state.qt 채우기 (qtSendQuotation 검증 통과용)
+  state.qt.customerId = r.customer_id;
+  state.qt.bu = r.사업부;
+  state.qt.title = r.제목 || '';
+  state.qt.items = Array.isArray(r.세부항목) ? JSON.parse(JSON.stringify(r.세부항목)) : [];
+  state.qt.recipient = { co: r.수신_회사명||'', dept: r.수신_부서||'', name: r.수신_담당자||'', title: r.수신_직위||'' };
+  state.qt.options = state.qt.options || {};
+  state.qt.options.feeShow = !!r.대행료_표기;
+  state.qt.options.vatShow = !!r.vat_표기;
+  state.qt.options.feeRate = r.대행료율 || 7.5;
+  state.qt.options.salePrice = !!r.판매가_컬럼;
+  state.qt.options.trim = r.절사_단위 || '없음';
+  state.qt.isGovernment = !!r.is_government;
+  state.qt.payment = r.결제조건 || '';
+  state.qt.note = r.비고 || '';
+  state.qt.attachments = r.첨부_옵션 || {};
+  state.qt.account = (r.첨부_옵션 && r.첨부_옵션.account) || '';
+  state.qt.currentQuotationId = r.id;
+  state.qt.currentQuotationNo = r.견적번호;
+  await qtSendQuotation(docType);
 }
 
 /* qtDetailGeneratePDF — v2.6 docType 인자 추가 */
@@ -3606,7 +3635,7 @@ Object.assign(window, {
   loadQuotationList, qtRenderQuotationCards, qtBuildListCardHtml,
   qtFormatYMD, qtFormatYMDHM, qtStatusColor,
   // 상세 (영역 E)
-  renderQuotationDetail, qtDetailGeneratePDF, qtVoidQuotation,
+  renderQuotationDetail, qtDetailGeneratePDF, qtSendFromDetail, qtVoidQuotation,
   qtCopyQuotation, qtApplyCopySource,
   // v2.6 영역 G — 고객 상세 견적 카드
   loadCustomerQuotations, qtBuildCustomerCard, qtSendFromCard, qtChangeStatus

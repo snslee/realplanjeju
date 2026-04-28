@@ -3176,7 +3176,7 @@ async function renderQuotationDetail(qid){
     const t2 = $('#qt-detail-sub');
     if(t2) t2.textContent = (r.제목||'(제목 없음)') + ' / ' + (r.사업부||'-') + ' / ' + (r.상태||'-');
 
-    const items = Array.isArray(r.항목) ? r.항목 : [];
+    const items = Array.isArray(r.세부항목) ? r.세부항목 : [];
     const opts = r.첨부_옵션 || {};
     const att = opts.attachments || {};
     const itemsRows = items.length===0 ?
@@ -3266,7 +3266,7 @@ async function qtDetailGeneratePDF(docType){
     co: r.수신_회사명||'', dept: r.수신_부서||'',
     name: r.수신_담당자||'', title: r.수신_직위||''
   };
-  state.qt.items = Array.isArray(r.항목) ? r.항목 : [];
+  state.qt.items = Array.isArray(r.세부항목) ? r.세부항목 : [];
   state.qt.options.feeShow = !!r.대행료_표기;
   state.qt.options.vatShow = !!r.vat_표기;
   state.qt.options.salePrice = !!r.판매가_컬럼;
@@ -3340,7 +3340,7 @@ function qtApplyCopySource(r){
     co: r.수신_회사명||'', dept: r.수신_부서||'',
     name: r.수신_담당자||'', title: r.수신_직위||''
   };
-  state.qt.items = Array.isArray(r.항목) ? JSON.parse(JSON.stringify(r.항목)) : [];
+  state.qt.items = Array.isArray(r.세부항목) ? JSON.parse(JSON.stringify(r.세부항목)) : [];
   state.qt.options.feeShow = !!r.대행료_표기;
   state.qt.options.vatShow = !!r.vat_표기;
   state.qt.options.salePrice = !!r.판매가_컬럼;
@@ -3503,7 +3503,7 @@ async function qtSendFromCard(qid){
       co: r.수신_회사명||'', dept: r.수신_부서||'',
       name: r.수신_담당자||'', title: r.수신_직위||''
     };
-    state.qt.items = Array.isArray(r.항목) ? r.항목 : [];
+    state.qt.items = Array.isArray(r.세부항목) ? r.세부항목 : [];
     state.qt.options.feeShow = !!r.대행료_표기;
     state.qt.options.vatShow = !!r.vat_표기;
     state.qt.options.salePrice = !!r.판매가_컬럼;

@@ -2606,6 +2606,7 @@ function qtSendPlaceholder(){
 async function qtSendQuotation(docType){
   docType = docType || 'quote';
   const isDelivery = (docType === 'delivery');
+  const isStatement = (docType === 'statement');
   const docLabel = isDelivery ? '납품서' : '견적서';
   // 1) 작성 화면 검증 (state.qt 기반)
   if(!state.qt.customerId){toast('고객을 먼저 선택해 주세요','warn');return;}
@@ -2675,7 +2676,7 @@ async function qtSendQuotation(docType){
       attachments: state.qt.attachments
     },
     pdf_base64: pdfBase64,
-    pdf_filename: (isDelivery ? 'delivery_' : 'quotation_') + (quotationId||'preview') + '.pdf',
+    pdf_filename: (isStatement ? 'statement_' : isDelivery ? 'delivery_' : 'quotation_') + (quotationId||'preview') + '.pdf',
     sent_at: new Date().toISOString(),
     test_mode: false,
     schema_version: 'v1.0'
@@ -2774,7 +2775,7 @@ async function qtLoadSeal(){
 /* qtGeneratePDF — v2.6 docType 분기 (quote / delivery) */
 async function qtGeneratePDF(silent, docType){
   docType = docType || 'quote';
-  const docTitle = docType === 'delivery' ? '납 품 서' : '견 적 서';
+  const docTitle = docType === 'statement' ? '거 래 명 세 서' : (docType === 'delivery' ? '납 품 서' : '견 적 서');
   if(!state.qt.bu){toast('사업부를 먼저 선택해 주세요','warn');return;}
   if(state.qt.items.length===0){toast('본문 항목을 1개 이상 추가해 주세요','warn');return;}
 
@@ -2838,7 +2839,7 @@ async function qtGeneratePDF(silent, docType){
     const qnoBase = state.qt.currentQuotationId
       ? ($('#qt-pv-no').textContent || ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001'))
       : ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001 (가상)');
-    const qno = (docType === 'delivery') ? qnoBase.replace(/^Q-/, 'D-').replace(/\(가상\)/, '(납품서)') : qnoBase;
+    const qno = (docType === 'statement') ? qnoBase.replace(/^Q-/, 'T-').replace(/\(가상\)/, '(거래명세서)') : (docType === 'delivery') ? qnoBase.replace(/^Q-/, 'D-').replace(/\(가상\)/, '(납품서)') : qnoBase;
     doc.setFontSize(10);
     doc.text(qno, 105, titleY+7, {align:'center'});
 
@@ -3240,6 +3241,7 @@ async function renderQuotationDetail(qid){
       '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">'+
         '<button class="qt-btn-pdf" onclick="qtDetailGeneratePDF(\'quote\')">📄 견적서 PDF</button>'+
         ((r.상태==='수락'||r.상태==='발송완료'||r.상태==='재발송') ? '<button class="qt-btn-pdf" onclick="qtDetailGeneratePDF(\'delivery\')">📦 납품서 PDF</button>' : '')+
+        ((r.상태==='수락'||r.상태==='발송완료'||r.상태==='재발송') ? '<button class="qt-btn-pdf" onclick="qtDetailGeneratePDF(\'statement\')">📊 거래명세서 PDF</button>' : '')+
         '<button class="qt-btn-secondary" onclick="qtSendPlaceholder()">✉ 메일 재발송</button>'+
         (r.상태!=='무효화' ? '<button class="qt-btn-secondary" style="border-color:#D63437;color:#D63437" onclick="qtVoidQuotation(\''+qid+'\')">🚫 무효화</button>' : '<span style="padding:10px 14px;color:#C62828;font-weight:600">🚫 무효화 견적</span>')+
         '<button class="qt-btn-secondary" onclick="qtCopyQuotation(\''+qid+'\')">📋 복사하여 새 견적</button>'+

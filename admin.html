@@ -2242,6 +2242,8 @@ async function loadQuotationCreate(){
   $('#quotation-create-body').innerHTML = qtBuildCreateForm();
   // 고객 드롭다운 채움
   await qtLoadCustomers();
+  // v2.8.0d — 거래 sub-tab에서 진입한 경우 현재 고객 자동 선택
+  if(state.currentCustomerId && typeof qtSelectCustomer === 'function'){ qtSelectCustomer(state.currentCustomerId); }
   qtRenderItems();
   qtUpdateAll();
   qtUpdateBuPreview();
@@ -3565,7 +3567,7 @@ async function loadCustomerQuotations(접수번호){
     const idMap = {};
     items.forEach(it=>{idMap[it.id]=it;});
     const heads = items.filter(it=>!it.parent_quotation_id || !idMap[it.parent_quotation_id]);
-    let html = '<div class="qt-help" style="background:#E8F5E9;color:#1B5E20;border-left-color:#2E7D32">총 '+items.length+'건 표시 · 최신순</div>';
+    let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="qt-help" style="background:#E8F5E9;color:#1B5E20;border-left-color:#2E7D32;flex:1;margin:0">총 '+items.length+'건 표시 · 최신순</div><a href="#quotation/new" class="btn-primary" style="padding:8px 14px;font-size:13px;font-weight:700;margin-left:12px">+ 신규 견적</a></div>';
     heads.forEach(head=>{
       html += qtBuildCustomerCard(head, false);
       const children = items.filter(it=>it.parent_quotation_id===head.id);

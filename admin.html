@@ -447,7 +447,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="5. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
 <a href="#accounting" class="nav-item nav-disabled" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.8.3 · 견적 상세 chevron path 본 구현</div>
+<div class="sidebar-footer">admin v2.8.4 · 수신자 이메일 prompt 정합 fix</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -2760,7 +2760,7 @@ async function qtSendQuotation(docType){
   }
 
   // 3) 수신자 이메일 확보 (간단 prompt — 다음 세션에 customers 테이블 email 필드로 대체)
-  const _defaultEmail = (state.currentRow && state.currentRow['이메일']) || (state.qt.customerInfo && state.qt.customerInfo['이메일']) || 'snslee82@gmail.com';
+  const _defaultEmail = (state.qt.customerInfo && state.qt.customerInfo['이메일']) || (state.currentRow && state.currentRow['이메일']) || 'snslee82@gmail.com';   /* v2.8.4 — customerInfo 우선 (정확) → currentRow (fallback) */
   const recipient = prompt('수신자 이메일 ('+docLabel+' 발송)', _defaultEmail);
   if(!recipient){return;}
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(recipient.trim())){toast('이메일 형식 오류','warn');return;}
@@ -3464,6 +3464,12 @@ async function qtSendFromDetail(docType){
   state.qt.account = (r.첨부_옵션 && r.첨부_옵션.account) || '';
   state.qt.currentQuotationId = r.id;
   state.qt.currentQuotationNo = r.견적번호;
+  /* v2.8.4 — 수신자 이메일 정확 매핑 (prompt 기본값 / state.currentRow stale 방지) */
+  state.qt.customerInfo = {
+    회사명: r['수신_회사명']||'',
+    담당자: r['수신_담당자']||'',
+    이메일: r['수신자이메일']||''
+  };
   await qtSendQuotation(docType);
 }
 

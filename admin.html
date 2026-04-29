@@ -552,8 +552,29 @@ table.qt-items td.narrow input{text-align:right}
   <div class="placeholder-box" id="ph-approval"></div>
 </section>
 <section id="view-vendor" class="page" hidden>
-  <div class="page-header"><div><div class="page-title">거래처·외주</div><div class="page-subtitle">매입 마스터·발주서·정산서·NDA — 마스터 #7</div></div></div>
-  <div class="placeholder-box" id="ph-vendor"></div>
+  <div class="page-header"><div><div class="page-title">🏢 거래처·외주</div><div class="page-subtitle">매입 마스터·외주 거래처 (vd_vendors / sql/020 v2 + sql/021b 4사업부)</div></div></div>
+  <div class="vendor-toolbar" style="display:flex;gap:8px;align-items:center;padding:12px 0;flex-wrap:wrap">
+    <input type="text" id="vendor-search" placeholder="거래처명·대표자·전화·이메일·사업자번호 검색" style="flex:1;min-width:240px;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+    <select id="vendor-부서-filter" style="padding:8px;border:1px solid #d1d5db;border-radius:6px">
+      <option value="">전체 사업부</option>
+      <option value="국내여행">국내여행</option>
+      <option value="행사이벤트">행사이벤트</option>
+      <option value="온라인마케팅">온라인마케팅</option>
+      <option value="마케팅교육">마케팅교육</option>
+      <option value="공통">공통</option>
+    </select>
+    <select id="vendor-cat-filter" style="padding:8px;border:1px solid #d1d5db;border-radius:6px">
+      <option value="">전체 카테고리</option>
+    </select>
+    <label style="font-size:13px;display:flex;align-items:center;gap:4px"><input type="checkbox" id="vendor-active-only" checked> 활성만</label>
+    <button class="adm-edit-btn" id="vendor-search-btn" type="button" onclick="window.loadVendors(0)">검색</button>
+    <button class="adm-btn adm-btn-save" id="vendor-new-btn" type="button" onclick="window.openVendorNew()" style="margin-left:auto">+ 신규 거래처</button>
+  </div>
+  <table class="adm-table" id="vendor-table">
+    <thead><tr><th>거래처명</th><th>사업자번호</th><th>사업부</th><th>카테고리</th><th>대표자</th><th>전화</th><th>이메일</th><th>담당자</th><th>활성</th><th>편집</th></tr></thead>
+    <tbody id="vendor-tbody"><tr><td colspan="10" style="text-align:center;color:#6b7280;padding:24px">검색 버튼을 누르거나 페이지 진입 시 자동 로드</td></tr></tbody>
+  </table>
+  <div id="vendor-pagination" style="display:flex;justify-content:center;gap:8px;padding:16px"></div>
 </section>
 <section id="view-hr" class="page" hidden>
   <div class="page-header"><div><div class="page-title">인사</div><div class="page-subtitle">휴가·출장·근태·급여·근로계약 (본인분 RLS) — 마스터 #8</div></div></div>
@@ -2021,8 +2042,15 @@ async function acceptSession(session){
     return false;
   }
 
-  /* v2.9-A: last_login_at 갱신 (best-effort) */
-  try { sb.rpc('rpc_touch_admin_login'); } catch(e) {}
+  /* v2.9-A + A-3 핫픽스: 마지막_로그인 갱신 (best-effort / await 누락 수정 / .then 명시) */
+  try {
+    sb.rpc('rpc_touch_admin_login')
+      .then(({data, error}) => {
+        if (error) console.warn('[A-3] rpc_touch_admin_login error:', error);
+        else console.log('[A-3] 마지막_로그인 갱신:', data);
+      })
+      .catch(e => console.warn('[A-3] rpc_touch_admin_login exception:', e));
+  } catch(e) { console.warn('[A-3] sync error:', e); }
 
   const keep=(()=>{try{return localStorage.getItem(KEEP_KEY)==='1';}catch(e){return false;}})();
   state.user=session.user;
@@ -2279,7 +2307,101 @@ async function loadPermLog(){
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:24px">로드 실패: '+(e.message||e)+'</td></tr>';
   }
 }
+
 window.loadPermLog = loadPermLog;
+
+/* v2.10-A WIP: 거래처 UI 목록 (sql/020 v2 + sql/021b 4사업부 / 권한 fn_can_access('vendors')) */
+const VENDOR_PAGE_SIZE = 20;
+let _vendorCategoriesLoaded = false;
+
+async function loadVendorCategoriesFilter(){
+  if (_vendorCategoriesLoaded) return;
+  try {
+    const {data, error} = await sb.from('vd_categories').select('id, 카테고리명, 코드, 순서').order('순서');
+    if (error) throw error;
+    const sel = document.getElementById('vendor-cat-filter');
+    if (!sel) return;
+    (data||[]).forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.카테고리명;
+      sel.appendChild(opt);
+    });
+    _vendorCategoriesLoaded = true;
+  } catch(e) { console.warn('[v2.10-A] vd_categories 로드 실패:', e); }
+}
+
+async function loadVendors(offset){
+  offset = offset || 0;
+  await loadVendorCategoriesFilter();
+  const tbody = document.getElementById('vendor-tbody');
+  tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#6b7280;padding:24px">불러오는 중…</td></tr>';
+  const search = (document.getElementById('vendor-search')||{}).value || null;
+  const 부서 = (document.getElementById('vendor-부서-filter')||{}).value || null;
+  const catId = (document.getElementById('vendor-cat-filter')||{}).value || null;
+  const activeOnly = (document.getElementById('vendor-active-only')||{}).checked !== false;
+  const canEdit = canAccess('vendors','write');
+  try {
+    const {data, error} = await sb.rpc('rpc_list_vendors', {
+      _search: search, _부서: 부서, _category_id: catId,
+      _active_only: activeOnly, _limit: VENDOR_PAGE_SIZE, _offset: offset
+    });
+    if (error) throw error;
+    if (!data || !data.length){
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#6b7280;padding:24px">거래처 없음 (검색 조건 변경 또는 신규 등록)</td></tr>';
+      document.getElementById('vendor-pagination').innerHTML = '';
+      return;
+    }
+    tbody.innerHTML = data.map(v => `<tr>
+      <td><strong>${escapeHtml(v.r_거래처명||'')}</strong></td>
+      <td>${escapeHtml(v.r_사업자번호||'-')}</td>
+      <td>${escapeHtml(v.r_사업부분류||'-')}</td>
+      <td>${escapeHtml(v.r_카테고리명||'-')}</td>
+      <td>${escapeHtml(v.r_대표자||'-')}</td>
+      <td>${escapeHtml(v.r_전화||'-')}</td>
+      <td>${escapeHtml(v.r_이메일||'-')}</td>
+      <td>${v.r_담당자_count||0}명</td>
+      <td>${v.r_is_active ? '<span style="color:#059669">활성</span>' : '<span style="color:#9ca3af">비활성</span>'}</td>
+      <td><button class="adm-edit-btn" ${canEdit?'':'disabled'} onclick="window.openVendorDetail('${v.r_id}')">${canEdit?'편집':'조회'}</button></td>
+    </tr>`).join('');
+    /* 페이지네이션 */
+    const total = (data[0] && data[0].r_total_count) || 0;
+    renderVendorPagination(offset, total);
+  } catch(e){
+    console.error('[v2.10-A] rpc_list_vendors 실패:', e);
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#dc2626;padding:24px">로드 실패: '+(e.message||e)+'</td></tr>';
+  }
+}
+window.loadVendors = loadVendors;
+
+function renderVendorPagination(offset, total){
+  const pg = document.getElementById('vendor-pagination');
+  if (!pg) return;
+  if (total <= VENDOR_PAGE_SIZE) { pg.innerHTML = ''; return; }
+  const totalPages = Math.ceil(total / VENDOR_PAGE_SIZE);
+  const cur = Math.floor(offset / VENDOR_PAGE_SIZE);
+  let html = '';
+  if (cur > 0) html += `<button class="adm-btn adm-btn-cancel" onclick="window.loadVendors(${(cur-1)*VENDOR_PAGE_SIZE})">이전</button>`;
+  html += `<span style="padding:10px;color:#6b7280">${cur+1} / ${totalPages} (총 ${total}건)</span>`;
+  if (cur+1 < totalPages) html += `<button class="adm-btn adm-btn-cancel" onclick="window.loadVendors(${(cur+1)*VENDOR_PAGE_SIZE})">다음</button>`;
+  pg.innerHTML = html;
+}
+
+/* v2.10-A WIP: 거래처 검색 input enter / filter change 자동 검색 */
+document.addEventListener('DOMContentLoaded', ()=>{
+  const search = document.getElementById('vendor-search');
+  if (search) search.addEventListener('keydown', e=>{ if (e.key === 'Enter') loadVendors(0); });
+  ['vendor-부서-filter','vendor-cat-filter','vendor-active-only'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', ()=>loadVendors(0));
+  });
+});
+
+/* v2.10-A WIP placeholders — v2.10-B·C에서 모달 본구현 */
+function openVendorDetail(id){ toast('거래처 상세·편집 모달은 v2.10-B에서 구현 예정 (id: '+id+')','info'); }
+window.openVendorDetail = openVendorDetail;
+function openVendorNew(){ toast('신규 거래처 등록은 v2.10-C에서 구현 예정','info'); }
+window.openVendorNew = openVendorNew;
 
 function handleRoute(){
   if(!state.user){showLoginView();return;}
@@ -2344,10 +2466,13 @@ function handleRoute(){
       if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('approval');
       break;
     case 'vendor':
+      /* v2.10-A WIP: 거래처 UI 목록 (rpc_list_vendors / 권한 체크) */
+      if (!canAccess('vendors','read')) { location.hash='#dashboard'; toast('거래처 접근 권한이 없습니다.','warn'); return; }
       state.activeTab='vendor';
       show('#view-vendor');
       $('.nav-item[data-nav="vendor"]').classList.add('active');
-      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('vendor');
+      if (typeof loadVendors === 'function') loadVendors(0);
+      else if (typeof qtRenderPlaceholder === 'function') qtRenderPlaceholder('vendor');
       break;
     case 'hr':
       state.activeTab='hr';
@@ -2676,7 +2801,7 @@ function qtBuildCreateForm(){
 <h3><span class="qt-step-num">3</span>본문 항목 (카탈로그 클릭 또는 자유 입력)</h3>
 <div id="qt-catalog-area"><div class="qt-help">먼저 사업부를 선택하면 카탈로그가 표시됩니다.</div></div>
 <table class="qt-items" id="qt-items-table">
-<thead><tr><th style="width:24%">품명</th><th style="width:30%">내용</th><th style="width:9%">수량</th><th style="width:13%">단가</th><th style="width:14%">금액</th><th style="width:6%">단위</th><th style="width:4%"></th></tr></thead>
+<thead><tr><th style="width:18%">품명</th><th style="width:22%">내용</th><th style="width:7%">수량</th><th style="width:6%">단위</th><th style="width:12%">단가</th><th style="width:13%">금액</th><th style="width:19%">비고</th><th style="width:3%"></th></tr></thead>
 <tbody id="qt-items-body"></tbody>
 </table>
 <button class="qt-add-row-btn" onclick="qtAddRow()">＋ 빈 행 추가 (자유 입력)</button>
@@ -2893,13 +3018,14 @@ function qtRenderItems(){
 <td><input type="text" value="${qtEsc(it.품명)}" oninput="qtUpdItem(${i},'품명',this.value)"></td>
 <td><input type="text" value="${qtEsc(it.내용)}" oninput="qtUpdItem(${i},'내용',this.value)"></td>
 <td class="narrow"><input type="number" value="${it.수량||1}" min="0" oninput="qtUpdItem(${i},'수량',this.value)"></td>
+<td><input type="text" value="${qtEsc(it.단위)}" placeholder="명·박·대·식" oninput="qtUpdItem(${i},'단위',this.value)"></td>
 <td class="narrow"><input type="text" inputmode="numeric" value="${qtFmt(it.단가||0)}" oninput="qtUpdItem(${i},'단가',this.value)" onfocus="this.value=String(state.qt.items[${i}]?.단가||0)" onblur="this.value=qtFmt(state.qt.items[${i}]?.단가||0)"></td>
 <td class="qt-item-amount">${qtFmt((it.수량||0)*(it.단가||0))}원</td>
-<td><input type="text" value="${qtEsc(it.단위)}" oninput="qtUpdItem(${i},'단위',this.value)"></td>
+<td><input type="text" value="${qtEsc(it.비고||'')}" placeholder="금액 변동있음 등" oninput="qtUpdItem(${i},'비고',this.value)"></td>
 <td><button class="qt-delbtn" onclick="qtDelItem(${i})">×</button></td>
 </tr>`;
   });
-  if(state.qt.items.length===0)html='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">본문 항목이 없습니다. 카탈로그 클릭 또는 [빈 행 추가]</td></tr>';
+  if(state.qt.items.length===0)html='<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px">본문 항목이 없습니다. 카탈로그 클릭 또는 [빈 행 추가]</td></tr>';
   tb.innerHTML = html;
 }
 
@@ -3387,20 +3513,22 @@ async function qtGeneratePDF(silent, docType){
 
     // ===== ④ 본문 항목 + 합계 통합 (AutoTable) =====
     const head = state.qt.options.salePrice
-      ? [['No','품명','내용','수량','단가','판매가','금액','단위']]
-      : [['No','품명','내용','수량','단가','금액','단위']];
-    const colCount = state.qt.options.salePrice ? 8 : 7;
-    const labelColSpan = colCount - 2;  // 라벨이 차지할 칼럼 수 (금액·단위 제외)
+      ? [['No','품명','내용','수량','단위','단가','판매가','금액','비고']]
+      : [['No','품명','내용','수량','단위','단가','금액','비고']];
+    const colCount = state.qt.options.salePrice ? 9 : 8;
+    const labelColSpan = colCount - 2;  // 라벨이 차지할 칼럼 수 (금액·비고 제외) — v2.10-B 정정
 
     const rows = state.qt.items.map((it,i)=>{
       const amt = (+it.수량||0)*(+it.단가||0);
+      /* v2.10-B 정정: 품명·내용·수량·단위·단가·(판매가)·금액·비고 표준 순서 */
       const base = [
         i+1, it.품명||'', it.내용||'',
         (it.수량||0).toLocaleString(),
+        it.단위||'',
         (it.단가||0).toLocaleString()
       ];
       if(state.qt.options.salePrice)base.push((it.판매가||it.단가||0).toLocaleString());
-      base.push(amt.toLocaleString(), it.단위||'');
+      base.push(amt.toLocaleString(), it.비고||'');
       return base;
     });
 
@@ -3759,15 +3887,18 @@ async function renderQuotationDetail(qid){
     const opts = r.첨부_옵션 || {};
     const att = opts.attachments || {};
     const itemsRows = items.length===0 ?
-      '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:14px">항목 없음</td></tr>' :
+      '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:14px">항목 없음</td></tr>' :
       items.map((it,i)=>(
+        /* v2.10-B 정정: 단위 별도 컬럼 / 비고 마지막 */
         '<tr>'+
           '<td style="padding:6px 8px">'+(i+1)+'</td>'+
           '<td style="padding:6px 8px">'+escapeHtml(it.품명||'')+'</td>'+
           '<td style="padding:6px 8px;color:var(--text-muted);font-size:12px">'+escapeHtml(it.내용||'')+'</td>'+
-          '<td style="padding:6px 8px;text-align:right">'+(+it.수량||0)+escapeHtml(it.단위||'')+'</td>'+
+          '<td style="padding:6px 8px;text-align:right">'+(+it.수량||0)+'</td>'+
+          '<td style="padding:6px 8px;text-align:center;color:var(--text-muted)">'+escapeHtml(it.단위||'')+'</td>'+
           '<td style="padding:6px 8px;text-align:right">'+((+it.단가||0).toLocaleString('ko-KR'))+'원</td>'+
           '<td style="padding:6px 8px;text-align:right;font-weight:600">'+(((+it.수량||0)*(+it.단가||0)).toLocaleString('ko-KR'))+'원</td>'+
+          '<td style="padding:6px 8px;color:var(--text-muted);font-size:11.5px">'+escapeHtml(it.비고||'')+'</td>'+
         '</tr>'
       )).join('');
     const attChips = Object.keys(att).filter(k=>att[k]).map(k=>'<span class="qt-toggle on" style="cursor:default">'+escapeHtml(k)+'</span>').join(' ') || '<span style="color:var(--text-muted)">첨부 선택 없음</span>';
@@ -3794,7 +3925,7 @@ async function renderQuotationDetail(qid){
         '</div></div>'+
       '</div>'+
       '<div style="'+sectStyle+';margin-top:14px"><div style="'+sectTitleStyle+'">📋 본문 항목</div>'+
-        '<table style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="background:var(--bg-hover)"><th style="padding:8px;text-align:left">No</th><th style="padding:8px;text-align:left">품명</th><th style="padding:8px;text-align:left">내용</th><th style="padding:8px;text-align:right">수량</th><th style="padding:8px;text-align:right">단가</th><th style="padding:8px;text-align:right">금액</th></tr></thead>'+
+        '<table style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="background:var(--bg-hover)"><th style="padding:8px;text-align:left">No</th><th style="padding:8px;text-align:left">품명</th><th style="padding:8px;text-align:left">내용</th><th style="padding:8px;text-align:right">수량</th><th style="padding:8px;text-align:center">단위</th><th style="padding:8px;text-align:right">단가</th><th style="padding:8px;text-align:right">금액</th><th style="padding:8px;text-align:left">비고</th></tr></thead>'+
         '<tbody>'+itemsRows+'</tbody></table>'+
       '</div>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">'+

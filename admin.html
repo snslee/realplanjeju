@@ -433,7 +433,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="5. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
 <a href="#accounting" class="nav-item nav-disabled" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.8.1 · 거래 sub-tab UX 본 구현</div>
+<div class="sidebar-footer">admin v2.8.2 · 3함수 발송·PDF·복사 정합 fix</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -3441,12 +3441,14 @@ async function qtDetailGeneratePDF(docType){
   state.qt.options.tourReg = (r.사업부==='국내여행');
   state.qt.options.trim = r.절사_단위||'없음';
   state.qt.options.feeRate = parseFloat(r.대행료율)||7.5;
-  state.qt.payment = opts.payment||'';
-  state.qt.account = opts.account||'';
-  state.qt.note = opts.note||'';
+  /* v2.8.2 — DB 실제 구조 정합 (qtSendFromDetail 패턴 통일) */
+  state.qt.payment = r['결제조건'] || '';
+  state.qt.account = (r['첨부_옵션'] && r['첨부_옵션'].account) || '';
+  state.qt.note = r['비고'] || '';
   state.qt.isGovernment = !!r.is_government;
-  state.qt.attachments = opts.attachments || state.qt.attachments;
+  state.qt.attachments = r['첨부_옵션'] || {};
   state.qt.currentQuotationId = r.id;
+  state.qt.currentQuotationNo = r['견적번호'];   /* v2.8.2 — PDF 헤더 견적번호 정확 */
   state.qt.customerInfo = state.qt.customerInfo || {회사명:r.수신_회사명};
   await qtGeneratePDF(false, docType);
 }
@@ -3515,11 +3517,12 @@ function qtApplyCopySource(r){
   state.qt.options.tourReg = (r.사업부==='국내여행');
   state.qt.options.trim = r.절사_단위||'없음';
   state.qt.options.feeRate = parseFloat(r.대행료율)||7.5;
-  state.qt.payment = opts.payment||'';
-  state.qt.account = opts.account||'';
-  state.qt.note = opts.note||'';
+  /* v2.8.2 — DB 실제 구조 정합 (복사 시 결제조건·비고·첨부 정확 매핑) */
+  state.qt.payment = r['결제조건'] || '';
+  state.qt.account = (r['첨부_옵션'] && r['첨부_옵션'].account) || '';
+  state.qt.note = r['비고'] || '';
   state.qt.isGovernment = !!r.is_government;
-  state.qt.attachments = opts.attachments || state.qt.attachments;
+  state.qt.attachments = r['첨부_옵션'] || {};
   state.qt.parentId = r.id;
   // DOM 동기화
   const $ = (s)=>document.querySelector(s);
@@ -3779,12 +3782,14 @@ async function qtSendFromCard(qid){
     state.qt.options.tourReg = (r.사업부==='국내여행');
     state.qt.options.trim = r.절사_단위||'없음';
     state.qt.options.feeRate = parseFloat(r.대행료율)||7.5;
-    state.qt.payment = opts.payment||'';
-    state.qt.account = opts.account||'';
-    state.qt.note = opts.note||'';
+    /* v2.8.2 — DB 실제 구조 정합 (카드 발송 견적번호·결제조건·비고·첨부 정확 매핑) */
+    state.qt.payment = r['결제조건'] || '';
+    state.qt.account = (r['첨부_옵션'] && r['첨부_옵션'].account) || '';
+    state.qt.note = r['비고'] || '';
     state.qt.isGovernment = !!r.is_government;
-    state.qt.attachments = opts.attachments || state.qt.attachments;
+    state.qt.attachments = r['첨부_옵션'] || {};
     state.qt.currentQuotationId = r.id;
+    state.qt.currentQuotationNo = r['견적번호'];   /* v2.8.2 — Q-???-2026-??? fallback 차단 */
     state.qt.customerId = r.customer_id;
     state.qt.customerInfo = state.qt.customerInfo || {회사명:r.수신_회사명};
     hideLoading();

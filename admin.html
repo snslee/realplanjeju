@@ -494,7 +494,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 <a href="#admin" class="nav-item" data-nav="admin" title="7. 관리자 관리 (계정·권한 / v2.9-F)"><span class="nav-icon">🛡</span><span class="nav-text">관리자 관리</span><span class="nav-phase">v2.9-F</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.10 · 9건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼)</div>
+<div class="sidebar-footer">admin v2.11 · 13건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종)</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -761,6 +761,13 @@ const QT_DEFAULTS = {
 };
 const QT_GOV_PAYMENT = "프로젝트 완료 후 7일 이내 전액 입금";
 const QT_PREFIX = {"행사이벤트":"EVENT","온라인마케팅":"MKT","마케팅교육":"EDU","국내여행":"TOUR"};
+/* v2.11 5-7: 비고 템플릿 4사업부 (자동 삽입 버튼 / 메모리 21차 정합) */
+const QT_NOTE_TEMPLATES = {
+  "국내여행":"상기 일정은 현지사정·천재지변으로 인해 변경될 수 있습니다.\n※ 포함: 항공·숙박·식사·차량·가이드·보험\n※ 불포함: 음료·주류·개인경비\n※ 결제: 계약금 30% / 잔금 출발 7일 전",
+  "행사이벤트":"행사 진행 중 우천·재해 시 별도 협의.\n※ 포함: 기획·운영·인력·장비·식음료\n※ 불포함: 별도 명시 외 항목\n※ 결제: 계약금 50% / 잔금 행사 후 7일 내",
+  "온라인마케팅":"광고비는 별도 청구 (실제 집행분).\n※ 포함: 기획·운영·콘텐츠·관리\n※ 광고비 정산: 월말 정산서 발송\n※ 계약 기간 중 해지 시 잔여기간 환불 협의",
+  "마케팅교육":"강의 일정 변경은 7일 전 통보.\n※ 포함: 강의·교재·다과\n※ 불포함: 출장비·숙박 (지방 출강 시)\n※ 결제: 강의 종료 후 7일 내 일괄"
+};
 const QT_BU_LIST = ["국내여행","행사이벤트","온라인마케팅","마케팅교육"];
 const state={user:null,session:null,adminRole:null,permissions:{},/* v2.9-E */ready:false,currentCustomerId:null,currentCustomerInq:null,currentCustomerBU:null,timelineOffset:0,timelineTotal:0,timelineLoading:false,editMode:false,currentRow:null,lastUpdatedAt:null,
 // v1.9 — 검색·필터·페이지네이션
@@ -782,7 +789,14 @@ state.qt = {
   isGovernment: false,
   attachments: {co:false, port:false, biz:false, tour:false, women:false, merge:false},
   currentQuotationId: null,
-  currentQuotationNo: null
+  currentQuotationNo: null,
+  /* v2.11 묶음 5: 인원·박일·복수 안 (sql/022 quotations 보강 5컬럼 정합) */
+  안_번호: 1,                /* 현재 활성 안 (1·2·3) */
+  인원_성인: null,
+  인원_아동: null,
+  박일수: null,
+  비고_pdf노출: true,         /* PG identifier folding: 비고_PDF노출 → 비고_pdf노출 */
+  itemsByAn: {1:[], 2:[], 3:[]}  /* 안별 items 백업 (저장 시 quotation_items 이전은 v2.12) */
 };
 state.currentQuotationId = null;
 /* v2.8.0c — state 마스터 v1.0 1-3 데이터 흐름도 정합 / 사이드바 6 영역 + 고객 360° */
@@ -2746,7 +2760,10 @@ async function loadQuotationCreate(){
     options:{feeShow:true,vatShow:true,salePrice:false,tourReg:false,trim:'없음',feeRate:7.5},
     payment:'', account:'', note:'', isGovernment:false,
     attachments:{co:false,port:false,biz:false,tour:false,women:false,merge:false},
-    currentQuotationId:null
+    currentQuotationId:null,
+    /* v2.11 묶음 5 */
+    안_번호:1, 인원_성인:null, 인원_아동:null, 박일수:null, 비고_pdf노출:true,
+    itemsByAn:{1:[], 2:[], 3:[]}
   };
   // 폼 마크업 주입
   $('#quotation-create-body').innerHTML = qtBuildCreateForm();
@@ -2785,6 +2802,26 @@ function qtBuildCreateForm(){
 </div>
 </div>
 </div>
+
+<!-- v2.11-A: 견적 안 탭 + 인원·박일 (사업부=국내여행 시 인원·박일 행 표시) -->
+<div class="qt-panel">
+<h3><span class="qt-step-num">1.5</span>견적 안 (1차/2차/3차) + 인원·박일수</h3>
+<div class="qt-field"><label>📋 견적 안 — 동일 고객·사업부 복수 견적 비교 (sql/022 안_번호)</label>
+<div id="qt-an-tabs" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+<button type="button" class="qt-an-btn active" data-an="1" onclick="qtSelectAn(1)" style="padding:8px 16px;border:2px solid var(--border);border-radius:6px;background:var(--bg-hover);cursor:pointer;font-weight:600">1차 안</button>
+<button type="button" class="qt-an-btn" data-an="2" onclick="qtSelectAn(2)" style="padding:8px 16px;border:2px solid var(--border);border-radius:6px;background:var(--bg);cursor:pointer">2차 안</button>
+<button type="button" class="qt-an-btn" data-an="3" onclick="qtSelectAn(3)" style="padding:8px 16px;border:2px solid var(--border);border-radius:6px;background:var(--bg);cursor:pointer">3차 안</button>
+<button type="button" onclick="qtCloneAn()" style="padding:8px 12px;margin-left:8px;border:1px dashed var(--border);border-radius:6px;background:transparent;cursor:pointer;font-size:11px">📋 1차 → 현재 안 복제</button>
+<span id="qt-an-summary" style="margin-left:auto;font-size:11px;color:var(--text-muted)">현재: 1차 / 항목 0건</span>
+</div></div>
+<div class="qt-field-row-4" id="qt-people-row" style="display:none">
+<div class="qt-field"><label>인원 — 성인</label><input type="number" id="qt-people-adult" min="0" placeholder="예: 30" oninput="state.qt.인원_성인=this.value?parseInt(this.value):null;qtUpdateAll()"></div>
+<div class="qt-field"><label>인원 — 아동</label><input type="number" id="qt-people-child" min="0" placeholder="예: 5" oninput="state.qt.인원_아동=this.value?parseInt(this.value):null;qtUpdateAll()"></div>
+<div class="qt-field"><label>박일수 (예: 2박3일 → 2)</label><input type="number" id="qt-stay-nights" min="0" placeholder="예: 2" oninput="state.qt.박일수=this.value?parseInt(this.value):null"></div>
+<div class="qt-field"><label>1인 상품요금 (자동)</label><div id="qt-pp-price" style="padding:8px;background:var(--bg-hover);border-radius:4px;font-weight:600">—</div></div>
+</div>
+</div>
+<!-- /v2.11-A -->
 
 <div class="qt-panel">
 <h3><span class="qt-step-num">2</span>수신처 (4단계) + 제목</h3>
@@ -2835,7 +2872,18 @@ function qtBuildCreateForm(){
 <label class="qt-toggle" id="qt-t-gov" style="margin-bottom:10px"><input type="checkbox" id="qt-opt-gov" onchange="qtToggleGov()"> 관공서·학교·공기업 거래 (ON 시 후불 100%로 자동 변경)</label>
 <div class="qt-field"><label>결제·지급 조건</label><textarea id="qt-payment" rows="2" oninput="state.qt.payment=this.value"></textarea></div>
 <div class="qt-field"><label>입금 계좌 (사업부 자동 / 수정 가능)</label><input type="text" id="qt-account" oninput="state.qt.account=this.value"></div>
-<div class="qt-field"><label>비고·특이사항 (선택)</label><textarea id="qt-note" rows="2" oninput="state.qt.note=this.value" placeholder="자유 입력"></textarea></div>
+<div class="qt-field">
+<label style="display:flex;justify-content:space-between;align-items:center">
+<span>비고·특이사항 (선택)</span>
+<label style="font-size:11px;font-weight:normal;cursor:pointer"><input type="checkbox" id="qt-note-pdf" checked onchange="state.qt.비고_pdf노출=this.checked"> PDF에 비고 박스 노출</label>
+</label>
+<!-- v2.11 5-7: 비고 템플릿 4종 자동 삽입 -->
+<div style="margin-bottom:6px;display:flex;gap:6px;flex-wrap:wrap">
+<button type="button" onclick="qtInsertNoteTemplate()" style="padding:5px 10px;font-size:11px;border:1px dashed var(--border);border-radius:4px;background:var(--bg-hover);cursor:pointer">📝 사업부 비고 템플릿 자동 삽입</button>
+<button type="button" onclick="qtClearNote()" style="padding:5px 10px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:transparent;cursor:pointer;color:var(--text-muted)">🗑 지우기</button>
+</div>
+<textarea id="qt-note" rows="4" oninput="state.qt.note=this.value" placeholder="자유 입력 또는 [📝 사업부 비고 템플릿 자동 삽입] 버튼 사용"></textarea>
+</div>
 </div>
 
 <div class="qt-panel">
@@ -2852,6 +2900,11 @@ function qtBuildCreateForm(){
 </div>
 
 <div>
+<!-- v2.11-C: 좌우 분할 일정표 미리보기 (국내여행만 표시) -->
+<div class="qt-preview" id="qt-itinerary-preview" style="display:none;margin-bottom:12px">
+<h4>🗺 일정표 미리보기 (국내여행)</h4>
+<div id="qt-itinerary-body" style="font-size:11px"><div class="qt-help">본문 항목에서 [일정표 표시 ON]된 행이 자동 정렬되어 표시됩니다.</div></div>
+</div>
 <div class="qt-preview">
 <h4>📊 견적 정보</h4>
 <div class="qt-preview-info"><span>고객</span><b id="qt-pv-customer">— 미선택 —</b></div>
@@ -2956,9 +3009,109 @@ function qtSelectBU(bu){
   state.qt.attachments.tour = (bu==='국내여행');
   qtSetTrim(d.trim);
   qtRenderCatalog(bu);
+  /* v2.11-A·B: 사업부=국내여행 시 인원·박일 + 일정표 미리보기 영역 표시 */
+  const isTour = (bu === '국내여행');
+  const peopleRow = document.getElementById('qt-people-row');
+  if(peopleRow) peopleRow.style.display = isTour ? 'grid' : 'none';
+  const itinPv = document.getElementById('qt-itinerary-preview');
+  if(itinPv) itinPv.style.display = isTour ? 'block' : 'none';
+  qtRenderItems();    /* 일정표 컬럼 toggle */
   qtUpdateBuPreview();
   qtUpdateAll();
+  qtRenderItinerary();
 }
+
+/* ============ v2.11 묶음 5 신규 함수 5종 ============ */
+
+/* v2.11-A: 안 전환 (1·2·3) */
+function qtSelectAn(num){
+  if(![1,2,3].includes(num)) return;
+  /* 현재 안 items 백업 */
+  state.qt.itemsByAn[state.qt.안_번호] = state.qt.items.slice();
+  state.qt.안_번호 = num;
+  /* 새 안 items 로드 */
+  state.qt.items = (state.qt.itemsByAn[num] || []).slice();
+  /* UI 갱신 */
+  document.querySelectorAll('.qt-an-btn').forEach(b => {
+    const isActive = (parseInt(b.dataset.an) === num);
+    b.classList.toggle('active', isActive);
+    b.style.background = isActive ? 'var(--bg-hover)' : 'var(--bg)';
+    b.style.fontWeight = isActive ? '600' : '400';
+  });
+  qtRenderItems();
+  qtUpdateAll();
+  qtRenderItinerary();
+  qtUpdateAnSummary();
+}
+window.qtSelectAn = qtSelectAn;
+
+/* v2.11-A: 1차 → 현재 안 복제 */
+function qtCloneAn(){
+  if(state.qt.안_번호 === 1){ toast('1차 안은 복제 원본이므로 다른 안 선택 후 사용', 'info'); return; }
+  const srcItems = state.qt.itemsByAn[1] || [];
+  if(srcItems.length === 0){ toast('1차 안에 항목 없음', 'info'); return; }
+  if(!confirm(state.qt.안_번호 + '차 안의 기존 항목을 1차 안 복사본으로 덮어쓸까요?')) return;
+  state.qt.items = JSON.parse(JSON.stringify(srcItems));
+  state.qt.itemsByAn[state.qt.안_번호] = state.qt.items.slice();
+  qtRenderItems(); qtUpdateAll(); qtRenderItinerary(); qtUpdateAnSummary();
+  toast('1차 → ' + state.qt.안_번호 + '차 안 복제 완료', 'success');
+}
+window.qtCloneAn = qtCloneAn;
+
+/* v2.11-A: 안 요약 표시 갱신 */
+function qtUpdateAnSummary(){
+  const s = document.getElementById('qt-an-summary');
+  if(!s) return;
+  s.textContent = '현재: ' + state.qt.안_번호 + '차 / 항목 ' + (state.qt.items.length) + '건';
+}
+window.qtUpdateAnSummary = qtUpdateAnSummary;
+
+/* v2.11 5-7: 비고 템플릿 자동 삽입 */
+function qtInsertNoteTemplate(){
+  const bu = state.qt.bu;
+  if(!bu){ toast('사업부를 먼저 선택하세요', 'warn'); return; }
+  const tpl = QT_NOTE_TEMPLATES[bu];
+  if(!tpl){ toast('해당 사업부 템플릿 없음', 'warn'); return; }
+  const ta = document.getElementById('qt-note');
+  if(!ta) return;
+  if(ta.value && !confirm('기존 비고 내용을 템플릿으로 덮어쓸까요?')) return;
+  ta.value = tpl;
+  state.qt.note = tpl;
+  toast(bu + ' 비고 템플릿 삽입', 'success');
+}
+window.qtInsertNoteTemplate = qtInsertNoteTemplate;
+
+/* v2.11 5-7: 비고 지우기 */
+function qtClearNote(){
+  const ta = document.getElementById('qt-note'); if(!ta) return;
+  ta.value = ''; state.qt.note = '';
+}
+window.qtClearNote = qtClearNote;
+
+/* v2.11-C: 일정표 미리보기 (국내여행) */
+function qtRenderItinerary(){
+  if(state.qt.bu !== '국내여행') return;
+  const body = document.getElementById('qt-itinerary-body'); if(!body) return;
+  const itin = (state.qt.items || []).filter(it => it.일정표_표시);
+  if(itin.length === 0){
+    body.innerHTML = '<div class="qt-help">본문 항목에서 [일정표 표시 ON]된 행이 자동 정렬되어 표시됩니다.</div>';
+    return;
+  }
+  /* 일차·시간 정렬 */
+  itin.sort((a,b) => (a.일차||99) - (b.일차||99) || String(a.시간||'').localeCompare(String(b.시간||'')));
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:10.5px"><thead><tr style="background:var(--bg-hover)"><th style="padding:4px;text-align:center;width:40px">일차</th><th style="padding:4px;text-align:center;width:50px">시간</th><th style="padding:4px;text-align:left">관광 일정</th><th style="padding:4px;text-align:center;width:30px">식사</th></tr></thead><tbody>';
+  itin.forEach(it => {
+    html += '<tr style="border-top:1px solid var(--border-light)">'+
+      '<td style="padding:4px;text-align:center">'+(it.일차?it.일차+'일차':'-')+'</td>'+
+      '<td style="padding:4px;text-align:center">'+(it.시간||'-')+'</td>'+
+      '<td style="padding:4px">'+escapeHtml(it.일정_표시 || it.품명 || '')+'</td>'+
+      '<td style="padding:4px;text-align:center">'+(it.식사_컬럼||'-')+'</td>'+
+    '</tr>';
+  });
+  html += '</tbody></table>';
+  body.innerHTML = html;
+}
+window.qtRenderItinerary = qtRenderItinerary;
 
 /* qtRenderCatalog — rpc_list_catalog 호출 → 펼치기 UI */
 async function qtRenderCatalog(bu){
@@ -3001,31 +3154,59 @@ function qtToggleCat(i){
 }
 
 function qtAddCatItem(name,content,unit,price){
-  state.qt.items.push({품명:name,내용:content,수량:1,단가:price||0,금액:price||0,단위:unit,비고:''});
-  qtRenderItems(); qtUpdateAll();
+  state.qt.items.push({품명:name,내용:content,수량:1,단가:price||0,금액:price||0,단위:unit,비고:'',
+    /* v2.11-B: 일정표 필드 (국내여행만 의미 / sql/022 quotation_items 정합) */
+    일정_표시:'', 일차:null, 시간:'', 식사_컬럼:'', 일정표_표시:false, 견적서_표시:true});
+  qtRenderItems(); qtUpdateAll(); qtUpdateAnSummary();
 }
 
 function qtAddRow(){
-  state.qt.items.push({품명:'',내용:'',수량:1,단가:0,금액:0,단위:'',비고:''});
-  qtRenderItems();
+  state.qt.items.push({품명:'',내용:'',수량:1,단가:0,금액:0,단위:'',비고:'',
+    일정_표시:'', 일차:null, 시간:'', 식사_컬럼:'', 일정표_표시:false, 견적서_표시:true});
+  qtRenderItems(); qtUpdateAnSummary();
 }
 
 function qtRenderItems(){
   const tb = $('#qt-items-body'); if(!tb)return;
+  /* v2.11-B: 사업부=국내여행 시 thead에 일정표 컬럼 4개 동적 토글 */
+  const isTour = (state.qt.bu === '국내여행');
+  const thead = document.querySelector('#qt-items-table thead tr');
+  if(thead){
+    if(isTour && thead.dataset.tourMode !== '1'){
+      thead.innerHTML = '<th style="width:50px">일정표</th><th style="width:50px">일차</th><th style="width:60px">시간</th><th style="width:50px">식사</th>'+
+        '<th style="width:14%">품명</th><th style="width:18%">내용</th><th style="width:7%">수량</th><th style="width:6%">단위</th><th style="width:11%">단가</th><th style="width:11%">금액</th><th style="width:13%">비고</th><th style="width:3%"></th>';
+      thead.dataset.tourMode = '1';
+    } else if(!isTour && thead.dataset.tourMode === '1'){
+      thead.innerHTML = '<th style="width:18%">품명</th><th style="width:22%">내용</th><th style="width:7%">수량</th><th style="width:6%">단위</th><th style="width:12%">단가</th><th style="width:13%">금액</th><th style="width:19%">비고</th><th style="width:3%"></th>';
+      delete thead.dataset.tourMode;
+    }
+  }
   let html='';
   state.qt.items.forEach((it,i)=>{
-    html+=`<tr>
-<td><input type="text" value="${qtEsc(it.품명)}" oninput="qtUpdItem(${i},'품명',this.value)"></td>
-<td><input type="text" value="${qtEsc(it.내용)}" oninput="qtUpdItem(${i},'내용',this.value)"></td>
-<td class="narrow"><input type="number" value="${it.수량||1}" min="0" oninput="qtUpdItem(${i},'수량',this.value)"></td>
-<td><input type="text" value="${qtEsc(it.단위)}" placeholder="명·박·대·식" oninput="qtUpdItem(${i},'단위',this.value)"></td>
-<td class="narrow"><input type="text" inputmode="numeric" value="${qtFmt(it.단가||0)}" oninput="qtUpdItem(${i},'단가',this.value)" onfocus="this.value=String(state.qt.items[${i}]?.단가||0)" onblur="this.value=qtFmt(state.qt.items[${i}]?.단가||0)"></td>
-<td class="qt-item-amount">${qtFmt((it.수량||0)*(it.단가||0))}원</td>
-<td><input type="text" value="${qtEsc(it.비고||'')}" placeholder="금액 변동있음 등" oninput="qtUpdItem(${i},'비고',this.value)"></td>
-<td><button class="qt-delbtn" onclick="qtDelItem(${i})">×</button></td>
-</tr>`;
+    let row = '<tr>';
+    if(isTour){
+      const mealOpts = ['','조','중','석','X'].map(m =>
+        `<option value="${m}"${it.식사_컬럼===m?' selected':''}>${m||'-'}</option>`
+      ).join('');
+      row += `<td style="text-align:center"><input type="checkbox" ${it.일정표_표시?'checked':''} onchange="qtUpdItem(${i},'일정표_표시',this.checked);qtRenderItinerary()"></td>`+
+        `<td><input type="number" value="${it.일차||''}" min="1" max="30" placeholder="-" oninput="qtUpdItem(${i},'일차',this.value?parseInt(this.value):null);qtRenderItinerary()" style="width:100%"></td>`+
+        `<td><input type="time" value="${it.시간||''}" oninput="qtUpdItem(${i},'시간',this.value);qtRenderItinerary()" style="width:100%"></td>`+
+        `<td><select onchange="qtUpdItem(${i},'식사_컬럼',this.value);qtRenderItinerary()" style="width:100%">${mealOpts}</select></td>`;
+    }
+    row += `<td><input type="text" value="${qtEsc(it.품명)}" oninput="qtUpdItem(${i},'품명',this.value)"></td>`+
+      `<td><input type="text" value="${qtEsc(it.내용)}" oninput="qtUpdItem(${i},'내용',this.value)"></td>`+
+      `<td class="narrow"><input type="number" value="${it.수량||1}" min="0" oninput="qtUpdItem(${i},'수량',this.value)"></td>`+
+      `<td><input type="text" value="${qtEsc(it.단위)}" placeholder="명·박·대·식" oninput="qtUpdItem(${i},'단위',this.value)"></td>`+
+      `<td class="narrow"><input type="text" inputmode="numeric" value="${qtFmt(it.단가||0)}" oninput="qtUpdItem(${i},'단가',this.value)" onfocus="this.value=String(state.qt.items[${i}]?.단가||0)" onblur="this.value=qtFmt(state.qt.items[${i}]?.단가||0)"></td>`+
+      `<td class="qt-item-amount">${qtFmt((it.수량||0)*(it.단가||0))}원</td>`+
+      `<td><input type="text" value="${qtEsc(it.비고||'')}" placeholder="금액 변동있음 등" oninput="qtUpdItem(${i},'비고',this.value)"></td>`+
+      `<td><button class="qt-delbtn" onclick="qtDelItem(${i})">×</button></td></tr>`;
+    html += row;
   });
-  if(state.qt.items.length===0)html='<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px">본문 항목이 없습니다. 카탈로그 클릭 또는 [빈 행 추가]</td></tr>';
+  if(state.qt.items.length===0){
+    const colspan = isTour ? 12 : 8;
+    html='<tr><td colspan="'+colspan+'" style="text-align:center;color:var(--text-muted);padding:20px">본문 항목이 없습니다. 카탈로그 클릭 또는 [빈 행 추가]</td></tr>';
+  }
   tb.innerHTML = html;
 }
 
@@ -3046,12 +3227,16 @@ function qtUpdItem(i,field,val){
       if(amtCell) amtCell.textContent = qtFmt(amt) + '원';
     }
   }
-  qtUpdateAll();  // 합계 갱신 (input 포커스 영향 없음)
+  /* v2.11-A: 안별 자동 동기화 (현재 안의 itemsByAn에 백업) */
+  if(state.qt.itemsByAn) state.qt.itemsByAn[state.qt.안_번호] = state.qt.items.slice();
+  qtUpdateAll();  // 합계 갱신
 }
 
 function qtDelItem(i){
   state.qt.items.splice(i,1);
-  qtRenderItems(); qtUpdateAll();
+  /* v2.11-A: 안별 자동 동기화 */
+  if(state.qt.itemsByAn) state.qt.itemsByAn[state.qt.안_번호] = state.qt.items.slice();
+  qtRenderItems(); qtUpdateAll(); qtRenderItinerary(); qtUpdateAnSummary();
 }
 
 function qtToggleGov(){

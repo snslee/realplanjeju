@@ -391,6 +391,20 @@ table.qt-items td.narrow input{text-align:right}
 .qt-view-toggle{display:flex;gap:4px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:2px}
 .qt-view-toggle button{padding:5px 10px;font-size:12px;border:none;background:none;cursor:pointer;border-radius:4px;color:var(--text-light)}
 .qt-view-toggle button.active{background:var(--primary);color:#fff}
+/* v2.8.3 — 견적 상세 chevron path (Salesforce 형) */
+.qt-chevron-bar{display:flex;width:100%;max-width:900px;margin:0 0 16px 0;border-radius:6px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.qt-chevron-step{flex:1;padding:12px 18px 12px 32px;background:#E2E8F0;color:#A0AEC0;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;position:relative;clip-path:polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%, 14px 50%);transition:.2s ease}
+.qt-chevron-step:first-child{padding-left:18px;clip-path:polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%)}
+.qt-chevron-step:last-child{clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%, 14px 50%)}
+.qt-chevron-step:first-child:last-child{clip-path:none}
+.qt-chevron-done{background:#48BB78;color:#fff}
+.qt-chevron-current{background:#1F4E79;color:#fff;font-weight:700}
+.qt-chevron-locked{background:#F0F4F9;color:#CBD5E0}
+.qt-chevron-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.3);font-size:11px;font-weight:700;flex-shrink:0}
+.qt-chevron-locked .qt-chevron-num{background:#E2E8F0;color:#A0AEC0}
+.qt-chevron-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qt-chevron-exc{padding:14px 24px;background:#A32D2D;color:#fff;border-radius:6px;font-weight:700;font-size:14px;margin:0 0 16px 0;text-align:center}
+@media (max-width:768px){.qt-chevron-step{padding:10px 14px 10px 24px;font-size:11px}.qt-chevron-label{display:none}}
 /* ============ /Phase 2a v2.0 ============ */
 </style>
 </head>
@@ -433,7 +447,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="5. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
 <a href="#accounting" class="nav-item nav-disabled" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.8.2 · 3함수 발송·PDF·복사 정합 fix</div>
+<div class="sidebar-footer">admin v2.8.3 · 견적 상세 chevron path 본 구현</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -3296,6 +3310,35 @@ function qtBuildListCardHtml(it, isChild){
 /* ============ /Phase 2a v2.0 영역 D ============ */
 
 /* ============ Phase 2a v2.0 영역 E — 견적 상세 ============ */
+/* v2.8.3 — 견적 상세 chevron path (Salesforce 형 / read-only 시각화) */
+function qtBuildChevronPath(it){
+  const cur = qtMapStageFromStatus(it);   /* v2.8.1 함수 재활용 */
+  if(cur.step < 0){
+    return '<div class="qt-chevron-exc" style="background:'+cur.color+'">'+cur.dot+' '+cur.label+'</div>';
+  }
+  const steps = [
+    {n:1, label:'견적 작성',     active:cur.step>=1, current:cur.step===1, locked:false},
+    {n:2, label:'발송·수락 대기', active:cur.step>=2, current:cur.step===2, locked:false},
+    {n:3, label:'계약·진행',     active:cur.step>=3, current:cur.step===3, locked:false},
+    {n:4, label:'행사 완료',     active:cur.step>=4, current:cur.step===4, locked:false},
+    {n:5, label:'정산',          active:false,        current:false,        locked:true}
+  ];
+  let html = '<div class="qt-chevron-bar">';
+  steps.forEach(function(s){
+    let cls = 'qt-chevron-step';
+    if(s.locked) cls += ' qt-chevron-locked';
+    else if(s.current) cls += ' qt-chevron-current';
+    else if(s.active) cls += ' qt-chevron-done';
+    const tip = s.label + (s.locked ? ' (Phase 2e 활성화 예정)' : '');
+    html += '<div class="'+cls+'" title="'+tip+'">'+
+      '<span class="qt-chevron-num">'+s.n+'</span>'+
+      '<span class="qt-chevron-label">'+s.label+'</span>'+
+    '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
 async function renderQuotationDetail(qid){
   const body = $('#quotation-detail-body');
   if(!body)return;
@@ -3336,6 +3379,7 @@ async function renderQuotationDetail(qid){
     const parentLine = r.parent_quotation_id ? ('<div class="dg-row"><span class="dg-label">원본 견적</span><span class="dg-value" style="font-family:monospace;font-size:11px">'+escapeHtml(r.parent_quotation_id)+' (이 견적은 -v'+((r.수정차수||0)+1)+')</span></div>') : '';
 
     body.innerHTML =
+      qtBuildChevronPath(r) +   /* v2.8.3 — 견적 상세 chevron path */
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+
         '<div style="'+sectStyle+'"><div style="'+sectTitleStyle+'">📌 개요</div><div class="dg-rows">'+
           '<div class="dg-row"><span class="dg-label">견적번호</span><span class="dg-value" style="font-weight:600">'+escapeHtml(r.견적번호||'-')+verNum+'</span></div>'+
@@ -3866,7 +3910,9 @@ Object.assign(window, {
   // v2.6 영역 G — 고객 상세 견적 카드
   loadCustomerQuotations, qtBuildCustomerCard, qtSendFromCard, qtChangeStatus,
   // v2.8.1 영역 H — 거래 sub-tab UX
-  qtSetViewMode, qtMapStageFromStatus, qtBuildStepIndicator, qtRenderGroupedView
+  qtSetViewMode, qtMapStageFromStatus, qtBuildStepIndicator, qtRenderGroupedView,
+  // v2.8.3 영역 I — 견적 상세 chevron path
+  qtBuildChevronPath
 });
 
 document.addEventListener('DOMContentLoaded',init);

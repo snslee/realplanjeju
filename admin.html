@@ -414,6 +414,44 @@ table.qt-items td.narrow input{text-align:right}
 .qt-chevron-num{margin-right:8px}
 }
 /* ============ /Phase 2a v2.0 ============ */
+/* v2.9-F: 영역 G(관리자 관리) 전용 스타일 */
+.adm-wrap{padding:24px}
+.adm-tabs{display:flex;gap:8px;border-bottom:2px solid #e5e7eb;margin-bottom:16px}
+.adm-tab{padding:10px 16px;cursor:pointer;border:none;background:transparent;font-size:14px;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-2px}
+.adm-tab.active{color:#1e3a5f;border-bottom-color:#1e3a5f;font-weight:600}
+.adm-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
+.adm-table th{background:#f9fafb;padding:12px;text-align:left;font-size:13px;color:#374151;border-bottom:1px solid #e5e7eb}
+.adm-table td{padding:12px;border-bottom:1px solid #f3f4f6;font-size:13px}
+.adm-table tr:last-child td{border-bottom:none}
+.role-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.role-owner{background:#fee2e2;color:#b91c1c}
+.role-manager{background:#dbeafe;color:#1d4ed8}
+.role-viewer{background:#f3f4f6;color:#4b5563}
+.self-badge{background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:8px;font-size:10px;margin-left:6px}
+.coceo-badge{background:#fce7f3;color:#9d174d;padding:2px 6px;border-radius:8px;font-size:10px;margin-left:6px}
+.adm-active-toggle{cursor:pointer}
+.adm-active-toggle.disabled{cursor:not-allowed;opacity:.5}
+.adm-edit-btn{background:#1e3a5f;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px}
+.adm-edit-btn:disabled{background:#9ca3af;cursor:not-allowed}
+.adm-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:9000}
+.adm-modal{background:#fff;border-radius:12px;padding:24px;width:680px;max-width:90vw;max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.adm-modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb}
+.adm-modal-title{font-size:18px;font-weight:700;color:#1e3a5f}
+.adm-modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:#6b7280}
+.perm-grid{width:100%;border-collapse:collapse;margin-bottom:16px}
+.perm-grid th, .perm-grid td{padding:10px;text-align:center;border:1px solid #e5e7eb;font-size:13px}
+.perm-grid th{background:#f9fafb;font-weight:600}
+.perm-grid td.area-name{text-align:left;font-weight:500;color:#1e3a5f}
+.perm-grid td.area-locked{background:#fef2f2;color:#991b1b}
+.perm-grid input[type="radio"]{cursor:pointer;width:16px;height:16px}
+.perm-grid input[type="radio"]:disabled{cursor:not-allowed;opacity:.4}
+.perm-meta{font-size:11px;color:#6b7280;margin-top:2px}
+.adm-modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.adm-btn{padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none}
+.adm-btn-cancel{background:#e5e7eb;color:#374151}
+.adm-btn-save{background:#1e3a5f;color:#fff}
+.adm-btn-save:disabled{background:#9ca3af;cursor:not-allowed}
+.nav-readonly{opacity:.7}
 </style>
 </head>
 <body>
@@ -453,9 +491,10 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#approval" class="nav-item nav-disabled" data-nav="approval" title="3. 결재 — 품의·지출결의·경비·인장 통합 인박스 (v2.9-B / Day 7~8)"><span class="nav-icon">📝</span><span class="nav-text">결재</span><span class="nav-phase">v2.9-B</span></a>
 <a href="#vendor" class="nav-item nav-disabled" data-nav="vendor" title="4. 거래처·외주 (매입 마스터·발주서·정산서·NDA / Phase 2c-1)"><span class="nav-icon">🏢</span><span class="nav-text">거래처·외주</span><span class="nav-phase">2c-1</span></a>
 <a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="5. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
-<a href="#accounting" class="nav-item nav-disabled" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
+<a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
+<a href="#admin" class="nav-item" data-nav="admin" title="7. 관리자 관리 (계정·권한 / v2.9-F)"><span class="nav-icon">🛡</span><span class="nav-text">관리자 관리</span><span class="nav-phase">v2.9-F</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.9-C · 3건 통합 (v2.9-A DB Auth · v2.9-B 편집탭·무효화숨김 · v2.9-C 카드발송 일원화)</div>
+<div class="sidebar-footer">admin v2.9-F · 6건 통합 (v2.9-A DB Auth · v2.9-B 편집탭·무효화숨김 · v2.9-C 카드발송 일원화 · v2.9-D acceptSession fallback · v2.9-E 권한 매트릭스 사이드바 · v2.9-F 영역 G UI·권한 편집 모달)</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -523,6 +562,42 @@ table.qt-items td.narrow input{text-align:right}
 <section id="view-accounting" class="page" hidden>
   <div class="page-header"><div><div class="page-title">회계</div><div class="page-subtitle">통합 손익·매출·매입·세무사 export (1인 전용) — 마스터 #9</div></div></div>
   <div class="placeholder-box" id="ph-accounting"></div>
+</section>
+<section id="view-admin" class="page" hidden>
+<div class="adm-wrap">
+<div class="page-header"><div><div class="page-title">🛡 관리자 관리</div><div class="page-subtitle">계정·영역별 권한 매트릭스·감사 로그 (sql/021 / owner 단독)</div></div></div>
+<div class="adm-tabs">
+<button class="adm-tab active" data-adm-tab="users" type="button">사용자 목록</button>
+<button class="adm-tab" data-adm-tab="log" type="button">감사 로그</button>
+</div>
+<div id="adm-pane-users">
+<table class="adm-table">
+<thead><tr><th>이메일</th><th>이름</th><th>권한</th><th>활성</th><th>마지막 로그인</th><th>오버라이드</th><th>편집</th></tr></thead>
+<tbody id="adm-users-body"><tr><td colspan="7" style="text-align:center;color:#6b7280;padding:24px">불러오는 중…</td></tr></tbody>
+</table>
+</div>
+<div id="adm-pane-log" hidden>
+<table class="adm-table">
+<thead><tr><th>일시</th><th>변경자</th><th>대상</th><th>액션</th><th>영역</th><th>이전</th><th>새</th><th>메모</th></tr></thead>
+<tbody id="adm-log-body"><tr><td colspan="8" style="text-align:center;color:#6b7280;padding:24px">로그 탭 클릭 시 로드</td></tr></tbody>
+</table>
+</div>
+</div>
+
+<!-- 권한 편집 모달 -->
+<div id="perm-modal" class="adm-modal-overlay" hidden>
+<div class="adm-modal">
+<div class="adm-modal-header">
+<div class="adm-modal-title">권한 편집 — <span id="perm-modal-target"></span></div>
+<button class="adm-modal-close" type="button" onclick="window.closePermModal()">×</button>
+</div>
+<div id="perm-modal-body"></div>
+<div class="adm-modal-footer">
+<button class="adm-btn adm-btn-cancel" type="button" onclick="window.closePermModal()">취소</button>
+<button class="adm-btn adm-btn-save" id="perm-modal-save" type="button" onclick="window.savePermModal()">저장</button>
+</div>
+</div>
+</div>
 </section>
 <section id="view-customer-detail" class="page" hidden>
 <div class="detail-head">
@@ -666,7 +741,7 @@ const QT_DEFAULTS = {
 const QT_GOV_PAYMENT = "프로젝트 완료 후 7일 이내 전액 입금";
 const QT_PREFIX = {"행사이벤트":"EVENT","온라인마케팅":"MKT","마케팅교육":"EDU","국내여행":"TOUR"};
 const QT_BU_LIST = ["국내여행","행사이벤트","온라인마케팅","마케팅교육"];
-const state={user:null,session:null,adminRole:null,ready:false,currentCustomerId:null,currentCustomerInq:null,currentCustomerBU:null,timelineOffset:0,timelineTotal:0,timelineLoading:false,editMode:false,currentRow:null,lastUpdatedAt:null,
+const state={user:null,session:null,adminRole:null,permissions:{},/* v2.9-E */ready:false,currentCustomerId:null,currentCustomerInq:null,currentCustomerBU:null,timelineOffset:0,timelineTotal:0,timelineLoading:false,editMode:false,currentRow:null,lastUpdatedAt:null,
 // v1.9 — 검색·필터·페이지네이션
 filters:{search:'',status:'',bu:'',owner:'',period:'',from:null,to:null},
 listPage:1,listTotal:0,listSearchTimer:null};
@@ -1917,12 +1992,16 @@ async function acceptSession(session){
   if (dbAdmin === null) {
     try {
       const {data, error} = await sb.rpc('rpc_check_admin');
-      if (!error && data && data.length > 0) {
+      if (error) {
+        /* v2.9-D: error 분기 명시 fallback (이전: dbAdmin null 유지 → 화이트리스트 통과 X 차단) */
+        console.warn('[v2.9-D] rpc_check_admin error — fallback:', error);
+        dbAdmin = undefined; /* 화이트리스트 fallback 활성화 */
+      } else if (data && data.length > 0) {
         const r = data[0];
         dbAdmin = (r.r_is_admin === true) ? {role:r.r_role, name:r.r_display_name, email:r.r_email} : false;
         try { sessionStorage.setItem('rpj_admin_check_'+email, JSON.stringify({t:Date.now(), v:dbAdmin})); } catch(e) {}
-      } else if (!error) {
-        dbAdmin = false; /* 미등록 */
+      } else {
+        dbAdmin = false; /* 미등록 (data 없음 / row 없음) */
       }
     } catch(e) {
       console.warn('[v2.9-A] rpc_check_admin 실패 — fallback:', e);
@@ -1979,8 +2058,228 @@ function enterApp(){
   $('#user-name').textContent=nm;
   $('#user-email').textContent=u.email;
   if(!location.hash||location.hash==='#login'||location.hash==='#')location.hash='#dashboard';/* v2.8.0c — KPI 첫 화면 (마스터 1-1 #1) */
+  /* v2.9-E: 권한 로드 + 사이드바 조건부 렌더링 (sql/021 rpc_get_my_permissions) */
+  loadMyPermissions().then(()=>applyPermissionsToSidebar()).catch(e=>console.warn('[v2.9-E] permissions load 실패:',e));
   handleRoute();
 }
+
+/* v2.9-E: rpc_get_my_permissions 호출 → state.permissions = {dashboard:'write',...} */
+async function loadMyPermissions(){
+  try {
+    const {data, error} = await sb.rpc('rpc_get_my_permissions');
+    if (error) { console.warn('[v2.9-E] rpc_get_my_permissions error:', error); return; }
+    const map = {};
+    (data||[]).forEach(r => { map[r.r_영역] = r.r_레벨; });
+    state.permissions = map;
+    console.log('[v2.9-E] permissions loaded:', map);
+  } catch(e) {
+    console.warn('[v2.9-E] loadMyPermissions exception:', e);
+  }
+}
+
+/* v2.9-E: 권한 매트릭스 → 사이드바 nav 표시/숨김 */
+function applyPermissionsToSidebar(){
+  const p = state.permissions || {};
+  const map = {
+    'dashboard':'dashboard', 'customers':'customers', 'approval':'approvals',
+    'vendor':'vendors', 'hr':'hr', 'accounting':'accounting', 'admin':'admin_management'
+  };
+  Object.keys(map).forEach(navKey => {
+    const area = map[navKey];
+    const level = p[area] || 'none';
+    const el = document.querySelector('.nav-item[data-nav="'+navKey+'"]');
+    if (!el) return;
+    if (level === 'none') {
+      el.style.display = 'none';
+    } else {
+      el.style.display = '';
+      if (level === 'read') el.classList.add('nav-readonly'); else el.classList.remove('nav-readonly');
+    }
+  });
+}
+
+/* v2.9-E: fn_can_access 클라이언트 헬퍼 (페이지 진입·버튼 disable 통일) */
+function canAccess(area, required){
+  required = required || 'read';
+  const level = (state.permissions && state.permissions[area]) || 'none';
+  const order = {'none':0, 'read':1, 'write':2};
+  return (order[level]||0) >= (order[required]||1);
+}
+/* v2.9-F: 영역 G(관리자 관리) — 사용자 목록 + 권한 편집 모달 + 감사 로그 */
+const AREA_LABELS = {
+  dashboard:'대시보드', customers:'고객 360°', approvals:'결재', vendors:'거래처·외주',
+  hr:'인사', accounting:'회계', admin_management:'관리자 관리'
+};
+const LEVEL_LABELS = { none:'비표시', read:'조회만', write:'편집 가능' };
+
+async function loadAdminManagement(){
+  if (!canAccess('admin_management','read')) {
+    location.hash='#dashboard';
+    toast('관리자 관리 접근 권한이 없습니다.','warn');
+    return;
+  }
+  /* 탭 바인딩 */
+  document.querySelectorAll('#view-admin .adm-tab').forEach(btn=>{
+    btn.onclick = ()=>{
+      document.querySelectorAll('#view-admin .adm-tab').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const t = btn.getAttribute('data-adm-tab');
+      document.getElementById('adm-pane-users').hidden = (t!=='users');
+      document.getElementById('adm-pane-log').hidden = (t!=='log');
+      if (t==='log') loadPermLog();
+    };
+  });
+  /* 사용자 목록 로드 */
+  const tbody = document.getElementById('adm-users-body');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#6b7280;padding:24px">불러오는 중…</td></tr>';
+  try {
+    const {data, error} = await sb.rpc('rpc_list_admin_users');
+    if (error) throw error;
+    if (!data || !data.length){ tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#6b7280;padding:24px">사용자 없음</td></tr>'; return; }
+    const myEmail = (state.user && state.user.email || '').toLowerCase();
+    tbody.innerHTML = data.map(u => renderUserRow(u, myEmail)).join('');
+  } catch(e){
+    console.error('[v2.9-F] rpc_list_admin_users 실패:', e);
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#dc2626;padding:24px">로드 실패: '+(e.message||e)+'</td></tr>';
+  }
+}
+window.loadAdminManagement = loadAdminManagement;
+
+function renderUserRow(u, myEmail){
+  const isSelf = (u.r_이메일||'').toLowerCase() === myEmail;
+  const isOwner = u.r_권한 === 'owner';
+  const editDisabled = isSelf || (isOwner && !isSelf);
+  const activeDisabled = isSelf;
+  const lastLogin = u.r_마지막_로그인 ? new Date(u.r_마지막_로그인).toLocaleString('ko-KR') : '-';
+  const selfBadge = isSelf ? '<span class="self-badge">본인</span>' : '';
+  const coceoBadge = (isOwner && !isSelf) ? '<span class="coceo-badge">공동대표</span>' : '';
+  return `<tr>
+    <td>${escapeHtml(u.r_이메일||'')}${selfBadge}${coceoBadge}</td>
+    <td>${escapeHtml(u.r_이름||'')}</td>
+    <td><span class="role-badge role-${u.r_권한}">${u.r_권한}</span></td>
+    <td><label class="adm-active-toggle ${activeDisabled?'disabled':''}"><input type="checkbox" ${u.r_활성?'checked':''} ${activeDisabled?'disabled':''} onchange="window.toggleUserActive('${u.r_user_id}', this.checked, this)"> ${u.r_활성?'활성':'비활성'}</label></td>
+    <td>${lastLogin}</td>
+    <td>${u.r_override_count||0}건</td>
+    <td><button class="adm-edit-btn" ${editDisabled?'disabled':''} onclick="window.openPermModal('${u.r_user_id}','${escapeHtml(u.r_이메일||'')}','${escapeHtml(u.r_이름||'')}')">편집</button></td>
+  </tr>`;
+}
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function openPermModal(userId, email, name){
+  const modal = document.getElementById('perm-modal');
+  const target = document.getElementById('perm-modal-target');
+  const body = document.getElementById('perm-modal-body');
+  target.textContent = name + ' (' + email + ')';
+  body.innerHTML = '<div style="text-align:center;padding:24px;color:#6b7280">불러오는 중…</div>';
+  modal.hidden = false;
+  modal.dataset.userId = userId;
+
+  try {
+    const {data, error} = await sb.rpc('rpc_get_user_permissions', {_user_id: userId});
+    if (error) throw error;
+    let html = '<table class="perm-grid"><thead><tr><th style="text-align:left">영역</th><th>비표시</th><th>조회</th><th>편집</th><th>상태</th></tr></thead><tbody>';
+    (data||[]).forEach(p => {
+      const isLocked = (p.r_영역 === 'admin_management');
+      const lvl = p.r_레벨;
+      const meta = p.r_is_override ? ('<span style="color:#1d4ed8">오버라이드</span>') : ('<span style="color:#6b7280">기본값</span>');
+      const granted = p.r_granted_at ? ('<div class="perm-meta">'+new Date(p.r_granted_at).toLocaleString('ko-KR')+'</div>') : '';
+      html += '<tr>';
+      html += '<td class="area-name'+(isLocked?' area-locked':'')+'">'+(AREA_LABELS[p.r_영역]||p.r_영역)+(isLocked?' 🔒':'')+'</td>';
+      ['none','read','write'].forEach(L=>{
+        const checked = (lvl === L) ? 'checked' : '';
+        const disabled = isLocked ? 'disabled' : '';
+        html += '<td><input type="radio" name="perm-'+p.r_영역+'" value="'+L+'" '+checked+' '+disabled+' data-area="'+p.r_영역+'"></td>';
+      });
+      html += '<td style="font-size:11px">'+meta+granted+'</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    html += '<div style="margin-top:8px"><label style="font-size:13px">메모 (선택): <input type="text" id="perm-modal-memo" style="width:60%;padding:6px;border:1px solid #d1d5db;border-radius:4px;margin-left:8px" placeholder="변경 사유 등"></label></div>';
+    html += '<div style="margin-top:8px;font-size:12px;color:#6b7280">※ 관리자 관리 영역은 owner 전용으로 잠겨 있습니다.</div>';
+    body.innerHTML = html;
+  } catch(e){
+    body.innerHTML = '<div style="color:#dc2626;padding:16px">로드 실패: '+(e.message||e)+'</div>';
+  }
+}
+window.openPermModal = openPermModal;
+
+function closePermModal(){
+  const modal = document.getElementById('perm-modal');
+  modal.hidden = true;
+  delete modal.dataset.userId;
+}
+window.closePermModal = closePermModal;
+
+async function savePermModal(){
+  const modal = document.getElementById('perm-modal');
+  const userId = modal.dataset.userId;
+  if (!userId) return;
+  const payload = {};
+  document.querySelectorAll('#perm-modal-body input[type="radio"]:checked').forEach(r=>{
+    payload[r.dataset.area] = r.value;
+  });
+  /* admin_management 잠금: payload에서 제외 */
+  delete payload.admin_management;
+  if (!confirm('권한 변경을 저장하시겠습니까?')) return;
+  const saveBtn = document.getElementById('perm-modal-save');
+  saveBtn.disabled = true;
+  try {
+    const {data, error} = await sb.rpc('rpc_bulk_set_permissions', {_user_id: userId, _payload: payload});
+    if (error) throw error;
+    const cnt = (data && data[0] && data[0].r_영역_count) || 0;
+    toast(cnt+'건 권한 변경 저장 완료','success');
+    closePermModal();
+    loadAdminManagement();
+  } catch(e){
+    console.error('[v2.9-F] bulk_set 실패:', e);
+    toast('저장 실패: '+(e.message||e),'error');
+    saveBtn.disabled = false;
+  }
+}
+window.savePermModal = savePermModal;
+
+async function toggleUserActive(userId, active, el){
+  if (!confirm((active?'활성화':'비활성화')+' 처리하시겠습니까?')) {
+    el.checked = !active;
+    return;
+  }
+  try {
+    const {data, error} = await sb.rpc('rpc_toggle_user_active', {_user_id: userId, _active: active});
+    if (error) throw error;
+    toast((active?'활성':'비활성')+' 처리됨','success');
+    loadAdminManagement();
+  } catch(e){
+    console.error('[v2.9-F] toggle 실패:', e);
+    toast('실패: '+(e.message||e),'error');
+    el.checked = !active;
+  }
+}
+window.toggleUserActive = toggleUserActive;
+
+async function loadPermLog(){
+  const tbody = document.getElementById('adm-log-body');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#6b7280;padding:24px">불러오는 중…</td></tr>';
+  try {
+    const {data, error} = await sb.rpc('rpc_list_permission_log', {_limit:100, _offset:0});
+    if (error) throw error;
+    if (!data || !data.length){ tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#6b7280;padding:24px">로그 없음</td></tr>'; return; }
+    tbody.innerHTML = data.map(l => `<tr>
+      <td>${new Date(l.r_created_at).toLocaleString('ko-KR')}</td>
+      <td>${escapeHtml(l.r_변경자_이메일||'')}</td>
+      <td>${escapeHtml(l.r_대상_이메일||'')}</td>
+      <td>${escapeHtml(l.r_액션||'')}</td>
+      <td>${escapeHtml(AREA_LABELS[l.r_영역]||l.r_영역||'-')}</td>
+      <td>${escapeHtml(l.r_이전레벨||'-')}</td>
+      <td><strong>${escapeHtml(l.r_새레벨||'-')}</strong></td>
+      <td>${escapeHtml(l.r_메모||'')}</td>
+    </tr>`).join('');
+  } catch(e){
+    console.error('[v2.9-F] log 실패:', e);
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:24px">로드 실패: '+(e.message||e)+'</td></tr>';
+  }
+}
+window.loadPermLog = loadPermLog;
 
 function handleRoute(){
   if(!state.user){showLoginView();return;}
@@ -2066,12 +2365,14 @@ function handleRoute(){
     case 'notice':
     case 'contract':
       location.hash='#customers';return;
-    /* admin alias = dashboard (백워드 호환) */
+    /* v2.9-E: admin route = 관리자 관리 영역 G (이전 dashboard alias 제거 / default='dashboard'로 백워드 호환) */
     case 'admin':
-      state.activeTab='dashboard';
-      show('#view-dashboard');
-      $('.nav-item[data-nav="dashboard"]').classList.add('active');
-      loadDashboard();
+      if (!canAccess('admin_management','read')) { location.hash='#dashboard'; return; }
+      state.activeTab='admin';
+      show('#view-admin');
+      $('.nav-item[data-nav="admin"]').classList.add('active');
+      if (typeof loadAdminManagement === 'function') loadAdminManagement();
+      else if (typeof qtRenderPlaceholder === 'function') qtRenderPlaceholder('admin');
       break;
     default:location.hash='#dashboard';/* v2.8.0c 기본 = 대시보드 (KPI 첫 화면) */
   }
@@ -2083,7 +2384,8 @@ function qtRenderPlaceholder(tab){
     approval:   { title:'결재',         icon:'📝', phase:'v2.9-B',     when:'Day 7~8',     desc:'품의·지출결의·경비정산·인장 통합 인박스 (단일 approvals 엔진 / 부장 SKIP / 사전 위임).' },
     vendor:     { title:'거래처·외주',  icon:'🏢', phase:'Phase 2c-1',when:'매입 마스터',  desc:'매입 거래처 마스터·발주서·정산서·NDA 관리.' },
     hr:         { title:'인사',         icon:'👤', phase:'Phase 2f',  when:'급여 트리거',  desc:'휴가·출장·근태·급여·근로계약 (본인분 RLS / 회계 트리거).' },
-    accounting: { title:'회계',         icon:'💰', phase:'Phase 2e',  when:'1인 전용',     desc:'통합 손익·매출·매입·세무사 export (이동환 1인 전용 RLS / 가장 마지막).' }
+    accounting: { title:'회계',         icon:'💰', phase:'Phase 2e',  when:'1인 전용',     desc:'통합 손익·매출·매입·세무사 export (이동환 1인 전용 RLS / 가장 마지막).' },
+    admin:      { title:'관리자 관리',  icon:'🛡', phase:'v2.9-F',     when:'권한·계정',    desc:'사용자 목록·영역별 권한 매트릭스 편집·감사 로그 (sql/021 / owner 단독).' }
   }[tab];
   if(!meta) return;
   const el = document.getElementById('ph-' + tab);

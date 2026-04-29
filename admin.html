@@ -404,10 +404,8 @@ table.qt-items td.narrow input{text-align:right}
 .qt-chevron-locked .qt-chevron-num{background:#E2E8F0;color:#A0AEC0}
 .qt-chevron-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qt-chevron-exc{padding:14px 24px;background:#A32D2D;color:#fff;border-radius:6px;font-weight:700;font-size:14px;margin:0 0 16px 0;text-align:center}
-/* v2.8.6 — 태블릿 (481~768px): chevron 압축 + 라벨 숨김 */
-@media (max-width:768px) and (min-width:481px){.qt-chevron-step{padding:8px 10px 8px 18px;font-size:10px}.qt-chevron-label{display:none}}
-/* v2.8.6 — 모바일 (≤480px): vertical step indicator 전환 (Material/Salesforce 모바일 표준) */
-@media (max-width:480px){
+/* v2.8.7 — ≤768px (태블릿+모바일 통합): vertical step indicator (라벨 항상 표시) */
+@media (max-width:768px){
 .qt-chevron-bar{flex-direction:column;max-width:100%;border-radius:6px}
 .qt-chevron-step{clip-path:none!important;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.2);font-size:13px;border-radius:0}
 .qt-chevron-step:last-child{border-bottom:none}
@@ -457,7 +455,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="5. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
 <a href="#accounting" class="nav-item nav-disabled" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.8.6 · 모바일 chevron 반응형 fix</div>
+<div class="sidebar-footer">admin v2.8.7 · 4건 통합 (계약 체결·완료/카드 무효화 제거/태블릿 라벨)</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -3344,7 +3342,7 @@ function qtRenderQuotationCards(){
 function qtBuildListCardHtml(it, isChild){
   const sent = it.발송일시 ? '발송 '+qtFormatYMD(it.발송일시) : '미발송';
   const indent = isChild ? 'margin-left:24px;border-left:3px solid var(--primary)' : '';
-  const verNum = (it.수정차수 && it.수정차수>0) ? ' -v'+(it.수정차수+1) : '';
+  const verNum = (it.수정차수 && it.수정차수>1) ? ' -v'+it.수정차수 : '';
   return '<div class="qt-list-card" style="'+indent+'" onclick="location.hash=\'#quotation/'+it.id+'\'">'+
     '<div class="qt-list-card-head">'+
       '<div class="qt-list-card-no">'+escapeHtml(it.견적번호||'(번호없음)')+verNum+'</div>'+
@@ -3374,8 +3372,8 @@ function qtBuildChevronPath(it){
   const steps = [
     {n:1, label:'견적 작성',     active:cur.step>=1, current:cur.step===1, locked:false},
     {n:2, label:'발송·수락 대기', active:cur.step>=2, current:cur.step===2, locked:false},
-    {n:3, label:'계약·진행',     active:cur.step>=3, current:cur.step===3, locked:false},
-    {n:4, label:'행사 완료',     active:cur.step>=4, current:cur.step===4, locked:false},
+    {n:3, label:'계약 체결',     active:cur.step>=3, current:cur.step===3, locked:false},
+    {n:4, label:'계약 완료',     active:cur.step>=4, current:cur.step===4, locked:false},
     {n:5, label:'정산',          active:false,        current:false,        locked:true}
   ];
   let html = '<div class="qt-chevron-bar">';
@@ -3408,7 +3406,7 @@ async function renderQuotationDetail(qid){
     }
     state.currentQuotationId = qid;
     state.qtDetailRow = r;
-    const verNum = (r.수정차수 && r.수정차수>0) ? ' -v'+(r.수정차수+1) : '';
+    const verNum = (r.수정차수 && r.수정차수>1) ? ' -v'+r.수정차수 : '';
     const t1 = $('#qt-detail-title'); if(t1) t1.textContent = '💰 ' + (r.견적번호||'견적 상세') + verNum;
     const t2 = $('#qt-detail-sub');
     if(t2) t2.textContent = (r.제목||'(제목 없음)') + ' / ' + (r.사업부||'-') + ' / ' + (r.상태||'-');
@@ -3674,8 +3672,8 @@ function qtMapStageFromStatus(it){
   if(s==='무효화') return {step:-3, label:'무효화', color:'#D63437', dot:'✕'};
   if(s==='작성중')                              return {step:1, label:'견적 작성',     color:'#A0AEC0', dot:'○'};
   if(s==='발송완료' || s==='재발송')            return {step:2, label:'발송·수락 대기', color:'#4299E1', dot:'◐'};
-  if(s==='수락' && !delivered)                   return {step:3, label:'계약·진행',     color:'#1F4E79', dot:'●'};
-  if(s==='수락' && delivered)                    return {step:4, label:'행사 완료',     color:'#48BB78', dot:'✓'};
+  if(s==='수락' && !delivered)                   return {step:3, label:'계약 체결',     color:'#1F4E79', dot:'●'};
+  if(s==='수락' && delivered)                    return {step:4, label:'계약 완료',     color:'#48BB78', dot:'✓'};
   return {step:1, label:s, color:'#A0AEC0', dot:'○'};
 }
 
@@ -3718,8 +3716,8 @@ function qtRenderGroupedView(items){
   const order = [
     {key:'1',  title:'1️⃣ 견적 작성',      color:'#A0AEC0'},
     {key:'2',  title:'2️⃣ 발송·수락 대기', color:'#4299E1'},
-    {key:'3',  title:'3️⃣ 계약·진행 중',    color:'#1F4E79'},
-    {key:'4',  title:'4️⃣ 행사 완료',      color:'#48BB78'},
+    {key:'3',  title:'3️⃣ 계약 체결',      color:'#1F4E79'},
+    {key:'4',  title:'4️⃣ 계약 완료',      color:'#48BB78'},
     {key:'-1', title:'❌ 거절',                    color:'#A32D2D'},
     {key:'-2', title:'⏱ 만료',                    color:'#5F5E5A'},
     {key:'-3', title:'🚫 무효화',              color:'#D63437'}
@@ -3810,7 +3808,7 @@ async function loadCustomerQuotations(접수번호){
 function qtBuildCustomerCard(it, isChild, hideStep){
   const sent = it.발송일시 ? '발송 '+qtFormatYMD(it.발송일시) : '미발송';
   const indent = isChild ? 'margin-left:24px;border-left:3px solid var(--primary)' : '';
-  const verNum = (it.수정차수 && it.수정차수>0) ? ' -v'+(it.수정차수+1) : '';
+  const verNum = (it.수정차수 && it.수정차수>1) ? ' -v'+it.수정차수 : '';
   const status = it.상태 || '-';
   const qid = it.id;
   // v2.8.0e — 견적서 재발송은 상세 화면 전용(중복 제거) / 카드는 납품서 발송(수락)만
@@ -3819,24 +3817,22 @@ function qtBuildCustomerCard(it, isChild, hideStep){
   const sendLabel = '📤 납품서 발송';
 
   let statusMenu = '';
+  /* v2.8.7 — 카드 무효화 버튼 제거 (견적 상세 페이지에서만 가능 / 실수 방지) */
   if(status==='발송완료' || status==='재발송'){
     statusMenu = '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'수락\')">✓ 수락</button>'+
                  '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#A32D2D;border-color:#A32D2D" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'거절\')">✗ 거절</button>'+
-                 '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#5F5E5A;border-color:#888780" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'만료\')">⏱ 만료</button>'+
-                 '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#D63437;border-color:#D63437" onclick="event.stopPropagation();qtVoidQuotation(\''+qid+'\')">🚫 무효화</button>';
+                 '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#5F5E5A;border-color:#888780" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'만료\')">⏱ 만료</button>';
   } else if(status==='거절'){
     statusMenu = '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'수락\')">✓ 수락</button>'+
-                 '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#5F5E5A;border-color:#888780" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'만료\')">⏱ 만료</button>'+
-                 '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#D63437;border-color:#D63437" onclick="event.stopPropagation();qtVoidQuotation(\''+qid+'\')">🚫 무효화</button>';
+                 '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#5F5E5A;border-color:#888780" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'만료\')">⏱ 만료</button>';
   } else if(status==='만료'){
-    statusMenu = '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'수락\')">✓ 수락</button>'+
-                 '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#D63437;border-color:#D63437" onclick="event.stopPropagation();qtVoidQuotation(\''+qid+'\')">🚫 무효화</button>';
+    statusMenu = '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px" onclick="event.stopPropagation();qtChangeStatus(\''+qid+'\',\'수락\')">✓ 수락</button>';
   } else if(status==='수락'){
     statusMenu = '<span style="font-size:11px;color:#0C447C;padding:5px 10px">✓ 수락 완료 — 상태 변경 잠김</span>';
   } else if(status==='무효화'){
-    statusMenu = '<span style="font-size:11px;color:#444441;padding:5px 10px">🚫 무효화 — 액션 잠김</span>';
+    statusMenu = '<span style="font-size:11px;color:#444441;padding:5px 10px">🚫 무효화 — 상세에서만 액션 가능</span>';
   } else if(status==='작성중'){
-    statusMenu = '<button class="qt-btn-secondary" style="font-size:12px;padding:5px 10px;color:#D63437;border-color:#D63437" onclick="event.stopPropagation();qtVoidQuotation(\''+qid+'\')">🚫 무효화</button>';
+    statusMenu = '<span style="font-size:11px;color:#5F5E5A;padding:5px 10px">작성 중 — 상세에서 발송/무효화 가능</span>';
   }
 
   const sendBtn = sendable

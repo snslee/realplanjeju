@@ -373,6 +373,24 @@ table.qt-items td.narrow input{text-align:right}
 .qt-status-거절{background:#5A7090;color:#fff}
 .qt-status-만료{background:#C5D4E8;color:#5A7090}
 .qt-list-card-body{font-size:12px;color:var(--text-muted)}
+/* v2.8.1 — 거래 sub-tab 그리드 + step indicator + 일괄뷰 토글 */
+.qt-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (max-width:768px){.qt-grid-2{grid-template-columns:1fr}}
+.qt-grid-cell{display:flex;flex-direction:column;gap:6px}
+.qt-step-bar{display:flex;align-items:center;gap:4px;margin-top:8px;padding:6px 0;border-top:1px dashed var(--border-light)}
+.qt-step-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:.18s ease}
+.qt-step-on{background:var(--primary);color:#fff}
+.qt-step-off{background:#E2E8F0;color:#A0AEC0}
+.qt-step-locked{background:#F0F4F9;color:#CBD5E0;border:1px dashed #CBD5E0}
+.qt-step-line{flex:1;height:2px;background:#E2E8F0;min-width:8px;transition:.18s ease}
+.qt-step-line.qt-step-on{background:var(--primary)}
+.qt-step-exc{font-size:11px;font-weight:600;padding:6px 10px;background:#FEF0F0;border-radius:4px;margin-top:8px;border-left:3px solid currentColor}
+.qt-batch-group{margin-bottom:16px}
+.qt-batch-group-head{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg-hover);border-radius:6px;font-weight:700;margin-bottom:8px}
+.qt-batch-group-count{color:#fff;font-size:11px;padding:2px 8px;border-radius:10px}
+.qt-view-toggle{display:flex;gap:4px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:2px}
+.qt-view-toggle button{padding:5px 10px;font-size:12px;border:none;background:none;cursor:pointer;border-radius:4px;color:var(--text-light)}
+.qt-view-toggle button.active{background:var(--primary);color:#fff}
 /* ============ /Phase 2a v2.0 ============ */
 </style>
 </head>
@@ -415,7 +433,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="5. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
 <a href="#accounting" class="nav-item nav-disabled" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.8.0c · 6영역 + 고객 360°</div>
+<div class="sidebar-footer">admin v2.8.1 · 거래 sub-tab UX 본 구현</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -656,6 +674,7 @@ state.hr     = state.hr     || { mode:'placeholder', phase:'Phase 2f',  when:'�
 state.acc    = state.acc    || { mode:'placeholder', phase:'Phase 2e',  when:'회계 1인 전용' };
 /* 거래·공문·계약은 고객 상세 sub-tab으로 이동 (고객 종속 데이터) */
 state.activeTab = 'dashboard';
+state.qtViewMode = 'grid';  /* v2.8.1 — 거래 sub-tab 뷰 모드 */
 const PAGE_SIZE=50;
 
 /* ===== 사업부별 상담 체크리스트 4종 (v2.0 통합설계서 6장) ===== */
@@ -3538,6 +3557,87 @@ function qtApplyCopySource(r){
 
 /* ============ Phase 2a v2.6 영역 G — 고객 상세 견적 카드 ============ */
 /* loadCustomerQuotations — 고객 [견적] 탭 진입 시 카드 렌더 */
+/* v2.8.1 — 7상태 + 납품일시 → 5단계 매핑 (게이트③ 검증표 정합) */
+function qtMapStageFromStatus(it){
+  const s = it['상태'] || '-';
+  const delivered = !!it['납품일시'];
+  if(s==='거절')   return {step:-1, label:'거절',   color:'#A32D2D', dot:'✕'};
+  if(s==='만료')   return {step:-2, label:'만료',   color:'#5F5E5A', dot:'✕'};
+  if(s==='무효화') return {step:-3, label:'무효화', color:'#D63437', dot:'✕'};
+  if(s==='작성중')                              return {step:1, label:'견적 작성',     color:'#A0AEC0', dot:'○'};
+  if(s==='발송완료' || s==='재발송')            return {step:2, label:'발송·수락 대기', color:'#4299E1', dot:'◐'};
+  if(s==='수락' && !delivered)                   return {step:3, label:'계약·진행',     color:'#1F4E79', dot:'●'};
+  if(s==='수락' && delivered)                    return {step:4, label:'행사 완료',     color:'#48BB78', dot:'✓'};
+  return {step:1, label:s, color:'#A0AEC0', dot:'○'};
+}
+
+/* v2.8.1 — 5단계 step indicator (Stripe 형 콤팩트) */
+function qtBuildStepIndicator(it){
+  const cur = qtMapStageFromStatus(it);
+  if(cur.step < 0){
+    return '<div class="qt-step-exc" style="color:'+cur.color+'">'+cur.dot+' '+cur.label+'</div>';
+  }
+  const steps = [
+    {n:1, label:'작성', active:cur.step>=1, locked:false},
+    {n:2, label:'발송', active:cur.step>=2, locked:false},
+    {n:3, label:'계약', active:cur.step>=3, locked:false},
+    {n:4, label:'완료', active:cur.step>=4, locked:false},
+    {n:5, label:'정산', active:false,        locked:true}
+  ];
+  let html = '<div class="qt-step-bar">';
+  for(let i=0;i<steps.length;i++){
+    const s = steps[i];
+    const cls = s.locked ? 'qt-step-locked' : (s.active ? 'qt-step-on' : 'qt-step-off');
+    const tip = s.label + (s.locked ? ' (Phase 2e 활성화 예정)' : '');
+    html += '<div class="qt-step-dot '+cls+'" title="'+tip+'">'+s.n+'</div>';
+    if(i<steps.length-1){
+      const lineOn = s.active && steps[i+1].active && !steps[i+1].locked;
+      html += '<div class="qt-step-line '+(lineOn?'qt-step-on':'')+'"></div>';
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+/* v2.8.1 — 단계별 그룹 뷰 (HubSpot 변형 / 수직 리스트) */
+function qtRenderGroupedView(items){
+  const groups = {1:[], 2:[], 3:[], 4:[], '-1':[], '-2':[], '-3':[]};
+  items.forEach(function(it){
+    const m = qtMapStageFromStatus(it);
+    const key = String(m.step);
+    if(groups[key]) groups[key].push(it);
+  });
+  const order = [
+    {key:'1',  title:'1️⃣ 견적 작성',      color:'#A0AEC0'},
+    {key:'2',  title:'2️⃣ 발송·수락 대기', color:'#4299E1'},
+    {key:'3',  title:'3️⃣ 계약·진행 중',    color:'#1F4E79'},
+    {key:'4',  title:'4️⃣ 행사 완료',      color:'#48BB78'},
+    {key:'-1', title:'❌ 거절',                    color:'#A32D2D'},
+    {key:'-2', title:'⏱ 만료',                    color:'#5F5E5A'},
+    {key:'-3', title:'🚫 무효화',              color:'#D63437'}
+  ];
+  let html = '';
+  order.forEach(function(g){
+    const list = groups[g.key] || [];
+    if(list.length === 0) return;
+    html += '<div class="qt-batch-group">'+
+      '<div class="qt-batch-group-head" style="border-left:4px solid '+g.color+'">'+
+        '<span>'+g.title+'</span>'+
+        '<span class="qt-batch-group-count" style="background:'+g.color+'">'+list.length+'건</span>'+
+      '</div>';
+    list.forEach(function(it){ html += qtBuildCustomerCard(it, false); });
+    html += '</div>';
+  });
+  if(html === '') html = '<div class="qt-help">표시할 거래가 없습니다.</div>';
+  return html;
+}
+
+/* v2.8.1 — 거래 sub-tab 뷰 모드 토글 (top-level 함수, qtChangeStatus 패턴 정합) */
+function qtSetViewMode(mode){
+  state.qtViewMode = mode;
+  if(state.currentCustomerInq) loadCustomerQuotations(state.currentCustomerInq);
+}
+
 async function loadCustomerQuotations(접수번호){
   const area = $('#cust-qt-list');
   if(!area)return;
@@ -3567,12 +3667,30 @@ async function loadCustomerQuotations(접수번호){
     const idMap = {};
     items.forEach(it=>{idMap[it.id]=it;});
     const heads = items.filter(it=>!it.parent_quotation_id || !idMap[it.parent_quotation_id]);
-    let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="qt-help" style="background:#E8F5E9;color:#1B5E20;border-left-color:#2E7D32;flex:1;margin:0">총 '+items.length+'건 표시 · 최신순</div><a href="#quotation/new" class="btn-primary" style="padding:8px 14px;font-size:13px;font-weight:700;margin-left:12px">+ 신규 견적</a></div>';
-    heads.forEach(head=>{
-      html += qtBuildCustomerCard(head, false);
-      const children = items.filter(it=>it.parent_quotation_id===head.id);
-      children.forEach(ch=>{ html += qtBuildCustomerCard(ch, true); });
-    });
+    /* v2.8.1 — 헤더: 카운트 + 뷰 토글 + 신규 버튼 */
+    const isGroup = (state.qtViewMode === 'group');
+    let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;flex-wrap:wrap">'+
+      '<div class="qt-help" style="background:#E8F5E9;color:#1B5E20;border-left-color:#2E7D32;flex:1;min-width:200px;margin:0">총 '+items.length+'건 표시 · 최신순</div>'+
+      '<div class="qt-view-toggle">'+
+        '<button class="'+(isGroup?'':'active')+'" onclick="qtSetViewMode(\'grid\')">📋 그리드</button>'+
+        '<button class="'+(isGroup?'active':'')+'" onclick="qtSetViewMode(\'group\')">📊 단계별</button>'+
+      '</div>'+
+      '<a href="#quotation/new" class="btn-primary" style="padding:8px 14px;font-size:13px;font-weight:700">+ 신규 견적</a>'+
+      '</div>';
+    /* v2.8.1 — 모드별 분기 */
+    if(isGroup){
+      html += qtRenderGroupedView(items);
+    } else {
+      html += '<div class="qt-grid-2">';
+      heads.forEach(head=>{
+        html += '<div class="qt-grid-cell">';
+        html += qtBuildCustomerCard(head, false);
+        const children = items.filter(it=>it.parent_quotation_id===head.id);
+        children.forEach(ch=>{ html += qtBuildCustomerCard(ch, true); });
+        html += '</div>';
+      });
+      html += '</div>';
+    }
     area.innerHTML = html;
   } catch(e){
     console.error('[loadCustomerQuotations]',e);
@@ -3633,6 +3751,7 @@ function qtBuildCustomerCard(it, isChild){
       '<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border-light);display:flex;flex-wrap:wrap;gap:6px;align-items:center">'+
         sendBtn + statusMenu +
       '</div>'+
+      qtBuildStepIndicator(it)+   /* v2.8.1 — 5단계 step indicator */
     '</div>'+
   '</div>';
 }
@@ -3740,7 +3859,9 @@ Object.assign(window, {
   renderQuotationDetail, qtDetailGeneratePDF, qtSendFromDetail, qtVoidQuotation,
   qtCopyQuotation, qtApplyCopySource,
   // v2.6 영역 G — 고객 상세 견적 카드
-  loadCustomerQuotations, qtBuildCustomerCard, qtSendFromCard, qtChangeStatus
+  loadCustomerQuotations, qtBuildCustomerCard, qtSendFromCard, qtChangeStatus,
+  // v2.8.1 영역 H — 거래 sub-tab UX
+  qtSetViewMode, qtMapStageFromStatus, qtBuildStepIndicator, qtRenderGroupedView
 });
 
 document.addEventListener('DOMContentLoaded',init);

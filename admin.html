@@ -447,7 +447,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="5. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
 <a href="#accounting" class="nav-item nav-disabled" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.8.4 · 수신자 이메일 prompt 정합 fix</div>
+<div class="sidebar-footer">admin v2.8.5 · 12항목 분기 표준 + 무효화 중복 제거</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -2999,18 +2999,39 @@ async function qtGeneratePDF(silent, docType){
     doc.setFontSize(10);
     doc.text(qno, 105, titleY+7, {align:'center'});
 
-    // ===== ③ 메타 (발신일·유효기간·수신·제목) =====
+    // ===== ③ 메타 (날짜 라벨·유효기간·수신·제목) — v2.8.5 docType 분기 (마스터 v1.1 §2-1) =====
     const today = new Date();
     const ymd = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-    const valid = new Date(today.getTime()+30*86400000);
-    const validYmd = valid.getFullYear()+'-'+String(valid.getMonth()+1).padStart(2,'0')+'-'+String(valid.getDate()).padStart(2,'0');
     let metaY = titleY + 14;
     doc.setFontSize(9); doc.setTextColor(0,0,0);
-    doc.text(`발신일: ${ymd}    유효기간: ${validYmd} (발행 후 30일)`, 14, metaY); metaY+=6;
+    /* v2.8.5 — 날짜 라벨 분기: 견적서=발신일 / 납품서=납품일 / 거래명세서=거래일 */
+    let dateLine;
+    if(docType === 'delivery'){
+      dateLine = `납품일: ${ymd}`;   /* 유효기간 표시 X */
+    } else if(docType === 'statement'){
+      dateLine = `거래일: ${ymd}`;   /* 유효기간 표시 X */
+    } else {
+      const valid = new Date(today.getTime()+30*86400000);
+      const validYmd = valid.getFullYear()+'-'+String(valid.getMonth()+1).padStart(2,'0')+'-'+String(valid.getDate()).padStart(2,'0');
+      dateLine = `발신일: ${ymd}    유효기간: ${validYmd} (발행 후 30일)`;
+    }
+    doc.text(dateLine, 14, metaY); metaY+=6;
     const r = state.qt.recipient;
     const recipLine = [r.co, r.dept, r.name, r.title].filter(Boolean).join(' / ');
     doc.text(`수신: ${recipLine || '—'}`, 14, metaY); metaY+=6;
     doc.text(`제목: ${state.qt.title || '—'}`, 14, metaY); metaY+=4;
+    /* v2.8.5 — 상단 안내 텍스트 (마스터 v1.1 §2-1 #5) */
+    let noticeText;
+    if(docType === 'delivery'){
+      noticeText = '아래와 같이 납품을 완료하였음을 알려드립니다.';
+    } else if(docType === 'statement'){
+      noticeText = '아래와 같이 거래 내역을 통보드립니다.';
+    } else {
+      noticeText = '아래와 같이 견적을 제출하오니 검토 부탁드립니다.';
+    }
+    doc.setFontSize(9); doc.setTextColor(60,60,60);
+    doc.text(noticeText, 14, metaY); metaY+=4;
+    doc.setTextColor(0,0,0);
 
     // ===== ④ 본문 항목 + 합계 통합 (AutoTable) =====
     const head = state.qt.options.salePrice
@@ -3102,20 +3123,44 @@ async function qtGeneratePDF(silent, docType){
       doc.setTextColor(0,0,0);
     }
 
-    // ===== ⑤ 결제·지급 조건 (블록 박스) =====
+    // ===== ⑤ 결제·지급 조건 (블록 박스) — v2.8.5 docType 분기 (마스터 v1.1 §2-1 #7·#8) =====
     y += 4;
-    const payText = state.qt.payment || '-';
-    const acctText = `입금 계좌: ${state.qt.account || '-'}`;
-    const payBlockH = 22 + Math.floor(payText.length/60)*4;
-    doc.setDrawColor(43,95,184);
-    doc.setFillColor(232,239,249);
-    doc.rect(14, y, 182, payBlockH, 'F');
-    doc.setFontSize(9); doc.setTextColor(43,95,184);
-    doc.text('결제·지급 조건', 16, y+5);
-    doc.setFontSize(9); doc.setTextColor(0,0,0);
-    doc.text(payText, 16, y+11, {maxWidth:178});
-    doc.text(acctText, 16, y+payBlockH-5);
-    y += payBlockH + 4;
+    /* v2.8.5 — 견적서·거래명세서: 결제조건 표시 / 납품서: 결제조건 X (입금계좌만) */
+    if(docType === 'delivery'){
+      /* 납품서: 입금계좌만 표시 (결제조건 X) */
+      const acctTextOnly = `입금 계좌: ${state.qt.account || '-'}`;
+      const acctBlockH = 14;
+      doc.setDrawColor(43,95,184);
+      doc.setFillColor(232,239,249);
+      doc.rect(14, y, 182, acctBlockH, 'F');
+      doc.setFontSize(9); doc.setTextColor(43,95,184);
+      doc.text('입금 계좌', 16, y+5);
+      doc.setFontSize(9); doc.setTextColor(0,0,0);
+      doc.text(acctTextOnly, 16, y+11, {maxWidth:178});
+      y += acctBlockH + 4;
+    } else {
+      /* 견적서·거래명세서: 결제조건 + 입금계좌 */
+      const payText = state.qt.payment || '-';
+      const acctText = `입금 계좌: ${state.qt.account || '-'}`;
+      const isStmt = (docType === 'statement');
+      const stmtNotice = isStmt ? '※ 상기 거래 대금을 아래 계좌로 입금해 주시면 감사하겠습니다.' : '';
+      const noticeH = isStmt ? 5 : 0;
+      const payBlockH = 22 + Math.floor(payText.length/60)*4 + noticeH;
+      doc.setDrawColor(43,95,184);
+      doc.setFillColor(232,239,249);
+      doc.rect(14, y, 182, payBlockH, 'F');
+      doc.setFontSize(9); doc.setTextColor(43,95,184);
+      doc.text(isStmt ? '결제·지급 조건 (대금 입금 안내)' : '결제·지급 조건', 16, y+5);
+      doc.setFontSize(9); doc.setTextColor(0,0,0);
+      doc.text(payText, 16, y+11, {maxWidth:178});
+      if(isStmt){
+        doc.setFontSize(8); doc.setTextColor(120,40,40);
+        doc.text(stmtNotice, 16, y+payBlockH-10);
+        doc.setTextColor(0,0,0); doc.setFontSize(9);
+      }
+      doc.text(acctText, 16, y+payBlockH-5);
+      y += payBlockH + 4;
+    }
 
     // ===== ⑥ 비고 =====
     if(state.qt.note && state.qt.note.trim()){
@@ -3678,7 +3723,7 @@ function qtRenderGroupedView(items){
         '<span>'+g.title+'</span>'+
         '<span class="qt-batch-group-count" style="background:'+g.color+'">'+list.length+'건</span>'+
       '</div>';
-    list.forEach(function(it){ html += qtBuildCustomerCard(it, false); });
+    list.forEach(function(it){ html += qtBuildCustomerCard(it, false, true); });   /* v2.8.5 — 단계별 뷰는 그룹 헤더가 단계 표시 / step indicator 중복 제거 */
     html += '</div>';
   });
   if(html === '') html = '<div class="qt-help">표시할 거래가 없습니다.</div>';
@@ -3752,7 +3797,7 @@ async function loadCustomerQuotations(접수번호){
 }
 
 /* qtBuildCustomerCard — 고객 상세 카드 (옵션 2: [발송][상태] 2버튼) */
-function qtBuildCustomerCard(it, isChild){
+function qtBuildCustomerCard(it, isChild, hideStep){
   const sent = it.발송일시 ? '발송 '+qtFormatYMD(it.발송일시) : '미발송';
   const indent = isChild ? 'margin-left:24px;border-left:3px solid var(--primary)' : '';
   const verNum = (it.수정차수 && it.수정차수>0) ? ' -v'+(it.수정차수+1) : '';
@@ -3804,7 +3849,7 @@ function qtBuildCustomerCard(it, isChild){
       '<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border-light);display:flex;flex-wrap:wrap;gap:6px;align-items:center">'+
         sendBtn + statusMenu +
       '</div>'+
-      qtBuildStepIndicator(it)+   /* v2.8.1 — 5단계 step indicator */
+      (hideStep ? '' : qtBuildStepIndicator(it))+   /* v2.8.1 — 5단계 step indicator (v2.8.5 hideStep 옵션) */
     '</div>'+
   '</div>';
 }

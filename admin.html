@@ -404,7 +404,17 @@ table.qt-items td.narrow input{text-align:right}
 .qt-chevron-locked .qt-chevron-num{background:#E2E8F0;color:#A0AEC0}
 .qt-chevron-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qt-chevron-exc{padding:14px 24px;background:#A32D2D;color:#fff;border-radius:6px;font-weight:700;font-size:14px;margin:0 0 16px 0;text-align:center}
-@media (max-width:768px){.qt-chevron-step{padding:10px 14px 10px 24px;font-size:11px}.qt-chevron-label{display:none}}
+/* v2.8.6 — 태블릿 (481~768px): chevron 압축 + 라벨 숨김 */
+@media (max-width:768px) and (min-width:481px){.qt-chevron-step{padding:8px 10px 8px 18px;font-size:10px}.qt-chevron-label{display:none}}
+/* v2.8.6 — 모바일 (≤480px): vertical step indicator 전환 (Material/Salesforce 모바일 표준) */
+@media (max-width:480px){
+.qt-chevron-bar{flex-direction:column;max-width:100%;border-radius:6px}
+.qt-chevron-step{clip-path:none!important;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.2);font-size:13px;border-radius:0}
+.qt-chevron-step:last-child{border-bottom:none}
+.qt-chevron-step.qt-chevron-locked{border-bottom:1px dashed rgba(0,0,0,.1)}
+.qt-chevron-label{display:inline!important}
+.qt-chevron-num{margin-right:8px}
+}
 /* ============ /Phase 2a v2.0 ============ */
 </style>
 </head>
@@ -447,7 +457,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="5. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
 <a href="#accounting" class="nav-item nav-disabled" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.8.5 · 12항목 분기 표준 + 무효화 중복 제거</div>
+<div class="sidebar-footer">admin v2.8.6 · 모바일 chevron 반응형 fix</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>

@@ -494,7 +494,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 <a href="#admin" class="nav-item" data-nav="admin" title="7. 관리자 관리 (계정·권한 / v2.9-F)"><span class="nav-icon">🛡</span><span class="nav-text">관리자 관리</span><span class="nav-phase">v2.9-F</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.11.8 · 32건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7 panel항상숨김 · J8 카탈로그필수품목제외 · J9 KEYWORDS · J10 REMARK매핑 · J11 qtBuildRemarkBox · J11a 카테고리역참조 · J12 견적서REMARK박스 · J13 일정표REMARK통합)</div>
+<div class="sidebar-footer">admin v2.12 · 45건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7~J13 · v2.11.9-R1~R7 롤백 · v2.12 회사표준양식 풀번들 [α1 영역2 6필드+고객DB불러오기 / α2 영역3 8열표+드롭다운+사용자소계 / α3 PDF6열+합계+1인상품요금총합계기준 / α4 sql/023 도착·출발시간·인원])</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -781,8 +781,7 @@ const QT_ESSENTIAL_ITEMS_TOUR = [
   {key:'항공권', cat1:'항공·교통', cat2:'항공권', name:'항공권 (왕복)', unit:'매', def:false, qty:(a,c,n)=>(a+c), day:1, time:null, meal:null, it:false},
   {key:'단체사진', cat1:'기타', cat2:'단체사진', name:'단체사진 촬영', unit:'식', def:false, qty:(a,c,n)=>1, day:1, time:null, meal:null, it:false}
 ];
-/* v2.11.8 J9: 카탈로그 hidden filter용 키워드 Set (필수품목 패널 전용 / 중복 제거) */
-const QT_ESSENTIAL_KEYWORDS = new Set(['조식','중식','석식','객실','전세버스','인솔자','현지가이드','여행자보험','항공권','단체사진']);
+/* v2.11.9 R4: QT_ESSENTIAL_KEYWORDS Set 제거 (J9 롤백 / 카탈로그 모두 노출) */
 /* v2.11.8 J10: REMARK 3행 포함사항 카테고리 -> 표준 텍스트 매핑 (회사 표준 양식 정합) */
 const QT_REMARK_INCLUDE_MAP = {
   '항공·교통': '항공요금',
@@ -817,12 +816,17 @@ state.qt = {
   currentQuotationId: null,
   currentQuotationNo: null,
   /* v2.11 묶음 5: 인원·박일·복수 안 (sql/022 quotations 보강 5컬럼 정합) */
-  안_번호: 1,                /* 현재 활성 안 (1·2·3) */
+  안_번호: 1,                /* 현재 활성 안 (1·2·3) — v2.12에서 dead state */
   인원_성인: null,
   인원_아동: null,
-  박일수: null,
+  박일수: null,              /* v2.12에서 dead state (시작일·종료일로 대체) */
   비고_pdf노출: true,         /* PG identifier folding: 비고_PDF노출 → 비고_pdf노출 */
-  itemsByAn: {1:[], 2:[], 3:[]}  /* 안별 items 백업 (저장 시 quotation_items 이전은 v2.12) */
+  itemsByAn: {1:[], 2:[], 3:[]},  /* 안별 items 백업 — v2.12에서 dead state */
+  /* v2.12 Phase 2: 여행 정보 4필드 (영역 2 신규 / 고객DB 자동 매핑) */
+  여행_시작일: null,
+  도착시간: null,            /* 서울→제주 도착 시간 */
+  여행_종료일: null,
+  출발시간: null             /* 제주→서울 출발 시간 */
 };
 state.currentQuotationId = null;
 /* v2.8.0c — state 마스터 v1.0 1-3 데이터 흐름도 정합 / 사이드바 6 영역 + 고객 360° */
@@ -2829,28 +2833,13 @@ function qtBuildCreateForm(){
 </div>
 </div>
 
-<!-- v2.11-A: 견적 안 탭 + 인원·박일 (v2.11.7 J1=b: panel display:none / 인원·박일은 [✨] 패널 안으로 이동) -->
-<div class="qt-panel" id="qt-panel-15" style="display:none">
-<h3 id="qt-h3-15"><span class="qt-step-num">1.5</span><span id="qt-h3-15-text">견적 안 (1차/2차/3차) + 인원·박일수</span></h3>
-<div class="qt-field"><label>📋 견적 안 — 동일 고객·사업부 복수 견적 비교 (sql/022 안_번호)</label>
-<div id="qt-an-tabs" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-<button type="button" class="qt-an-btn active" data-an="1" onclick="qtSelectAn(1)" style="padding:8px 16px;border:2px solid var(--border);border-radius:6px;background:var(--bg-hover);cursor:pointer;font-weight:600">1차 안</button>
-<button type="button" class="qt-an-btn" data-an="2" onclick="qtSelectAn(2)" style="padding:8px 16px;border:2px solid var(--border);border-radius:6px;background:var(--bg);cursor:pointer">2차 안</button>
-<button type="button" class="qt-an-btn" data-an="3" onclick="qtSelectAn(3)" style="padding:8px 16px;border:2px solid var(--border);border-radius:6px;background:var(--bg);cursor:pointer">3차 안</button>
-<button type="button" onclick="qtCloneAn()" style="padding:8px 12px;margin-left:8px;border:1px dashed var(--border);border-radius:6px;background:transparent;cursor:pointer;font-size:11px">📋 1차 → 현재 안 복제</button>
-<span id="qt-an-summary" style="margin-left:auto;font-size:11px;color:var(--text-muted)">현재: 1차 / 항목 0건</span>
-</div></div>
-<div class="qt-field-row-4" id="qt-people-row" style="display:none">
-<div class="qt-field"><label>인원 — 성인</label><input type="number" id="qt-people-adult" min="0" placeholder="예: 30" oninput="state.qt.인원_성인=this.value?parseInt(this.value):null;qtUpdateAll()"></div>
-<div class="qt-field"><label>인원 — 아동</label><input type="number" id="qt-people-child" min="0" placeholder="예: 5" oninput="state.qt.인원_아동=this.value?parseInt(this.value):null;qtUpdateAll()"></div>
-<div class="qt-field"><label>박일수 (예: 2박3일 → 2)</label><input type="number" id="qt-stay-nights" min="0" placeholder="예: 2" oninput="state.qt.박일수=this.value?parseInt(this.value):null"></div>
-<div class="qt-field"><label>1인 상품요금 (자동)</label><div id="qt-pp-price" style="padding:8px;background:var(--bg-hover);border-radius:4px;font-weight:600">—</div></div>
-</div>
-</div>
-<!-- /v2.11-A -->
+<!-- v2.11.9 R1: 영역 1.5 panel 완전 제거 (인원·박일·도착·출발시간은 Phase 2에서 영역 2로 이동) -->
 
 <div class="qt-panel">
-<h3><span class="qt-step-num">2</span>수신처 (4단계) + 제목</h3>
+<h3 style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+<span><span class="qt-step-num">2</span>수신처 + 제목 + 여행 정보 + 인원</span>
+<button type="button" onclick="qtLoadCustomerTravelInfo()" style="font-size:11px;padding:6px 12px;border:1px solid #2b5fb8;border-radius:6px;background:#e6f1fb;color:#0c447c;cursor:pointer;font-weight:500">👤 고객 정보 불러오기</button>
+</h3>
 <div class="qt-field-row-4">
 <div class="qt-field"><label>회사명</label><input type="text" id="qt-recip-co" placeholder="예: 제주특별자치도청" oninput="qtUpdRecipient()"></div>
 <div class="qt-field"><label>부서</label><input type="text" id="qt-recip-dept" placeholder="예: 관광정책과" oninput="qtUpdRecipient()"></div>
@@ -2858,27 +2847,44 @@ function qtBuildCreateForm(){
 <div class="qt-field"><label>직위</label><input type="text" id="qt-recip-title" placeholder="예: 주무관" oninput="qtUpdRecipient()"></div>
 </div>
 <div class="qt-field"><label>제목</label><input type="text" id="qt-title" placeholder="예: 2026 제주 관광 박람회 기획·운영 견적의 건" oninput="state.qt.title=this.value"></div>
+<!-- v2.12 Phase 2: 여행 정보 6필드 (시작일·도착시간·종료일·출발시간·성인·아동) -->
+<div style="margin-top:12px;padding:12px;background:#FAEEDA;border-radius:8px;border:1px solid #BA7517">
+<div style="font-size:11px;color:#854F0B;font-weight:500;margin-bottom:8px">📅 여행 정보 (고객DB 자동 매핑 / 수동 수정 가능)</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+<div class="qt-field"><label style="font-size:11px;color:#854F0B">여행 시작일</label><input type="date" id="qt-travel-start" oninput="state.qt.여행_시작일=this.value"></div>
+<div class="qt-field"><label style="font-size:11px;color:#854F0B">도착시간 <span style="color:#999;font-weight:400">(서울→제주)</span></label><input type="time" id="qt-travel-arrive-time" oninput="state.qt.도착시간=this.value"></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+<div class="qt-field"><label style="font-size:11px;color:#854F0B">여행 종료일</label><input type="date" id="qt-travel-end" oninput="state.qt.여행_종료일=this.value"></div>
+<div class="qt-field"><label style="font-size:11px;color:#854F0B">출발시간 <span style="color:#999;font-weight:400">(제주→서울)</span></label><input type="time" id="qt-travel-depart-time" oninput="state.qt.출발시간=this.value"></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div class="qt-field"><label style="font-size:11px;color:#854F0B">인원 — 성인</label><input type="number" id="qt-people-adult" min="0" placeholder="예: 16" oninput="state.qt.인원_성인=this.value?parseInt(this.value):null;qtUpdateAll()"></div>
+<div class="qt-field"><label style="font-size:11px;color:#854F0B">인원 — 아동</label><input type="number" id="qt-people-child" min="0" placeholder="예: 0" oninput="state.qt.인원_아동=this.value?parseInt(this.value):null;qtUpdateAll()"></div>
+</div>
+</div>
 </div>
 
 <div class="qt-panel">
-<h3><span class="qt-step-num">3</span>본문 항목 (카탈로그 클릭 또는 자유 입력)</h3>
-<div id="qt-essential-wrap" style="display:none;margin:8px 0 12px">
-<button type="button" id="qt-essential-btn" onclick="qtToggleEssentialPanel()" style="padding:8px 14px;border:2px dashed #2b5fb8;border-radius:6px;background:#e8eff9;color:#2b5fb8;font-weight:600;cursor:pointer">✨ 국내여행 필수 품목 일괄 추가 (10종)</button>
-<div id="qt-essential-panel" style="display:none;margin-top:10px;padding:14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-hover)">
-<div style="font-size:11px;color:#666;margin-bottom:8px">💡 인원·박일수 기반 자동 수량 계산. 체크 후 [본문에 추가] 클릭. 추가 후 자유 수정 가능.</div>
-<div id="qt-essential-list"></div>
-<div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
-<button type="button" onclick="qtToggleEssentialPanel()" style="padding:6px 12px;border:1px solid var(--border);border-radius:4px;background:var(--bg);cursor:pointer">취소</button>
-<button type="button" onclick="qtApplyEssentialItems()" style="padding:6px 14px;border:1px solid #2b5fb8;border-radius:4px;background:#2b5fb8;color:#fff;font-weight:600;cursor:pointer">✓ 본문에 추가</button>
-</div>
-</div>
-</div>
-<div id="qt-catalog-area"><div class="qt-help">먼저 사업부를 선택하면 카탈로그가 표시됩니다.</div></div>
+<h3><span class="qt-step-num">3</span>본문 항목 (자유 입력 + 분류 드롭다운)</h3>
+<!-- v2.12 Phase 3: 카탈로그 제거 / 8열 표 (대·중분류 드롭다운 + 자유입력 / 사용자 소계 행 삽입) -->
+<datalist id="qt-cat1-list">
+<option value="운임"><option value="숙박"><option value="식사"><option value="교통"><option value="여행코스"><option value="인건비"><option value="기타">
+</datalist>
+<datalist id="qt-cat2-list">
+<option value="항공료"><option value="조식"><option value="중식"><option value="석식"><option value="관광지"><option value="버스"><option value="가이드"><option value="안전요원"><option value="예비비">
+</datalist>
+<datalist id="qt-unit-list">
+<option value="명"><option value="실"><option value="인"><option value="대">
+</datalist>
 <table class="qt-items" id="qt-items-table">
-<thead><tr><th style="width:18%">품명</th><th style="width:22%">내용</th><th style="width:7%">수량</th><th style="width:6%">단위</th><th style="width:12%">단가</th><th style="width:13%">금액</th><th style="width:19%">비고</th><th style="width:3%"></th></tr></thead>
+<thead><tr><th style="width:9%">대분류</th><th style="width:10%">중분류</th><th style="width:18%">품명</th><th style="width:7%">수량</th><th style="width:6%">단위</th><th style="width:11%">단가</th><th style="width:12%">금액(자동)</th><th style="width:24%">비고</th><th style="width:3%"></th></tr></thead>
 <tbody id="qt-items-body"></tbody>
 </table>
-<button class="qt-add-row-btn" onclick="qtAddRow()">＋ 빈 행 추가 (자유 입력)</button>
+<div style="display:flex;gap:8px;margin-top:8px">
+<button class="qt-add-row-btn" onclick="qtAddRow()" style="flex:1">＋ 빈 행 추가 (자유 입력)</button>
+<button class="qt-add-row-btn" onclick="qtAddSubtotalRow()" style="flex:1;background:#E6F1FB;color:#0C447C;border-color:#378ADD">＋ 소계 행 삽입 (현재 위치)</button>
+</div>
 </div>
 
 <div class="qt-panel">
@@ -3045,7 +3051,8 @@ function qtSelectBU(bu){
   const $at=$('#qt-att-tour'); if($at)$at.checked=(bu==='국내여행');
   state.qt.attachments.tour = (bu==='국내여행');
   qtSetTrim(d.trim);
-  qtRenderCatalog(bu);
+  /* v2.12 Phase 3: 카탈로그 제거 / qtRenderCatalog 호출 비활성 */
+  // qtRenderCatalog(bu);
   /* v2.11-A·B: 사업부=국내여행 시 인원·박일 + 일정표 미리보기 영역 표시 */
   const isTour = (bu === '국내여행');
   const peopleRow = document.getElementById('qt-people-row');
@@ -3053,14 +3060,7 @@ function qtSelectBU(bu){
   const itinPv = document.getElementById('qt-itinerary-preview');
   if(itinPv) itinPv.style.display = isTour ? 'block' : 'none';
   qtRenderItems();    /* 일정표 컬럼 toggle */
-  /* UI-1 영역 1.5 제목 사업부별 분기 + v2.11.5 필수품목 버튼 토글 */
-  const _h15 = document.getElementById('qt-h3-15-text');
-  if(_h15) _h15.textContent = (bu==='국내여행') ? '견적 안 (1·2·3차) + 인원·박일수' : '견적 안 (1·2·3차)';
-  const _ew = document.getElementById('qt-essential-wrap');
-  if(_ew) _ew.style.display = (bu==='국내여행') ? 'block' : 'none';
-  /* v2.11.8 J7: 영역 1.5 panel 항상 숨김 (인원·박일 입력은 [✨] 패널 안으로 통합 / H1 충돌 제거) */
-  const _p15 = document.getElementById('qt-panel-15');
-  if(_p15) _p15.style.display = 'none';
+  /* v2.11.9 R3: 영역 1.5/필수품목 토글 코드 제거 (DOM 자체가 제거됨) */
   qtUpdateBuPreview();
   qtUpdateAll();
   qtRenderItinerary();
@@ -3282,11 +3282,10 @@ function qtAppendItineraryPage(doc, fontFamily){
   doc.setFontSize(16); doc.setTextColor(43,95,184);
   doc.text('일 정 표', 105, 25, {align:'center'});
   doc.setFontSize(9); doc.setTextColor(60,60,60);
-  const adt=+state.qt.인원_성인||0, chd=+state.qt.인원_아동||0, ngt=+state.qt.박일수||0;
+  /* v2.11.9 R7: 인원·박일 표시 제거 (Phase 2에서 영역 2의 시작일·종료일·도착시간·출발시간으로 재구성 예정) */
+  const adt=+state.qt.인원_성인||0, chd=+state.qt.인원_아동||0;
   const peopleStr = (adt+chd>0) ? `인원: 성인 ${adt}명${chd>0?` / 아동 ${chd}명`:''} (총 ${adt+chd}명)` : '';
-  const periodStr = (ngt>0) ? `기간: ${ngt}박 ${ngt+1}일` : '';
   if(peopleStr) doc.text(peopleStr, 14, 35);
-  if(periodStr) doc.text(periodStr, 14, 41);
   /* 일정표 표 (jsPDF AutoTable) */
   if(doc.autoTable){
     const head = [['일차','시간','일정','식사']];
@@ -3386,13 +3385,7 @@ async function qtRenderCatalog(bu){
     if(error)throw error;
     const cat = {};
     (data||[]).forEach(r=>{
-      /* v2.11.8 J8: 사업부=국내여행 시 필수품목 카탈로그 hidden (필수품목 패널 전용 / 중복 제거) */
-      if(bu==='국내여행' && QT_ESSENTIAL_KEYWORDS){
-        const _nm = (r.품명||'');
-        let _isEss = false;
-        QT_ESSENTIAL_KEYWORDS.forEach(kw=>{ if(_nm.indexOf(kw)>=0) _isEss=true; });
-        if(_isEss) return;
-      }
+      /* v2.11.9 R5: hidden filter 제거 (J8 롤백 / 카탈로그 모두 노출) */
       if(!cat[r.카테고리])cat[r.카테고리]=[];
       cat[r.카테고리].push({품명:r.품명,내용:r.내용||'',단위:r.기본_단위||'',단가:r.기본_단가||0,_cat1:r.카테고리});
     });
@@ -3440,19 +3433,8 @@ function qtAddCatItem(name,content,unit,price,cat1){
       });
     }catch(_e){}
   }
-  /* v2.11.7 J3=b: 단위 기반 자동 수량 (사업부=국내여행 + 인원·박일 입력 시) */
+  /* v2.11.9 R6: 단위 기반 자동 수량 제거 (J3=b 롤백 / 사용자 자유 입력) */
   let _qty = 1;
-  if(_itDefault){
-    const adt = +state.qt.인원_성인 || 0;
-    const chd = +state.qt.인원_아동 || 0;
-    const ngt = +state.qt.박일수 || 0;
-    if(adt+chd > 0){
-      const u = (unit||'').trim();
-      if(/명|인분|매|좌석|^인$/.test(u)){ _qty = adt + chd; }
-      else if(/^박$|실/.test(u)){ _qty = Math.max(ngt,1); }
-      else if(/^일$|^대$|대·일/.test(u)){ _qty = (ngt||0) + 1; }
-    }
-  }
   state.qt.items.push({품명:name,내용:content,수량:_qty,단가:price||0,금액:_qty*(price||0),단위:unit,비고:'',
     /* v2.11.8 J11a: 카테고리_대분류 저장 (REMARK 3행 자동 추출용) */
     카테고리_대분류:_cat1, 카테고리_소분류:'',
@@ -3462,54 +3444,72 @@ function qtAddCatItem(name,content,unit,price,cat1){
 }
 
 function qtAddRow(){
-  /* v2.11.6 H5: 사업부=국내여행 시 default 일정표_표시 = true */
-  const _itDefault = (state.qt.bu === '국내여행');
-  state.qt.items.push({품명:'',내용:'',수량:1,단가:0,금액:0,단위:'',비고:'',
-    일정_표시:'', 일차:null, 시간:'', 식사_컬럼:'', 일정표_표시:_itDefault, 견적서_표시:true});
-  qtRenderItems(); qtUpdateAnSummary();
+  /* v2.12 Phase 3: 8열 / 카테고리 드롭다운 / 일정표 필드 보존 (호환성) */
+  state.qt.items.push({유형:'item', 카테고리_대분류:'', 카테고리_중분류:'', 품명:'', 수량:'', 단위:'', 단가:0, 금액:0, 비고:'',
+    /* legacy 호환 */ 내용:'', 일정_표시:'', 일차:null, 시간:'', 식사_컬럼:'', 일정표_표시:false, 견적서_표시:true});
+  qtRenderItems(); qtUpdateAll();
 }
 
+/* v2.12 Phase 3: 사용자 소계 행 삽입 (현재 items 끝에 추가) */
+function qtAddSubtotalRow(){
+  state.qt.items.push({유형:'subtotal', 금액:0, 카테고리_대분류:'', 카테고리_중분류:'', 품명:'', 수량:'', 단위:'', 단가:0, 비고:''});
+  qtRenderItems(); qtUpdateAll();
+}
+window.qtAddSubtotalRow = qtAddSubtotalRow;
+
 function qtRenderItems(){
+  /* v2.12 Phase 3: 8열 표 (대분류·중분류·품명·수량·단위·단가·금액·비고) + 사용자 소계 행 처리 */
   const tb = $('#qt-items-body'); if(!tb)return;
-  /* v2.11-B: 사업부=국내여행 시 thead에 일정표 컬럼 4개 동적 토글 */
-  const isTour = (state.qt.bu === '국내여행');
-  const thead = document.querySelector('#qt-items-table thead tr');
-  if(thead){
-    if(isTour && thead.dataset.tourMode !== '1'){
-      /* v2.11.7 J2: 식사 컬럼 제거 (12->11열) / 식사_컬럼 데이터는 보존 (PDF 일정표 시트용) */
-      thead.innerHTML = '<th style="width:50px">일정표</th><th style="width:50px">일차</th><th style="width:60px">시간</th>'+
-        '<th style="width:15%">품명</th><th style="width:20%">내용</th><th style="width:7%">수량</th><th style="width:6%">단위</th><th style="width:11%">단가</th><th style="width:11%">금액</th><th style="width:14%">비고</th><th style="width:3%"></th>';
-      thead.dataset.tourMode = '1';
-    } else if(!isTour && thead.dataset.tourMode === '1'){
-      thead.innerHTML = '<th style="width:18%">품명</th><th style="width:22%">내용</th><th style="width:7%">수량</th><th style="width:6%">단위</th><th style="width:12%">단가</th><th style="width:13%">금액</th><th style="width:19%">비고</th><th style="width:3%"></th>';
-      delete thead.dataset.tourMode;
-    }
-  }
   let html='';
   state.qt.items.forEach((it,i)=>{
-    let row = '<tr>';
-    if(isTour){
-      /* v2.11.7 J2: 식사 dropdown td 제거 (식사_컬럼은 필수품목 마스터에서 자동 설정 / PDF 일정표만 사용) */
-      row += `<td style="text-align:center"><input type="checkbox" ${it.일정표_표시?'checked':''} onchange="qtUpdItem(${i},'일정표_표시',this.checked);qtRenderItinerary()"></td>`+
-        `<td><input type="number" value="${it.일차||''}" min="1" max="30" placeholder="-" oninput="qtUpdItem(${i},'일차',this.value?parseInt(this.value):null);qtRenderItinerary()" style="width:100%"></td>`+
-        `<td><input type="time" value="${it.시간||''}" oninput="qtUpdItem(${i},'시간',this.value);qtRenderItinerary()" style="width:100%"></td>`;
+    if(it && it.유형==='subtotal'){
+      /* 소계 행 (사용자 삽입 / 직전 소계 이후 ~ 현재 소계 직전까지의 합계 자동) */
+      const sub = qtCalcSubtotalAt(i);
+      it.금액 = sub;
+      html += `<tr style="background:#E6F1FB;color:#0C447C;font-weight:500">`+
+        `<td colspan="6" style="text-align:center;padding:8px">▶ 소계 (자동 계산)</td>`+
+        `<td class="qt-item-amount" style="text-align:right;padding:8px">${qtFmt(sub)}원</td>`+
+        `<td></td>`+
+        `<td><button class="qt-delbtn" onclick="qtDelItem(${i})">×</button></td>`+
+        `</tr>`;
+    } else {
+      /* 일반 행 */
+      const amt = (+it.수량||0) * (+it.단가||0);
+      html += `<tr>`+
+        `<td><input type="text" list="qt-cat1-list" value="${qtEsc(it.카테고리_대분류||'')}" placeholder="운임·숙박·식사" oninput="qtUpdItem(${i},'카테고리_대분류',this.value)"></td>`+
+        `<td><input type="text" list="qt-cat2-list" value="${qtEsc(it.카테고리_중분류||'')}" placeholder="항공료·조식·…" oninput="qtUpdItem(${i},'카테고리_중분류',this.value)"></td>`+
+        `<td><input type="text" value="${qtEsc(it.품명)}" oninput="qtUpdItem(${i},'품명',this.value)"></td>`+
+        `<td class="narrow"><input type="number" value="${it.수량||''}" min="0" oninput="qtUpdItem(${i},'수량',this.value)"></td>`+
+        `<td><input type="text" list="qt-unit-list" value="${qtEsc(it.단위)}" placeholder="명·실·인·대" oninput="qtUpdItem(${i},'단위',this.value)"></td>`+
+        `<td class="narrow"><input type="text" inputmode="numeric" value="${qtFmt(it.단가||0)}" oninput="qtUpdItem(${i},'단가',this.value)" onfocus="this.value=String(state.qt.items[${i}]?.단가||0)" onblur="this.value=qtFmt(state.qt.items[${i}]?.단가||0)"></td>`+
+        `<td class="qt-item-amount">${qtFmt(amt)}원</td>`+
+        `<td><input type="text" value="${qtEsc(it.비고||'')}" placeholder="자유 입력" oninput="qtUpdItem(${i},'비고',this.value)"></td>`+
+        `<td><button class="qt-delbtn" onclick="qtDelItem(${i})">×</button></td>`+
+        `</tr>`;
     }
-    row += `<td><input type="text" value="${qtEsc(it.품명)}" oninput="qtUpdItem(${i},'품명',this.value)"></td>`+
-      `<td><input type="text" value="${qtEsc(it.내용)}" oninput="qtUpdItem(${i},'내용',this.value)"></td>`+
-      `<td class="narrow"><input type="number" value="${it.수량||1}" min="0" oninput="qtUpdItem(${i},'수량',this.value)"></td>`+
-      `<td><input type="text" value="${qtEsc(it.단위)}" placeholder="명·박·대·식" oninput="qtUpdItem(${i},'단위',this.value)"></td>`+
-      `<td class="narrow"><input type="text" inputmode="numeric" value="${qtFmt(it.단가||0)}" oninput="qtUpdItem(${i},'단가',this.value)" onfocus="this.value=String(state.qt.items[${i}]?.단가||0)" onblur="this.value=qtFmt(state.qt.items[${i}]?.단가||0)"></td>`+
-      `<td class="qt-item-amount">${qtFmt((it.수량||0)*(it.단가||0))}원</td>`+
-      `<td><input type="text" value="${qtEsc(it.비고||'')}" placeholder="금액 변동있음 등" oninput="qtUpdItem(${i},'비고',this.value)"></td>`+
-      `<td><button class="qt-delbtn" onclick="qtDelItem(${i})">×</button></td></tr>`;
-    html += row;
   });
   if(state.qt.items.length===0){
-    const colspan = isTour ? 11 : 8;  /* v2.11.7 J2: 식사 컬럼 제거 */
-    html='<tr><td colspan="'+colspan+'" style="text-align:center;color:var(--text-muted);padding:20px">본문 항목이 없습니다. 카탈로그 클릭 또는 [빈 행 추가]</td></tr>';
+    html='<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:20px">본문 항목이 없습니다. [＋ 빈 행 추가] 또는 [＋ 소계 행 삽입]</td></tr>';
   }
   tb.innerHTML = html;
 }
+
+/* v2.12 Phase 3: 소계 자동 계산 (직전 소계 이후 ~ 현재 idx 직전까지의 일반 행 합계) */
+function qtCalcSubtotalAt(idx){
+  let sum = 0;
+  let start = 0;
+  for(let i=idx-1; i>=0; i--){
+    if(state.qt.items[i] && state.qt.items[i].유형==='subtotal'){ start = i+1; break; }
+  }
+  for(let i=start; i<idx; i++){
+    const r = state.qt.items[i];
+    if(r && r.유형!=='subtotal'){
+      sum += (+r.수량||0) * (+r.단가||0);
+    }
+  }
+  return sum;
+}
+window.qtCalcSubtotalAt = qtCalcSubtotalAt;
 
 function qtEsc(s){return (s||'').toString().replace(/"/g,'&quot;');}
 function qtFmt(n){return (n||0).toLocaleString('ko-KR');}
@@ -3563,6 +3563,37 @@ function qtSetTrim(t){
   qtUpdateAll();
 }
 
+/* v2.12 Phase 2: 고객 정보 불러오기 (Phase 5 sql/023 + RPC 적용 후 정상 동작) */
+async function qtLoadCustomerTravelInfo(){
+  if(!state.qt.customerId){ if(typeof toast==='function')toast('고객을 먼저 선택하세요','warn'); return; }
+  try {
+    /* Phase 5에서 rpc_get_customer_travel_info 활성화 예정 */
+    const {data, error} = await sb.rpc('rpc_get_customer_travel_info', {_customer_id: state.qt.customerId}).catch(e=>({data:null,error:e}));
+    if(error || !data || !data[0]){
+      if(typeof toast==='function')toast('Phase 5 sql/023 적용 후 정상 동작 예정','info');
+      return;
+    }
+    const r = data[0];
+    /* DOM + state 동시 갱신 */
+    const setVal = (id,val,key) => {
+      const el = document.getElementById(id);
+      if(el && val!=null){ el.value = val; state.qt[key] = val; }
+    };
+    setVal('qt-travel-start', r.여행_시작일, '여행_시작일');
+    setVal('qt-travel-arrive-time', r.도착시간, '도착시간');
+    setVal('qt-travel-end', r.여행_종료일, '여행_종료일');
+    setVal('qt-travel-depart-time', r.출발시간, '출발시간');
+    setVal('qt-people-adult', r.인원_성인, '인원_성인');
+    setVal('qt-people-child', r.인원_아동, '인원_아동');
+    if(typeof toast==='function')toast('고객 여행 정보 불러옴','success');
+    if(typeof qtUpdateAll==='function') qtUpdateAll();
+  } catch(e){
+    console.warn('[qtLoadCustomerTravelInfo]', e);
+    if(typeof toast==='function')toast('Phase 5 sql/023 적용 후 정상 동작 예정','info');
+  }
+}
+window.qtLoadCustomerTravelInfo = qtLoadCustomerTravelInfo;
+
 function qtUpdRecipient(){
   state.qt.recipient = {
     co: ($('#qt-recip-co')||{}).value||'',
@@ -3598,8 +3629,11 @@ function qtUpdateAll(){
   const $tSale=$('#qt-t-sale'); if($tSale)$tSale.classList.toggle('on',state.qt.options.salePrice);
   const $tTour=$('#qt-t-tour'); if($tTour)$tTour.classList.toggle('on',state.qt.options.tourReg);
   const $tGov=$('#qt-t-gov'); if($tGov)$tGov.classList.toggle('on',state.qt.isGovernment);
-  // 합계
-  const sub = state.qt.items.reduce((a,it)=>a+((+it.수량||0)*(+it.단가||0)),0);
+  /* v2.12 Phase 4: 합계 (사용자 삽입 소계 행 제외 / 중복 방지) */
+  const sub = state.qt.items.reduce((a,it)=>{
+    if(it && it.유형==='subtotal') return a;
+    return a + ((+it.수량||0)*(+it.단가||0));
+  }, 0);
   const fee = state.qt.options.feeShow ? Math.round(sub*state.qt.options.feeRate/100) : 0;
   const supply = sub + fee;
   const vat = state.qt.options.vatShow ? Math.round(supply*0.1) : 0;
@@ -3607,6 +3641,11 @@ function qtUpdateAll(){
   let totalOrig = total;
   if(state.qt.options.trim==='천')total = Math.floor(total/1000)*1000;
   else if(state.qt.options.trim==='만')total = Math.floor(total/10000)*10000;
+  /* v2.12 Phase 4: 1인 상품요금 클라이언트 계산 (총 합계 ÷ 인원 / 대표님 명령) */
+  const _adt = +state.qt.인원_성인||0;
+  const _chd = +state.qt.인원_아동||0;
+  const _tp = _adt + _chd;
+  const ppPrice = _tp>0 ? Math.round(total/_tp) : 0;
   // DOM 반영
   const set=(id,v)=>{const e=$(id); if(e)e.textContent=qtFmt(v)+'원';};
   set('#qt-s-subtotal',sub);
@@ -3614,6 +3653,7 @@ function qtUpdateAll(){
   set('#qt-s-supply',supply);
   set('#qt-s-vat',vat);
   set('#qt-s-total',total);
+  set('#qt-s-1person', ppPrice);
   const feeLabel=$('#qt-s-fee-label'); if(feeLabel)feeLabel.textContent=`대행료(${state.qt.options.feeRate.toFixed(1)}%)`;
   const feeRow=$('#qt-s-fee-row'); if(feeRow)feeRow.style.display=state.qt.options.feeShow?'flex':'none';
   const vatRow=$('#qt-s-vat-row'); if(vatRow)vatRow.style.display=state.qt.options.vatShow?'flex':'none';
@@ -4085,28 +4125,42 @@ async function qtGeneratePDF(silent, docType){
     doc.text(noticeText, 14, metaY); metaY+=4;
     doc.setTextColor(0,0,0);
 
-    // ===== ④ 본문 항목 + 합계 통합 (AutoTable) =====
-    const head = state.qt.options.salePrice
-      ? [['No','품명','내용','수량','단위','단가','판매가','금액','비고']]
-      : [['No','품명','내용','수량','단위','단가','금액','비고']];
-    const colCount = state.qt.options.salePrice ? 9 : 8;
-    const labelColSpan = colCount - 2;  // 라벨이 차지할 칼럼 수 (금액·비고 제외) — v2.10-B 정정
+    // ===== ④ v2.12 Phase 4: 본문 표 6열 (회사 표준 양식) + 합계 + 1인상품요금(총합계 기준) =====
+    const head = [['품명', '수량', '단위', '단가', '금액', '비고']];
+    const colCount = 6;
+    const labelColSpan = 4;  // 품명·수량·단위·단가 = 라벨 영역
 
-    const rows = state.qt.items.map((it,i)=>{
-      const amt = (+it.수량||0)*(+it.단가||0);
-      /* v2.10-B 정정: 품명·내용·수량·단위·단가·(판매가)·금액·비고 표준 순서 */
-      const base = [
-        i+1, it.품명||'', it.내용||'',
-        (it.수량||0).toLocaleString(),
-        it.단위||'',
-        (it.단가||0).toLocaleString()
-      ];
-      if(state.qt.options.salePrice)base.push((it.판매가||it.단가||0).toLocaleString());
-      base.push(amt.toLocaleString(), it.비고||'');
-      return base;
+    /* 본문 행 (소계 행 = 사용자 삽입 위치 그대로 / 일반 행 = 6열) */
+    const subStyleP = { halign:'center', fontStyle:'bold', fillColor:[230,241,251], textColor:[12,68,124] };
+    const subStyleR = { halign:'right', fontStyle:'bold', fillColor:[230,241,251], textColor:[12,68,124] };
+    const subStyleE = { fillColor:[230,241,251] };
+    const rows = [];
+    state.qt.items.forEach((it, idx) => {
+      if(it && it.유형==='subtotal'){
+        const subAmt = (typeof qtCalcSubtotalAt === 'function') ? qtCalcSubtotalAt(idx) : 0;
+        rows.push([
+          { content: '▶ 소계', colSpan: labelColSpan, styles: subStyleP },
+          { content: subAmt.toLocaleString(), styles: subStyleR },
+          { content: '', styles: subStyleE }
+        ]);
+      } else {
+        const amt = (+it.수량||0)*(+it.단가||0);
+        rows.push([
+          it.품명||'',
+          (it.수량||0).toLocaleString(),
+          it.단위||'',
+          (it.단가||0).toLocaleString(),
+          amt.toLocaleString(),
+          it.비고||''
+        ]);
+      }
     });
 
-    const sub = state.qt.items.reduce((a,it)=>a+((+it.수량||0)*(+it.단가||0)),0);
+    /* 합계 계산 (소계 행 제외 / 중복 방지) */
+    const sub = state.qt.items.reduce((a,it)=>{
+      if(it && it.유형==='subtotal') return a;
+      return a + ((+it.수량||0)*(+it.단가||0));
+    }, 0);
     const fee = state.qt.options.feeShow ? Math.round(sub*state.qt.options.feeRate/100) : 0;
     const supply = sub + fee;
     const vat = state.qt.options.vatShow ? Math.round(supply*0.1) : 0;
@@ -4115,54 +4169,75 @@ async function qtGeneratePDF(silent, docType){
     if(state.qt.options.trim==='천')total = Math.floor(total/1000)*1000;
     else if(state.qt.options.trim==='만')total = Math.floor(total/10000)*10000;
 
-    // 소계 라벨: (1) 또는 (1)+(2)+...+(N)
-    const subLabel = state.qt.items.length === 1
-      ? '소계 (1)'
-      : '소계 ' + state.qt.items.map((_,i)=>'('+(i+1)+')').join('+');
+    /* v2.12 Phase 4: 1인 상품요금 = 총 합계 ÷ 인원 (대표님 명령 / VAT 포함 정합) */
+    const _adt = +state.qt.인원_성인||0;
+    const _chd = +state.qt.인원_아동||0;
+    const _tp = _adt + _chd;
+    const ppPrice = _tp>0 ? Math.round(total/_tp) : 0;
 
     const sumStyle  = { halign:'right', fontStyle:'bold', fillColor:[245,248,253] };
     const sumStyleR = { halign:'right', fontStyle:'bold', fillColor:[245,248,253] };
-    const sumStyleU = { halign:'center', fillColor:[245,248,253] };
+    const sumStyleE = { fillColor:[245,248,253] };
     const totalStyle  = { halign:'right', fontStyle:'bold', textColor:[43,95,184], fillColor:[232,239,249] };
     const totalStyleR = { halign:'right', fontStyle:'bold', textColor:[43,95,184], fillColor:[232,239,249] };
-    const totalStyleU = { halign:'center', fontStyle:'bold', textColor:[43,95,184], fillColor:[232,239,249] };
+    const totalStyleE = { fillColor:[232,239,249] };
+    const headerStyle  = { halign:'right', fontStyle:'bold', textColor:[255,255,255], fillColor:[24,95,165] };
+    const headerStyleR = { halign:'right', fontStyle:'bold', textColor:[255,255,255], fillColor:[24,95,165] };
+    const headerStyleE = { fillColor:[24,95,165] };
+    const ppStyle  = { halign:'right', fontStyle:'bold', textColor:[133,79,11], fillColor:[250,238,218] };
+    const ppStyleR = { halign:'right', fontStyle:'bold', textColor:[133,79,11], fillColor:[250,238,218] };
+    const ppStyleL = { halign:'left', fontStyle:'bold', textColor:[133,79,11], fillColor:[250,238,218] };
 
     const sumRows = [];
+    /* 항공을 포함한 투어피 (회사 양식 / 모든 일반 행 합계) */
     sumRows.push([
-      { content: subLabel, colSpan: labelColSpan, styles: sumStyle },
-      { content: sub.toLocaleString(), styles: sumStyleR },
-      { content: '원', styles: sumStyleU }
+      { content: '항공을 포함한 투어피', colSpan: labelColSpan, styles: headerStyle },
+      { content: sub.toLocaleString(), styles: headerStyleR },
+      { content: '', styles: headerStyleE }
     ]);
     if(state.qt.options.feeShow){
       sumRows.push([
         { content: `대행료 (${state.qt.options.feeRate.toFixed(1)}%)`, colSpan: labelColSpan, styles: sumStyle },
         { content: fee.toLocaleString(), styles: sumStyleR },
-        { content: '원', styles: sumStyleU }
+        { content: '', styles: sumStyleE }
       ]);
     }
     sumRows.push([
       { content: '공급가액', colSpan: labelColSpan, styles: sumStyle },
       { content: supply.toLocaleString(), styles: sumStyleR },
-      { content: '원', styles: sumStyleU }
+      { content: '', styles: sumStyleE }
     ]);
     if(state.qt.options.vatShow){
       sumRows.push([
         { content: '부가세 (10%)', colSpan: labelColSpan, styles: sumStyle },
         { content: vat.toLocaleString(), styles: sumStyleR },
-        { content: '원', styles: sumStyleU }
+        { content: '', styles: sumStyleE }
       ]);
     }
     sumRows.push([
       { content: '총 합 계', colSpan: labelColSpan, styles: totalStyle },
       { content: total.toLocaleString(), styles: totalStyleR },
-      { content: '원', styles: totalStyleU }
+      { content: '', styles: totalStyleE }
+    ]);
+    /* v2.12 Phase 4: 1인 상품요금 (총 합계 기준 / 회사 양식 마지막 행) */
+    sumRows.push([
+      { content: '', colSpan: labelColSpan, styles: ppStyle },
+      { content: ppPrice.toLocaleString(), styles: ppStyleR },
+      { content: '1인 상품요금', styles: ppStyleL }
     ]);
 
     doc.autoTable({
       startY: metaY + 4, head, body: [...rows, ...sumRows],
       styles: { font: fontFamily, fontSize: 9, cellPadding: 1.5 },
-      headStyles: { fillColor: [43,95,184], textColor: 255 },
-      columnStyles: {0:{halign:'center',cellWidth:8}, 3:{halign:'right'}, 4:{halign:'right'}, 5:{halign:'right'}}
+      headStyles: { fillColor: [43,95,184], textColor: 255, halign:'center' },
+      columnStyles: {
+        0: { cellWidth: 'auto' },
+        1: { halign:'right', cellWidth: 16 },
+        2: { halign:'center', cellWidth: 14 },
+        3: { halign:'right', cellWidth: 24 },
+        4: { halign:'right', cellWidth: 26 },
+        5: { cellWidth: 32 }
+      }
     });
 
     let y = doc.lastAutoTable.finalY + 4;

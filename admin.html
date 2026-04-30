@@ -494,7 +494,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 <a href="#admin" class="nav-item" data-nav="admin" title="7. 관리자 관리 (계정·권한 / v2.9-F)"><span class="nav-icon">🛡</span><span class="nav-text">관리자 관리</span><span class="nav-phase">v2.9-F</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.13 · 49건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7~J13 · v2.11.9-R1~R7 롤백 · v2.12 회사표준양식 풀번들 · v2.12.1 PDF8열 · v2.13-α1 admin12열 · v2.13 일정표시트회사양식 [일차셀병합+식사컬럼자동+시간순정렬+REMARK])</div>
+<div class="sidebar-footer">admin v2.13.1 · 50건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7~J13 · v2.11.9-R1~R7 롤백 · v2.12 회사표준양식 풀번들 · v2.12.1 PDF8열 · v2.13-α1 admin12열 · v2.13 일정표시트회사양식 · v2.13.1 일정표비고컬럼 [식사→비고 행별표시])</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -3351,7 +3351,8 @@ function qtAppendItineraryPage(doc, fontFamily){
   doc.text(titleStr, 105, 25, {align:'center'});
 
   if(doc.autoTable){
-    const head = [['일차','시간','관광일정','식사']];
+    /* v2.13.1: '식사' → '비고' 변경 (행별 견적서 비고 그대로 표시) */
+    const head = [['일차','시간','관광일정','비고']];
     const body = [];
     dayNums.forEach(dayNum=>{
       const groupItems = groups[dayNum];
@@ -3360,11 +3361,10 @@ function qtAppendItineraryPage(doc, fontFamily){
       const dayLabel = dateInfo
         ? `${dayNum}일차\n${dateInfo.date}\n${dateInfo.day}`
         : `${dayNum}일차`;
-      const mealsText = qtBuildMealsForDay(dayNum) || '';
       groupItems.forEach((it, idx)=>{
         const row = [];
         if(idx === 0){
-          /* 일차 셀 병합 (rowSpan) */
+          /* 일차 셀 병합 (rowSpan) — 유지 */
           row.push({ content: dayLabel, rowSpan: rowCount, styles: { halign:'center', valign:'middle', fillColor:[241,239,232], fontStyle:'bold' } });
         }
         row.push(it.시간 || '-');
@@ -3374,10 +3374,8 @@ function qtAppendItineraryPage(doc, fontFamily){
           desc = `${it.카테고리_중분류} ▶ ${it.품명||''}`;
         }
         row.push(desc);
-        if(idx === 0){
-          /* 식사 셀 병합 (rowSpan) */
-          row.push({ content: mealsText, rowSpan: rowCount, styles: { halign:'left', valign:'middle', fontSize:8 } });
-        }
+        /* v2.13.1: 식사 자동 모음 셀병합 → 행별 비고 (견적서 본문 비고 그대로) */
+        row.push(it.비고 || '');
         body.push(row);
       });
     });
@@ -3386,10 +3384,10 @@ function qtAppendItineraryPage(doc, fontFamily){
       styles: {font: fontFamily, fontSize: 9, cellPadding: 2.5, lineWidth: 0.2},
       headStyles: {fillColor: [151,196,89], textColor: [23,52,4], halign: 'center', fontStyle:'bold'},
       columnStyles: {
-        0:{halign:'center', cellWidth:30},
-        1:{halign:'center', cellWidth:18},
-        2:{cellWidth:'auto'},
-        3:{halign:'left', cellWidth:36, fontSize:8}
+        0:{halign:'center', cellWidth:30},  /* 일차 */
+        1:{halign:'center', cellWidth:18},  /* 시간 */
+        2:{cellWidth:'auto'},                /* 관광일정 */
+        3:{halign:'left', cellWidth:40, fontSize:8.5}  /* 비고 (행별) */
       }
     });
     /* 하단 REMARK 박스 (v2.11.8 J13 / 견적서 동일) */

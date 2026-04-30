@@ -494,7 +494,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 <a href="#admin" class="nav-item" data-nav="admin" title="7. 관리자 관리 (계정·권한 / v2.9-F)"><span class="nav-icon">🛡</span><span class="nav-text">관리자 관리</span><span class="nav-phase">v2.9-F</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.11.6 · 20건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6-H1 영역1.5분기 · H2 카탈로그accordion · H4 검증UX모달 · H5 일정표default)</div>
+<div class="sidebar-footer">admin v2.11.7 · 25건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내)</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -2816,8 +2816,8 @@ function qtBuildCreateForm(){
 </div>
 </div>
 
-<!-- v2.11-A: 견적 안 탭 + 인원·박일 (사업부=국내여행 시 인원·박일 행 표시) -->
-<div class="qt-panel" id="qt-panel-15">
+<!-- v2.11-A: 견적 안 탭 + 인원·박일 (v2.11.7 J1=b: panel display:none / 인원·박일은 [✨] 패널 안으로 이동) -->
+<div class="qt-panel" id="qt-panel-15" style="display:none">
 <h3 id="qt-h3-15"><span class="qt-step-num">1.5</span><span id="qt-h3-15-text">견적 안 (1차/2차/3차) + 인원·박일수</span></h3>
 <div class="qt-field"><label>📋 견적 안 — 동일 고객·사업부 복수 견적 비교 (sql/022 안_번호)</label>
 <div id="qt-an-tabs" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -3165,8 +3165,19 @@ function qtRenderEssentialPanel(){
   const adt = +state.qt.인원_성인 || 0;
   const chd = +state.qt.인원_아동 || 0;
   const ngt = +state.qt.박일수 || 0;
+  /* v2.11.7 J1=b: 인원·박일 입력 인라인 (영역 1.5 panel 통합) */
+  let _peopleHtml = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px;padding:12px;background:#f8f9fc;border-radius:6px;border:1px solid var(--border)">
+    <div><label style="font-size:11px;color:#666;display:block;margin-bottom:4px">인원 — 성인</label>
+      <input type="number" value="${adt||''}" min="0" placeholder="예: 30" oninput="state.qt.인원_성인=this.value?parseInt(this.value):null;qtRenderEssentialPanel();qtUpdateAll()" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:4px"></div>
+    <div><label style="font-size:11px;color:#666;display:block;margin-bottom:4px">인원 — 아동</label>
+      <input type="number" value="${chd||''}" min="0" placeholder="예: 5" oninput="state.qt.인원_아동=this.value?parseInt(this.value):null;qtRenderEssentialPanel();qtUpdateAll()" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:4px"></div>
+    <div><label style="font-size:11px;color:#666;display:block;margin-bottom:4px">박일수</label>
+      <input type="number" value="${ngt||''}" min="0" placeholder="예: 2 (2박3일)" oninput="state.qt.박일수=this.value?parseInt(this.value):null;qtRenderEssentialPanel()" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:4px"></div>
+    <div><label style="font-size:11px;color:#666;display:block;margin-bottom:4px">총 인원</label>
+      <div style="padding:7px;background:var(--bg-hover);border-radius:4px;font-weight:600;text-align:center">${(adt+chd)||'—'} 명</div></div>
+  </div>`;
   if(adt+chd === 0){
-    list.innerHTML = '<div style="padding:10px;background:#fff8e1;border:1px solid #ffd54f;border-radius:4px;color:#f57c00;font-size:12px">⚠ 영역 1.5에서 인원(성인·아동)을 먼저 입력해 주세요. 수량 자동 계산이 비활성화됩니다.</div>';
+    list.innerHTML = _peopleHtml + '<div style="padding:10px;background:#fff8e1;border:1px solid #ffd54f;border-radius:4px;color:#f57c00;font-size:12px">⚠ 인원(성인·아동)을 먼저 입력해 주세요. 수량 자동 계산이 비활성화됩니다.</div>';
     return;
   }
   /* 카테고리별 그룹 */
@@ -3185,7 +3196,7 @@ function qtRenderEssentialPanel(){
     });
     html += '</div>';
   });
-  list.innerHTML = html;
+  list.innerHTML = _peopleHtml + html;
 }
 window.qtRenderEssentialPanel = qtRenderEssentialPanel;
 
@@ -3279,6 +3290,21 @@ function qtAppendItineraryPage(doc, fontFamily){
       headStyles: {fillColor: [43,95,184], textColor: [255,255,255], halign: 'center'},
       columnStyles: {0:{halign:'center',cellWidth:20},1:{halign:'center',cellWidth:25},2:{cellWidth:'auto'},3:{halign:'center',cellWidth:25}}
     });
+    /* v2.11.7 J6: 일정표 시트 하단 안내 박스 (자동 노출) */
+    try {
+      const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || 50;
+      const noticeY = finalY + 12;
+      doc.setFillColor(245, 247, 250);
+      doc.rect(14, noticeY, 182, 22, 'F');
+      doc.setDrawColor(43,95,184);
+      doc.setLineWidth(0.3);
+      doc.rect(14, noticeY, 182, 22);
+      doc.setFontSize(9); doc.setTextColor(43,95,184);
+      doc.text('※ 안내', 17, noticeY + 6);
+      doc.setFontSize(8.5); doc.setTextColor(60,60,60);
+      doc.text('· 본 일정표는 요약 안내입니다. 자세한 견적 내용은 견적서를 참고해 주세요.', 17, noticeY + 12);
+      doc.text('· 현지 사정·천재지변·항공 스케줄 등에 따라 일정이 변경될 수 있습니다.', 17, noticeY + 18);
+    } catch(eN){ console.warn('[v2.11.7 J6 itinerary notice]', eN); }
   }
 }
 window.qtAppendItineraryPage = qtAppendItineraryPage;
@@ -3333,7 +3359,20 @@ function qtToggleCat(i){
 function qtAddCatItem(name,content,unit,price){
   /* v2.11.6 H5: 사업부=국내여행 시 default 일정표_표시 = true (사용자 워크플로우 직관 개선) */
   const _itDefault = (state.qt.bu === '국내여행');
-  state.qt.items.push({품명:name,내용:content,수량:1,단가:price||0,금액:price||0,단위:unit,비고:'',
+  /* v2.11.7 J3=b: 단위 기반 자동 수량 (사업부=국내여행 + 인원·박일 입력 시) */
+  let _qty = 1;
+  if(_itDefault){
+    const adt = +state.qt.인원_성인 || 0;
+    const chd = +state.qt.인원_아동 || 0;
+    const ngt = +state.qt.박일수 || 0;
+    if(adt+chd > 0){
+      const u = (unit||'').trim();
+      if(/명|인분|매|좌석|^인$/.test(u)){ _qty = adt + chd; }
+      else if(/^박$|실/.test(u)){ _qty = Math.max(ngt,1); }
+      else if(/^일$|^대$|대·일/.test(u)){ _qty = (ngt||0) + 1; }
+    }
+  }
+  state.qt.items.push({품명:name,내용:content,수량:_qty,단가:price||0,금액:_qty*(price||0),단위:unit,비고:'',
     /* v2.11-B: 일정표 필드 (국내여행만 의미 / sql/022 quotation_items 정합) */
     일정_표시:'', 일차:null, 시간:'', 식사_컬럼:'', 일정표_표시:_itDefault, 견적서_표시:true});
   qtRenderItems(); qtUpdateAll(); qtUpdateAnSummary();
@@ -3354,8 +3393,9 @@ function qtRenderItems(){
   const thead = document.querySelector('#qt-items-table thead tr');
   if(thead){
     if(isTour && thead.dataset.tourMode !== '1'){
-      thead.innerHTML = '<th style="width:50px">일정표</th><th style="width:50px">일차</th><th style="width:60px">시간</th><th style="width:50px">식사</th>'+
-        '<th style="width:14%">품명</th><th style="width:18%">내용</th><th style="width:7%">수량</th><th style="width:6%">단위</th><th style="width:11%">단가</th><th style="width:11%">금액</th><th style="width:13%">비고</th><th style="width:3%"></th>';
+      /* v2.11.7 J2: 식사 컬럼 제거 (12->11열) / 식사_컬럼 데이터는 보존 (PDF 일정표 시트용) */
+      thead.innerHTML = '<th style="width:50px">일정표</th><th style="width:50px">일차</th><th style="width:60px">시간</th>'+
+        '<th style="width:15%">품명</th><th style="width:20%">내용</th><th style="width:7%">수량</th><th style="width:6%">단위</th><th style="width:11%">단가</th><th style="width:11%">금액</th><th style="width:14%">비고</th><th style="width:3%"></th>';
       thead.dataset.tourMode = '1';
     } else if(!isTour && thead.dataset.tourMode === '1'){
       thead.innerHTML = '<th style="width:18%">품명</th><th style="width:22%">내용</th><th style="width:7%">수량</th><th style="width:6%">단위</th><th style="width:12%">단가</th><th style="width:13%">금액</th><th style="width:19%">비고</th><th style="width:3%"></th>';
@@ -3366,13 +3406,10 @@ function qtRenderItems(){
   state.qt.items.forEach((it,i)=>{
     let row = '<tr>';
     if(isTour){
-      const mealOpts = ['','조','중','석','X'].map(m =>
-        `<option value="${m}"${it.식사_컬럼===m?' selected':''}>${m||'-'}</option>`
-      ).join('');
+      /* v2.11.7 J2: 식사 dropdown td 제거 (식사_컬럼은 필수품목 마스터에서 자동 설정 / PDF 일정표만 사용) */
       row += `<td style="text-align:center"><input type="checkbox" ${it.일정표_표시?'checked':''} onchange="qtUpdItem(${i},'일정표_표시',this.checked);qtRenderItinerary()"></td>`+
         `<td><input type="number" value="${it.일차||''}" min="1" max="30" placeholder="-" oninput="qtUpdItem(${i},'일차',this.value?parseInt(this.value):null);qtRenderItinerary()" style="width:100%"></td>`+
-        `<td><input type="time" value="${it.시간||''}" oninput="qtUpdItem(${i},'시간',this.value);qtRenderItinerary()" style="width:100%"></td>`+
-        `<td><select onchange="qtUpdItem(${i},'식사_컬럼',this.value);qtRenderItinerary()" style="width:100%">${mealOpts}</select></td>`;
+        `<td><input type="time" value="${it.시간||''}" oninput="qtUpdItem(${i},'시간',this.value);qtRenderItinerary()" style="width:100%"></td>`;
     }
     row += `<td><input type="text" value="${qtEsc(it.품명)}" oninput="qtUpdItem(${i},'품명',this.value)"></td>`+
       `<td><input type="text" value="${qtEsc(it.내용)}" oninput="qtUpdItem(${i},'내용',this.value)"></td>`+
@@ -3385,7 +3422,7 @@ function qtRenderItems(){
     html += row;
   });
   if(state.qt.items.length===0){
-    const colspan = isTour ? 12 : 8;
+    const colspan = isTour ? 11 : 8;  /* v2.11.7 J2: 식사 컬럼 제거 */
     html='<tr><td colspan="'+colspan+'" style="text-align:center;color:var(--text-muted);padding:20px">본문 항목이 없습니다. 카탈로그 클릭 또는 [빈 행 추가]</td></tr>';
   }
   tb.innerHTML = html;

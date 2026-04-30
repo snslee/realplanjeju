@@ -494,7 +494,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 <a href="#admin" class="nav-item" data-nav="admin" title="7. 관리자 관리 (계정·권한 / v2.9-F)"><span class="nav-icon">🛡</span><span class="nav-text">관리자 관리</span><span class="nav-phase">v2.9-F</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.12.1 · 46건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7~J13 · v2.11.9-R1~R7 롤백 · v2.12 회사표준양식 풀번들 · v2.12.1 PDF8열 [대·중분류추가+셀병합])</div>
+<div class="sidebar-footer">admin v2.13 · 49건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7~J13 · v2.11.9-R1~R7 롤백 · v2.12 회사표준양식 풀번들 · v2.12.1 PDF8열 · v2.13-α1 admin12열 · v2.13 일정표시트회사양식 [일차셀병합+식사컬럼자동+시간순정렬+REMARK])</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -793,6 +793,16 @@ const QT_REMARK_INCLUDE_MAP = {
   '보험·세금': '여행자보험'
 };
 const QT_REMARK_INCLUDE_ORDER = ['항공·교통','숙박','입장·체험','식사','차량·기사','가이드·인솔','보험·세금'];
+/* v2.13 Phase 6a: 대분류 입력 시 일정표_표시 자동 default 매핑 (사용자 변경 가능) */
+const QT_BU_DEFAULT_ITINERARY = {
+  '운임': true,
+  '숙박': true,
+  '식사': true,
+  '교통': true,
+  '여행코스': true,
+  '인건비': false,
+  '기타': false
+};
 const QT_BU_LIST = ["국내여행","행사이벤트","온라인마케팅","마케팅교육"];
 const state={user:null,session:null,adminRole:null,permissions:{},/* v2.9-E */ready:false,currentCustomerId:null,currentCustomerInq:null,currentCustomerBU:null,timelineOffset:0,timelineTotal:0,timelineLoading:false,editMode:false,currentRow:null,lastUpdatedAt:null,
 // v1.9 — 검색·필터·페이지네이션
@@ -2878,7 +2888,7 @@ function qtBuildCreateForm(){
 <option value="명"><option value="실"><option value="인"><option value="대">
 </datalist>
 <table class="qt-items" id="qt-items-table">
-<thead><tr><th style="width:9%">대분류</th><th style="width:10%">중분류</th><th style="width:18%">품명</th><th style="width:7%">수량</th><th style="width:6%">단위</th><th style="width:11%">단가</th><th style="width:12%">금액(자동)</th><th style="width:24%">비고</th><th style="width:3%"></th></tr></thead>
+<thead><tr><th style="width:3%">✓일정</th><th style="width:4%">일차</th><th style="width:7%">시간</th><th style="width:8%">대분류</th><th style="width:9%">중분류</th><th style="width:14%">품명</th><th style="width:6%">수량</th><th style="width:5%">단위</th><th style="width:9%">단가</th><th style="width:10%">금액(자동)</th><th style="width:22%">비고</th><th style="width:3%"></th></tr></thead>
 <tbody id="qt-items-body"></tbody>
 </table>
 <div style="display:flex;gap:8px;margin-top:8px">
@@ -3266,50 +3276,130 @@ function qtApplyEssentialItems(){
 }
 window.qtApplyEssentialItems = qtApplyEssentialItems;
 
-/* v2.11.3: PDF 일정표 시트 헬퍼 (국내여행 / 일정표_표시=true 항목) */
+/* v2.13 Phase 6b: 일차별 날짜·요일 계산 헬퍼 (여행_시작일 + 일차 - 1) */
+function qtCalcDayDate(dayNum){
+  if(!state.qt.여행_시작일 || !dayNum) return null;
+  try {
+    const startDate = new Date(state.qt.여행_시작일 + 'T00:00:00');
+    if(isNaN(startDate.getTime())) return null;
+    const target = new Date(startDate);
+    target.setDate(target.getDate() + (dayNum - 1));
+    const yyyy = target.getFullYear();
+    const mm = String(target.getMonth()+1).padStart(2,'0');
+    const dd = String(target.getDate()).padStart(2,'0');
+    const days = ['일','월','화','수','목','금','토'];
+    const dayName = days[target.getDay()] + '요일';
+    return { date: `${yyyy}-${mm}-${dd}`, day: dayName };
+  } catch(e){ return null; }
+}
+window.qtCalcDayDate = qtCalcDayDate;
+
+/* v2.13 Phase 6b: 일차별 식사 자동 모음 헬퍼 (조식·중식·석식 행 추출 + "조: ○○ / 중: ○○ / 석: ○○" 형식) */
+function qtBuildMealsForDay(dayNum){
+  const items = (state.qt.items||[]).filter(it =>
+    it && it.유형 !== 'subtotal' &&
+    it.일차 === dayNum &&
+    it.일정표_표시 &&
+    ['조식','중식','석식'].includes(it.카테고리_중분류)
+  );
+  if(items.length === 0) return '';
+  const order = {'조식':1, '중식':2, '석식':3};
+  const symbol = {'조식':'조', '중식':'중', '석식':'석'};
+  items.sort((a,b)=>(order[a.카테고리_중분류]||9)-(order[b.카테고리_중분류]||9));
+  return items.map(m => `${symbol[m.카테고리_중분류]}: ${m.품명||''}`).join('\n');
+}
+window.qtBuildMealsForDay = qtBuildMealsForDay;
+
+/* v2.13 Phase 6b: PDF 일정표 시트 회사 양식 (일차 셀 병합 + 식사 컬럼 자동 + 시간순 정렬) */
 function qtAppendItineraryPage(doc, fontFamily){
   if(state.qt.bu !== '국내여행') return;
-  const items = (state.qt.items||[]).filter(it=>it.일정표_표시);
+  /* [✓일정] 체크 + 시간 입력된 행만 (소계·합계·예비비 등 자동 제외) */
+  const items = (state.qt.items||[]).filter(it =>
+    it && it.유형 !== 'subtotal' && it.일정표_표시 && it.시간
+  );
   if(items.length === 0) return;
-  const sorted = items.slice().sort((a,b)=>{
-    const da=a.일차||99, db=b.일차||99;
+  /* 일차 → 시간순 정렬 */
+  items.sort((a,b)=>{
+    const da=+a.일차||99, db=+b.일차||99;
     if(da!==db) return da-db;
     const ta=a.시간||'', tb=b.시간||'';
     return ta.localeCompare(tb);
   });
+  /* 일차별 그룹화 */
+  const groups = {};
+  items.forEach(it=>{
+    const d = +it.일차 || 0;
+    if(!groups[d]) groups[d] = [];
+    groups[d].push(it);
+  });
+  const dayNums = Object.keys(groups).map(d=>+d).sort((a,b)=>a-b);
+
+  /* PDF 페이지 추가 */
   doc.addPage();
   doc.setFont(fontFamily,'normal');
   doc.setFontSize(16); doc.setTextColor(43,95,184);
-  doc.text('일 정 표', 105, 25, {align:'center'});
-  doc.setFontSize(9); doc.setTextColor(60,60,60);
-  /* v2.11.9 R7: 인원·박일 표시 제거 (Phase 2에서 영역 2의 시작일·종료일·도착시간·출발시간으로 재구성 예정) */
-  const adt=+state.qt.인원_성인||0, chd=+state.qt.인원_아동||0;
-  const peopleStr = (adt+chd>0) ? `인원: 성인 ${adt}명${chd>0?` / 아동 ${chd}명`:''} (총 ${adt+chd}명)` : '';
-  if(peopleStr) doc.text(peopleStr, 14, 35);
-  /* 일정표 표 (jsPDF AutoTable) */
+  /* 표 제목: 사업부 + 박일수 + 추천일정표 */
+  let titleStr = '추천 일정표';
+  try {
+    if(state.qt.여행_시작일 && state.qt.여행_종료일){
+      const sd = new Date(state.qt.여행_시작일 + 'T00:00:00');
+      const ed = new Date(state.qt.여행_종료일 + 'T00:00:00');
+      const diff = Math.round((ed - sd) / (1000*60*60*24));
+      if(diff >= 0) titleStr = `${diff}박 ${diff+1}일 추천 일정표`;
+    }
+  } catch(_e){}
+  doc.text(titleStr, 105, 25, {align:'center'});
+
   if(doc.autoTable){
-    const head = [['일차','시간','일정','식사']];
-    const rows = sorted.map(it=>{
-      const day = it.일차 ? (it.일차+'일차') : '-';
-      const time = it.시간 || '-';
-      const desc = it.내용 || it.품명 || '-';
-      const meal = it.식사_컬럼 ? (it.식사_컬럼==='조'?'조식':(it.식사_컬럼==='중'?'중식':(it.식사_컬럼==='석'?'석식':'-'))) : '-';
-      return [day, time, desc, meal];
+    const head = [['일차','시간','관광일정','식사']];
+    const body = [];
+    dayNums.forEach(dayNum=>{
+      const groupItems = groups[dayNum];
+      const rowCount = groupItems.length;
+      const dateInfo = qtCalcDayDate(dayNum);
+      const dayLabel = dateInfo
+        ? `${dayNum}일차\n${dateInfo.date}\n${dateInfo.day}`
+        : `${dayNum}일차`;
+      const mealsText = qtBuildMealsForDay(dayNum) || '';
+      groupItems.forEach((it, idx)=>{
+        const row = [];
+        if(idx === 0){
+          /* 일차 셀 병합 (rowSpan) */
+          row.push({ content: dayLabel, rowSpan: rowCount, styles: { halign:'center', valign:'middle', fillColor:[241,239,232], fontStyle:'bold' } });
+        }
+        row.push(it.시간 || '-');
+        /* 관광일정 = 중분류 + 품명 (식사면 "중식 ▶ 해물전골" 형식) */
+        let desc = it.품명 || '-';
+        if(['조식','중식','석식'].includes(it.카테고리_중분류)){
+          desc = `${it.카테고리_중분류} ▶ ${it.품명||''}`;
+        }
+        row.push(desc);
+        if(idx === 0){
+          /* 식사 셀 병합 (rowSpan) */
+          row.push({ content: mealsText, rowSpan: rowCount, styles: { halign:'left', valign:'middle', fontSize:8 } });
+        }
+        body.push(row);
+      });
     });
     doc.autoTable({
-      head: head, body: rows, startY: 50,
-      styles: {font: fontFamily, fontSize: 9, cellPadding: 2.5},
-      headStyles: {fillColor: [43,95,184], textColor: [255,255,255], halign: 'center'},
-      columnStyles: {0:{halign:'center',cellWidth:20},1:{halign:'center',cellWidth:25},2:{cellWidth:'auto'},3:{halign:'center',cellWidth:25}}
+      head: head, body: body, startY: 35,
+      styles: {font: fontFamily, fontSize: 9, cellPadding: 2.5, lineWidth: 0.2},
+      headStyles: {fillColor: [151,196,89], textColor: [23,52,4], halign: 'center', fontStyle:'bold'},
+      columnStyles: {
+        0:{halign:'center', cellWidth:30},
+        1:{halign:'center', cellWidth:18},
+        2:{cellWidth:'auto'},
+        3:{halign:'left', cellWidth:36, fontSize:8}
+      }
     });
-    /* v2.11.8 J13: 일정표 시트 하단 = REMARK 박스 4행 (견적서 동일 / 회사 표준) */
+    /* 하단 REMARK 박스 (v2.11.8 J13 / 견적서 동일) */
     try {
-      const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || 50;
+      const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || 35;
       const noticeY = finalY + 10;
       if(typeof qtDrawRemarkBox === 'function'){
         qtDrawRemarkBox(doc, fontFamily, 14, noticeY, 182);
       }
-    } catch(eN){ console.warn('[v2.11.8 J13 itinerary remark]', eN); }
+    } catch(eN){ console.warn('[v2.13 6b itinerary remark]', eN); }
   }
 }
 window.qtAppendItineraryPage = qtAppendItineraryPage;
@@ -3444,9 +3534,10 @@ function qtAddCatItem(name,content,unit,price,cat1){
 }
 
 function qtAddRow(){
-  /* v2.12 Phase 3: 8열 / 카테고리 드롭다운 / 일정표 필드 보존 (호환성) */
-  state.qt.items.push({유형:'item', 카테고리_대분류:'', 카테고리_중분류:'', 품명:'', 수량:'', 단위:'', 단가:0, 금액:0, 비고:'',
-    /* legacy 호환 */ 내용:'', 일정_표시:'', 일차:null, 시간:'', 식사_컬럼:'', 일정표_표시:false, 견적서_표시:true});
+  /* v2.13 Phase 6a: 12열 / 일정표_표시 default false (대분류 입력 시 자동 매핑) */
+  state.qt.items.push({유형:'item', 일정표_표시:false, 일차:null, 시간:'',
+    카테고리_대분류:'', 카테고리_중분류:'', 품명:'', 수량:'', 단위:'', 단가:0, 금액:0, 비고:'',
+    /* legacy 호환 */ 내용:'', 일정_표시:'', 식사_컬럼:'', 견적서_표시:true});
   qtRenderItems(); qtUpdateAll();
 }
 
@@ -3458,7 +3549,7 @@ function qtAddSubtotalRow(){
 window.qtAddSubtotalRow = qtAddSubtotalRow;
 
 function qtRenderItems(){
-  /* v2.12 Phase 3: 8열 표 (대분류·중분류·품명·수량·단위·단가·금액·비고) + 사용자 소계 행 처리 */
+  /* v2.13 Phase 6a: 12열 표 (✓일정·일차·시간 + 8열 + 액션) + 사용자 소계 행 처리 */
   const tb = $('#qt-items-body'); if(!tb)return;
   let html='';
   state.qt.items.forEach((it,i)=>{
@@ -3467,15 +3558,18 @@ function qtRenderItems(){
       const sub = qtCalcSubtotalAt(i);
       it.금액 = sub;
       html += `<tr style="background:#E6F1FB;color:#0C447C;font-weight:500">`+
-        `<td colspan="6" style="text-align:center;padding:8px">▶ 소계 (자동 계산)</td>`+
+        `<td colspan="9" style="text-align:center;padding:8px">▶ 소계 (자동 계산)</td>`+
         `<td class="qt-item-amount" style="text-align:right;padding:8px">${qtFmt(sub)}원</td>`+
         `<td></td>`+
         `<td><button class="qt-delbtn" onclick="qtDelItem(${i})">×</button></td>`+
         `</tr>`;
     } else {
-      /* 일반 행 */
+      /* 일반 행 12열 */
       const amt = (+it.수량||0) * (+it.단가||0);
       html += `<tr>`+
+        `<td style="text-align:center"><input type="checkbox" ${it.일정표_표시?'checked':''} onchange="qtUpdItem(${i},'일정표_표시',this.checked)" title="일정표 시트에 표시"></td>`+
+        `<td><input type="number" value="${it.일차||''}" min="1" max="30" placeholder="-" oninput="qtUpdItem(${i},'일차',this.value?parseInt(this.value):null)" style="width:100%"></td>`+
+        `<td><input type="time" value="${it.시간||''}" oninput="qtUpdItem(${i},'시간',this.value)" style="width:100%"></td>`+
         `<td><input type="text" list="qt-cat1-list" value="${qtEsc(it.카테고리_대분류||'')}" placeholder="운임·숙박·식사" oninput="qtUpdItem(${i},'카테고리_대분류',this.value)"></td>`+
         `<td><input type="text" list="qt-cat2-list" value="${qtEsc(it.카테고리_중분류||'')}" placeholder="항공료·조식·…" oninput="qtUpdItem(${i},'카테고리_중분류',this.value)"></td>`+
         `<td><input type="text" value="${qtEsc(it.품명)}" oninput="qtUpdItem(${i},'품명',this.value)"></td>`+
@@ -3489,7 +3583,7 @@ function qtRenderItems(){
     }
   });
   if(state.qt.items.length===0){
-    html='<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:20px">본문 항목이 없습니다. [＋ 빈 행 추가] 또는 [＋ 소계 행 삽입]</td></tr>';
+    html='<tr><td colspan="12" style="text-align:center;color:var(--text-muted);padding:20px">본문 항목이 없습니다. [＋ 빈 행 추가] 또는 [＋ 소계 행 삽입]</td></tr>';
   }
   tb.innerHTML = html;
 }
@@ -3518,6 +3612,16 @@ function qtParseNum(s){return parseFloat(String(s||'').replace(/[^0-9.\-]/g,''))
 function qtUpdItem(i,field,val){
   if(field==='수량'||field==='단가')val = qtParseNum(val);
   state.qt.items[i][field] = val;
+  /* v2.13 Phase 6a: 카테고리_대분류 변경 시 일정표_표시 default 자동 매핑 */
+  if(field==='카테고리_대분류' && QT_BU_DEFAULT_ITINERARY && QT_BU_DEFAULT_ITINERARY[val] !== undefined){
+    state.qt.items[i].일정표_표시 = QT_BU_DEFAULT_ITINERARY[val];
+    /* 체크박스 즉시 갱신 (전체 re-render 없이) */
+    const tb = document.getElementById('qt-items-body');
+    if(tb && tb.children[i]){
+      const chk = tb.children[i].querySelector('input[type="checkbox"]');
+      if(chk) chk.checked = QT_BU_DEFAULT_ITINERARY[val];
+    }
+  }
   // 입력 끊김 방지 — re-render 대신 amount 셀만 직접 갱신
   if(field==='수량'||field==='단가'){
     const amt = (+state.qt.items[i].수량||0) * (+state.qt.items[i].단가||0);

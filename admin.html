@@ -494,7 +494,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 <a href="#admin" class="nav-item" data-nav="admin" title="7. 관리자 관리 (계정·권한 / v2.9-F)"><span class="nav-icon">🛡</span><span class="nav-text">관리자 관리</span><span class="nav-phase">v2.9-F</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.11.7 · 25건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내)</div>
+<div class="sidebar-footer">admin v2.11.8 · 32건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7 panel항상숨김 · J8 카탈로그필수품목제외 · J9 KEYWORDS · J10 REMARK매핑 · J11 qtBuildRemarkBox · J11a 카테고리역참조 · J12 견적서REMARK박스 · J13 일정표REMARK통합)</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -781,6 +781,19 @@ const QT_ESSENTIAL_ITEMS_TOUR = [
   {key:'항공권', cat1:'항공·교통', cat2:'항공권', name:'항공권 (왕복)', unit:'매', def:false, qty:(a,c,n)=>(a+c), day:1, time:null, meal:null, it:false},
   {key:'단체사진', cat1:'기타', cat2:'단체사진', name:'단체사진 촬영', unit:'식', def:false, qty:(a,c,n)=>1, day:1, time:null, meal:null, it:false}
 ];
+/* v2.11.8 J9: 카탈로그 hidden filter용 키워드 Set (필수품목 패널 전용 / 중복 제거) */
+const QT_ESSENTIAL_KEYWORDS = new Set(['조식','중식','석식','객실','전세버스','인솔자','현지가이드','여행자보험','항공권','단체사진']);
+/* v2.11.8 J10: REMARK 3행 포함사항 카테고리 -> 표준 텍스트 매핑 (회사 표준 양식 정합) */
+const QT_REMARK_INCLUDE_MAP = {
+  '항공·교통': '항공요금',
+  '숙박': '숙박요금',
+  '입장·체험': '일정에 명시된 전일정 관광료',
+  '식사': '일정상 식사요금',
+  '차량·기사': '전용차량, 기사수고비',
+  '가이드·인솔': '가이드비용',
+  '보험·세금': '여행자보험'
+};
+const QT_REMARK_INCLUDE_ORDER = ['항공·교통','숙박','입장·체험','식사','차량·기사','가이드·인솔','보험·세금'];
 const QT_BU_LIST = ["국내여행","행사이벤트","온라인마케팅","마케팅교육"];
 const state={user:null,session:null,adminRole:null,permissions:{},/* v2.9-E */ready:false,currentCustomerId:null,currentCustomerInq:null,currentCustomerBU:null,timelineOffset:0,timelineTotal:0,timelineLoading:false,editMode:false,currentRow:null,lastUpdatedAt:null,
 // v1.9 — 검색·필터·페이지네이션
@@ -3045,9 +3058,9 @@ function qtSelectBU(bu){
   if(_h15) _h15.textContent = (bu==='국내여행') ? '견적 안 (1·2·3차) + 인원·박일수' : '견적 안 (1·2·3차)';
   const _ew = document.getElementById('qt-essential-wrap');
   if(_ew) _ew.style.display = (bu==='국내여행') ? 'block' : 'none';
-  /* v2.11.6 H1: 영역 1.5 panel 자체를 사업부=국내여행 전용 */
+  /* v2.11.8 J7: 영역 1.5 panel 항상 숨김 (인원·박일 입력은 [✨] 패널 안으로 통합 / H1 충돌 제거) */
   const _p15 = document.getElementById('qt-panel-15');
-  if(_p15) _p15.style.display = (bu==='국내여행') ? 'block' : 'none';
+  if(_p15) _p15.style.display = 'none';
   qtUpdateBuPreview();
   qtUpdateAll();
   qtRenderItinerary();
@@ -3290,24 +3303,75 @@ function qtAppendItineraryPage(doc, fontFamily){
       headStyles: {fillColor: [43,95,184], textColor: [255,255,255], halign: 'center'},
       columnStyles: {0:{halign:'center',cellWidth:20},1:{halign:'center',cellWidth:25},2:{cellWidth:'auto'},3:{halign:'center',cellWidth:25}}
     });
-    /* v2.11.7 J6: 일정표 시트 하단 안내 박스 (자동 노출) */
+    /* v2.11.8 J13: 일정표 시트 하단 = REMARK 박스 4행 (견적서 동일 / 회사 표준) */
     try {
       const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || 50;
-      const noticeY = finalY + 12;
-      doc.setFillColor(245, 247, 250);
-      doc.rect(14, noticeY, 182, 22, 'F');
-      doc.setDrawColor(43,95,184);
-      doc.setLineWidth(0.3);
-      doc.rect(14, noticeY, 182, 22);
-      doc.setFontSize(9); doc.setTextColor(43,95,184);
-      doc.text('※ 안내', 17, noticeY + 6);
-      doc.setFontSize(8.5); doc.setTextColor(60,60,60);
-      doc.text('· 본 일정표는 요약 안내입니다. 자세한 견적 내용은 견적서를 참고해 주세요.', 17, noticeY + 12);
-      doc.text('· 현지 사정·천재지변·항공 스케줄 등에 따라 일정이 변경될 수 있습니다.', 17, noticeY + 18);
-    } catch(eN){ console.warn('[v2.11.7 J6 itinerary notice]', eN); }
+      const noticeY = finalY + 10;
+      if(typeof qtDrawRemarkBox === 'function'){
+        qtDrawRemarkBox(doc, fontFamily, 14, noticeY, 182);
+      }
+    } catch(eN){ console.warn('[v2.11.8 J13 itinerary remark]', eN); }
   }
 }
 window.qtAppendItineraryPage = qtAppendItineraryPage;
+
+/* v2.11.8 J11: REMARK 박스 4행 자동 생성 (사업부=국내여행 / 견적서 + 일정표 동일) */
+function qtBuildRemarkBox(){
+  if(state.qt.bu !== '국내여행') return null;
+  const items = state.qt.items || [];
+  /* 1인 상품요금 = qtUpdateAll의 total 계산 로직 동일 (절사 후 ÷ 총인원) */
+  const adt = +state.qt.인원_성인||0, chd = +state.qt.인원_아동||0;
+  const totalPeople = adt + chd;
+  const sub = items.reduce((a,it)=>a+((+it.수량||0)*(+it.단가||0)),0);
+  const fee = state.qt.options.feeShow ? Math.round(sub*state.qt.options.feeRate/100) : 0;
+  const supply = sub + fee;
+  const vat = state.qt.options.vatShow ? Math.round(supply*0.1) : 0;
+  let total = supply + vat;
+  if(state.qt.options.trim==='천') total = Math.floor(total/1000)*1000;
+  else if(state.qt.options.trim==='만') total = Math.floor(total/10000)*10000;
+  const ppPrice = totalPeople>0 ? Math.round(total/totalPeople) : 0;
+  /* 3행: 견적서 본문 카테고리에서 자동 추출 (회사 표준 7카테고리 / 견적서 미추가 = 자동 제외) */
+  const usedCats = new Set();
+  items.forEach(it=>{ if(it.카테고리_대분류) usedCats.add(it.카테고리_대분류); });
+  const includeArr = [];
+  QT_REMARK_INCLUDE_ORDER.forEach(c=>{
+    if(usedCats.has(c) && QT_REMARK_INCLUDE_MAP[c]) includeArr.push(QT_REMARK_INCLUDE_MAP[c]);
+  });
+  return {
+    line1: '상기 일정은 현지사정·천재지변으로 인해 변경될 수 있습니다.',
+    line2: '1인 상품요금 : ' + (ppPrice>0 ? ppPrice.toLocaleString()+'원' : '-'),
+    line3: '포함사항 : ' + (includeArr.length>0 ? includeArr.join(', ') : '-'),
+    line4: '불포함사항 : 개인적인경비, 부가세 불포함, 식사시 음료·주류 비용 현장 손님결제, 카드결제시 카드수수료별도'
+  };
+}
+window.qtBuildRemarkBox = qtBuildRemarkBox;
+
+/* v2.11.8 J11: REMARK 박스 PDF 그리기 헬퍼 (견적서 + 일정표 공통 사용) */
+function qtDrawRemarkBox(doc, fontFamily, x, y, w){
+  const rmk = qtBuildRemarkBox(); if(!rmk) return 0;
+  doc.setFont(fontFamily,'normal');
+  /* 헤더 띠 (연두) */
+  doc.setFillColor(218,232,178);
+  doc.rect(x, y, w, 6, 'F');
+  doc.setFontSize(9); doc.setTextColor(43,95,184);
+  doc.text(rmk.line1, x+w/2, y+4.2, {align:'center'});
+  /* 본문 박스 */
+  const bodyH = 24;
+  doc.setFillColor(252,252,252);
+  doc.rect(x, y+6, w, bodyH, 'F');
+  doc.setDrawColor(43,95,184); doc.setLineWidth(0.3);
+  doc.rect(x, y, w, 6+bodyH);
+  /* 좌측 REMARK 라벨 */
+  doc.setFontSize(9); doc.setTextColor(43,95,184);
+  doc.text('REMARK', x+3, y+16);
+  /* 4행 텍스트 */
+  doc.setFontSize(8.5); doc.setTextColor(60,60,60);
+  doc.text(rmk.line2, x+22, y+12, {maxWidth:w-25});
+  doc.text(rmk.line3, x+22, y+19, {maxWidth:w-25});
+  doc.text(rmk.line4, x+22, y+26, {maxWidth:w-25});
+  return 6 + bodyH + 4;  /* 사용된 높이 + 여백 */
+}
+window.qtDrawRemarkBox = qtDrawRemarkBox;
 
 
 
@@ -3322,8 +3386,15 @@ async function qtRenderCatalog(bu){
     if(error)throw error;
     const cat = {};
     (data||[]).forEach(r=>{
+      /* v2.11.8 J8: 사업부=국내여행 시 필수품목 카탈로그 hidden (필수품목 패널 전용 / 중복 제거) */
+      if(bu==='국내여행' && QT_ESSENTIAL_KEYWORDS){
+        const _nm = (r.품명||'');
+        let _isEss = false;
+        QT_ESSENTIAL_KEYWORDS.forEach(kw=>{ if(_nm.indexOf(kw)>=0) _isEss=true; });
+        if(_isEss) return;
+      }
       if(!cat[r.카테고리])cat[r.카테고리]=[];
-      cat[r.카테고리].push({품명:r.품명,내용:r.내용||'',단위:r.기본_단위||'',단가:r.기본_단가||0});
+      cat[r.카테고리].push({품명:r.품명,내용:r.내용||'',단위:r.기본_단위||'',단가:r.기본_단가||0,_cat1:r.카테고리});
     });
     state.qt.catalog = cat;
     let html='';
@@ -3334,7 +3405,8 @@ async function qtRenderCatalog(bu){
         const escName = (it.품명||'').replace(/'/g,'&#39;');
         const escContent = (it.내용||'').replace(/'/g,'&#39;');
         const escUnit = (it.단위||'').replace(/'/g,'&#39;');
-        html+=`<div class="qt-cat-item" onclick="qtAddCatItem('${escName}','${escContent}','${escUnit}',${it.단가||0})">
+        const escCat1 = (it._cat1||k||'').replace(/'/g,'&#39;');
+        html+=`<div class="qt-cat-item" onclick="qtAddCatItem('${escName}','${escContent}','${escUnit}',${it.단가||0},'${escCat1}')">
 <div><div class="qt-cat-itemname">${escName}</div><div class="qt-cat-itemcontent">${escContent}</div></div>
 <span class="qt-cat-itemunit">${escUnit}</span></div>`;
       });
@@ -3356,9 +3428,18 @@ function qtToggleCat(i){
   if(!isOpen) target.classList.add('open');
 }
 
-function qtAddCatItem(name,content,unit,price){
+function qtAddCatItem(name,content,unit,price,cat1){
   /* v2.11.6 H5: 사업부=국내여행 시 default 일정표_표시 = true (사용자 워크플로우 직관 개선) */
   const _itDefault = (state.qt.bu === '국내여행');
+  /* v2.11.8 J11a: cat1 파라미터 없으면 state.qt.catalog 역참조로 추출 (REMARK 3행 자동 추출용) */
+  let _cat1 = cat1 || '';
+  if(!_cat1 && state.qt.catalog){
+    try{
+      Object.keys(state.qt.catalog).forEach(k=>{
+        if((state.qt.catalog[k]||[]).some(it=>it.품명===name)) _cat1 = k;
+      });
+    }catch(_e){}
+  }
   /* v2.11.7 J3=b: 단위 기반 자동 수량 (사업부=국내여행 + 인원·박일 입력 시) */
   let _qty = 1;
   if(_itDefault){
@@ -3373,6 +3454,8 @@ function qtAddCatItem(name,content,unit,price){
     }
   }
   state.qt.items.push({품명:name,내용:content,수량:_qty,단가:price||0,금액:_qty*(price||0),단위:unit,비고:'',
+    /* v2.11.8 J11a: 카테고리_대분류 저장 (REMARK 3행 자동 추출용) */
+    카테고리_대분류:_cat1, 카테고리_소분류:'',
     /* v2.11-B: 일정표 필드 (국내여행만 의미 / sql/022 quotation_items 정합) */
     일정_표시:'', 일차:null, 시간:'', 식사_컬럼:'', 일정표_표시:_itDefault, 견적서_표시:true});
   qtRenderItems(); qtUpdateAll(); qtUpdateAnSummary();
@@ -4139,6 +4222,15 @@ async function qtGeneratePDF(silent, docType){
       doc.text('비고·특이사항', 14, y); y+=5;
       doc.setFontSize(9); doc.setTextColor(0,0,0);
       doc.text(state.qt.note, 14, y, {maxWidth:182}); y += 6 + Math.floor(state.qt.note.length/55)*4;
+    }
+
+    // ===== ⑥-B v2.11.8 J12: REMARK 박스 (사업부=국내여행 / 견적서 + 일정표 동일) =====
+    if(state.qt.bu === '국내여행' && typeof qtDrawRemarkBox === 'function'){
+      try {
+        if(y > 240){ doc.addPage(); y = 20; }
+        const _used = qtDrawRemarkBox(doc, fontFamily, 14, y, 182);
+        if(_used) y += _used;
+      } catch(eR){ console.warn('[v2.11.8 J12 remark]', eR); }
     }
 
     // ===== ⑦ (v2.5에서 하단 직인·서명 영역 삭제 — 상단 회사정보 박스에 직인 통합) =====

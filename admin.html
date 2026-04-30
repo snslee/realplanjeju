@@ -494,7 +494,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 <a href="#admin" class="nav-item" data-nav="admin" title="7. 관리자 관리 (계정·권한 / v2.9-F)"><span class="nav-icon">🛡</span><span class="nav-text">관리자 관리</span><span class="nav-phase">v2.9-F</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.13.4 · 53건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7~J13 · v2.11.9-R1~R7 롤백 · v2.12 회사표준양식 풀번들 · v2.12.1 PDF8열 · v2.13-α1 admin12열 · v2.13 일정표시트회사양식 · v2.13.1 일정표비고컬럼 [식사→비고 행별표시] · v2.13.2 일정표미리보기HTML 식사→비고 · v2.13.3 사업부4종통합[영역2·3분기+행사drop+일정표docType가드] · v2.13.4 묶음4거래처[B-1b상세·B-1c신규·B-1d담당자CRUD·sql/024+sql/025])</div>
+<div class="sidebar-footer">admin v2.13.5 · 56건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7~J13 · v2.11.9-R1~R7 롤백 · v2.12 회사표준양식 풀번들 · v2.12.1 PDF8열 · v2.13-α1 admin12열 · v2.13 일정표시트회사양식 · v2.13.1 일정표비고컬럼 [식사→비고 행별표시] · v2.13.2 일정표미리보기HTML 식사→비고 · v2.13.3 사업부4종통합[영역2·3분기+행사drop+일정표docType가드] · v2.13.4 묶음4거래처[B-1b상세·B-1c신규·B-1d담당자CRUD·sql/024+sql/025] · v2.13.5 통합핫픽스[A:거래처INSERT가드제거+B:REMARK견적서한정+C:부가세문구견적서한정])</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -2712,10 +2712,11 @@ function exitVendorEdit(){
 window.exitVendorEdit = exitVendorEdit;
 
 async function saveVendorEdit(){
-  if(!_currentVendorId){ toast('거래처 ID 없음','error'); return; }
+  /* v2.13.5-α1 안건 A: _currentVendorId 가드 제거 — 신규 INSERT 허용 (rpc_upsert_vendor의 INSERT/UPDATE 분기 활용) */
   if(!canAccess('vendors','write')){ toast('편집 권한이 없습니다.','warn'); return; }
   /* form 값 수집 */
-  const payload = { id: _currentVendorId };
+  const payload = {};
+  if(_currentVendorId) payload.id = _currentVendorId;
   document.querySelectorAll('#vd-pane-basic [data-vfld]').forEach(el => {
     const key = el.getAttribute('data-vfld');
     let val = (el.value||'').trim();
@@ -2737,7 +2738,10 @@ async function saveVendorEdit(){
     if(error) throw error;
     const r = Array.isArray(data) && data.length ? data[0] : null;
     if(!r) throw new Error('저장 응답 없음');
-    toast(`${r.r_거래처명} 저장 완료 ✓`,'success');
+    /* v2.13.5-α1 안건 A: 등록/저장 분기 + 신규 INSERT 시 _currentVendorId 갱신 */
+    const _isInsert = (r.r_action === 'insert');
+    toast(`${r.r_거래처명} ${_isInsert?'등록':'저장'} 완료 ✓`,'success');
+    if(_isInsert) _currentVendorId = r.r_id;
     /* 모달 reload + 목록 reload */
     await openVendorDetail(_currentVendorId);
     if(typeof loadVendors === 'function') loadVendors(0);
@@ -5054,7 +5058,8 @@ async function qtGeneratePDF(silent, docType){
       doc.text(`(절사 전: ${totalOrig.toLocaleString()}원 / ${state.qt.options.trim}단위 절사)`, 196, y, {align:'right'}); y+=5;
       doc.setTextColor(0,0,0);
     }
-    if(state.qt.options.vatShow === false){
+    /* v2.13.5-α2 안건 C: 부가세 별도 문구 = 견적서(quote) 전용. 납품서/거래명세서 X */
+    if(state.qt.options.vatShow === false && (!docType || docType === 'quote')){
       doc.setFontSize(8); doc.setTextColor(120,120,120);
       doc.text('※ 본 견적 금액은 부가세 별도 / 또는 부가세 미포함 거래입니다', 14, y); y+=5;
       doc.setTextColor(0,0,0);
@@ -5107,8 +5112,8 @@ async function qtGeneratePDF(silent, docType){
       doc.text(state.qt.note, 14, y, {maxWidth:182}); y += 6 + Math.floor(state.qt.note.length/55)*4;
     }
 
-    // ===== ⑥-B v2.11.8 J12: REMARK 박스 (사업부=국내여행 / 견적서 + 일정표 동일) =====
-    if(state.qt.bu === '국내여행' && typeof qtDrawRemarkBox === 'function'){
+    // ===== ⑥-B v2.11.8 J12 + v2.13.5-α3 안건 B: REMARK 박스 (사업부=국내여행 + 견적서 전용 / 납품·거래명세 X) =====
+    if(state.qt.bu === '국내여행' && (!docType || docType === 'quote') && typeof qtDrawRemarkBox === 'function'){
       try {
         if(y > 240){ doc.addPage(); y = 20; }
         const _used = qtDrawRemarkBox(doc, fontFamily, 14, y, 182);

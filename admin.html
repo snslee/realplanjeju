@@ -494,7 +494,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 <a href="#admin" class="nav-item" data-nav="admin" title="7. 관리자 관리 (계정·권한 / v2.9-F)"><span class="nav-icon">🛡</span><span class="nav-text">관리자 관리</span><span class="nav-phase">v2.9-F</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.11.5 · 19건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5)</div>
+<div class="sidebar-footer">admin v2.11.6 · 20건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6-H1 영역1.5분기 · H2 카탈로그accordion · H4 검증UX모달 · H5 일정표default)</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -2817,7 +2817,7 @@ function qtBuildCreateForm(){
 </div>
 
 <!-- v2.11-A: 견적 안 탭 + 인원·박일 (사업부=국내여행 시 인원·박일 행 표시) -->
-<div class="qt-panel">
+<div class="qt-panel" id="qt-panel-15">
 <h3 id="qt-h3-15"><span class="qt-step-num">1.5</span><span id="qt-h3-15-text">견적 안 (1차/2차/3차) + 인원·박일수</span></h3>
 <div class="qt-field"><label>📋 견적 안 — 동일 고객·사업부 복수 견적 비교 (sql/022 안_번호)</label>
 <div id="qt-an-tabs" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -3045,6 +3045,9 @@ function qtSelectBU(bu){
   if(_h15) _h15.textContent = (bu==='국내여행') ? '견적 안 (1·2·3차) + 인원·박일수' : '견적 안 (1·2·3차)';
   const _ew = document.getElementById('qt-essential-wrap');
   if(_ew) _ew.style.display = (bu==='국내여행') ? 'block' : 'none';
+  /* v2.11.6 H1: 영역 1.5 panel 자체를 사업부=국내여행 전용 */
+  const _p15 = document.getElementById('qt-panel-15');
+  if(_p15) _p15.style.display = (bu==='국내여행') ? 'block' : 'none';
   qtUpdateBuPreview();
   qtUpdateAll();
   qtRenderItinerary();
@@ -3319,20 +3322,28 @@ async function qtRenderCatalog(bu){
 }
 
 function qtToggleCat(i){
-  const el = $('#qt-cat-list-'+i);
-  if(el)el.classList.toggle('open');
+  /* v2.11.6 H2: accordion 패턴 (한 번에 1개만 expand / 본문 표 가시성 보장) */
+  const target = document.getElementById('qt-cat-list-'+i);
+  if(!target) return;
+  const isOpen = target.classList.contains('open');
+  document.querySelectorAll('.qt-cat-list').forEach(el => el.classList.remove('open'));
+  if(!isOpen) target.classList.add('open');
 }
 
 function qtAddCatItem(name,content,unit,price){
+  /* v2.11.6 H5: 사업부=국내여행 시 default 일정표_표시 = true (사용자 워크플로우 직관 개선) */
+  const _itDefault = (state.qt.bu === '국내여행');
   state.qt.items.push({품명:name,내용:content,수량:1,단가:price||0,금액:price||0,단위:unit,비고:'',
     /* v2.11-B: 일정표 필드 (국내여행만 의미 / sql/022 quotation_items 정합) */
-    일정_표시:'', 일차:null, 시간:'', 식사_컬럼:'', 일정표_표시:false, 견적서_표시:true});
+    일정_표시:'', 일차:null, 시간:'', 식사_컬럼:'', 일정표_표시:_itDefault, 견적서_표시:true});
   qtRenderItems(); qtUpdateAll(); qtUpdateAnSummary();
 }
 
 function qtAddRow(){
+  /* v2.11.6 H5: 사업부=국내여행 시 default 일정표_표시 = true */
+  const _itDefault = (state.qt.bu === '국내여행');
   state.qt.items.push({품명:'',내용:'',수량:1,단가:0,금액:0,단위:'',비고:'',
-    일정_표시:'', 일차:null, 시간:'', 식사_컬럼:'', 일정표_표시:false, 견적서_표시:true});
+    일정_표시:'', 일차:null, 시간:'', 식사_컬럼:'', 일정표_표시:_itDefault, 견적서_표시:true});
   qtRenderItems(); qtUpdateAnSummary();
 }
 
@@ -3527,13 +3538,46 @@ function qtUpdateBuPreview(){
   if(pvAcc)pvAcc.textContent = state.qt.account?state.qt.account.split('·')[0].trim():'— 사업부 선택 시 —';
 }
 
+/* v2.11.6 H4: 견적 저장·발송 공통 검증 (alert 모달 + 자동 스크롤 + focus 강조) */
+function qtValidateForSend(){
+  const _alertScroll = (msg, elId, addOutline) => {
+    alert(msg);
+    const el = document.getElementById(elId);
+    if(!el) return;
+    try { el.scrollIntoView({behavior:'smooth', block:'center'}); } catch(e){}
+    if(addOutline){
+      const orig = el.style.outline;
+      el.style.outline = '3px solid #d63437';
+      el.style.outlineOffset = '4px';
+      setTimeout(()=>{ el.style.outline = orig; el.style.outlineOffset=''; }, 4000);
+    }
+    if(typeof el.focus === 'function'){ try { el.focus(); } catch(e){} }
+  };
+  if(!state.qt.customerId){
+    _alertScroll('⚠ 고객을 먼저 선택해 주세요.\n\n영역 1의 [고객] 드롭다운에서 고객을 선택한 후 다시 시도해 주세요.', 'qt-customer', true);
+    return false;
+  }
+  if(!state.qt.bu){
+    _alertScroll('⚠ 사업부를 선택해 주세요.\n\n영역 1의 사업부 카드 (국내여행 / 행사·이벤트 / 온라인 마케팅 / 마케팅 교육) 중 하나를 클릭해 주세요.', 'qt-bu-group', true);
+    return false;
+  }
+  if(state.qt.items.length === 0){
+    _alertScroll('⚠ 본문 항목을 1개 이상 추가해 주세요.\n\n영역 3에서 카탈로그 클릭 또는 [+ 빈 행 추가] 버튼을 사용해 주세요.', 'qt-items-table', false);
+    return false;
+  }
+  if(!state.qt.title.trim()){
+    _alertScroll('⚠ 제목을 입력해 주세요.\n\n영역 2의 [제목] 입력란에 견적 제목을 작성해 주세요.', 'qt-title', true);
+    return false;
+  }
+  return true;
+}
+window.qtValidateForSend = qtValidateForSend;
+
 /* qtSaveDraft — rpc_create_quotation 호출 */
 async function qtSaveDraft(){
   state.qt.items.forEach(it => { it.금액 = (+it.수량||0) * (+it.단가||0); });
-  if(!state.qt.customerId){toast('고객을 먼저 선택해 주세요','warn');return;}
-  if(!state.qt.bu){toast('사업부를 선택해 주세요','warn');return;}
-  if(state.qt.items.length===0){toast('본문 항목을 1개 이상 추가해 주세요','warn');return;}
-  if(!state.qt.title.trim()){toast('제목을 입력해 주세요','warn');return;}
+  /* v2.11.6 H4: 공통 검증 헬퍼 (alert 모달 + 자동 스크롤) */
+  if(!qtValidateForSend()) return;
   qtUpdRecipient(); qtUpdAttach();
   const _수신 = {
     회사명: state.qt.recipient.co, 부서: state.qt.recipient.dept,
@@ -3635,11 +3679,8 @@ async function qtSendQuotation(docType){
   const isDelivery = (docType === 'delivery');
   const isStatement = (docType === 'statement');
   const docLabel = isDelivery ? '납품서' : '견적서';
-  // 1) 작성 화면 검증 (state.qt 기반)
-  if(!state.qt.customerId){toast('고객을 먼저 선택해 주세요','warn');return;}
-  if(!state.qt.bu){toast('사업부를 선택해 주세요','warn');return;}
-  if(state.qt.items.length===0){toast('본문 항목을 1개 이상 추가해 주세요','warn');return;}
-  if(!state.qt.title.trim()){toast('제목을 입력해 주세요','warn');return;}
+  // 1) v2.11.6 H4: 공통 검증 헬퍼 (alert 모달 + 자동 스크롤)
+  if(!qtValidateForSend()) return;
 
   // 2) qtSaveDraft 같이 quotations row 보장 (없으면 INSERT)
   let quotationId = state.qt.currentQuotationId;

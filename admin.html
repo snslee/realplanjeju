@@ -494,7 +494,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 <a href="#admin" class="nav-item" data-nav="admin" title="7. 관리자 관리 (계정·권한 / v2.9-F)"><span class="nav-icon">🛡</span><span class="nav-text">관리자 관리</span><span class="nav-phase">v2.9-F</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.13.1 · 50건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7~J13 · v2.11.9-R1~R7 롤백 · v2.12 회사표준양식 풀번들 · v2.12.1 PDF8열 · v2.13-α1 admin12열 · v2.13 일정표시트회사양식 · v2.13.1 일정표비고컬럼 [식사→비고 행별표시])</div>
+<div class="sidebar-footer">admin v2.13.4 · 53건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7~J13 · v2.11.9-R1~R7 롤백 · v2.12 회사표준양식 풀번들 · v2.12.1 PDF8열 · v2.13-α1 admin12열 · v2.13 일정표시트회사양식 · v2.13.1 일정표비고컬럼 [식사→비고 행별표시] · v2.13.2 일정표미리보기HTML 식사→비고 · v2.13.3 사업부4종통합[영역2·3분기+행사drop+일정표docType가드] · v2.13.4 묶음4거래처[B-1b상세·B-1c신규·B-1d담당자CRUD·sql/024+sql/025])</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -553,29 +553,85 @@ table.qt-items td.narrow input{text-align:right}
 </section>
 <section id="view-vendor" class="page" hidden>
   <div class="page-header"><div><div class="page-title">🏢 거래처·외주</div><div class="page-subtitle">매입 마스터·외주 거래처 (vd_vendors / sql/020 v2 + sql/021b 4사업부)</div></div></div>
+  <!-- v2.13.4-α1 (Phase 1): 사업부 다중 체크박스 + 거래처 분야 자유 입력 + datalist 추천 -->
   <div class="vendor-toolbar" style="display:flex;gap:8px;align-items:center;padding:12px 0;flex-wrap:wrap">
     <input type="text" id="vendor-search" placeholder="거래처명·대표자·전화·이메일·사업자번호 검색" style="flex:1;min-width:240px;padding:8px;border:1px solid #d1d5db;border-radius:6px">
-    <select id="vendor-부서-filter" style="padding:8px;border:1px solid #d1d5db;border-radius:6px">
-      <option value="">전체 사업부</option>
-      <option value="국내여행">국내여행</option>
-      <option value="행사이벤트">행사이벤트</option>
-      <option value="온라인마케팅">온라인마케팅</option>
-      <option value="마케팅교육">마케팅교육</option>
-      <option value="공통">공통</option>
-    </select>
-    <select id="vendor-cat-filter" style="padding:8px;border:1px solid #d1d5db;border-radius:6px">
-      <option value="">전체 카테고리</option>
-    </select>
+    <input type="text" id="vendor-분야-filter" list="vendor-분야-list" placeholder="거래처 분야 (예: 항공료, 호텔, 강사료…)" style="min-width:200px;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+    <datalist id="vendor-분야-list"></datalist>
     <label style="font-size:13px;display:flex;align-items:center;gap:4px"><input type="checkbox" id="vendor-active-only" checked> 활성만</label>
     <button class="adm-edit-btn" id="vendor-search-btn" type="button" onclick="window.loadVendors(0)">검색</button>
     <button class="adm-btn adm-btn-save" id="vendor-new-btn" type="button" onclick="window.openVendorNew()" style="margin-left:auto">+ 신규 거래처</button>
   </div>
+  <!-- 사업부 다중 체크박스 (4사업부 + 공통) -->
+  <div id="vendor-bu-filter-row" style="display:flex;gap:6px;align-items:center;padding:0 0 10px;flex-wrap:wrap;font-size:12.5px">
+    <span style="color:#6b7280;font-weight:500">사업부 (다중 선택):</span>
+    <label style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fff;border:0.5px solid #d1d5db;border-radius:6px;cursor:pointer"><input type="checkbox" class="vendor-bu-chk" value="국내여행"> 🏝 국내여행</label>
+    <label style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fff;border:0.5px solid #d1d5db;border-radius:6px;cursor:pointer"><input type="checkbox" class="vendor-bu-chk" value="행사이벤트"> 🎤 행사이벤트</label>
+    <label style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fff;border:0.5px solid #d1d5db;border-radius:6px;cursor:pointer"><input type="checkbox" class="vendor-bu-chk" value="온라인마케팅"> 📱 온라인마케팅</label>
+    <label style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fff;border:0.5px solid #d1d5db;border-radius:6px;cursor:pointer"><input type="checkbox" class="vendor-bu-chk" value="마케팅교육"> 📚 마케팅교육</label>
+    <label style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fff;border:0.5px solid #d1d5db;border-radius:6px;cursor:pointer;color:#888780"><input type="checkbox" class="vendor-bu-chk" value="공통"> 공통</label>
+  </div>
   <table class="adm-table" id="vendor-table">
-    <thead><tr><th>거래처명</th><th>사업자번호</th><th>사업부</th><th>카테고리</th><th>대표자</th><th>전화</th><th>이메일</th><th>담당자</th><th>활성</th><th>편집</th></tr></thead>
+    <thead><tr><th>거래처명</th><th>사업자번호</th><th>사업부 (다중)</th><th>거래처 분야</th><th>대표자</th><th>전화</th><th>이메일</th><th>담당자</th><th>활성</th><th>편집</th></tr></thead>
     <tbody id="vendor-tbody"><tr><td colspan="10" style="text-align:center;color:#6b7280;padding:24px">검색 버튼을 누르거나 페이지 진입 시 자동 로드</td></tr></tbody>
   </table>
   <div id="vendor-pagination" style="display:flex;justify-content:center;gap:8px;padding:16px"></div>
 </section>
+
+<!-- v2.13.4-α2 Phase 2: B-1b 거래처 상세 모달 (read-only / fixed overlay) -->
+<div id="vendor-detail-modal" hidden style="position:fixed;inset:0;background:rgba(30,58,95,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:880px;max-height:92vh;overflow:auto;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
+    <!-- 모달 헤더 -->
+    <div style="padding:14px 20px;border-bottom:1px solid #d6dce5;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1e3a5f,#152a46);color:#fff;border-radius:12px 12px 0 0">
+      <div>
+        <div id="vd-modal-title" style="font-size:16px;font-weight:600">거래처 상세</div>
+        <div id="vd-modal-subtitle" style="font-size:11.5px;opacity:0.85;margin-top:2px">사업자번호·ID 표시 영역</div>
+      </div>
+      <button type="button" onclick="window.closeVendorModal()" style="background:transparent;border:1px solid #fff;color:#fff;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px">✕ 닫기</button>
+    </div>
+    <!-- 탭 -->
+    <div style="display:flex;border-bottom:1px solid #d6dce5;background:#f5f7fa">
+      <button type="button" class="vd-tab-btn" data-tab="basic" onclick="window.switchVendorTab('basic')" style="padding:10px 18px;border:none;background:#e6f1fb;color:#0c447c;font-size:13px;font-weight:500;cursor:pointer;border-right:1px solid #d6dce5">📋 기본 정보</button>
+      <button type="button" class="vd-tab-btn" data-tab="contacts" onclick="window.switchVendorTab('contacts')" style="padding:10px 18px;border:none;background:#f1efe8;color:#5a6478;font-size:13px;font-weight:500;cursor:pointer;border-right:1px solid #d6dce5">👥 담당자 <span id="vd-tab-contacts-count" style="opacity:0.7"></span></button>
+      <button type="button" class="vd-tab-btn" data-tab="trades" onclick="window.switchVendorTab('trades')" style="padding:10px 18px;border:none;background:#f1efe8;color:#5a6478;font-size:13px;font-weight:500;cursor:pointer">📄 거래 내역</button>
+    </div>
+    <!-- 탭 1: 기본 정보 -->
+    <div id="vd-pane-basic" class="vd-pane" style="padding:18px 20px">
+      <div id="vd-basic-content" style="font-size:13px;color:#1a2332">불러오는 중…</div>
+    </div>
+    <!-- 탭 2: 담당자 (v2.13.4-α5 Phase 5 본구현 / vd_contacts CRUD + Primary 1명 보장) -->
+    <div id="vd-pane-contacts" class="vd-pane" hidden style="padding:18px 20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:500;color:#1a2332">👥 담당자 <span id="vd-contact-count" style="color:#5a6478;font-weight:400">(0명)</span></div>
+        <button type="button" id="vd-btn-add-contact" onclick="window.openContactForm(null)" style="padding:6px 12px;background:#E1F5EE;color:#04342C;border:1px solid #1D9E75;border-radius:6px;cursor:pointer;font-size:12.5px;font-weight:500">+ 담당자 추가</button>
+      </div>
+      <div id="vd-contact-list" style="display:flex;flex-direction:column;gap:8px">
+        <div style="text-align:center;padding:30px;color:#8a94a6;font-size:12.5px">불러오는 중…</div>
+      </div>
+      <div id="vd-contact-form-wrap" hidden style="margin-top:12px;background:#E6F1FB;border:1px solid #378ADD;border-radius:8px;padding:14px"></div>
+      <div style="margin-top:10px;padding:8px 10px;background:#FAEEDA;border-radius:6px;font-size:11px;color:#854F0B">
+        ℹ️ Primary 1명 자동 보장 — 다른 담당자를 Primary로 지정 시 기존 Primary 자동 해제 (rpc_set_primary_contact)
+      </div>
+    </div>
+    <!-- 탭 3: 거래 내역 (다음 회기) -->
+    <div id="vd-pane-trades" class="vd-pane" hidden style="padding:18px 20px">
+      <div style="text-align:center;padding:40px 20px;color:#8a94a6;font-size:13px">
+        <div style="font-size:32px;margin-bottom:8px">📄</div>
+        <div>거래 내역 (견적서·납품서·거래명세서·발주서·정산서)</div>
+        <div style="margin-top:6px;font-size:11.5px">다음 회기에서 구현 예정</div>
+      </div>
+    </div>
+    <!-- 모달 푸터 (v2.13.4-α3 Phase 3) -->
+    <div style="padding:12px 20px;border-top:1px solid #d6dce5;display:flex;justify-content:flex-end;gap:8px;background:#f5f7fa;border-radius:0 0 12px 12px">
+      <span id="vd-edit-status" style="font-size:11px;color:#8a94a6;align-self:center;margin-right:auto">조회 모드 · [편집] 클릭 시 수정 가능</span>
+      <button type="button" id="vd-btn-toggle-active" onclick="window.toggleVendorActive()" style="padding:7px 14px;background:#fff;color:#c0392b;border:1px solid #c0392b;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500">🚫 비활성</button>
+      <button type="button" id="vd-btn-edit" onclick="window.enterVendorEdit()" style="padding:7px 14px;background:#fff;color:#0c447c;border:1px solid #378ADD;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500">✏ 편집</button>
+      <button type="button" id="vd-btn-cancel" onclick="window.exitVendorEdit()" hidden style="padding:7px 14px;background:#fff;color:#5a6478;border:1px solid #d6dce5;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500">취소</button>
+      <button type="button" id="vd-btn-save" onclick="window.saveVendorEdit()" hidden style="padding:7px 14px;background:#2E7D5F;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500">💾 저장</button>
+      <button type="button" id="vd-btn-close" onclick="window.closeVendorModal()" style="padding:7px 16px;background:#1e3a5f;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500">닫기</button>
+    </div>
+  </div>
+</div>
 <section id="view-hr" class="page" hidden>
   <div class="page-header"><div><div class="page-title">인사</div><div class="page-subtitle">휴가·출장·근태·급여·근로계약 (본인분 RLS) — 마스터 #8</div></div></div>
   <div class="placeholder-box" id="ph-hr"></div>
@@ -836,7 +892,11 @@ state.qt = {
   여행_시작일: null,
   도착시간: null,            /* 서울→제주 도착 시간 */
   여행_종료일: null,
-  출발시간: null             /* 제주→서울 출발 시간 */
+  출발시간: null,            /* 제주→서울 출발 시간 */
+  /* v2.13.3 Phase 5: 행사이벤트 메타 (사업부=행사이벤트만 의미) */
+  행사_시작일시: null,         /* datetime-local */
+  행사_종료일시: null,         /* datetime-local */
+  행사_동일일시: false         /* 체크박스 ON 시 종료=시작 자동 복사 / 단일일 행사 */
 };
 state.currentQuotationId = null;
 /* v2.8.0c — state 마스터 v1.0 1-3 데이터 흐름도 정합 / 사이드바 6 영역 + 고객 360° */
@@ -2368,36 +2428,41 @@ window.loadPermLog = loadPermLog;
 const VENDOR_PAGE_SIZE = 20;
 let _vendorCategoriesLoaded = false;
 
-async function loadVendorCategoriesFilter(){
+/* v2.13.4-α1 (Phase 1): vd_categories → 거래처 분야 datalist 추천 (자유 입력 + 9개 추천) */
+async function loadVendor분야Datalist(){
   if (_vendorCategoriesLoaded) return;
   try {
-    const {data, error} = await sb.from('vd_categories').select('id, 카테고리명, 코드, 순서').order('순서');
+    const {data, error} = await sb.from('vd_categories').select('카테고리명, 순서').order('순서');
     if (error) throw error;
-    const sel = document.getElementById('vendor-cat-filter');
-    if (!sel) return;
+    const dl = document.getElementById('vendor-분야-list');
+    if (!dl) return;
     (data||[]).forEach(c => {
       const opt = document.createElement('option');
-      opt.value = c.id;
-      opt.textContent = c.카테고리명;
-      sel.appendChild(opt);
+      opt.value = c.카테고리명;
+      dl.appendChild(opt);
     });
     _vendorCategoriesLoaded = true;
-  } catch(e) { console.warn('[v2.10-A] vd_categories 로드 실패:', e); }
+  } catch(e) { console.warn('[v2.13.4-α1] vd_categories datalist 로드 실패:', e); }
 }
+/* legacy 호환 (다음 회기 제거 / loadVendors에서 신규 호출) */
+async function loadVendorCategoriesFilter(){ return loadVendor분야Datalist(); }
 
 async function loadVendors(offset){
   offset = offset || 0;
-  await loadVendorCategoriesFilter();
+  await loadVendor분야Datalist();
   const tbody = document.getElementById('vendor-tbody');
   tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#6b7280;padding:24px">불러오는 중…</td></tr>';
   const search = (document.getElementById('vendor-search')||{}).value || null;
-  const 부서 = (document.getElementById('vendor-부서-filter')||{}).value || null;
-  const catId = (document.getElementById('vendor-cat-filter')||{}).value || null;
+  /* v2.13.4-α1: 사업부 다중 체크박스 → ARRAY (체크 0개면 NULL = 전체) */
+  const buChks = document.querySelectorAll('.vendor-bu-chk:checked');
+  const buList = Array.from(buChks).map(c=>c.value);
+  const buListParam = buList.length ? buList : null;
+  const 분야 = (document.getElementById('vendor-분야-filter')||{}).value || null;
   const activeOnly = (document.getElementById('vendor-active-only')||{}).checked !== false;
   const canEdit = canAccess('vendors','write');
   try {
     const {data, error} = await sb.rpc('rpc_list_vendors', {
-      _search: search, _부서: 부서, _category_id: catId,
+      _search: search, _bu_list: buListParam, _분야: 분야,
       _active_only: activeOnly, _limit: VENDOR_PAGE_SIZE, _offset: offset
     });
     if (error) throw error;
@@ -2406,23 +2471,40 @@ async function loadVendors(offset){
       document.getElementById('vendor-pagination').innerHTML = '';
       return;
     }
-    tbody.innerHTML = data.map(v => `<tr>
+    /* v2.13.4-α1: 사업부 다중 태그 색상 매핑 */
+    const buColorMap = {
+      '국내여행':'background:#FAEEDA;color:#854F0B',
+      '행사이벤트':'background:#E1F5EE;color:#04342C',
+      '온라인마케팅':'background:#EEEDFE;color:#26215C',
+      '마케팅교육':'background:#FCEBEB;color:#791F1F',
+      '공통':'background:#F1EFE8;color:#5F5E5A'
+    };
+    tbody.innerHTML = data.map(v => {
+      const buArr = Array.isArray(v.r_사업부분류_목록) ? v.r_사업부분류_목록 : [];
+      const buHtml = buArr.length
+        ? buArr.map(b => `<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;margin-right:3px;${buColorMap[b]||'background:#eee;color:#333'}">${escapeHtml(b)}</span>`).join('')
+        : '<span style="color:#9ca3af">-</span>';
+      const primary = v.r_담당자_primary ? escapeHtml(v.r_담당자_primary)+' ⭐' : '';
+      const cnt = v.r_담당자_count||0;
+      const dispCnt = primary ? `${primary}${cnt>1?' +'+(cnt-1):''}` : `${cnt}명`;
+      return `<tr>
       <td><strong>${escapeHtml(v.r_거래처명||'')}</strong></td>
       <td>${escapeHtml(v.r_사업자번호||'-')}</td>
-      <td>${escapeHtml(v.r_사업부분류||'-')}</td>
-      <td>${escapeHtml(v.r_카테고리명||'-')}</td>
+      <td>${buHtml}</td>
+      <td>${escapeHtml(v.r_거래처_분야||'-')}</td>
       <td>${escapeHtml(v.r_대표자||'-')}</td>
       <td>${escapeHtml(v.r_전화||'-')}</td>
       <td>${escapeHtml(v.r_이메일||'-')}</td>
-      <td>${v.r_담당자_count||0}명</td>
+      <td>${dispCnt}</td>
       <td>${v.r_is_active ? '<span style="color:#059669">활성</span>' : '<span style="color:#9ca3af">비활성</span>'}</td>
       <td><button class="adm-edit-btn" ${canEdit?'':'disabled'} onclick="window.openVendorDetail('${v.r_id}')">${canEdit?'편집':'조회'}</button></td>
-    </tr>`).join('');
+    </tr>`;
+    }).join('');
     /* 페이지네이션 */
     const total = (data[0] && data[0].r_total_count) || 0;
     renderVendorPagination(offset, total);
   } catch(e){
-    console.error('[v2.10-A] rpc_list_vendors 실패:', e);
+    console.error('[v2.13.4-α1] rpc_list_vendors 실패:', e);
     tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#dc2626;padding:24px">로드 실패: '+(e.message||e)+'</td></tr>';
   }
 }
@@ -2445,17 +2527,545 @@ function renderVendorPagination(offset, total){
 document.addEventListener('DOMContentLoaded', ()=>{
   const search = document.getElementById('vendor-search');
   if (search) search.addEventListener('keydown', e=>{ if (e.key === 'Enter') loadVendors(0); });
-  ['vendor-부서-filter','vendor-cat-filter','vendor-active-only'].forEach(id=>{
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('change', ()=>loadVendors(0));
-  });
+  /* v2.13.4-α1: 활성 토글 + 사업부 다중 체크박스 자동 검색 */
+  const ao = document.getElementById('vendor-active-only');
+  if (ao) ao.addEventListener('change', ()=>loadVendors(0));
+  document.querySelectorAll('.vendor-bu-chk').forEach(c => c.addEventListener('change', ()=>loadVendors(0)));
+  /* 거래처 분야 input — Enter 또는 blur 시 검색 */
+  const 분야F = document.getElementById('vendor-분야-filter');
+  if (분야F){
+    분야F.addEventListener('keydown', e=>{ if (e.key === 'Enter') loadVendors(0); });
+    분야F.addEventListener('change', ()=>loadVendors(0));
+  }
 });
 
-/* v2.10-A WIP placeholders — v2.10-B·C에서 모달 본구현 */
-function openVendorDetail(id){ toast('거래처 상세·편집 모달은 v2.10-B에서 구현 예정 (id: '+id+')','info'); }
+/* v2.13.4-α2 Phase 2: B-1b 거래처 상세 모달 본구현 (read-only) */
+let _currentVendorId = null;
+
+async function openVendorDetail(id){
+  if(!id) return;
+  _currentVendorId = id;
+  const modal = document.getElementById('vendor-detail-modal');
+  const basic = document.getElementById('vd-basic-content');
+  if(!modal || !basic) return;
+  modal.hidden = false;
+  /* 탭 초기화 (기본 정보 default) */
+  switchVendorTab('basic');
+  basic.innerHTML = '<div style="text-align:center;padding:30px;color:#8a94a6">불러오는 중…</div>';
+  try {
+    const {data, error} = await sb.rpc('rpc_get_vendor', {_id: id});
+    if(error) throw error;
+    const v = Array.isArray(data) && data.length ? data[0] : null;
+    if(!v){
+      basic.innerHTML = '<div style="text-align:center;padding:30px;color:#c0392b">거래처 정보를 찾을 수 없습니다.</div>';
+      return;
+    }
+    /* 모달 헤더 갱신 */
+    document.getElementById('vd-modal-title').textContent = v.r_거래처명 || '(거래처명 없음)';
+    document.getElementById('vd-modal-subtitle').textContent =
+      `사업자번호 ${v.r_사업자번호||'-'} · ID ${String(v.r_id).slice(0,8)}…`;
+    /* 사업부 다중 태그 */
+    const buColor = {
+      '국내여행':'#FAEEDA;color:#854F0B',
+      '행사이벤트':'#E1F5EE;color:#04342C',
+      '온라인마케팅':'#EEEDFE;color:#26215C',
+      '마케팅교육':'#FCEBEB;color:#791F1F',
+      '공통':'#F1EFE8;color:#5F5E5A'
+    };
+    const buArr = Array.isArray(v.r_사업부분류_목록) ? v.r_사업부분류_목록 : [];
+    const buHtml = buArr.length
+      ? buArr.map(b => `<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11.5px;margin-right:4px;background:${buColor[b]||'#eee;color:#333'}">${escapeHtml(b)}</span>`).join('')
+      : '<span style="color:#9ca3af">-</span>';
+    /* 태그 */
+    const tagArr = Array.isArray(v.r_태그) ? v.r_태그 : [];
+    const tagHtml = tagArr.length
+      ? tagArr.map(t => `<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10.5px;margin-right:3px;background:#E6F1FB;color:#0C447C">${escapeHtml(t)}</span>`).join('')
+      : '<span style="color:#9ca3af;font-size:11.5px">-</span>';
+    /* 활성 상태 배지 */
+    const activeBadge = v.r_is_active
+      ? '<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;background:#E1F5EE;color:#04342C">✅ 활성</span>'
+      : '<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;background:#F1EFE8;color:#5F5E5A">🚫 비활성</span>';
+    /* v2.13.4-α3 Phase 3: input readonly 기반 폼 (편집 모드 = readonly 제거) */
+    const inp = (key, val, type, w) => `<input type="${type||'text'}" data-vfld="${key}" value="${(val==null?'':escapeHtml(String(val)))}" readonly style="width:${w||'100%'};padding:6px 8px;border:0.5px solid #d6dce5;border-radius:4px;font-size:13px;background:#f5f7fa;color:#1a2332" />`;
+    const lab = s => `<div style="font-size:11px;color:#5a6478;margin-bottom:3px">${s}</div>`;
+    const buArrCsv = (Array.isArray(v.r_사업부분류_목록) ? v.r_사업부분류_목록 : []).join(',');
+    const tagCsv = (Array.isArray(v.r_태그) ? v.r_태그 : []).join(', ');
+    /* 사업부 4 체크박스 (편집 모드에서 toggle 가능) */
+    const buCheckHtml = ['국내여행','행사이벤트','온라인마케팅','마케팅교육','공통'].map(b => {
+      const checked = (Array.isArray(v.r_사업부분류_목록) && v.r_사업부분류_목록.indexOf(b) >= 0) ? 'checked' : '';
+      const emoji = {'국내여행':'🏝','행사이벤트':'🎤','온라인마케팅':'📱','마케팅교육':'📚','공통':''}[b]||'';
+      return `<label style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fff;border:0.5px solid #d6dce5;border-radius:6px;font-size:11.5px;margin-right:4px"><input type="checkbox" class="vd-edit-bu-chk" value="${b}" ${checked} disabled> ${emoji} ${b}</label>`;
+    }).join('');
+    basic.innerHTML = `
+      <div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        ${activeBadge}
+        <div style="display:flex;flex-wrap:wrap;gap:0;margin-left:8px"><span style="font-size:11px;color:#5a6478;margin-right:6px;align-self:center">사업부 (다중):</span>${buCheckHtml}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px">
+        <div>${lab('거래처명 *')}${inp('거래처명', v.r_거래처명)}</div>
+        <div>${lab('사업자번호')}${inp('사업자번호', v.r_사업자번호)}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>${lab('대표자')}${inp('대표자', v.r_대표자)}</div>
+        <div>${lab('업태')}${inp('업태', v.r_업태)}</div>
+        <div>${lab('종목')}${inp('종목', v.r_종목)}</div>
+      </div>
+      <div style="margin-bottom:12px">
+        ${lab('거래처 분야 (자유 입력 + datalist 추천)')}
+        <input type="text" data-vfld="거래처_분야" list="vendor-분야-list" value="${escapeHtml(v.r_거래처_분야||'')}" readonly placeholder="예: 항공료, 호텔·리조트, 강사료…" style="width:100%;padding:6px 8px;border:0.5px solid #d6dce5;border-radius:4px;font-size:13px;background:#f5f7fa;color:#1a2332" />
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>${lab('전화')}${inp('전화', v.r_전화)}</div>
+        <div>${lab('팩스')}${inp('팩스', v.r_팩스)}</div>
+        <div>${lab('이메일')}${inp('이메일', v.r_이메일, 'email')}</div>
+      </div>
+      <div style="margin-bottom:14px">${lab('주소')}${inp('주소', v.r_주소)}</div>
+      <div style="background:#FAEEDA;border:1px solid #BA7517;border-radius:8px;padding:12px;margin-bottom:14px">
+        <div style="font-size:11.5px;color:#854F0B;font-weight:500;margin-bottom:8px">💳 입금 계좌 + 세금계산서</div>
+        <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:10px;margin-bottom:8px">
+          <div>${lab('은행')}${inp('계좌_은행', v.r_계좌_은행)}</div>
+          <div>${lab('계좌번호')}${inp('계좌_번호', v.r_계좌_번호)}</div>
+          <div>${lab('예금주')}${inp('계좌_예금주', v.r_계좌_예금주)}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>${lab('세금계산서 이메일')}${inp('세금계산서_이메일', v.r_세금계산서_이메일, 'email')}</div>
+          <div>${lab('결제 조건')}${inp('결제조건', v.r_결제조건)}</div>
+        </div>
+      </div>
+      <div style="margin-bottom:12px">${lab('태그 (콤마 구분 / 검색 용이)')}${inp('태그', tagCsv)}</div>
+      <div>${lab('메모')}<textarea data-vfld="메모" readonly rows="3" style="width:100%;padding:6px 8px;border:0.5px solid #d6dce5;border-radius:4px;font-size:12.5px;background:#f5f7fa;color:#1a2332;resize:vertical">${escapeHtml(v.r_메모||'')}</textarea></div>
+      <div style="margin-top:14px;font-size:10.5px;color:#8a94a6;text-align:right">생성: ${v.r_created_at?String(v.r_created_at).slice(0,16):'-'} · 갱신: ${v.r_updated_at?String(v.r_updated_at).slice(0,16):'-'}</div>
+    `;
+    /* 활성 토글 버튼 라벨 갱신 */
+    const tBtn = document.getElementById('vd-btn-toggle-active');
+    if(tBtn){
+      tBtn.textContent = v.r_is_active ? '🚫 비활성' : '✅ 활성화';
+      tBtn.style.color = v.r_is_active ? '#c0392b' : '#2E7D5F';
+      tBtn.style.borderColor = v.r_is_active ? '#c0392b' : '#2E7D5F';
+    }
+    /* 편집 상태 초기화 */
+    _vendorEditMode = false;
+    _vendorOriginal = JSON.parse(JSON.stringify(v));
+    syncVendorEditUI();
+  } catch(e){
+    console.error('[v2.13.4-α2 openVendorDetail]', e);
+    basic.innerHTML = `<div style="text-align:center;padding:30px;color:#c0392b">로드 실패: ${escapeHtml(e.message||String(e))}</div>`;
+  }
+}
 window.openVendorDetail = openVendorDetail;
-function openVendorNew(){ toast('신규 거래처 등록은 v2.10-C에서 구현 예정','info'); }
+
+function closeVendorModal(){
+  const modal = document.getElementById('vendor-detail-modal');
+  if(modal) modal.hidden = true;
+  _currentVendorId = null;
+  _vendorEditMode = false;
+  _vendorOriginal = null;
+}
+window.closeVendorModal = closeVendorModal;
+
+/* v2.13.4-α3 Phase 3: 편집 모드 상태 + 헬퍼 */
+let _vendorEditMode = false;
+let _vendorOriginal = null;
+
+function syncVendorEditUI(){
+  const inputs = document.querySelectorAll('#vd-pane-basic [data-vfld]');
+  inputs.forEach(el => {
+    if(_vendorEditMode){
+      el.removeAttribute('readonly');
+      el.style.background = '#fff';
+      el.style.borderColor = '#378ADD';
+    } else {
+      el.setAttribute('readonly', 'readonly');
+      el.style.background = '#f5f7fa';
+      el.style.borderColor = '#d6dce5';
+    }
+  });
+  const buChks = document.querySelectorAll('.vd-edit-bu-chk');
+  buChks.forEach(c => {
+    if(_vendorEditMode) c.removeAttribute('disabled');
+    else c.setAttribute('disabled', 'disabled');
+  });
+  const btnEdit = document.getElementById('vd-btn-edit');
+  const btnCancel = document.getElementById('vd-btn-cancel');
+  const btnSave = document.getElementById('vd-btn-save');
+  const btnToggle = document.getElementById('vd-btn-toggle-active');
+  const status = document.getElementById('vd-edit-status');
+  if(btnEdit) btnEdit.hidden = _vendorEditMode;
+  if(btnCancel) btnCancel.hidden = !_vendorEditMode;
+  if(btnSave) btnSave.hidden = !_vendorEditMode;
+  if(btnToggle) btnToggle.hidden = _vendorEditMode;
+  if(status) status.textContent = _vendorEditMode ? '✏ 편집 모드 · 변경 후 [저장] 또는 [취소]' : '조회 모드 · [편집] 클릭 시 수정 가능';
+}
+
+function enterVendorEdit(){
+  if(!canAccess('vendors','write')){ toast('편집 권한이 없습니다.','warn'); return; }
+  _vendorEditMode = true;
+  syncVendorEditUI();
+}
+window.enterVendorEdit = enterVendorEdit;
+
+function exitVendorEdit(){
+  /* 변경사항 폐기 + 원본 복원 (재호출로 단순화) */
+  if(_currentVendorId) openVendorDetail(_currentVendorId);
+  else { _vendorEditMode = false; syncVendorEditUI(); }
+}
+window.exitVendorEdit = exitVendorEdit;
+
+async function saveVendorEdit(){
+  if(!_currentVendorId){ toast('거래처 ID 없음','error'); return; }
+  if(!canAccess('vendors','write')){ toast('편집 권한이 없습니다.','warn'); return; }
+  /* form 값 수집 */
+  const payload = { id: _currentVendorId };
+  document.querySelectorAll('#vd-pane-basic [data-vfld]').forEach(el => {
+    const key = el.getAttribute('data-vfld');
+    let val = (el.value||'').trim();
+    if(key === '태그'){
+      payload['태그'] = val ? val.split(',').map(s=>s.trim()).filter(Boolean) : [];
+    } else {
+      payload[key] = val || null;
+    }
+  });
+  /* 사업부 다중 체크박스 → ARRAY */
+  const buArr = Array.from(document.querySelectorAll('.vd-edit-bu-chk:checked')).map(c=>c.value);
+  payload['사업부분류_목록'] = buArr;
+  /* 거래처명 필수 */
+  if(!payload['거래처명']){ toast('거래처명은 필수입니다.','error'); return; }
+  const btnSave = document.getElementById('vd-btn-save');
+  if(btnSave) btnSave.disabled = true;
+  try {
+    const {data, error} = await sb.rpc('rpc_upsert_vendor', { _payload: payload });
+    if(error) throw error;
+    const r = Array.isArray(data) && data.length ? data[0] : null;
+    if(!r) throw new Error('저장 응답 없음');
+    toast(`${r.r_거래처명} 저장 완료 ✓`,'success');
+    /* 모달 reload + 목록 reload */
+    await openVendorDetail(_currentVendorId);
+    if(typeof loadVendors === 'function') loadVendors(0);
+  } catch(e){
+    console.error('[v2.13.4-α3 saveVendorEdit]', e);
+    toast(`저장 실패: ${e.message||e}`,'error');
+  } finally {
+    if(btnSave) btnSave.disabled = false;
+  }
+}
+window.saveVendorEdit = saveVendorEdit;
+
+async function toggleVendorActive(){
+  if(!_currentVendorId){ toast('거래처 ID 없음','error'); return; }
+  if(!canAccess('vendors','write')){ toast('편집 권한이 없습니다.','warn'); return; }
+  if(!_vendorOriginal){ toast('거래처 정보 로드 안됨','error'); return; }
+  const newActive = !_vendorOriginal.r_is_active;
+  const label = newActive ? '활성화' : '비활성';
+  if(!confirm(`이 거래처를 ${label} 처리할까요?`)) return;
+  const tBtn = document.getElementById('vd-btn-toggle-active');
+  if(tBtn) tBtn.disabled = true;
+  try {
+    const {error} = await sb.rpc('rpc_toggle_vendor_active', { _id: _currentVendorId, _active: newActive });
+    if(error) throw error;
+    toast(`${label} 처리 완료 ✓`,'success');
+    await openVendorDetail(_currentVendorId);
+    if(typeof loadVendors === 'function') loadVendors(0);
+  } catch(e){
+    console.error('[v2.13.4-α3 toggleVendorActive]', e);
+    toast(`처리 실패: ${e.message||e}`,'error');
+  } finally {
+    if(tBtn) tBtn.disabled = false;
+  }
+}
+window.toggleVendorActive = toggleVendorActive;
+
+/* ============================================================
+   v2.13.4-α5 Phase 5: 담당자 CRUD (vd_contacts / sql/025 RPC 4종)
+   ============================================================ */
+
+async function loadVendorContacts(vendor_id){
+  const list = document.getElementById('vd-contact-list');
+  const cnt = document.getElementById('vd-contact-count');
+  if(!list || !vendor_id) return;
+  list.innerHTML = '<div style="text-align:center;padding:30px;color:#8a94a6;font-size:12.5px">불러오는 중…</div>';
+  try {
+    const {data, error} = await sb.rpc('rpc_list_contacts', { _vendor_id: vendor_id });
+    if(error) throw error;
+    const arr = data || [];
+    if(cnt) cnt.textContent = `(${arr.length}명)`;
+    /* 모달 헤더 탭 카운트 갱신 */
+    const tabCnt = document.getElementById('vd-tab-contacts-count');
+    if(tabCnt) tabCnt.textContent = arr.length ? `(${arr.length})` : '';
+    if(arr.length === 0){
+      list.innerHTML = '<div style="text-align:center;padding:30px;color:#8a94a6;font-size:12.5px">담당자 없음 · [+ 담당자 추가] 버튼으로 등록</div>';
+      return;
+    }
+    list.innerHTML = arr.map(c => renderContactCard(c)).join('');
+  } catch(e){
+    console.error('[v2.13.4-α5 loadVendorContacts]', e);
+    list.innerHTML = `<div style="text-align:center;padding:30px;color:#c0392b;font-size:12.5px">로드 실패: ${escapeHtml(e.message||String(e))}</div>`;
+  }
+}
+window.loadVendorContacts = loadVendorContacts;
+
+function renderContactCard(c){
+  const primary = c.r_is_primary;
+  const cardBg = primary ? '#E1F5EE' : '#fff';
+  const cardBd = primary ? '0.5px solid #1D9E75' : '0.5px solid #d6dce5';
+  const primaryBadge = primary
+    ? '<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10.5px;background:#1D9E75;color:#fff;margin-left:6px">⭐ Primary</span>'
+    : '';
+  const setPrimaryBtn = primary
+    ? ''
+    : `<button type="button" onclick="window.setPrimaryContact('${c.r_id}')" style="padding:3px 8px;background:#fff;color:#04342C;border:0.5px solid #1D9E75;border-radius:6px;cursor:pointer;font-size:11px">⭐ Primary 지정</button>`;
+  const phoneIcon = c.r_전화 ? `📞 ${escapeHtml(c.r_전화)}` : '—';
+  const mobileIcon = c.r_휴대폰 ? `📱 ${escapeHtml(c.r_휴대폰)}` : '—';
+  const emailIcon = c.r_이메일 ? `✉ ${escapeHtml(c.r_이메일)}` : '—';
+  const memoLine = c.r_메모 ? `<div style="font-size:11px;color:${primary?'#04342C':'#5a6478'};margin-top:4px">메모: ${escapeHtml(c.r_메모)}</div>` : '';
+  return `
+    <div style="border:${cardBd};border-radius:8px;padding:10px 12px;background:${cardBg}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div>
+          <span style="font-size:13px;font-weight:500;color:#1a2332">${escapeHtml(c.r_담당자명||'-')}</span>
+          ${primaryBadge}
+          <span style="font-size:11px;color:#5a6478;margin-left:6px">${escapeHtml(c.r_직급||'')} ${c.r_부서?'/ '+escapeHtml(c.r_부서):''}</span>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button type="button" onclick="window.openContactForm('${c.r_id}')" style="padding:3px 8px;background:#fff;color:#0c447c;border:0.5px solid #378ADD;border-radius:6px;cursor:pointer;font-size:11px">편집</button>
+          ${setPrimaryBtn}
+          <button type="button" onclick="window.deleteContact('${c.r_id}')" style="padding:3px 8px;background:#fff;color:#c0392b;border:0.5px solid #c0392b;border-radius:6px;cursor:pointer;font-size:11px">삭제</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:11.5px;color:${primary?'#04342C':'#5a6478'}">
+        <div>${phoneIcon}</div>
+        <div>${mobileIcon}</div>
+        <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${emailIcon}</div>
+      </div>
+      ${memoLine}
+    </div>`;
+}
+
+let _editingContactId = null;
+let _editingContactData = null;
+
+async function openContactForm(contact_id){
+  if(!canAccess('vendors','write')){ toast('편집 권한이 없습니다.','warn'); return; }
+  if(!_currentVendorId){ toast('거래처를 먼저 저장 후 담당자 추가 가능','warn'); return; }
+  const wrap = document.getElementById('vd-contact-form-wrap');
+  if(!wrap) return;
+  _editingContactId = contact_id;
+  _editingContactData = null;
+  /* 편집 모드면 기존 데이터 로드 */
+  if(contact_id){
+    try {
+      const {data, error} = await sb.rpc('rpc_list_contacts', { _vendor_id: _currentVendorId });
+      if(error) throw error;
+      _editingContactData = (data||[]).find(c => c.r_id === contact_id) || null;
+    } catch(e){
+      toast(`담당자 로드 실패: ${e.message||e}`,'error'); return;
+    }
+  }
+  const d = _editingContactData || {};
+  const titleText = contact_id ? '✏ 담당자 편집' : '+ 담당자 추가';
+  const inp = (k,v,t)=>`<input type="${t||'text'}" data-cfld="${k}" value="${(v==null?'':escapeHtml(String(v)))}" style="width:100%;padding:6px 8px;border:0.5px solid #378ADD;border-radius:4px;font-size:13px;background:#fff" />`;
+  const lab = s=>`<div style="font-size:11px;color:#5a6478;margin-bottom:3px">${s}</div>`;
+  const isPrimaryChecked = d.r_is_primary ? 'checked' : '';
+  wrap.hidden = false;
+  wrap.innerHTML = `
+    <div style="font-size:12.5px;font-weight:500;color:#0c447c;margin-bottom:10px">${titleText}</div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px">
+      <div>${lab('담당자명 <span style="color:#c0392b">*</span>')}${inp('담당자명', d.r_담당자명)}</div>
+      <div>${lab('직급')}${inp('직급', d.r_직급)}</div>
+      <div>${lab('부서')}${inp('부서', d.r_부서)}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+      <div>${lab('전화')}${inp('전화', d.r_전화)}</div>
+      <div>${lab('휴대폰')}${inp('휴대폰', d.r_휴대폰)}</div>
+      <div>${lab('이메일')}${inp('이메일', d.r_이메일, 'email')}</div>
+    </div>
+    <div style="margin-bottom:8px">${lab('메모')}<textarea data-cfld="메모" rows="2" style="width:100%;padding:6px 8px;border:0.5px solid #378ADD;border-radius:4px;font-size:12px;background:#fff;resize:vertical">${escapeHtml(d.r_메모||'')}</textarea></div>
+    <div style="margin-bottom:10px">
+      <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#04342C;cursor:pointer">
+        <input type="checkbox" id="vd-contact-primary" ${isPrimaryChecked} style="width:14px;height:14px"> ⭐ Primary 담당자 (1명 자동 보장 — 다른 Primary 자동 해제)
+      </label>
+    </div>
+    <div style="display:flex;gap:6px;justify-content:flex-end">
+      <button type="button" onclick="window.cancelContactForm()" style="padding:6px 12px;background:#fff;color:#5a6478;border:0.5px solid #d6dce5;border-radius:6px;cursor:pointer;font-size:12px">취소</button>
+      <button type="button" onclick="window.saveContact()" style="padding:6px 12px;background:#2E7D5F;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500">💾 저장</button>
+    </div>
+  `;
+}
+window.openContactForm = openContactForm;
+
+function cancelContactForm(){
+  const wrap = document.getElementById('vd-contact-form-wrap');
+  if(wrap){ wrap.hidden = true; wrap.innerHTML = ''; }
+  _editingContactId = null;
+  _editingContactData = null;
+}
+window.cancelContactForm = cancelContactForm;
+
+async function saveContact(){
+  if(!_currentVendorId){ toast('거래처 ID 없음','error'); return; }
+  const wrap = document.getElementById('vd-contact-form-wrap');
+  if(!wrap) return;
+  const payload = { vendor_id: _currentVendorId };
+  if(_editingContactId) payload.id = _editingContactId;
+  wrap.querySelectorAll('[data-cfld]').forEach(el => {
+    const k = el.getAttribute('data-cfld');
+    payload[k] = (el.value||'').trim() || null;
+  });
+  payload.is_primary = document.getElementById('vd-contact-primary')?.checked || false;
+  if(!payload['담당자명']){ toast('담당자명은 필수입니다.','error'); return; }
+  try {
+    const {data, error} = await sb.rpc('rpc_upsert_contact', { _payload: payload });
+    if(error) throw error;
+    const r = Array.isArray(data) && data.length ? data[0] : null;
+    toast(`${r?.r_담당자명||'담당자'} ${r?.r_action==='insert'?'등록':'저장'} 완료 ✓`,'success');
+    cancelContactForm();
+    await loadVendorContacts(_currentVendorId);
+    /* 목록에서 Primary 표시 갱신 */
+    if(typeof loadVendors === 'function') loadVendors(0);
+  } catch(e){
+    console.error('[v2.13.4-α5 saveContact]', e);
+    toast(`저장 실패: ${e.message||e}`,'error');
+  }
+}
+window.saveContact = saveContact;
+
+async function deleteContact(id){
+  if(!id) return;
+  if(!canAccess('vendors','write')){ toast('편집 권한이 없습니다.','warn'); return; }
+  if(!confirm('이 담당자를 삭제할까요? Primary였다면 다른 담당자가 자동으로 Primary로 승격됩니다.')) return;
+  try {
+    const {error} = await sb.rpc('rpc_delete_contact', { _id: id });
+    if(error) throw error;
+    toast('담당자 삭제 완료 ✓','success');
+    await loadVendorContacts(_currentVendorId);
+    if(typeof loadVendors === 'function') loadVendors(0);
+  } catch(e){
+    console.error('[v2.13.4-α5 deleteContact]', e);
+    toast(`삭제 실패: ${e.message||e}`,'error');
+  }
+}
+window.deleteContact = deleteContact;
+
+async function setPrimaryContact(id){
+  if(!id) return;
+  if(!canAccess('vendors','write')){ toast('편집 권한이 없습니다.','warn'); return; }
+  try {
+    const {error} = await sb.rpc('rpc_set_primary_contact', { _id: id });
+    if(error) throw error;
+    toast('Primary 담당자 지정 완료 ✓','success');
+    await loadVendorContacts(_currentVendorId);
+    if(typeof loadVendors === 'function') loadVendors(0);
+  } catch(e){
+    console.error('[v2.13.4-α5 setPrimaryContact]', e);
+    toast(`Primary 지정 실패: ${e.message||e}`,'error');
+  }
+}
+window.setPrimaryContact = setPrimaryContact;
+
+function switchVendorTab(name){
+  ['basic','contacts','trades'].forEach(n => {
+    const pane = document.getElementById('vd-pane-'+n);
+    if(pane) pane.hidden = (n !== name);
+    const btn = document.querySelector(`.vd-tab-btn[data-tab="${n}"]`);
+    if(btn){
+      const active = (n === name);
+      btn.style.background = active ? '#e6f1fb' : '#f1efe8';
+      btn.style.color = active ? '#0c447c' : '#5a6478';
+    }
+  });
+  /* v2.13.4-α5 Phase 5: 담당자 탭 진입 시 자동 로드 */
+  if(name === 'contacts' && _currentVendorId && typeof loadVendorContacts === 'function'){
+    loadVendorContacts(_currentVendorId);
+  }
+}
+window.switchVendorTab = switchVendorTab;
+
+/* v2.13.4-α4 Phase 4: B-1c 신규 거래처 등록 (B-1b 모달 재사용) */
+function openVendorNew(){
+  if(!canAccess('vendors','write')){ toast('등록 권한이 없습니다.','warn'); return; }
+  const modal = document.getElementById('vendor-detail-modal');
+  const basic = document.getElementById('vd-basic-content');
+  if(!modal || !basic) return;
+  modal.hidden = false;
+  switchVendorTab('basic');
+  /* 신규 모드: _currentVendorId = null / 빈 값 / 편집 모드 ON */
+  _currentVendorId = null;
+  /* 모달 헤더 갱신 */
+  document.getElementById('vd-modal-title').textContent = '+ 신규 거래처 등록';
+  document.getElementById('vd-modal-subtitle').textContent = '필수 항목: 거래처명 · 사업부 (최소 1개) — 등록 후 담당자 추가는 Phase 5';
+  /* 빈 값 form 렌더링 (openVendorDetail의 inp 헬퍼 동일 구조) */
+  const inp = (key, val, type, w) => `<input type="${type||'text'}" data-vfld="${key}" value="${(val==null?'':escapeHtml(String(val)))}" placeholder="${({거래처명:'예: ㈜제주음향',사업자번호:'예: 819-12-34567',대표자:'예: 김○○',업태:'예: 서비스',종목:'예: 음향·렌탈',전화:'064-000-0000',팩스:'-',이메일:'예: contact@vendor.co.kr',주소:'제주특별자치도 …',계좌_은행:'예: NH농협',계좌_번호:'301-0000-0000-00',계좌_예금주:'예: ㈜제주음향',세금계산서_이메일:'tax@vendor.co.kr',결제조건:'예: 월말 마감 / 익월 15일',태그:'쉼표(,) 구분 입력'})[key]||''}" style="width:${w||'100%'};padding:6px 8px;border:0.5px solid #378ADD;border-radius:4px;font-size:13px;background:#fff;color:#1a2332" />`;
+  const lab = s => `<div style="font-size:11px;color:#5a6478;margin-bottom:3px">${s}</div>`;
+  const buCheckHtml = ['국내여행','행사이벤트','온라인마케팅','마케팅교육','공통'].map(b => {
+    const emoji = {'국내여행':'🏝','행사이벤트':'🎤','온라인마케팅':'📱','마케팅교육':'📚','공통':''}[b]||'';
+    return `<label style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fff;border:0.5px solid #d6dce5;border-radius:6px;font-size:11.5px;margin-right:4px"><input type="checkbox" class="vd-edit-bu-chk" value="${b}"> ${emoji} ${b}</label>`;
+  }).join('');
+  basic.innerHTML = `
+    <div style="background:#FAEEDA;border:1px dashed #BA7517;border-radius:6px;padding:8px 12px;margin-bottom:14px;font-size:11.5px;color:#854F0B">
+      ℹ️ 신규 거래처 등록 모드 — 필수 항목 입력 후 [💾 저장] 클릭. 담당자 추가는 등록 후 Phase 5에서 가능.
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#5a6478;margin-bottom:3px">사업부 (다중 선택 / 최소 1개) <span style="color:#c0392b">*</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:0">${buCheckHtml}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px">
+      <div>${lab('거래처명 <span style="color:#c0392b">*</span>')}${inp('거래처명', '')}</div>
+      <div>${lab('사업자번호')}${inp('사업자번호', '')}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div>${lab('대표자')}${inp('대표자', '')}</div>
+      <div>${lab('업태')}${inp('업태', '')}</div>
+      <div>${lab('종목')}${inp('종목', '')}</div>
+    </div>
+    <div style="margin-bottom:12px">
+      ${lab('거래처 분야 (자유 입력 + datalist 추천)')}
+      <input type="text" data-vfld="거래처_분야" list="vendor-분야-list" value="" placeholder="예: 항공료, 호텔·리조트, 강사료…" style="width:100%;padding:6px 8px;border:0.5px solid #378ADD;border-radius:4px;font-size:13px;background:#fff;color:#1a2332" />
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div>${lab('전화')}${inp('전화', '')}</div>
+      <div>${lab('팩스')}${inp('팩스', '')}</div>
+      <div>${lab('이메일')}${inp('이메일', '', 'email')}</div>
+    </div>
+    <div style="margin-bottom:14px">${lab('주소')}${inp('주소', '')}</div>
+    <div style="background:#FAEEDA;border:1px solid #BA7517;border-radius:8px;padding:12px;margin-bottom:14px">
+      <div style="font-size:11.5px;color:#854F0B;font-weight:500;margin-bottom:8px">💳 입금 계좌 + 세금계산서</div>
+      <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:10px;margin-bottom:8px">
+        <div>${lab('은행')}${inp('계좌_은행', '')}</div>
+        <div>${lab('계좌번호')}${inp('계좌_번호', '')}</div>
+        <div>${lab('예금주')}${inp('계좌_예금주', '')}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>${lab('세금계산서 이메일')}${inp('세금계산서_이메일', '', 'email')}</div>
+        <div>${lab('결제 조건')}${inp('결제조건', '')}</div>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">${lab('태그 (쉼표 구분 / 검색 용이)')}${inp('태그', '')}</div>
+    <div>${lab('메모')}<textarea data-vfld="메모" rows="3" placeholder="자유 메모…" style="width:100%;padding:6px 8px;border:0.5px solid #378ADD;border-radius:4px;font-size:12.5px;background:#fff;color:#1a2332;resize:vertical"></textarea></div>
+  `;
+  /* 활성 토글 버튼 숨김 (신규 모드 = 활성 default) */
+  const tBtn = document.getElementById('vd-btn-toggle-active');
+  if(tBtn) tBtn.hidden = true;
+  /* 편집 모드 default ON (신규는 즉시 입력 가능) */
+  _vendorEditMode = true;
+  _vendorOriginal = null;
+  /* 푸터 버튼 강제 갱신 */
+  const btnEdit = document.getElementById('vd-btn-edit');
+  const btnCancel = document.getElementById('vd-btn-cancel');
+  const btnSave = document.getElementById('vd-btn-save');
+  const status = document.getElementById('vd-edit-status');
+  if(btnEdit) btnEdit.hidden = true;
+  if(btnCancel) { btnCancel.hidden = false; btnCancel.textContent = '취소'; }
+  if(btnSave) btnSave.hidden = false;
+  if(status) status.textContent = '+ 신규 등록 모드 · [💾 저장] 클릭 시 등록 (rpc_upsert_vendor INSERT)';
+}
 window.openVendorNew = openVendorNew;
+
+/* ESC 키로 모달 닫기 */
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){
+    const modal = document.getElementById('vendor-detail-modal');
+    if(modal && !modal.hidden) closeVendorModal();
+  }
+});
 
 function handleRoute(){
   if(!state.user){showLoginView();return;}
@@ -2847,8 +3457,8 @@ function qtBuildCreateForm(){
 
 <div class="qt-panel">
 <h3 style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-<span><span class="qt-step-num">2</span>수신처 + 제목 + 여행 정보 + 인원</span>
-<button type="button" onclick="qtLoadCustomerTravelInfo()" style="font-size:11px;padding:6px 12px;border:1px solid #2b5fb8;border-radius:6px;background:#e6f1fb;color:#0c447c;cursor:pointer;font-weight:500">👤 고객 정보 불러오기</button>
+<span><span class="qt-step-num">2</span><span id="qt-area2-title">수신처 + 제목 + 여행 정보 + 인원</span></span>
+<button type="button" id="qt-load-customer-travel-btn" onclick="qtLoadCustomerTravelInfo()" style="font-size:11px;padding:6px 12px;border:1px solid #2b5fb8;border-radius:6px;background:#e6f1fb;color:#0c447c;cursor:pointer;font-weight:500">👤 고객 정보 불러오기</button>
 </h3>
 <div class="qt-field-row-4">
 <div class="qt-field"><label>회사명</label><input type="text" id="qt-recip-co" placeholder="예: 제주특별자치도청" oninput="qtUpdRecipient()"></div>
@@ -2857,8 +3467,8 @@ function qtBuildCreateForm(){
 <div class="qt-field"><label>직위</label><input type="text" id="qt-recip-title" placeholder="예: 주무관" oninput="qtUpdRecipient()"></div>
 </div>
 <div class="qt-field"><label>제목</label><input type="text" id="qt-title" placeholder="예: 2026 제주 관광 박람회 기획·운영 견적의 건" oninput="state.qt.title=this.value"></div>
-<!-- v2.12 Phase 2: 여행 정보 6필드 (시작일·도착시간·종료일·출발시간·성인·아동) -->
-<div style="margin-top:12px;padding:12px;background:#FAEEDA;border-radius:8px;border:1px solid #BA7517">
+<!-- v2.12 Phase 2 + v2.13.3: 여행 정보 6필드 (사업부=국내여행만) -->
+<div id="qt-travel-info-panel" style="margin-top:12px;padding:12px;background:#FAEEDA;border-radius:8px;border:1px solid #BA7517">
 <div style="font-size:11px;color:#854F0B;font-weight:500;margin-bottom:8px">📅 여행 정보 (고객DB 자동 매핑 / 수동 수정 가능)</div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
 <div class="qt-field"><label style="font-size:11px;color:#854F0B">여행 시작일</label><input type="date" id="qt-travel-start" oninput="state.qt.여행_시작일=this.value"></div>
@@ -2873,6 +3483,15 @@ function qtBuildCreateForm(){
 <div class="qt-field"><label style="font-size:11px;color:#854F0B">인원 — 아동</label><input type="number" id="qt-people-child" min="0" placeholder="예: 0" oninput="state.qt.인원_아동=this.value?parseInt(this.value):null;qtUpdateAll()"></div>
 </div>
 </div>
+<!-- v2.13.3 Phase 1: 행사 정보 panel (사업부=행사이벤트만 / 행사 일시·종료·동일일시 미적용) -->
+<div id="qt-event-info-panel" hidden style="margin-top:12px;padding:12px;background:#E1F5EE;border-radius:8px;border:1px solid #1D9E75">
+<div style="font-size:11px;color:#04342C;font-weight:500;margin-bottom:8px">📅 행사 정보 (수동 입력)</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+<div class="qt-field"><label style="font-size:11px;color:#04342C">행사 일시</label><input type="datetime-local" id="qt-event-start-dt" oninput="state.qt.행사_시작일시=this.value;qtSyncEventEndIfSame()"></div>
+<div class="qt-field"><label style="font-size:11px;color:#04342C">종료</label><input type="datetime-local" id="qt-event-end-dt" oninput="state.qt.행사_종료일시=this.value"></div>
+</div>
+<label style="display:flex;align-items:center;gap:6px;font-size:11px;color:#0F6E56"><input type="checkbox" id="qt-event-same-dt" onchange="state.qt.행사_동일일시=this.checked;qtSyncEventEndIfSame();qtToggleEventEndDisabled()" style="width:13px;height:13px"> 동일 일시 미적용 (체크 ON 시 종료=시작 자동 / 단일일 행사)</label>
+</div>
 </div>
 
 <div class="qt-panel">
@@ -2884,11 +3503,20 @@ function qtBuildCreateForm(){
 <datalist id="qt-cat2-list">
 <option value="항공료"><option value="조식"><option value="중식"><option value="석식"><option value="관광지"><option value="버스"><option value="가이드"><option value="안전요원"><option value="예비비">
 </datalist>
+<!-- v2.13.3 Phase 3: 행사이벤트 datalist (사업부=행사이벤트만 / qtRenderItems에서 list 속성 분기) -->
+<datalist id="qt-cat1-event-list">
+<option value="기획"><option value="시스템"><option value="인건비"><option value="디자인"><option value="제작"><option value="렌탈"><option value="예비비"><option value="기타">
+</datalist>
+<datalist id="qt-cat2-event-list">
+<option value="기획료"><option value="음향"><option value="조명"><option value="LED"><option value="특수효과"><option value="사회자"><option value="총괄"><option value="행사스텝"><option value="행사의전"><option value="출력물"><option value="기타">
+</datalist>
 <datalist id="qt-unit-list">
 <option value="명"><option value="실"><option value="인"><option value="대">
 </datalist>
 <table class="qt-items" id="qt-items-table">
-<thead><tr><th style="width:3%">✓일정</th><th style="width:4%">일차</th><th style="width:7%">시간</th><th style="width:8%">대분류</th><th style="width:9%">중분류</th><th style="width:14%">품명</th><th style="width:6%">수량</th><th style="width:5%">단위</th><th style="width:9%">단가</th><th style="width:10%">금액(자동)</th><th style="width:22%">비고</th><th style="width:3%"></th></tr></thead>
+<!-- v2.13.3 Phase 2: thead 사업부별 분기 (qtSelectBU에서 hidden 토글) -->
+<thead id="qt-thead-tour"><tr><th style="width:3%">✓일정</th><th style="width:4%">일차</th><th style="width:7%">시간</th><th style="width:8%">대분류</th><th style="width:9%">중분류</th><th style="width:14%">품명</th><th style="width:6%">수량</th><th style="width:5%">단위</th><th style="width:9%">단가</th><th style="width:10%">금액(자동)</th><th style="width:22%">비고</th><th style="width:3%"></th></tr></thead>
+<thead id="qt-thead-bu" hidden><tr><th style="width:11%">대분류</th><th style="width:12%">중분류</th><th style="width:18%">품명</th><th style="width:7%">수량</th><th style="width:6%">단위</th><th style="width:11%">단가</th><th style="width:12%">금액(자동)</th><th style="width:20%">비고</th><th style="width:3%"></th></tr></thead>
 <tbody id="qt-items-body"></tbody>
 </table>
 <div style="display:flex;gap:8px;margin-top:8px">
@@ -3063,12 +3691,32 @@ function qtSelectBU(bu){
   qtSetTrim(d.trim);
   /* v2.12 Phase 3: 카탈로그 제거 / qtRenderCatalog 호출 비활성 */
   // qtRenderCatalog(bu);
-  /* v2.11-A·B: 사업부=국내여행 시 인원·박일 + 일정표 미리보기 영역 표시 */
+  /* v2.11-A·B + v2.13.3 Phase 1·2: 사업부별 영역 2 panel + 영역 3 thead 분기 */
   const isTour = (bu === '국내여행');
+  const isEvent = (bu === '행사이벤트');
   const peopleRow = document.getElementById('qt-people-row');
   if(peopleRow) peopleRow.style.display = isTour ? 'grid' : 'none';
   const itinPv = document.getElementById('qt-itinerary-preview');
   if(itinPv) itinPv.style.display = isTour ? 'block' : 'none';
+  /* v2.13.3 Phase 1: 영역 2 panel 분기 (여행/행사/숨김) */
+  const travelPanel = document.getElementById('qt-travel-info-panel');
+  if(travelPanel) travelPanel.hidden = !isTour;
+  const eventPanel = document.getElementById('qt-event-info-panel');
+  if(eventPanel) eventPanel.hidden = !isEvent;
+  /* 영역 2 h3 동적 텍스트 + [👤] 버튼 사업부 가드 (국내여행만) */
+  const a2Title = document.getElementById('qt-area2-title');
+  if(a2Title){
+    a2Title.textContent = isTour ? '수신처 + 제목 + 여행 정보 + 인원'
+      : isEvent ? '수신처 + 제목 + 행사 정보'
+      : '수신처 + 제목';
+  }
+  const loadBtn = document.getElementById('qt-load-customer-travel-btn');
+  if(loadBtn) loadBtn.hidden = !isTour;
+  /* v2.13.3 Phase 2: 영역 3 thead 분기 (12열 / 9열) */
+  const tHeadTour = document.getElementById('qt-thead-tour');
+  if(tHeadTour) tHeadTour.hidden = !isTour;
+  const tHeadBu = document.getElementById('qt-thead-bu');
+  if(tHeadBu) tHeadBu.hidden = isTour;
   qtRenderItems();    /* 일정표 컬럼 toggle */
   /* v2.11.9 R3: 영역 1.5/필수품목 토글 코드 제거 (DOM 자체가 제거됨) */
   qtUpdateBuPreview();
@@ -3154,13 +3802,13 @@ function qtRenderItinerary(){
   }
   /* 일차·시간 정렬 */
   itin.sort((a,b) => (a.일차||99) - (b.일차||99) || String(a.시간||'').localeCompare(String(b.시간||'')));
-  let html = '<table style="width:100%;border-collapse:collapse;font-size:10.5px"><thead><tr style="background:var(--bg-hover)"><th style="padding:4px;text-align:center;width:40px">일차</th><th style="padding:4px;text-align:center;width:50px">시간</th><th style="padding:4px;text-align:left">관광 일정</th><th style="padding:4px;text-align:center;width:30px">식사</th></tr></thead><tbody>';
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:10.5px"><thead><tr style="background:var(--bg-hover)"><th style="padding:4px;text-align:center;width:40px">일차</th><th style="padding:4px;text-align:center;width:50px">시간</th><th style="padding:4px;text-align:left">관광 일정</th><th style="padding:4px;text-align:left;width:90px">비고</th></tr></thead><tbody>';
   itin.forEach(it => {
     html += '<tr style="border-top:1px solid var(--border-light)">'+
       '<td style="padding:4px;text-align:center">'+(it.일차?it.일차+'일차':'-')+'</td>'+
       '<td style="padding:4px;text-align:center">'+(it.시간||'-')+'</td>'+
       '<td style="padding:4px">'+escapeHtml(it.일정_표시 || it.품명 || '')+'</td>'+
-      '<td style="padding:4px;text-align:center">'+(it.식사_컬럼||'-')+'</td>'+
+      '<td style="padding:4px;text-align:left">'+escapeHtml(it.비고||'')+'</td>'+
     '</tr>';
   });
   html += '</tbody></table>';
@@ -3532,10 +4180,18 @@ function qtAddCatItem(name,content,unit,price,cat1){
 }
 
 function qtAddRow(){
-  /* v2.13 Phase 6a: 12열 / 일정표_표시 default false (대분류 입력 시 자동 매핑) */
-  state.qt.items.push({유형:'item', 일정표_표시:false, 일차:null, 시간:'',
+  /* v2.13 Phase 6a + v2.13.3 Phase 2: 사업부별 default 분기 */
+  const isTour = (state.qt.bu === '국내여행');
+  const row = {유형:'item',
     카테고리_대분류:'', 카테고리_중분류:'', 품명:'', 수량:'', 단위:'', 단가:0, 금액:0, 비고:'',
-    /* legacy 호환 */ 내용:'', 일정_표시:'', 식사_컬럼:'', 견적서_표시:true});
+    /* legacy 호환 */ 내용:'', 일정_표시:'', 식사_컬럼:'', 견적서_표시:true};
+  if(isTour){
+    /* 국내여행 12열: ✓일정·일차·시간 포함 */
+    row.일정표_표시 = false;
+    row.일차 = null;
+    row.시간 = '';
+  }
+  state.qt.items.push(row);
   qtRenderItems(); qtUpdateAll();
 }
 
@@ -3547,8 +4203,19 @@ function qtAddSubtotalRow(){
 window.qtAddSubtotalRow = qtAddSubtotalRow;
 
 function qtRenderItems(){
-  /* v2.13 Phase 6a: 12열 표 (✓일정·일차·시간 + 8열 + 액션) + 사용자 소계 행 처리 */
+  /* v2.13 Phase 6a + v2.13.3 Phase 2: 사업부별 컬럼 분기 (12열 국내여행 / 9열 그 외) */
   const tb = $('#qt-items-body'); if(!tb)return;
+  const isTour = (state.qt.bu === '국내여행');
+  const isEvent = (state.qt.bu === '행사이벤트');
+  const isMkt = (state.qt.bu === '온라인마케팅' || state.qt.bu === '마케팅교육');
+  /* 사업부별 datalist 매핑 (행사 신규 / 마케팅 자유기입 X) */
+  const cat1List = isTour ? 'qt-cat1-list' : isEvent ? 'qt-cat1-event-list' : '';
+  const cat2List = isTour ? 'qt-cat2-list' : isEvent ? 'qt-cat2-event-list' : '';
+  const cat1Placeholder = isTour ? '운임·숙박·식사' : isEvent ? '기획·시스템·인건비' : '자유 입력';
+  const cat2Placeholder = isTour ? '항공료·조식·…' : isEvent ? '기획료·음향·조명·…' : '자유 입력';
+  /* 컬럼 수: 국내여행=12, 그 외=9 (✓일정·일차·시간 제외) / 빈 표 colspan, 소계 colspan */
+  const totalCols = isTour ? 12 : 9;
+  const subtotalLabelCols = isTour ? 9 : 6;
   let html='';
   state.qt.items.forEach((it,i)=>{
     if(it && it.유형==='subtotal'){
@@ -3556,20 +4223,26 @@ function qtRenderItems(){
       const sub = qtCalcSubtotalAt(i);
       it.금액 = sub;
       html += `<tr style="background:#E6F1FB;color:#0C447C;font-weight:500">`+
-        `<td colspan="9" style="text-align:center;padding:8px">▶ 소계 (자동 계산)</td>`+
+        `<td colspan="${subtotalLabelCols}" style="text-align:center;padding:8px">▶ 소계 (자동 계산)</td>`+
         `<td class="qt-item-amount" style="text-align:right;padding:8px">${qtFmt(sub)}원</td>`+
         `<td></td>`+
         `<td><button class="qt-delbtn" onclick="qtDelItem(${i})">×</button></td>`+
         `</tr>`;
     } else {
-      /* 일반 행 12열 */
+      /* 일반 행 — 사업부별 분기 */
       const amt = (+it.수량||0) * (+it.단가||0);
-      html += `<tr>`+
-        `<td style="text-align:center"><input type="checkbox" ${it.일정표_표시?'checked':''} onchange="qtUpdItem(${i},'일정표_표시',this.checked)" title="일정표 시트에 표시"></td>`+
-        `<td><input type="number" value="${it.일차||''}" min="1" max="30" placeholder="-" oninput="qtUpdItem(${i},'일차',this.value?parseInt(this.value):null)" style="width:100%"></td>`+
-        `<td><input type="time" value="${it.시간||''}" oninput="qtUpdItem(${i},'시간',this.value)" style="width:100%"></td>`+
-        `<td><input type="text" list="qt-cat1-list" value="${qtEsc(it.카테고리_대분류||'')}" placeholder="운임·숙박·식사" oninput="qtUpdItem(${i},'카테고리_대분류',this.value)"></td>`+
-        `<td><input type="text" list="qt-cat2-list" value="${qtEsc(it.카테고리_중분류||'')}" placeholder="항공료·조식·…" oninput="qtUpdItem(${i},'카테고리_중분류',this.value)"></td>`+
+      html += `<tr>`;
+      if(isTour){
+        /* 국내여행 12열: ✓일정·일차·시간 + 9열 */
+        html += `<td style="text-align:center"><input type="checkbox" ${it.일정표_표시?'checked':''} onchange="qtUpdItem(${i},'일정표_표시',this.checked)" title="일정표 시트에 표시"></td>`+
+          `<td><input type="number" value="${it.일차||''}" min="1" max="30" placeholder="-" oninput="qtUpdItem(${i},'일차',this.value?parseInt(this.value):null)" style="width:100%"></td>`+
+          `<td><input type="time" value="${it.시간||''}" oninput="qtUpdItem(${i},'시간',this.value)" style="width:100%"></td>`;
+      }
+      /* 공통 9열 본문 (대분류·중분류·품명·수량·단위·단가·금액·비고·×) */
+      const cat1Attr = cat1List ? `list="${cat1List}"` : '';
+      const cat2Attr = cat2List ? `list="${cat2List}"` : '';
+      html += `<td><input type="text" ${cat1Attr} value="${qtEsc(it.카테고리_대분류||'')}" placeholder="${cat1Placeholder}" oninput="qtUpdItem(${i},'카테고리_대분류',this.value)"></td>`+
+        `<td><input type="text" ${cat2Attr} value="${qtEsc(it.카테고리_중분류||'')}" placeholder="${cat2Placeholder}" oninput="qtUpdItem(${i},'카테고리_중분류',this.value)"></td>`+
         `<td><input type="text" value="${qtEsc(it.품명)}" oninput="qtUpdItem(${i},'품명',this.value)"></td>`+
         `<td class="narrow"><input type="number" value="${it.수량||''}" min="0" oninput="qtUpdItem(${i},'수량',this.value)"></td>`+
         `<td><input type="text" list="qt-unit-list" value="${qtEsc(it.단위)}" placeholder="명·실·인·대" oninput="qtUpdItem(${i},'단위',this.value)"></td>`+
@@ -3581,12 +4254,30 @@ function qtRenderItems(){
     }
   });
   if(state.qt.items.length===0){
-    html='<tr><td colspan="12" style="text-align:center;color:var(--text-muted);padding:20px">본문 항목이 없습니다. [＋ 빈 행 추가] 또는 [＋ 소계 행 삽입]</td></tr>';
+    html=`<tr><td colspan="${totalCols}" style="text-align:center;color:var(--text-muted);padding:20px">본문 항목이 없습니다. [＋ 빈 행 추가] 또는 [＋ 소계 행 삽입]</td></tr>`;
   }
   tb.innerHTML = html;
 }
 
 /* v2.12 Phase 3: 소계 자동 계산 (직전 소계 이후 ~ 현재 idx 직전까지의 일반 행 합계) */
+/* v2.13.3 Phase 5: 행사 동일일시 미적용 토글 헬퍼 */
+function qtSyncEventEndIfSame(){
+  if(!state.qt.행사_동일일시) return;
+  const startEl = document.getElementById('qt-event-start-dt');
+  const endEl = document.getElementById('qt-event-end-dt');
+  if(startEl && endEl && startEl.value){
+    endEl.value = startEl.value;
+    state.qt.행사_종료일시 = startEl.value;
+  }
+}
+window.qtSyncEventEndIfSame = qtSyncEventEndIfSame;
+
+function qtToggleEventEndDisabled(){
+  const endEl = document.getElementById('qt-event-end-dt');
+  if(endEl) endEl.disabled = !!state.qt.행사_동일일시;
+}
+window.qtToggleEventEndDisabled = qtToggleEventEndDisabled;
+
 function qtCalcSubtotalAt(idx){
   let sum = 0;
   let start = 0;
@@ -4431,9 +5122,10 @@ async function qtGeneratePDF(silent, docType){
     doc.setFontSize(8); doc.setTextColor(90,112,144);
     doc.text('문의: realplan01@naver.com  |  T: 1577-2296', 105, 290, {align:'center'});
 
-    // ===== v2.11.3: 일정표 시트 (사업부=국내여행 / 일정표_표시=true 항목) =====
-    if(typeof qtAppendItineraryPage === 'function'){
-      try { qtAppendItineraryPage(doc, fontFamily); } catch(eIt){ console.warn('[v2.11.3 itinerary]', eIt); }
+    // ===== v2.11.3 + v2.13.3 Phase 4: 일정표 시트 docType 가드 (견적서 + 국내여행만) =====
+    const _isQuote = (!docType || docType === 'quote');
+    if(typeof qtAppendItineraryPage === 'function' && _isQuote){
+      try { qtAppendItineraryPage(doc, fontFamily); } catch(eIt){ console.warn('[v2.13.3 itinerary docType guard]', eIt); }
     }
 
     // ===== 다운로드 =====

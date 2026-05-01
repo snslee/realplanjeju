@@ -494,7 +494,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 <a href="#admin" class="nav-item" data-nav="admin" title="7. 관리자 관리 (계정·권한 / v2.9-F)"><span class="nav-icon">🛡</span><span class="nav-text">관리자 관리</span><span class="nav-phase">v2.9-F</span></a>
 </nav>
-<div class="sidebar-footer" title="v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7~J13 · v2.11.9-R1~R7 롤백 · v2.12 회사표준양식 풀번들 · v2.12.1 PDF8열 · v2.13-α1 admin12열 · v2.13 일정표시트회사양식 · v2.13.1 일정표비고컬럼 [식사→비고 행별표시] · v2.13.2 일정표미리보기HTML 식사→비고 · v2.13.3 사업부4종통합[영역2·3분기+행사drop+일정표docType가드] · v2.13.4 묶음4거래처[B-1b상세·B-1c신규·B-1d담당자CRUD·sql/024+sql/025] · v2.13.5 통합핫픽스[A:거래처INSERT가드제거+B:REMARK견적서한정+C:부가세문구견적서한정] · v2.13.6 통합핫픽스2[V44:거래처명클릭상세진입+D:사이드바거래처외주활성화] · v2.14 영역J[공문4종통합/sql/026+027/RPC6+timeline v2/옵션A명칭/4사업부자동매핑] · v2.15 옵션Y[7→6탭/담당자폐지/계약·공문순서교체/customer_contacts 추가담당자 펼치기/sql/028 RPC3 · v2.16 [파일탭 Tier 1 7폴더 / Storage 4 / 자동첨부 5종]">admin v2.16 · 61건 통합</div>
+<div class="sidebar-footer" title="v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7~J13 · v2.11.9-R1~R7 롤백 · v2.12 회사표준양식 풀번들 · v2.12.1 PDF8열 · v2.13-α1 admin12열 · v2.13 일정표시트회사양식 · v2.13.1 일정표비고컬럼 [식사→비고 행별표시] · v2.13.2 일정표미리보기HTML 식사→비고 · v2.13.3 사업부4종통합[영역2·3분기+행사drop+일정표docType가드] · v2.13.4 묶음4거래처[B-1b상세·B-1c신규·B-1d담당자CRUD·sql/024+sql/025] · v2.13.5 통합핫픽스[A:거래처INSERT가드제거+B:REMARK견적서한정+C:부가세문구견적서한정] · v2.13.6 통합핫픽스2[V44:거래처명클릭상세진입+D:사이드바거래처외주활성화] · v2.14 영역J[공문4종통합/sql/026+027/RPC6+timeline v2/옵션A명칭/4사업부자동매핑] · v2.15 옵션Y[7→6탭/담당자폐지/계약·공문순서교체/customer_contacts 추가담당자 펼치기/sql/028 RPC3 · v2.16 [파일탭 Tier 1 7폴더 / Storage 4 / 자동첨부 5종] · v2.16-A [state 노출+파일탭 자동 hook] · v2.16-B [거래탭 만료·거절 접기 토글]">admin v2.16-B · 63건 통합</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -5763,6 +5763,14 @@ function qtToggleShowVoid(){
   toast(state.qtShowVoid ? '무효화 견적 표시' : '무효화 견적 숨김','info');
 }
 
+/* v2.16-B — 만료·거절 접기·펼치기 (qtToggleShowVoid 패턴 정합) */
+function qtToggleShowExpiredRejected(){
+  if(typeof state.qtShowExpiredRejected==='undefined') state.qtShowExpiredRejected=false;
+  state.qtShowExpiredRejected = !state.qtShowExpiredRejected;
+  if(state.currentCustomerInq) loadCustomerQuotations(state.currentCustomerInq);
+  toast(state.qtShowExpiredRejected ? '만료·거절 견적 표시' : '만료·거절 견적 숨김','info');
+}
+
 /* v2.8.1 — 거래 sub-tab 뷰 모드 토글 (top-level 함수, qtChangeStatus 패턴 정합) */
 function qtSetViewMode(mode){
   state.qtViewMode = mode;
@@ -5795,14 +5803,19 @@ async function loadCustomerQuotations(접수번호){
       return;
     }
     items.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
-    /* v2.9-B — 무효화 견적 필터링 (기본 숨김 / 토글로 옵트인) */
+    /* v2.9-B — 무효화 견적 필터링 / v2.16-B — 만료·거절 접기·펼치기 추가 */
+    if(typeof state.qtShowExpiredRejected==='undefined') state.qtShowExpiredRejected=false;
     const totalCnt = items.length;
     const voidCnt  = items.filter(it=>it.상태==='무효화').length;
-    const visibleItems = state.qtShowVoid ? items.slice() : items.filter(it=>it.상태!=='무효화');
+    const expRejCnt = items.filter(it=>it.상태==='만료'||it.상태==='거절').length;
+    const activeCnt = totalCnt - voidCnt - expRejCnt;
+    let visibleItems = items.slice();
+    if(!state.qtShowVoid) visibleItems = visibleItems.filter(it=>it.상태!=='무효화');
+    if(!state.qtShowExpiredRejected) visibleItems = visibleItems.filter(it=>it.상태!=='만료'&&it.상태!=='거절');
     const idMap = {};
     visibleItems.forEach(it=>{idMap[it.id]=it;});
     const heads = visibleItems.filter(it=>!it.parent_quotation_id || !idMap[it.parent_quotation_id]);
-    /* v2.8.1 — 헤더: 카운트 + 뷰 토글 + 신규 버튼 / v2.9-B — 무효화 토글 */
+    /* v2.8.1 — 헤더 / v2.9-B 무효화 토글 / v2.16-B 만료·거절 토글 추가 */
     const isGroup = (state.qtViewMode === 'group');
     const voidLabel = state.qtShowVoid
       ? '👁 무효화 숨기기 ('+voidCnt+'건)'
@@ -5810,11 +5823,19 @@ async function loadCustomerQuotations(접수번호){
     const voidBtnStyle = state.qtShowVoid
       ? 'background:#FFF3CD;border-color:#856404;color:#856404'
       : 'background:#fff;border-color:#888780;color:#5F5E5A';
-    const cntMsg = state.qtShowVoid
-      ? '총 '+totalCnt+'건 (무효화 '+voidCnt+'건 포함) · 최신순'
-      : '총 '+visibleItems.length+'건 표시'+(voidCnt>0?' (무효화 '+voidCnt+'건 보관됨)':'')+' · 최신순';
+    const expRejLabel = state.qtShowExpiredRejected
+      ? '👁 만료·거절 숨기기 ('+expRejCnt+'건)'
+      : (expRejCnt > 0 ? '📅 만료·거절 보기 ('+expRejCnt+'건)' : '📅 만료·거절 0건');
+    const expRejBtnStyle = state.qtShowExpiredRejected
+      ? 'background:#FAEEDA;border-color:#854F0B;color:#854F0B'
+      : 'background:#fff;border-color:#888780;color:#5F5E5A';
+    let cntMsg = '총 '+totalCnt+'건 · 활성 '+activeCnt+'건';
+    if(expRejCnt>0) cntMsg += ' · 만료·거절 '+expRejCnt+'건'+(state.qtShowExpiredRejected?' 표시':' 보관');
+    if(voidCnt>0)   cntMsg += ' · 무효화 '+voidCnt+'건'+(state.qtShowVoid?' 표시':' 보관');
+    cntMsg += ' · 최신순';
     let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;flex-wrap:wrap">'+
       '<div class="qt-help" style="background:#E8F5E9;color:#1B5E20;border-left-color:#2E7D32;flex:1;min-width:200px;margin:0">'+cntMsg+'</div>'+
+      '<button class="qt-btn-secondary" style="font-size:12px;padding:6px 12px;'+expRejBtnStyle+'" onclick="qtToggleShowExpiredRejected()" '+(expRejCnt===0?'disabled':'')+'>'+expRejLabel+'</button>'+
       '<button class="qt-btn-secondary" style="font-size:12px;padding:6px 12px;'+voidBtnStyle+'" onclick="qtToggleShowVoid()" '+(voidCnt===0?'disabled':'')+'>'+voidLabel+'</button>'+
       '<div class="qt-view-toggle">'+
         '<button class="'+(isGroup?'':'active')+'" onclick="qtSetViewMode(\'grid\')">📋 그리드</button>'+

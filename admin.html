@@ -494,7 +494,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 <a href="#admin" class="nav-item" data-nav="admin" title="7. 관리자 관리 (계정·권한 / v2.9-F)"><span class="nav-icon">🛡</span><span class="nav-text">관리자 관리</span><span class="nav-phase">v2.9-F</span></a>
 </nav>
-<div class="sidebar-footer">admin v2.13.6 · 58건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7~J13 · v2.11.9-R1~R7 롤백 · v2.12 회사표준양식 풀번들 · v2.12.1 PDF8열 · v2.13-α1 admin12열 · v2.13 일정표시트회사양식 · v2.13.1 일정표비고컬럼 [식사→비고 행별표시] · v2.13.2 일정표미리보기HTML 식사→비고 · v2.13.3 사업부4종통합[영역2·3분기+행사drop+일정표docType가드] · v2.13.4 묶음4거래처[B-1b상세·B-1c신규·B-1d담당자CRUD·sql/024+sql/025] · v2.13.5 통합핫픽스[A:거래처INSERT가드제거+B:REMARK견적서한정+C:부가세문구견적서한정] · v2.13.6 통합핫픽스2[V44:거래처명클릭상세진입+D:사이드바거래처외주활성화])</div>
+<div class="sidebar-footer">admin v2.14 · 59건 통합 (v2.9-A DB Auth · v2.9-B 편집탭 · v2.9-C 카드발송 · v2.9-D acceptSession · v2.9-E 권한 매트릭스 · v2.9-F 영역 G UI · A-3 마지막_로그인 핫픽스 · v2.10-A 거래처 UI · v2.10-B 비고 컬럼 · v2.11-A 안·인원·박일 · v2.11-B 일정표 입력 · v2.11-C 일정표 미리보기 · 5-7 비고 템플릿 4종 · v2.11.5 필수품목 · v2.11.1 DB저장 · v2.11.2 DB로드 · v2.11.3 PDF비고·일정표 · v2.11.4 사업부합계 · UI-1 영역1.5 · v2.11.6 H1·H2·H4·H5 · v2.11.7-J1 영역1.5통합 · J2 식사컬럼제거 · J3 카탈로그자동수량 · J6 일정표안내 · v2.11.8-J7~J13 · v2.11.9-R1~R7 롤백 · v2.12 회사표준양식 풀번들 · v2.12.1 PDF8열 · v2.13-α1 admin12열 · v2.13 일정표시트회사양식 · v2.13.1 일정표비고컬럼 [식사→비고 행별표시] · v2.13.2 일정표미리보기HTML 식사→비고 · v2.13.3 사업부4종통합[영역2·3분기+행사drop+일정표docType가드] · v2.13.4 묶음4거래처[B-1b상세·B-1c신규·B-1d담당자CRUD·sql/024+sql/025] · v2.13.5 통합핫픽스[A:거래처INSERT가드제거+B:REMARK견적서한정+C:부가세문구견적서한정] · v2.13.6 통합핫픽스2[V44:거래처명클릭상세진입+D:사이드바거래처외주활성화] · v2.14 영역J[공문4종통합/sql/026+027/RPC6+timeline v2/옵션A명칭/4사업부자동매핑])</div>
 </aside>
 <main class="content">
 <section id="view-dashboard" class="page" hidden>
@@ -694,7 +694,21 @@ table.qt-items td.narrow input{text-align:right}
 <div class="detail-card">
 <div id="tab-overview" class="tab-panel active"><div class="empty-state"><div class="es-icon">📝</div><div>고객 정보</div><div style="margin-top:6px;font-size:12px;">Day 4에서 구현됩니다.</div></div></div>
 <div id="tab-quotations" class="tab-panel"><div id="cust-qt-list"><div class="empty-state"><div class="es-icon">⏳</div><div>거래 불러오는 중…</div></div></div></div>
-<div id="tab-notice" class="tab-panel"><div class="empty-state"><div class="es-icon">📂</div><div>공문 (B2G 한정)</div><div style="margin-top:6px;font-size:12px;">착수계·완료계·결과보고 — Phase 2d 활성화 예정.</div></div></div>
+<div id="tab-notice" class="tab-panel">
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+<div style="display:flex;gap:4px;flex-wrap:wrap">
+<button class="ofcdoc-type-btn active" data-type="" onclick="window.ofcdocSetType('')" style="padding:6px 12px;border:1px solid #1A4F8B;background:#1A4F8B;color:#fff;border-radius:14px;font-size:11.5px;font-weight:600;cursor:pointer">전체</button>
+<button class="ofcdoc-type-btn" data-type="착수계" onclick="window.ofcdocSetType('착수계')" style="padding:6px 12px;border:1px solid #1A4F8B;background:#fff;color:#1A4F8B;border-radius:14px;font-size:11.5px;font-weight:600;cursor:pointer">착수계</button>
+<button class="ofcdoc-type-btn" data-type="완료계" onclick="window.ofcdocSetType('완료계')" style="padding:6px 12px;border:1px solid #1A4F8B;background:#fff;color:#1A4F8B;border-radius:14px;font-size:11.5px;font-weight:600;cursor:pointer">완료계</button>
+<button class="ofcdoc-type-btn" data-type="결과보고서" onclick="window.ofcdocSetType('결과보고서')" style="padding:6px 12px;border:1px solid #1A4F8B;background:#fff;color:#1A4F8B;border-radius:14px;font-size:11.5px;font-weight:600;cursor:pointer">결과보고서</button>
+<button class="ofcdoc-type-btn" data-type="정산결과보고서" onclick="window.ofcdocSetType('정산결과보고서')" style="padding:6px 12px;border:1px solid #1A4F8B;background:#fff;color:#1A4F8B;border-radius:14px;font-size:11.5px;font-weight:600;cursor:pointer">정산결과보고서</button>
+</div>
+<button class="btn-primary" onclick="window.ofcdocOpenNew()" style="margin-left:auto">+ 신규 공문</button>
+</div>
+<div id="ofcdoc-list">
+<div class="empty-state"><div class="es-icon">⏳</div><div>공문 불러오는 중…</div></div>
+</div>
+</div>
 <div id="tab-contract" class="tab-panel"><div class="empty-state"><div class="es-icon">📃</div><div>계약</div><div style="margin-top:6px;font-size:12px;">4사업부 표준 계약서 + 전자서명 단계화 — Phase 2b 활성화 예정.</div></div></div>
 <div id="tab-files" class="tab-panel"><div class="empty-state"><div class="es-icon">📎</div><div>파일 관리</div><div style="margin-top:6px;font-size:12px;">Day 5에서 구현됩니다.</div></div></div>
 <div id="tab-assignee" class="tab-panel"><div class="empty-state"><div class="es-icon">👤</div><div>담당자</div><div style="margin-top:6px;font-size:12px;">Day 4-4에서 구현됩니다.</div></div></div>
@@ -3207,6 +3221,7 @@ function initTabs(){
       // Day 4-3 v1.5: 타임라인 탭 클릭 시 1페이지부터 로드
       if(name==='timeline'){loadTimeline(true);}
       if(name==='quotations' && state.currentCustomerInq){loadCustomerQuotations(state.currentCustomerInq);}
+      if(name==='notice' && state.currentCustomerInq){loadCustomerOfficialDocs(state.currentCustomerInq);}
     });
   });
 }
@@ -5984,6 +5999,133 @@ Object.assign(window, {
   // v2.8.3 영역 I — 견적 상세 chevron path
   qtBuildChevronPath
 });
+
+/* ============================================================
+   v2.14 영역 J — 공문 4종 통합 (sql/026 + sql/027 정합)
+   옵션 A 명칭: 계약·실행=용역명 / 보고·정산=사업명
+   ============================================================ */
+const OFCDOC_TYPES = ['착수계','완료계','결과보고서','정산결과보고서'];
+const OFCDOC_LABEL_BY_TYPE = {'착수계':'용역명','완료계':'용역명','결과보고서':'사업명','정산결과보고서':'사업명'};
+let _ofcdocFilter = '';
+
+async function loadCustomerOfficialDocs(접수번호){
+  const list = document.getElementById('ofcdoc-list');
+  if (!list) return;
+  list.innerHTML = '<div class="empty-state"><div class="es-icon">⏳</div><div>공문 불러오는 중…</div></div>';
+  try {
+    const cust = state.currentCustomer;
+    if (!cust || !cust.id) {
+      list.innerHTML = '<div class="empty-state"><div>고객 정보가 로드되지 않았습니다</div></div>';
+      return;
+    }
+    const params = { _customer_id: cust.id, _limit: 50 };
+    if (_ofcdocFilter) params._공문종류 = _ofcdocFilter;
+    const { data, error } = await sb.rpc('rpc_list_official_docs', params);
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      list.innerHTML = '<div class="empty-state"><div class="es-icon">📂</div><div>공문 없음 — 우측 [+ 신규 공문]으로 작성하세요</div></div>';
+      return;
+    }
+    let html = '';
+    data.forEach(function(it){ html += buildOfficialDocCard(it); });
+    list.innerHTML = html;
+  } catch (e) {
+    console.error('[loadCustomerOfficialDocs]', e);
+    list.innerHTML = '<div class="qt-help" style="border-color:#D63437;color:#721C24;background:#F8D7DA">공문 로드 실패: ' + escapeHtml(e.message||String(e)) + '</div>';
+  }
+}
+
+function buildOfficialDocCard(it){
+  const label = OFCDOC_LABEL_BY_TYPE[it.r_공문종류] || '용역명';
+  const stColor = it.r_상태 === '발송완료' ? '#28a745' : (it.r_상태 === '작성중' ? '#fd7e14' : '#6c757d');
+  const sendBtn = (it.r_상태 === '작성중') ? ('<button class="btn-primary" onclick="window.ofcdocSend(\''+it.r_id+'\')" style="padding:5px 10px;font-size:11.5px">발송</button>') : '';
+  const delBtn  = (it.r_상태 === '작성중') ? ('<button class="btn-secondary" onclick="window.ofcdocDelete(\''+it.r_id+'\')" style="padding:5px 10px;font-size:11.5px">삭제</button>') : '';
+  return '<div class="qt-card" style="margin-bottom:8px;padding:12px 14px;border:1px solid #d6dce5;border-radius:6px;background:#fff">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">'
+    +'<div><span style="background:#1A4F8B;color:#fff;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600">'+escapeHtml(it.r_공문종류)+'</span>'
+    +' <span style="margin-left:8px;font-weight:600">'+label+': '+escapeHtml(it.r_계약명||'-')+'</span></div>'
+    +'<span style="background:'+stColor+';color:#fff;padding:2px 10px;border-radius:10px;font-size:11px">'+escapeHtml(it.r_상태)+'</span>'
+    +'</div>'
+    +'<div style="margin-top:6px;font-size:12px;color:#5a7791">계약번호: '+escapeHtml(it.r_계약번호||'-')+' · 사업부: '+escapeHtml(it.r_사업부)+' · 발신일: '+(it.r_발신일자||'-')+'</div>'
+    +'<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'
+    +'<button class="btn-secondary" onclick="window.ofcdocView(\''+it.r_id+'\')" style="padding:5px 10px;font-size:11.5px">보기</button>'
+    + sendBtn + delBtn + '</div></div>';
+}
+
+window.ofcdocSetType = function(type){
+  _ofcdocFilter = type;
+  document.querySelectorAll('.ofcdoc-type-btn').forEach(function(b){
+    const active = b.dataset.type === type;
+    b.classList.toggle('active', active);
+    b.style.background = active ? '#1A4F8B' : '#fff';
+    b.style.color = active ? '#fff' : '#1A4F8B';
+  });
+  if (state.currentCustomerInq) loadCustomerOfficialDocs(state.currentCustomerInq);
+};
+
+window.ofcdocOpenNew = async function(){
+  const cust = state.currentCustomer;
+  if (!cust || !cust.id) { alert('고객을 먼저 선택하세요'); return; }
+  const 종류 = prompt('공문 종류 (착수계 / 완료계 / 결과보고서 / 정산결과보고서):', '착수계');
+  if (!종류 || !OFCDOC_TYPES.includes(종류)) { if (종류) alert('지원하지 않는 종류'); return; }
+  let 사업부 = cust['사업부'] || '';
+  if (!사업부 || !['국내여행','행사이벤트','온라인마케팅','마케팅교육·컨설팅'].includes(사업부)) {
+    사업부 = prompt('사업부 (국내여행 / 행사이벤트 / 온라인마케팅 / 마케팅교육·컨설팅):', '');
+    if (!사업부) return;
+  }
+  const 발주처 = cust['회사명'] || cust['이름'] || '';
+  const 계약명 = prompt('용역명/사업명 (계약명):', '') || '';
+  try {
+    const { data, error } = await sb.rpc('rpc_create_official_doc', {
+      _customer_id: cust.id, _공문종류: 종류, _사업부: 사업부,
+      _발주처: 발주처, _계약명: 계약명
+    });
+    if (error) throw error;
+    alert('공문 생성 완료');
+    if (state.currentCustomerInq) loadCustomerOfficialDocs(state.currentCustomerInq);
+  } catch (e) {
+    alert('공문 생성 실패: ' + (e.message||e));
+  }
+};
+
+window.ofcdocView = async function(id){
+  try {
+    const { data, error } = await sb.rpc('rpc_get_official_doc', { _id: id });
+    if (error) throw error;
+    if (!data || !data[0]) { alert('공문 없음'); return; }
+    const d = data[0];
+    const label = OFCDOC_LABEL_BY_TYPE[d['공문종류']] || '용역명';
+    const fmt = function(v){ return v == null ? '-' : (typeof v === 'number' ? v.toLocaleString() : String(v)); };
+    alert('📋 ' + d['공문종류'] + '\n\n' +
+      label + ': ' + (d['계약명']||'-') + '\n' +
+      '계약번호: ' + (d['계약번호']||'-') + '\n' +
+      '계약기간: ' + (d['계약기간_시작']||'-') + ' ~ ' + (d['계약기간_종료']||'-') + '\n' +
+      '계약금액: ' + fmt(d['계약금액']) + '원\n' +
+      '사업부: ' + d['사업부'] + ' / 업종: ' + (d['발신자_업종']||'-') + '\n' +
+      '발주처: ' + (d['발주처']||'-') + '\n' +
+      '상태: ' + d['상태'] + ' / 작성자: ' + d['작성자']);
+  } catch (e) { alert('공문 조회 실패: ' + (e.message||e)); }
+};
+
+window.ofcdocSend = async function(id){
+  if (!confirm('이 공문을 발송 처리하시겠습니까?')) return;
+  try {
+    const { data, error } = await sb.rpc('rpc_send_official_doc', { _id: id });
+    if (error) throw error;
+    alert('발송 완료');
+    if (state.currentCustomerInq) loadCustomerOfficialDocs(state.currentCustomerInq);
+  } catch (e) { alert('발송 실패: ' + (e.message||e)); }
+};
+
+window.ofcdocDelete = async function(id){
+  if (!confirm('이 공문을 삭제하시겠습니까? (작성중·24시간 이내만 가능)')) return;
+  try {
+    const { error } = await sb.rpc('rpc_delete_official_doc', { _id: id });
+    if (error) throw error;
+    alert('삭제 완료');
+    if (state.currentCustomerInq) loadCustomerOfficialDocs(state.currentCustomerInq);
+  } catch (e) { alert('삭제 실패: ' + (e.message||e)); }
+};
 
 document.addEventListener('DOMContentLoaded',init);
 })();

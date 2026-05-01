@@ -876,6 +876,7 @@ const state={user:null,session:null,adminRole:null,permissions:{},/* v2.9-E */re
 // v1.9 — 검색·필터·페이지네이션
 filters:{search:'',status:'',bu:'',owner:'',period:'',from:null,to:null},
 listPage:1,listTotal:0,listSearchTimer:null};
+window.state=state;/* v2.16-A 28-1 hook 노출 */
 /* Phase 2a v2.0: 견적 작성 state */
 state.qt = {
   bu: null,
@@ -6556,7 +6557,14 @@ document.addEventListener('DOMContentLoaded',init);
 
   document.addEventListener('click',function(e){
     var t=e.target.closest('[data-tab="files"]');
-    if(t){setTimeout(bindDropzone,50);}
+    if(t){setTimeout(function(){
+      bindDropzone();
+      try{
+        var cid=(window.state&&window.state.currentCustomerId)||null;
+        if(cid&&cid!==window.faState.customerId){window.faLoad(cid);}
+        else{window.faRender();}
+      }catch(err){window.faRender();}
+    },50);}
   },true);
 })();
 

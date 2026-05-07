@@ -3686,8 +3686,8 @@ function qtBuildCreateForm(){
 </div>
 
 <button class="qt-btn-pdf" onclick="qtGeneratePDF()">📄 PDF 미리보기 / 다운로드</button>
-<button class="qt-btn-save" onclick="qtSaveDraft()">💾 임시 저장 (DB INSERT)</button>
-<button class="qt-btn-send" onclick="qtSendQuotation()">✉ 발송 (Naver SMTP / PDF 첨부)</button>
+<button id="qt-btn-save" class="qt-btn-save" onclick="qtSaveDraftSafe(this)">💾 임시 저장 (DB INSERT)</button>  <!-- v2.22 hotfix: 더블클릭 방지 -->
+<button id="qt-btn-send" class="qt-btn-send" onclick="qtSendQuotationSafe(this)">✉ 발송 (Naver SMTP / PDF 첨부)</button>  <!-- v2.22 hotfix: 더블클릭 방지 -->
 <button class="qt-btn-secondary" onclick="qtResetAll()">⟲ 처음부터 다시</button>
 </div>
 </div>
@@ -4564,7 +4564,7 @@ function qtUpdateBuPreview(){
   const pvNo=$('#qt-pv-no');
   if(pvNo){
     const pre=state.qt.bu?QT_PREFIX[state.qt.bu]:'???';
-    pvNo.textContent=`Q-${pre}-2026-001 (가상)`;
+    pvNo.textContent=`Q-${pre}-2026-*** (자동 채번)`;  /* v2.22 hotfix — '001' 오해 제거 */
   }
   const pvCust=$('#qt-pv-customer');
   if(pvCust)pvCust.textContent = state.qt.customerInfo?(state.qt.customerInfo.회사명||'-'):'— 미선택 —';
@@ -4693,10 +4693,46 @@ async function qtSaveDraft(){
     } catch(e3){ console.warn('[qtSaveDraft v2.11.1 items insert]', e3); }
   } catch(e){
     hideLoading();
-    console.error('[qtSaveDraft]',e);
-    toast('견적 저장 실패: '+(e.message||e),'error');
+    console.error('[qtSaveDraft v2.22]',e);
+    /* v2.22 hotfix: 입력값 자동 백업 (window.__qtSnapshot에 보존) — 재시도 시 복원 가능 */
+    try {
+      window.__qtSnapshot = JSON.parse(JSON.stringify(state.qt));
+      console.warn('[v2.22] state.qt 자동 백업 완료 (window.__qtSnapshot)');
+    } catch(_se){ console.warn('[v2.22 snapshot]', _se); }
+    const _msg = (e.message||e+'').replace(/duplicate key value violates unique constraint.*$/i,
+      '견적번호 채번 충돌 — 잠시 후 다시 [임시 저장] 클릭하세요 (입력값 자동 보존)');
+    toast('견적 저장 실패: '+_msg,'error');
   }
 }
+
+/* v2.22 hotfix — 더블클릭 방지 + 입력값 보존 wrapper */
+async function qtSaveDraftSafe(btn){
+  if(!btn) btn = document.getElementById('qt-btn-save');
+  if(btn && btn.disabled) return;  /* 진행 중 클릭 무시 */
+  if(btn){ btn.disabled = true; btn.style.opacity='0.5'; }
+  try {
+    await qtSaveDraft();
+  } finally {
+    if(btn){
+      setTimeout(()=>{ btn.disabled = false; btn.style.opacity='1'; }, 1500);
+    }
+  }
+}
+window.qtSaveDraftSafe = qtSaveDraftSafe;
+
+async function qtSendQuotationSafe(btn){
+  if(!btn) btn = document.getElementById('qt-btn-send');
+  if(btn && btn.disabled) return;
+  if(btn){ btn.disabled = true; btn.style.opacity='0.5'; }
+  try {
+    await qtSendQuotation();
+  } finally {
+    if(btn){
+      setTimeout(()=>{ btn.disabled = false; btn.style.opacity='1'; }, 1500);
+    }
+  }
+}
+window.qtSendQuotationSafe = qtSendQuotationSafe;
 
 /* Phase 2a 단계 4 v2.3 — Supabase Edge Function (Make 폐기 / hook.us2.make.com 다운으로 전환) */
 const QT_SEND_ENDPOINT = SUPABASE_URL + '/functions/v1/send-quotation';

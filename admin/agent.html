@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>에이전트 — 리얼플랜제주</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/css/tabler.min.css">
+<style>
+:root{--bg:#fafaf7;--card:#fff;--text:#222;--muted:#666;--border:rgba(0,0,0,.08);--info:#185FA5;--info-bg:#E6F1FB;--warn:#BA7517;--warn-bg:#FAEEDA;--success:#1D9E75;--success-bg:#E1F5EE;--danger:#A32D2D}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+.wrap{max-width:1200px;margin:0 auto;padding:20px}
+.header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.title{font-size:20px;font-weight:600}
+.badge-live{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--success);background:var(--success-bg);padding:3px 8px;border-radius:6px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.crumbs{font-size:11px;color:var(--muted);margin-bottom:4px}
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px}
+.kpi{background:var(--card);border:.5px solid var(--border);border-radius:8px;padding:12px 14px}
+.kpi-label{font-size:11px;color:var(--muted);margin-bottom:2px}
+.kpi-val{font-size:22px;font-weight:600}
+.kpi.warn .kpi-val{color:var(--warn)}
+.kpi.success .kpi-val{color:var(--success)}
+.tabs{display:flex;gap:4px;margin-bottom:10px;border-bottom:.5px solid var(--border)}
+.tab{padding:8px 14px;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;font-weight:500}
+.tab.active{color:var(--info);border-color:var(--info)}
+.tab .count{font-size:11px;background:var(--info-bg);color:var(--info);padding:1px 6px;border-radius:8px;margin-left:4px}
+.panel{background:var(--card);border:.5px solid var(--border);border-radius:8px;padding:16px;display:none}
+.panel.active{display:block}
+.btn{padding:6px 12px;font-size:12px;border:.5px solid var(--border);background:var(--card);border-radius:6px;cursor:pointer;color:var(--text)}
+.btn:hover{background:#f0f0ec}
+.btn-pri{background:var(--info-bg);color:var(--info);border-color:var(--info)}
+.btn-danger{background:#fcebeb;color:var(--danger);border-color:#e2b5b5}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 6px;color:var(--muted);font-weight:500;border-bottom:.5px solid var(--border)}
+td{padding:9px 6px;border-bottom:.5px solid var(--border)}
+.pill{padding:2px 7px;border-radius:4px;font-size:11px;font-weight:500}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.info{background:var(--info-bg);color:var(--info)}
+.pill.success{background:var(--success-bg);color:var(--success)}
+.score{font-weight:600}
+.score.low{color:var(--warn)}
+.score.high{color:var(--success)}
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.feed{font-size:12px}
+.feed-row{display:flex;gap:10px;padding:8px 0;border-bottom:.5px solid var(--border);align-items:center}
+.feed-row:last-child{border:none}
+.time{color:var(--muted);font-family:'SF Mono',Menlo,monospace;font-size:11px;min-width:65px}
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cat{background:var(--card);border:.5px solid var(--border);border-radius:8px;padding:12px}
+.cat-h{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-weight:500}
+.cat-id{font-size:11px;color:var(--muted);font-family:'SF Mono',monospace;margin-bottom:6px}
+.cat-stat{font-size:11px;color:var(--muted)}
+.login-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:100}
+.login-box{background:#fff;padding:30px;border-radius:12px;min-width:320px;text-align:center}
+.login-box input{width:100%;padding:10px;border:.5px solid var(--border);border-radius:6px;font-size:14px;margin:8px 0}
+.login-box button{width:100%;padding:10px;background:var(--info);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:500;margin-top:8px;cursor:pointer}
+.empty{text-align:center;padding:30px;color:var(--muted);font-size:13px}
+@media(max-width:780px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.cat-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="loginOverlay" class="login-overlay" style="display:none">
+<div class="login-box">
+<div style="font-weight:600;font-size:16px;margin-bottom:14px">🛡 owner 로그인</div>
+<input id="loginEmail" type="email" placeholder="이메일" autocomplete="email">
+<input id="loginPw" type="password" placeholder="비밀번호" autocomplete="current-password">
+<button onclick="doLogin()">로그인</button>
+<div id="loginErr" style="color:var(--danger);font-size:12px;margin-top:8px"></div>
+</div>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+
+<div class="crumbs">관리자 관리 › 에이전트</div>
+<div class="header">
+<div class="title">🤖 에이전트 v1.0</div>
+<span class="badge-live"><span class="dot"></span>LIVE · Supabase Realtime</span>
+<div style="margin-left:auto;font-size:12px;color:var(--muted)" id="loginUser"></div>
+<button class="btn" onclick="loadAll()">↻ 새로고침</button>
+</div>
+
+<div class="kpi-grid">
+<div class="kpi"><div class="kpi-label">오늘 채점</div><div class="kpi-val" id="kpi-today">-</div></div>
+<div class="kpi warn"><div class="kpi-label">HITL 대기</div><div class="kpi-val" id="kpi-hitl">-</div></div>
+<div class="kpi success"><div class="kpi-label">auto_pass</div><div class="kpi-val" id="kpi-auto">-</div></div>
+<div class="kpi"><div class="kpi-label">월 비용</div><div class="kpi-val" id="kpi-cost">-</div></div>
+<div class="kpi"><div class="kpi-label">사고</div><div class="kpi-val" id="kpi-incident">-</div></div>
+</div>
+
+<div class="tabs">
+<div class="tab active" data-tab="hitl">HITL 큐 <span class="count" id="tabct-hitl">0</span></div>
+<div class="tab" data-tab="live">실시간 모니터</div>
+<div class="tab" data-tab="history">채점 이력</div>
+<div class="tab" data-tab="catalog">카탈로그</div>
+</div>
+
+<div class="panel active" id="panel-hitl">
+<div class="toolbar">
+<label><input type="checkbox" id="checkAll" onclick="toggleAll()"> 전체 선택</label>
+<button class="btn btn-pri" onclick="bulkAction('approved')">일괄 승인</button>
+<button class="btn btn-danger" onclick="bulkAction('rejected')">일괄 거절</button>
+<span style="margin-left:auto;color:var(--muted);font-size:12px" id="hitl-meta"></span>
+</div>
+<table>
+<thead><tr><th style="width:30px"></th><th>대상</th><th style="width:60px">점수</th><th>사유</th><th>실행 시각</th><th style="width:140px">처리</th></tr></thead>
+<tbody id="hitl-tbody"><tr><td colspan="6" class="empty">불러오는 중…</td></tr></tbody>
+</table>
+</div>
+
+<div class="panel" id="panel-live">
+<div style="font-size:13px;color:var(--muted);margin-bottom:8px">실시간 활동 피드 (최근 20건) · Supabase Realtime 구독</div>
+<div class="feed" id="live-feed"></div>
+</div>
+
+<div class="panel" id="panel-history">
+<div style="font-size:13px;color:var(--muted);margin-bottom:10px">최근 7일 채점 추세</div>
+<canvas id="chart7d" height="80"></canvas>
+<div style="margin-top:14px">
+<table>
+<thead><tr><th>실행</th><th>대상</th><th>점수</th><th>HITL</th><th>사유</th></tr></thead>
+<tbody id="history-tbody"><tr><td colspan="5" class="empty">불러오는 중…</td></tr></tbody>
+</table>
+</div>
+</div>
+
+<div class="panel" id="panel-catalog">
+<div class="cat-grid">
+<div class="cat">
+<div class="cat-h"><span class="dot"></span>Evaluator</div>
+<div class="cat-id">rp_agent_eval_v1</div>
+<div class="cat-stat">Haiku 4.5 채점 · 루브릭 4종</div>
+<div class="cat-stat" id="cat-eval-today">오늘 - 건</div>
+</div>
+<div class="cat">
+<div class="cat-h"><span class="dot" style="background:var(--success)"></span>Guard</div>
+<div class="cat-id">rp_agent_guard_v1</div>
+<div class="cat-stat">RLS · payroll·finance 차단</div>
+<div class="cat-stat">차단 24h: 0건</div>
+</div>
+<div class="cat">
+<div class="cat-h"><span class="dot" style="background:var(--warn)"></span>Collector</div>
+<div class="cat-id">rp_agent_collector_v1</div>
+<div class="cat-stat">⏸ P4 진입 시 활성</div>
+<div class="cat-stat">매일 09:00 예정</div>
+</div>
+<div class="cat">
+<div class="cat-h"><span class="dot" style="background:var(--info)"></span>Digest</div>
+<div class="cat-id">rp_agent_digest_v1</div>
+<div class="cat-stat">매일 18:00 KST 발송</div>
+<div class="cat-stat">→ snslee82 단독</div>
+</div>
+</div>
+<div style="margin-top:14px;padding:10px 12px;background:var(--info-bg);border-radius:8px;font-size:12px;color:var(--info)">
+📚 카탈로그 SSoT: <code>00_Core_불변정본/03_SSoT층/24_에이전트_카탈로그.md</code> · 45차 v1.0
+</div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const SUPABASE_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZGZxbGtlaXd4eXVvandjb3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMzIxOTcsImV4cCI6MjA5MjYwODE5N30.S3VrHMcrrr0m74dsMnb3jMzaxBjoFpOnUts2XINbpq0';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+let chart=null;let realtimeCh=null;
+
+async function checkAuth(){
+  const {data:{user}}=await sb.auth.getUser();
+  if(!user){document.getElementById('loginOverlay').style.display='flex';return false;}
+  const {data:u}=await sb.from('users').select('이메일,이름,권한,활성').eq('id',user.id).single();
+  if(!u||u.권한!=='owner'||!u.활성){alert('owner 권한 필요');await sb.auth.signOut();location.reload();return false;}
+  document.getElementById('loginUser').textContent=`${u.이름||u.이메일} (owner)`;
+  document.getElementById('app').style.display='block';
+  document.getElementById('loginOverlay').style.display='none';
+  return true;
+}
+
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value;
+  const pw=document.getElementById('loginPw').value;
+  const {error}=await sb.auth.signInWithPassword({email,password:pw});
+  if(error){document.getElementById('loginErr').textContent=error.message;return;}
+  await checkAuth();await init();
+}
+
+async function loadKPI(){
+  const {data}=await sb.rpc('rpc_agent_daily_digest');
+  if(!data)return;
+  document.getElementById('kpi-today').textContent=data['오늘_채점']+' 건';
+  document.getElementById('kpi-hitl').textContent=data['HITL_대기']+' 건';
+  document.getElementById('kpi-auto').textContent=data['auto_pass_비율']+'%';
+  document.getElementById('kpi-cost').textContent='$'+data['월_예상비용_USD'];
+  document.getElementById('kpi-incident').textContent=data['사고']+' 건';
+  document.getElementById('tabct-hitl').textContent=data['HITL_대기'];
+  document.getElementById('cat-eval-today').textContent='오늘 '+data['오늘_채점']+' 건';
+}
+
+async function loadHITL(){
+  const {data}=await sb.from('hr_audit_handoff').select('id,대상유형,대상id,점수,사유,실행시각').eq('hitl상태','pending').order('실행시각',{ascending:false}).limit(50);
+  const tb=document.getElementById('hitl-tbody');
+  if(!data||data.length===0){tb.innerHTML='<tr><td colspan="6" class="empty">대기 항목 없음 ✓</td></tr>';return;}
+  tb.innerHTML=data.map(r=>{
+    const score=Number(r.점수||0);const scoreCls=score<7?'low':(score>=9?'high':'');
+    return `<tr><td><input type="checkbox" class="row-chk" data-id="${r.id}"></td>
+    <td><span class="pill ${score<7?'warn':'info'}">${r.대상유형}</span> ${r.대상id||''}</td>
+    <td class="score ${scoreCls}">${score.toFixed(1)}</td>
+    <td style="color:var(--muted);font-size:12px">${(r.사유||'').substring(0,80)}</td>
+    <td style="color:var(--muted);font-size:11px">${new Date(r.실행시각).toLocaleString('ko-KR',{hour12:false}).substring(2)}</td>
+    <td><button class="btn btn-pri" onclick="oneAction(${r.id},'approved')">승인</button>
+    <button class="btn btn-danger" onclick="oneAction(${r.id},'rejected')">거절</button></td></tr>`;
+  }).join('');
+  document.getElementById('hitl-meta').textContent=data.length+'건 표시';
+}
+
+function toggleAll(){
+  const c=document.getElementById('checkAll').checked;
+  document.querySelectorAll('.row-chk').forEach(x=>x.checked=c);
+}
+
+async function oneAction(id,status){
+  const {error}=await sb.from('hr_audit_handoff').update({hitl상태:status,처리시각:new Date().toISOString()}).eq('id',id);
+  if(error){alert('처리 실패: '+error.message);return;}
+  await loadAll();
+}
+
+async function bulkAction(status){
+  const ids=Array.from(document.querySelectorAll('.row-chk:checked')).map(x=>+x.dataset.id);
+  if(ids.length===0){alert('선택된 항목 없음');return;}
+  if(!confirm(`${ids.length}건 ${status==='approved'?'승인':'거절'}?`))return;
+  const {error}=await sb.from('hr_audit_handoff').update({hitl상태:status,처리시각:new Date().toISOString()}).in('id',ids);
+  if(error){alert('처리 실패: '+error.message);return;}
+  await loadAll();
+}
+
+async function loadHistory(){
+  const {data}=await sb.from('hr_audit_handoff').select('실행시각,대상유형,대상id,점수,hitl상태,사유').not('에이전트id','is',null).order('실행시각',{ascending:false}).limit(30);
+  const tb=document.getElementById('history-tbody');
+  if(!data||data.length===0){tb.innerHTML='<tr><td colspan="5" class="empty">이력 없음</td></tr>';return;}
+  tb.innerHTML=data.map(r=>{
+    const score=Number(r.점수||0);
+    const stCls=r.hitl상태==='auto_pass'?'success':r.hitl상태==='pending'?'warn':'info';
+    return `<tr><td style="color:var(--muted);font-size:11px">${new Date(r.실행시각).toLocaleString('ko-KR',{hour12:false}).substring(2)}</td>
+    <td><span class="pill ${score<7?'warn':'info'}">${r.대상유형}</span> ${r.대상id||''}</td>
+    <td class="score ${score<7?'low':'high'}">${score.toFixed(1)}</td>
+    <td><span class="pill ${stCls}">${r.hitl상태}</span></td>
+    <td style="color:var(--muted);font-size:12px">${(r.사유||'').substring(0,60)}</td></tr>`;
+  }).join('');
+  drawChart(data);
+}
+
+function drawChart(rows){
+  const byDay={};rows.forEach(r=>{const d=r.실행시각.substring(0,10);byDay[d]=(byDay[d]||[]).concat([Number(r.점수||0)])});
+  const days=Object.keys(byDay).sort().slice(-7);
+  const avg=days.map(d=>{const a=byDay[d];return Math.round(a.reduce((s,x)=>s+x,0)/a.length*10)/10});
+  const ctx=document.getElementById('chart7d').getContext('2d');
+  if(chart)chart.destroy();
+  chart=new Chart(ctx,{type:'line',data:{labels:days.map(d=>d.substring(5)),datasets:[{label:'평균 점수',data:avg,borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,.1)',tension:.3,fill:true}]},options:{responsive:true,scales:{y:{min:0,max:10}},plugins:{legend:{display:false}}}});
+}
+
+function subscribeLive(){
+  if(realtimeCh)sb.removeChannel(realtimeCh);
+  realtimeCh=sb.channel('agent-realtime').on('postgres_changes',{event:'INSERT',schema:'public',table:'hr_audit_handoff'},payload=>{prependFeed(payload.new);loadKPI();}).subscribe();
+  // 초기 피드 적재
+  sb.from('hr_audit_handoff').select('id,에이전트id,대상유형,대상id,점수,hitl상태,실행시각').order('실행시각',{ascending:false}).limit(20).then(({data})=>{
+    if(!data)return;
+    document.getElementById('live-feed').innerHTML=data.map(r=>renderFeedRow(r)).join('');
+  });
+}
+
+function renderFeedRow(r){
+  const score=Number(r.점수||0);
+  const dotColor=r.hitl상태==='auto_pass'?'#1D9E75':r.hitl상태==='pending'?'#BA7517':'#888';
+  const stPill=r.hitl상태==='auto_pass'?'success':r.hitl상태==='pending'?'warn':'info';
+  return `<div class="feed-row"><span class="dot" style="background:${dotColor};animation:none"></span>
+  <span class="time">${new Date(r.실행시각).toTimeString().substring(0,8)}</span>
+  <span class="pill ${score<7?'warn':'info'}">${r.대상유형}</span>
+  <span>${r.대상id||r.에이전트id}</span>
+  <span class="pill ${stPill}" style="margin-left:auto">${score.toFixed(1)} · ${r.hitl상태}</span></div>`;
+}
+
+function prependFeed(row){
+  const feed=document.getElementById('live-feed');
+  const html=renderFeedRow(row);
+  feed.insertAdjacentHTML('afterbegin',html);
+  while(feed.children.length>20)feed.lastChild.remove();
+}
+
+function bindTabs(){
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-'+t.dataset.tab).classList.add('active');
+    if(t.dataset.tab==='history')loadHistory();
+  });
+}
+
+async function loadAll(){await loadKPI();await loadHITL();}
+
+async function init(){
+  bindTabs();
+  await loadAll();
+  subscribeLive();
+}
+
+(async()=>{const ok=await checkAuth();if(ok)await init();})();
+</script>
+</body>
+</html>

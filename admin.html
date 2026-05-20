@@ -3681,7 +3681,7 @@ function qtBuildCreateForm(){
 <h4>📊 견적 정보</h4>
 <div class="qt-preview-info"><span>고객</span><b id="qt-pv-customer">— 미선택 —</b></div>
 <div class="qt-preview-info"><span>사업부</span><b id="qt-pv-bu">— 미선택 —</b></div>
-<div class="qt-preview-info"><span>견적번호 (자동 채번)</span><b id="qt-pv-no">Q-???-2026-***</b></div>
+<div class="qt-preview-info"><span>견적번호</span><b id="qt-pv-no">Q-???-2026-***</b></div>
 <div class="qt-preview-info"><span>본문 항목</span><b id="qt-pv-items">0개</b></div>
 <div class="qt-preview-info"><span>입금 계좌</span><b id="qt-pv-account" style="font-size:10px">— 사업부 선택 시 —</b></div>
 
@@ -5364,7 +5364,7 @@ async function qtGeneratePDF(silent, docType){
     /* v2.8.0 셸 — DOM 참조 0건 / state.qt.currentQuotationNo 우선 (textContent null 근본 해결) */
     const qnoBase = state.qt.currentQuotationId
       ? (state.qt.currentQuotationNo || ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001'))
-      : ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-*** (자동 채번)');
+      : ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-***');
     const qno = (docType === 'statement') ? qnoBase.replace(/^Q-/, 'T-').replace(/\(가상\)/, '(거래명세서)') : (docType === 'delivery') ? qnoBase.replace(/^Q-/, 'D-').replace(/\(가상\)/, '(납품서)') : qnoBase;
     doc.setFontSize(10);
     doc.text(qno, 105, titleY+7, {align:'center'});

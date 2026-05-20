@@ -1,0 +1,4 @@
+-- sql/056: rpc_update_customer white-list 9필드 추가 (2026-05-20 v2.26 hotfix)
+-- 누락 필드: 대표자명·사업자번호·법인등록번호·회사주소·사업자유형 (사업자정보 5)
+-- 누락 필드: 인원_성인·인원_아동·도착시간·출발시간 (여행정보 4)
+-- 본문 = Supabase 마이그레이션 sql_056_rpc_update_customer_full 참조

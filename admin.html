@@ -4923,7 +4923,7 @@ function qtUpdateBuPreview(){
   const pvNo=$('#qt-pv-no');
   if(pvNo){
     const pre=state.qt.bu?QT_PREFIX[state.qt.bu]:'???';
-    pvNo.textContent=`Q-${pre}-2026-*** (자동 채번)`;  /* v2.22 hotfix — '001' 오해 제거 */
+    pvNo.textContent=`Q-${pre}-2026-***`;  /* v2.26-hotfix5: 괄호 텍스트 제거 */
   }
   const pvCust=$('#qt-pv-customer');
   if(pvCust)pvCust.textContent = state.qt.customerInfo?(state.qt.customerInfo.회사명||'-'):'— 미선택 —';

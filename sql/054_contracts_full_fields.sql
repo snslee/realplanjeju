@@ -1,0 +1,5 @@
+-- sql/054: 계약서 자동 반영 14필드 인프라 (2026-05-20 / 48차 후속 / v2.26)
+-- 옵션 A: contracts에 행사 6 + 의뢰인 5 + 기타 3 컬럼 추가
+-- 모든 컬럼 NULL 허용 → 빈 값 시 PDF에 공백/밑줄 (충돌 X)
+-- rpc_update_quotation_status 보강: 견적 수락 시 14필드 자동 backfill
+-- 본문 = Supabase 마이그레이션 sql_054_contracts_full_fields_v3 참조

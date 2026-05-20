@@ -1,0 +1,3 @@
+-- sql/055: rpc_update_contract_with_revision 14+ 필드 확장 (2026-05-20)
+-- 23 인자 / 모든 신규 필드 NULL 허용 / status_history 자동 기록
+-- 본문 = Supabase 마이그레이션 sql_055_drop_and_recreate 참조

@@ -1945,7 +1945,7 @@ function renderOverviewEdit(r){
       '<div class="detail-group">'+
         '<div class="dg-title">⑧ 사업자 정보 <span style="font-size:11px;color:#5a6478;font-weight:normal">(계약서 갑 측 자동 매핑)</span></div>'+
         '<div class="dg-rows">'+
-          '<div class="dg-row"><span class="dg-label">사업자유형</span><span class="dg-value">'+sel('사업자유형',r['사업자유형'],['법인','개인','단체','관공서','기타'])+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">사업자유형</span><span class="dg-value">'+sel('사업자유형',r['사업자유형'],['법인','개인','단체','관공서','비영리','면세사업자','간이과세자','기타'])+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">사업자번호</span><span class="dg-value">'+inp('사업자번호',r['사업자번호'])+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">법인등록번호</span><span class="dg-value">'+inp('법인등록번호',r['법인등록번호'])+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">회사주소</span><span class="dg-value">'+inp('회사주소',r['회사주소'])+'</span></div>'+
@@ -7604,6 +7604,4 @@ document.addEventListener('DOMContentLoaded',init);
   /* v2.19.2 hotfix: [계약] 탭 클릭 시 ecLoad 자동 호출 hook (28-1 회귀 정정) */
   document.addEventListener('click',function(e){
     var t=e.target.closest('[data-tab="contract"]');
-    if(t){setTimeout(function(){
-      try{
-        var cid=(
+    if(t){set

@@ -4522,21 +4522,29 @@ async function qtLoadCustomerInfoBu(){
     if(typeof toast==='function') toast('고객을 먼저 선택하세요','warn'); return;
   }
   try {
-    /* 공통: customers 기본 정보 (회사명·부서·담당자·직위·이메일) */
-    const {data: cdata, error: cerr} = await sb.from('customers').select('회사명, 부서, 담당자, 직위, 이메일').eq('id', state.qt.customerId).maybeSingle();
-    if(!cerr && cdata){
+    /* v2.25 hotfix: customers 실제 컬럼은 회사명·담당자명·이메일 (부서·직위는 customer_contacts에서) */
+    const {data: cdata, error: cerr} = await sb.from('customers').select('회사명, 담당자명, 이메일').eq('id', state.qt.customerId).maybeSingle();
+    if(cerr){ console.warn('[qtLoadCustomerInfoBu] customers query', cerr); }
+    if(cdata){
       const setIf = (id, val) => { const el=document.getElementById(id); if(el && val!=null && val!=='') el.value=val; };
       setIf('qt-recip-company', cdata.회사명);
-      setIf('qt-recip-dept', cdata.부서);
-      setIf('qt-recip-name', cdata.담당자);
-      setIf('qt-recip-title', cdata.직위);
-      /* state 동기화 */
+      setIf('qt-recip-name', cdata.담당자명);
       if(!state.qt.recipient) state.qt.recipient = {};
       if(cdata.회사명) state.qt.recipient.company = cdata.회사명;
-      if(cdata.부서) state.qt.recipient.dept = cdata.부서;
-      if(cdata.담당자) state.qt.recipient.name = cdata.담당자;
-      if(cdata.직위) state.qt.recipient.title = cdata.직위;
+      if(cdata.담당자명) state.qt.recipient.name = cdata.담당자명;
     }
+    /* 부서·직위는 customer_contacts (Primary)에서 조회 */
+    try {
+      const {data: cc} = await sb.from('customer_contacts').select('부서, 직급, 담당자명').eq('customer_id', state.qt.customerId).order('display_order', {ascending: true}).limit(1).maybeSingle();
+      if(cc){
+        const setIf = (id, val) => { const el=document.getElementById(id); if(el && val!=null && val!=='') el.value=val; };
+        setIf('qt-recip-dept', cc.부서);
+        setIf('qt-recip-title', cc.직급);
+        if(cc.담당자명) { const el=document.getElementById('qt-recip-name'); if(el && !el.value) el.value = cc.담당자명; if(state.qt.recipient) state.qt.recipient.name = cc.담당자명; }
+        if(cc.부서) state.qt.recipient.dept = cc.부서;
+        if(cc.직급) state.qt.recipient.title = cc.직급;
+      }
+    } catch(e2){ console.warn('[qtLoadCustomerInfoBu] customer_contacts', e2); }
     /* 사업부 특화: 국내여행이면 여행 정보 추가 호출 */
     if(state.qt.사업부 === '국내여행'){
       await qtLoadCustomerTravelInfo();
@@ -5841,6 +5849,7 @@ async function renderQuotationDetail(qid){
         ((r.상태==='수락'||r.상태==='발송완료'||r.상태==='재발송') ? '<button class="qt-btn-secondary" onclick="qtSendFromDetail(\'delivery\')">✉ 납품서 발송</button>' : '')+
         ((r.상태==='수락'||r.상태==='발송완료'||r.상태==='재발송') ? '<button class="qt-btn-secondary" onclick="qtSendFromDetail(\'statement\')">✉ 거래명세서 발송</button>' : '')+
         (r.상태!=='무효화' ? '<button class="qt-btn-secondary" style="border-color:#D63437;color:#D63437" onclick="qtVoidQuotation(\''+qid+'\')">🚫 무효화</button>' : '<span style="padding:10px 14px;color:#C62828;font-weight:600">🚫 무효화 견적</span>')+
+        ((r.상태==='작성중'||r.상태==='발송완료'||r.상태==='재발송'||r.상태==='거절'||r.상태==='만료') ? '<button class="qt-btn-secondary" style="border-color:#2b5fb8;color:#0c447c" onclick="qtOpenEditModal(\''+qid+'\')">✏ 수정</button>' : '')+
         '<button class="qt-btn-secondary" onclick="qtCopyQuotation(\''+qid+'\')">📋 복사하여 새 견적</button>'+
       '</div>';
   } catch(e){

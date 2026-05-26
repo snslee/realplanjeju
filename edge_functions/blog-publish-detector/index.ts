@@ -1,1 +1,203 @@
-Ly8gYmxvZy1wdWJsaXNoLWRldGVjdG9yIHY0LjEg4oCUIHN5bmNUb1Nsb3Qg4oaSIOunpOy5rV/siqzroa9faWQgcHVibGlzaF9sb2cg6riw66GdIOy2lOqwgAovLyDrs4Dqsr3sgqztla06Ci8vICAgMSkgc3luY1RvU2xvdCgpIOuwmO2ZmOqwkjogYm9vbGVhbiDihpIgc3RyaW5nfG51bGwgKOyKrOuhr0lEIOuwmO2ZmCkKLy8gICAyKSDsiqzroa8g66ek7LmtIOyEseqztSDsi5wgbWtfYmxvZ19wdWJsaXNoX2xvZy7rp6Tsua1f7Iqs66GvX2lkICsg7IOB7YOcPSfsiqzroa/rp6Tsua0nIOyggOyepQovLyAgICAgIOKGkiBub3Rpb24tcHVibGlzaC11cmwtcHVzaGVyIHY0IFN0cmF0ZWd5IDEgKOyngeygkUlEKSDtmZzshLHtmZQKCmltcG9ydCAianNyOkBzdXBhYmFzZS9mdW5jdGlvbnMtanMvZWRnZS1ydW50aW1lLmQudHMiOwppbXBvcnQgeyBjcmVhdGVDbGllbnQgfSBmcm9tICJodHRwczovL2VzbS5zaC9Ac3VwYWJhc2Uvc3VwYWJhc2UtanNAMi4zOS4wIjsKCmNvbnN0IFNVUEFCQVNFX1VSTCA9IERlbm8uZW52LmdldCgiU1VQQUJBU0VfVVJMIikhOwpjb25zdCBTVVBBQkFTRV9TRVJWSUNFX0tFWSA9IERlbm8uZW52LmdldCgiU1VQQUJBU0VfU0VSVklDRV9ST0xFX0tFWSIpITsKY29uc3Qgc3VwYWJhc2UgPSBjcmVhdGVDbGllbnQoU1VQQUJBU0VfVVJMLCBTVVBBQkFTRV9TRVJWSUNFX0tFWSwgeyBhdXRoOiB7IHBlcnNpc3RTZXNzaW9uOiBmYWxzZSwgYXV0b1JlZnJlc2hUb2tlbjogZmFsc2UgfSB9KTsKCmNvbnN0IENIQU5ORUxTID0gWwogIHsgbmFtZTogJ+u4lEHrhKTsnbTrsoQnLCByc3M6ICdodHRwczovL3Jzcy5ibG9nLm5hdmVyLmNvbS9yZWFscGxhbl90cmF2ZWwueG1sJyB9LAogIHsgbmFtZTogJ+u4lEHti7DsiqTthqDrpqwnLCByc3M6ICdodHRwczovL3dvd2pqODYzMS50aXN0b3J5LmNvbS9yc3MnIH0sCiAgeyBuYW1lOiAn67iUQuuEpOydtOuyhCcsIHJzczogJ2h0dHBzOi8vcnNzLmJsb2cubmF2ZXIuY29tL3JlYWxwbGFuX2V2ZW50LnhtbCcgfSwKICB7IG5hbWU6ICfruJRC7Yuw7Iqk7Yag66asJywgcnNzOiAnaHR0cHM6Ly9yZWFscGxhbi1ldmVudC50aXN0b3J5LmNvbS9yc3MnIH0sCiAgeyBuYW1lOiAn67iUQ+uEpOydtOuyhCcsIHJzczogJ2h0dHBzOi8vcnNzLmJsb2cubmF2ZXIuY29tL3JlYWxwbGFuX21hcmtldGluZy54bWwnIH0sCiAgeyBuYW1lOiAn67iUQ+2LsOyKpO2GoOumrCcsIHJzczogJ2h0dHBzOi8vcmVhbHBsYW4tbWFya2V0aW5nLnRpc3RvcnkuY29tL3JzcycgfQpdOwoKYXN5bmMgZnVuY3Rpb24gZ2V0U2VjcmV0KG5hbWU6IHN0cmluZyk6IFByb21pc2U8c3RyaW5nIHwgbnVsbD4gewogIGNvbnN0IHsgZGF0YSB9ID0gYXdhaXQgc3VwYWJhc2UucnBjKCdyZWFscGxhbl9nZXRfc2VjcmV0JywgeyBzZWNyZXRfbmFtZTogbmFtZSB9KTsKICByZXR1cm4gZGF0YSBhcyBzdHJpbmc7Cn0KCi8vIExldmVuc2h0ZWluIOycoOyCrOuPhApmdW5jdGlvbiBsZXZTaW0oYTogc3RyaW5nLCBiOiBzdHJpbmcpOiBudW1iZXIgewogIGlmICghYSB8fCAhYikgcmV0dXJuIDA7CiAgYSA9IGEudG9Mb3dlckNhc2UoKS5yZXBsYWNlKC9bXHNcV19dL2csICcnKTsKICBiID0gYi50b0xvd2VyQ2FzZSgpLnJlcGxhY2UoL1tcc1xXX10vZywgJycpOwogIGlmIChhID09PSBiKSByZXR1cm4gMTsKICBjb25zdCBtID0gYS5sZW5ndGgsIG4gPSBiLmxlbmd0aDsKICBpZiAobSA9PT0gMCB8fCBuID09PSAwKSByZXR1cm4gMDsKICBjb25zdCBkcDogbnVtYmVyW11bXSA9IEFycmF5LmZyb20oeyBsZW5ndGg6IG0gKyAxIH0sICgpID0+IG5ldyBBcnJheShuICsgMSkuZmlsbCgwKSk7CiAgZm9yIChsZXQgaSA9IDA7IGkgPD0gbTsgaSsrKSBkcFtpXVswXSA9IGk7CiAgZm9yIChsZXQgaiA9IDA7IGogPD0gbjsgaisrKSBkcFswXVtqXSA9IGo7CiAgZm9yIChsZXQgaSA9IDE7IGkgPD0gbTsgaSsrKQogICAgZm9yIChsZXQgaiA9IDE7IGogPD0gbjsgaisrKQogICAgICBkcFtpXVtqXSA9IGFbaS0xXSA9PT0gYltqLTFdID8gZHBbaS0xXVtqLTFdIDogMSArIE1hdGgubWluKGRwW2ktMV1bal0sIGRwW2ldW2otMV0sIGRwW2ktMV1bai0xXSk7CiAgcmV0dXJuIDEgLSBkcFttXVtuXSAvIE1hdGgubWF4KG0sIG4pOwp9CgpmdW5jdGlvbiB1bndyYXBDZGF0YShzOiBzdHJpbmcpOiBzdHJpbmcgewogIHJldHVybiBzLnJlcGxhY2UoL148IVxbQ0RBVEFcWy8sICcnKS5yZXBsYWNlKC9cXVxdPiQvLCAnJykudHJpbSgpOwp9CmZ1bmN0aW9uIG5vcm1hbGl6ZVVybCh1OiBzdHJpbmcpOiBzdHJpbmcgewogIGxldCB1cmwgPSB1bndyYXBDZGF0YSh1KTsKICB1cmwgPSB1cmwucmVwbGFjZSgvXD9mcm9tUnNzPXRydWUmdHJhY2tpbmdDb2RlPXJzcyQvLCAnJyk7CiAgcmV0dXJuIHVybC50cmltKCk7Cn0KZnVuY3Rpb24gdW5lc2NhcGVFbnRpdGllcyhzOiBzdHJpbmcpOiBzdHJpbmcgewogIHJldHVybiBzLnJlcGxhY2UoLyZhbXA7bWlkZG90Oy9nLCAnwrcnKS5yZXBsYWNlKC8mbWlkZG90Oy9nLCAnwrcnKQogICAgICAgICAgLnJlcGxhY2UoLyZhbXA7L2csICcmJykucmVwbGFjZSgvJmx0Oy9nLCAnPCcpLnJlcGxhY2UoLyZndDsvZywgJz4nKS5yZXBsYWNlKC8mcXVvdDsvZywgJyInKTsKfQpmdW5jdGlvbiBlc2NhcGVIdG1sKHM6IHN0cmluZyk6IHN0cmluZyB7CiAgcmV0dXJuIHMucmVwbGFjZSgvJi9nLCAnJmFtcDsnKS5yZXBsYWNlKC88L2csICcmbHQ7JykucmVwbGFjZSgvPi9nLCAnJmd0OycpOwp9Cgphc3luYyBmdW5jdGlvbiBwYXJzZVJTUyh1cmw6IHN0cmluZyk6IFByb21pc2U8eyB0aXRsZTogc3RyaW5nLCBsaW5rOiBzdHJpbmcsIHB1YkRhdGU6IHN0cmluZyB9W10+IHsKICB0cnkgewogICAgY29uc3QgciA9IGF3YWl0IGZldGNoKHVybCwgeyBoZWFkZXJzOiB7ICdVc2VyLUFnZW50JzogJ3JlYWxwbGFuLWJsb2ctZGV0ZWN0b3IvNC4xJyB9IH0pOwogICAgaWYgKCFyLm9rKSByZXR1cm4gW107CiAgICBjb25zdCB4bWwgPSBhd2FpdCByLnRleHQoKTsKICAgIGNvbnN0IGl0ZW1zOiB7IHRpdGxlOiBzdHJpbmcsIGxpbms6IHN0cmluZywgcHViRGF0ZTogc3RyaW5nIH1bXSA9IFtdOwogICAgY29uc3QgaXRlbVJlZ2V4ID0gLzxpdGVtW1xzXFNdKj88XC9pdGVtPi9nOwogICAgY29uc3QgbWF0Y2hlcyA9IHhtbC5tYXRjaChpdGVtUmVnZXgpIHx8IFtdOwogICAgZm9yIChjb25zdCBtIG9mIG1hdGNoZXMpIHsKICAgICAgbGV0IHRpdGxlID0gKG0ubWF0Y2goLzx0aXRsZT4oPzo8IVxbQ0RBVEFcWyk/KFtcc1xTXSo/KSg/OlxdXF0+KT88XC90aXRsZT4vKT8uWzFdIHx8ICcnKS50cmltKCk7CiAgICAgIGxldCBsaW5rID0gKG0ubWF0Y2goLzxsaW5rPihbXHNcU10qPyk8XC9saW5rPi8pPy5bMV0gfHwgJycpLnRyaW0oKTsKICAgICAgY29uc3QgcHViRGF0ZSA9IChtLm1hdGNoKC88cHViRGF0ZT4oW1xzXFNdKj8pPFwvcHViRGF0ZT4vKT8uWzFdIHx8ICcnKS50cmltKCk7CiAgICAgIGxpbmsgPSBub3JtYWxpemVVcmwobGluayk7CiAgICAgIHRpdGxlID0gdW5lc2NhcGVFbnRpdGllcyh1bndyYXBDZGF0YSh0aXRsZSkpOwogICAgICBpZiAodGl0bGUgJiYgbGluaykgaXRlbXMucHVzaCh7IHRpdGxlLCBsaW5rLCBwdWJEYXRlIH0pOwogICAgfQogICAgcmV0dXJuIGl0ZW1zOwogIH0gY2F0Y2ggKGUpIHsgY29uc29sZS5lcnJvcigicnNzIGVyciIsIHVybCwgZSk7IHJldHVybiBbXTsgfQp9Cgphc3luYyBmdW5jdGlvbiBzZW5kVGVsZWdyYW0obXNnOiBzdHJpbmcpIHsKICB0cnkgewogICAgY29uc3QgdG9rZW4gPSBhd2FpdCBnZXRTZWNyZXQoJ3JlYWxwbGFuX3RlbGVncmFtX3Rva2VuJyk7CiAgICBjb25zdCBjaGF0SWQgPSBhd2FpdCBnZXRTZWNyZXQoJ3JlYWxwbGFuX3RlbGVncmFtX2NoYXRfaWQnKTsKICAgIGlmICghdG9rZW4gfHwgIWNoYXRJZCkgcmV0dXJuOwogICAgYXdhaXQgZmV0Y2goYGh0dHBzOi8vYXBpLnRlbGVncmFtLm9yZy9ib3Qke3Rva2VufS9zZW5kTWVzc2FnZWAsIHsKICAgICAgbWV0aG9kOiAnUE9TVCcsIGhlYWRlcnM6IHsgJ0NvbnRlbnQtVHlwZSc6ICdhcHBsaWNhdGlvbi9qc29uJyB9LAogICAgICBib2R5OiBKU09OLnN0cmluZ2lmeSh7IGNoYXRfaWQ6IGNoYXRJZCwgdGV4dDogbXNnLCBwYXJzZV9tb2RlOiAnSFRNTCcsIGRpc2FibGVfd2ViX3BhZ2VfcHJldmlldzogdHJ1ZSB9KQogICAgfSk7CiAgfSBjYXRjaCAoZSkgeyBjb25zb2xlLmVycm9yKCJ0ZyBlcnIiLCBlKTsgfQp9CgovLyB2NC4xIO2VteyLrDogc3RyaW5nfG51bGwg67CY7ZmYICjsiqzroa9JRCkg4oCUIG5vdGlvbi1wdWJsaXNoLXVybC1wdXNoZXIgU3RyYXRlZ3kgMSDsl7DqsrDsmqkKYXN5bmMgZnVuY3Rpb24gc3luY1RvU2xvdChjaGFubmVsTmFtZTogc3RyaW5nLCByc3NUaXRsZTogc3RyaW5nLCB1cmw6IHN0cmluZyk6IFByb21pc2U8c3RyaW5nIHwgbnVsbD4gewogIHRyeSB7CiAgICBjb25zdCBpc1Rpc3RvcnkgPSBjaGFubmVsTmFtZS5pbmNsdWRlcygn7Yuw7Iqk7Yag66asJyk7CiAgICAvLyDstZzqt7wgOTDsnbwg7J2064K0IOyKrOuhr+unjCDsobDtmowKICAgIGNvbnN0IHNpbmNlID0gbmV3IERhdGUoRGF0ZS5ub3coKSAtIDkwICogODY0MDAwMDApLnRvSVNPU3RyaW5nKCkuc2xpY2UoMCwgMTApOwogICAgY29uc3QgeyBkYXRhOiBzbG90cyB9ID0gYXdhaXQgc3VwYWJhc2UKICAgICAgLmZyb20oJ21rX2Jsb2dfc2xvdHMnKQogICAgICAuc2VsZWN0KCdpZCwg7LWc7KKF7KCc66qpLCDtlbXsi6ztgqTsm4zrk5wsIOyLpO2WieuhnOq3uCwg7Yuw7Iqk7Yag66as7Y+s7Iqk7Yq4aWQsIOyDge2DnCcpCiAgICAgIC5lcSgn7LGE64SQJywgY2hhbm5lbE5hbWUpCiAgICAgIC5ndGUoJ+uwnO2WieydvCcsIHNpbmNlKQogICAgICAubGltaXQoNjApOwoKICAgIGlmICghc2xvdHMgfHwgc2xvdHMubGVuZ3RoID09PSAwKSByZXR1cm4gbnVsbDsKCiAgICBsZXQgYmVzdDogeyBzbG90OiBhbnk7IHNpbTogbnVtYmVyIH0gfCBudWxsID0gbnVsbDsKICAgIGZvciAoY29uc3QgcyBvZiBzbG90cykgewogICAgICBjb25zdCBzaW0gPSBsZXZTaW0ocy7stZzsooXsoJzrqqkgfHwgcy7tlbXsi6ztgqTsm4zrk5wgfHwgJycsIHJzc1RpdGxlKTsKICAgICAgaWYgKCFiZXN0IHx8IHNpbSA+IGJlc3Quc2ltKSBiZXN0ID0geyBzbG90OiBzLCBzaW0gfTsKICAgIH0KICAgIGlmICghYmVzdCB8fCBiZXN0LnNpbSA8IDAuNDUpIHJldHVybiBudWxsOwoKICAgIC8vIOykkeuztSDrsKnsp4A6IOydtOuvuCDqsJnsnYAgVVJM66GcIOq4sOuhneuQnCDqsr3smrAgc2tpcAogICAgY29uc3QgZXhpc3RpbmdMb2cgPSBBcnJheS5pc0FycmF5KGJlc3Quc2xvdC7si6TtlonroZzqt7gpID8gYmVzdC5zbG90LuyLpO2WieuhnOq3uCA6IFtdOwogICAgaWYgKGV4aXN0aW5nTG9nLnNvbWUoKGU6IGFueSkgPT4gZS51cmwgPT09IHVybCkpIHJldHVybiBudWxsOwoKICAgIGNvbnN0IGxvZ0VudHJ5ID0geyBzdGVwOiAn67Cc7ZaJ6rCQ7KeAJywgdXJsLCB0czogbmV3IERhdGUoKS50b0lTT1N0cmluZygpLCBzaW06IHBhcnNlRmxvYXQoYmVzdC5zaW0udG9GaXhlZCgyKSkgfTsKICAgIGNvbnN0IG5ld0xvZyA9IFsuLi5leGlzdGluZ0xvZywgbG9nRW50cnldOwoKICAgIGNvbnN0IHVwZGF0ZURhdGE6IGFueSA9IHsg7Iuk7ZaJ66Gc6re4OiBuZXdMb2cgfTsKICAgIC8vIO2LsOyKpO2GoOumrCDssYTrhJA6IO2PrOyKpO2KuCBJROqwgCDsl4bsnYQg65WM66eMIFVSTCDsoIDsnqUKICAgIGlmIChpc1Rpc3RvcnkgJiYgIWJlc3Quc2xvdC7ti7DsiqTthqDrpqztj6zsiqTtirhpZCkgewogICAgICB1cGRhdGVEYXRhLu2LsOyKpO2GoOumrO2PrOyKpO2KuGlkID0gdXJsOwogICAgfQogICAgLy8gcGVuZGluZyDsiqzroa/snbQg7J207KCcIOuwnO2WieuQkOycvOuptCBjb21wbGV0ZWQg7LKY66asCiAgICBpZiAoYmVzdC5zbG90LuyDge2DnCA9PT0gJ3BlbmRpbmcnKSB7CiAgICAgIHVwZGF0ZURhdGEu7IOB7YOcID0gJ2NvbXBsZXRlZCc7CiAgICB9CgogICAgY29uc3QgeyBlcnJvciB9ID0gYXdhaXQgc3VwYWJhc2UuZnJvbSgnbWtfYmxvZ19zbG90cycpLnVwZGF0ZSh1cGRhdGVEYXRhKS5lcSgnaWQnLCBiZXN0LnNsb3QuaWQpOwogICAgaWYgKGVycm9yKSB7IGNvbnNvbGUuZXJyb3IoJ3N5bmNUb1Nsb3QgdXBkYXRlIGVycicsIGVycm9yKTsgcmV0dXJuIG51bGw7IH0KICAgIHJldHVybiBiZXN0LnNsb3QuaWQ7IC8vIHY0LjE6IOyKrOuhr0lEIOuwmO2ZmCAocHVibGlzaF9sb2cg7Jet7LC47KGw7JqpKQogIH0gY2F0Y2ggKGUpIHsKICAgIGNvbnNvbGUuZXJyb3IoJ3N5bmNUb1Nsb3QgZXJyJywgY2hhbm5lbE5hbWUsIGUpOwogICAgcmV0dXJuIG51bGw7CiAgfQp9CgpEZW5vLnNlcnZlKGFzeW5jIChfcmVxKSA9PiB7CiAgY29uc3QgdG9kYXkgPSBuZXcgRGF0ZSgpLnRvSVNPU3RyaW5nKCkuc2xpY2UoMCwgMTApOwogIGNvbnN0IHllc3RlcmRheSA9IG5ldyBEYXRlKERhdGUubm93KCkgLSA4NjQwMDAwMCkudG9JU09TdHJpbmcoKS5zbGljZSgwLCAxMCk7CiAgbGV0IHRvdGFsTmV3ID0gMDsKICBjb25zdCBuZXdQb3N0czogeyBjaGFubmVsOiBzdHJpbmc7IHRpdGxlOiBzdHJpbmc7IHVybDogc3RyaW5nIH1bXSA9IFtdOwogIGNvbnN0IGNoYW5uZWxTdGF0czogeyBjaDogc3RyaW5nOyDsi6Dqt5w6IG51bWJlcjsg6rCQ7KeAOiBudW1iZXI7IOyKrOuhr+unpOy5rTogbnVtYmVyIH1bXSA9IFtdOwoKICBmb3IgKGNvbnN0IGNoIG9mIENIQU5ORUxTKSB7CiAgICBjb25zdCBpdGVtcyA9IGF3YWl0IHBhcnNlUlNTKGNoLnJzcyk7CiAgICBsZXQgbmV3Q291bnQgPSAwLCBkZXRlY3RlZENvdW50ID0gMCwgc2xvdE1hdGNoZWQgPSAwOwogICAgZm9yIChjb25zdCBpdCBvZiBpdGVtcy5zbGljZSgwLCAxMCkpIHsKICAgICAgZGV0ZWN0ZWRDb3VudCsrOwogICAgICBjb25zdCB7IGRhdGE6IGR1cCB9ID0gYXdhaXQgc3VwYWJhc2UuZnJvbSgnbWtfYmxvZ19wdWJsaXNoX2xvZycpLnNlbGVjdCgnaWQnKS5lcSgn7Jm467aAX3VybCcsIGl0LmxpbmspLm1heWJlU2luZ2xlKCk7CiAgICAgIGlmIChkdXApIGNvbnRpbnVlOwogICAgICBjb25zdCBwdWJEYXRlU3RyID0gaXQucHViRGF0ZSA/IG5ldyBEYXRlKGl0LnB1YkRhdGUpLnRvSVNPU3RyaW5nKCkuc2xpY2UoMCwgMTApIDogdG9kYXk7CiAgICAgIGlmIChwdWJEYXRlU3RyIDwgeWVzdGVyZGF5KSBjb250aW51ZTsKICAgICAgYXdhaXQgc3VwYWJhc2UuZnJvbSgnbWtfYmxvZ19wdWJsaXNoX2xvZycpLmluc2VydCh7CiAgICAgICAg67Cc7ZaJ7J28OiBwdWJEYXRlU3RyLCDssYTrhJA6IGNoLm5hbWUsIOyZuOu2gF91cmw6IGl0LmxpbmssIHJzc1/soJzrqqk6IGl0LnRpdGxlLCDsg4Htg5w6ICfqsJDsp4DrkKgnCiAgICAgIH0pOwogICAgICAvLyB2NC4xOiBzeW5jVG9TbG90IOKGkiDsiqzroa9JRCDrsJjtmZgg4oaSIHB1Ymxpc2hfbG9nIOunpOy5rV/siqzroa9faWQg7KCA7J6lCiAgICAgIGNvbnN0IG1hdGNoZWRTbG90SWQgPSBhd2FpdCBzeW5jVG9TbG90KGNoLm5hbWUsIGl0LnRpdGxlLCBpdC5saW5rKTsKICAgICAgaWYgKG1hdGNoZWRTbG90SWQpIHsKICAgICAgICBzbG90TWF0Y2hlZCsrOwogICAgICAgIC8vIG5vdGlvbi1wdWJsaXNoLXVybC1wdXNoZXIgU3RyYXRlZ3kgMSDtmZzshLHtmZTrpbwg7JyE7ZWcIOyXreywuOyhsCDquLDroZ0KICAgICAgICBhd2FpdCBzdXBhYmFzZS5mcm9tKCdta19ibG9nX3B1Ymxpc2hfbG9nJykKICAgICAgICAgIC51cGRhdGUoeyDrp6Tsua1f7Iqs66GvX2lkOiBtYXRjaGVkU2xvdElkLCDsg4Htg5w6ICfsiqzroa/rp6Tsua0nIH0pCiAgICAgICAgICAuZXEoJ+yZuOu2gF91cmwnLCBpdC5saW5rKTsKICAgICAgfQogICAgICBuZXdDb3VudCsrOwogICAgICBuZXdQb3N0cy5wdXNoKHsgY2hhbm5lbDogY2gubmFtZSwgdGl0bGU6IGl0LnRpdGxlLCB1cmw6IGl0LmxpbmsgfSk7CiAgICB9CiAgICB0b3RhbE5ldyArPSBuZXdDb3VudDsKICAgIGNoYW5uZWxTdGF0cy5wdXNoKHsgY2g6IGNoLm5hbWUsIOyLoOq3nDogbmV3Q291bnQsIOqwkOyngDogZGV0ZWN0ZWRDb3VudCwg7Iqs66Gv66ek7LmtOiBzbG90TWF0Y2hlZCB9KTsKICB9CgogIC8vIOuFuOyFmCBQVVNIIOyytOydtOuLnQogIGlmICh0b3RhbE5ldyA+IDApIHsKICAgIHRyeSB7CiAgICAgIGF3YWl0IGZldGNoKGAke1NVUEFCQVNFX1VSTH0vZnVuY3Rpb25zL3YxL25vdGlvbi1wdWJsaXNoLXVybC1wdXNoZXJgLCB7CiAgICAgICAgbWV0aG9kOiAnUE9TVCcsCiAgICAgICAgaGVhZGVyczogeyAnQ29udGVudC1UeXBlJzogJ2FwcGxpY2F0aW9uL2pzb24nLCAnQXV0aG9yaXphdGlvbic6IGBCZWFyZXIgJHtTVVBBQkFTRV9TRVJWSUNFX0tFWX1gIH0sCiAgICAgICAgYm9keTogSlNPTi5zdHJpbmdpZnkoeyB0cmlnZ2VyOiAnY2hhaW5lZF9mcm9tX3B1Ymxpc2hfZGV0ZWN0b3JfdjQnIH0pCiAgICAgIH0pOwogICAgfSBjYXRjaCAoZSkgeyBjb25zb2xlLmVycm9yKCdjaGFpbiBlcnInLCBlKTsgfQoKICAgIGxldCBtc2cgPSBg8J+ToiA8Yj7ruJTroZzqt7gg67Cc7ZaJIOqwkOyngCAoMTEgS1NUKTwvYj5cblxuYDsKICAgIGNvbnN0IHRvdGFsTWF0Y2hlZCA9IGNoYW5uZWxTdGF0cy5yZWR1Y2UoKGEsIHMpID0+IGEgKyBzLuyKrOuhr+unpOy5rSwgMCk7CiAgICBtc2cgKz0gYDxiPuyLoOq3nCAke3RvdGFsTmV3feqxtCDCtyDsiqzroa/rp6Tsua0gJHt0b3RhbE1hdGNoZWR96rG0PC9iPlxuXG5gOwogICAgY29uc3QgbWF4TGlzdCA9IE1hdGgubWluKG5ld1Bvc3RzLmxlbmd0aCwgNSk7CiAgICBmb3IgKGxldCBpID0gMDsgaSA8IG1heExpc3Q7IGkrKykgewogICAgICBjb25zdCBwID0gbmV3UG9zdHNbaV07CiAgICAgIGNvbnN0IHRpdGxlVHJpbSA9IHAudGl0bGUubGVuZ3RoID4gNDAgPyBwLnRpdGxlLnNsaWNlKDAsIDQwKSArICcuLi4nIDogcC50aXRsZTsKICAgICAgbXNnICs9IGAke2krMX3jg7sgPGI+JHtwLmNoYW5uZWx9PC9iPlxuICAgJHtlc2NhcGVIdG1sKHRpdGxlVHJpbSl9XG4gICAke3AudXJsfVxuXG5gOwogICAgfQogICAgaWYgKG5ld1Bvc3RzLmxlbmd0aCA+IDUpIG1zZyArPSBg4oCmIOyZuCAke25ld1Bvc3RzLmxlbmd0aCAtIDV96rG0XG5cbmA7CiAgICBtc2cgKz0gYOKGkiDrhbjshZggUFVTSCDsnpDrj5kg7Jew6rOEICgxMTozMCBLU1Qg66ek7LmtIO2ZleyduClgOwogICAgYXdhaXQgc2VuZFRlbGVncmFtKG1zZyk7CiAgfQoKICByZXR1cm4gbmV3IFJlc3BvbnNlKEpTT04uc3RyaW5naWZ5KHsgb2s6IHRydWUsIHRvdGFsTmV3LCBjaGFubmVsU3RhdHMsIHZlcnNpb246ICd2NC4xJyB9KSwgewogICAgaGVhZGVyczogeyAnQ29udGVudC1UeXBlJzogJ2FwcGxpY2F0aW9uL2pzb24nIH0KICB9KTsKfSk7Cg==
+// blog-publish-detector v4.2 — syncToSlot 임계값 0.45 → 0.30
+// 변경사항 (v4.1 대비):
+//   1) syncToSlot 유사도 임계값 0.45 → 0.30
+//      RSS 발행 제목과 슬롯 최종제목이 달라도 매칭 가능하도록 개선
+//      핵심키워드도 유사도 비교에 병행 활용 (Math.max)
+//
+// v4.1 변경사항:
+//   1) syncToSlot() 반환값: boolean → string|null (슬롯ID 반환)
+//   2) 슬롯 매칭 성공 시 mk_blog_publish_log.매칭_슬롯_id + 상태='슬롯매칭' 저장
+//      → notion-publish-url-pusher v4 Strategy 1 (직접ID) 활성화
+
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+
+const CHANNELS = [
+  { name: '블A네이버', rss: 'https://rss.blog.naver.com/realplan_travel.xml' },
+  { name: '블A티스토리', rss: 'https://wowjj8631.tistory.com/rss' },
+  { name: '블B네이버', rss: 'https://rss.blog.naver.com/realplan_event.xml' },
+  { name: '블B티스토리', rss: 'https://realplan-event.tistory.com/rss' },
+  { name: '블C네이버', rss: 'https://rss.blog.naver.com/realplan_marketing.xml' },
+  { name: '블C티스토리', rss: 'https://realplan-marketing.tistory.com/rss' }
+];
+
+async function getSecret(name: string): Promise<string | null> {
+  const { data } = await supabase.rpc('realplan_get_secret', { secret_name: name });
+  return data as string;
+}
+
+function levSim(a: string, b: string): number {
+  if (!a || !b) return 0;
+  a = a.toLowerCase().replace(/[\s\W_]/g, '');
+  b = b.toLowerCase().replace(/[\s\W_]/g, '');
+  if (a === b) return 1;
+  const m = a.length, n = b.length;
+  if (m === 0 || n === 0) return 0;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return 1 - dp[m][n] / Math.max(m, n);
+}
+
+function unwrapCdata(s: string): string {
+  return s.replace(/^<!\[CDATA\[/, '').replace(/\]\]>$/, '').trim();
+}
+function normalizeUrl(u: string): string {
+  let url = unwrapCdata(u);
+  url = url.replace(/\?fromRss=true&trackingCode=rss$/, '');
+  return url.trim();
+}
+function unescapeEntities(s: string): string {
+  return s.replace(/&amp;middot;/g, '·').replace(/&middot;/g, '·')
+          .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
+}
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+async function parseRSS(url: string): Promise<{ title: string, link: string, pubDate: string }[]> {
+  try {
+    const r = await fetch(url, { headers: { 'User-Agent': 'realplan-blog-detector/4.2' } });
+    if (!r.ok) return [];
+    const xml = await r.text();
+    const items: { title: string, link: string, pubDate: string }[] = [];
+    const itemRegex = /<item[\s\S]*?<\/item>/g;
+    const matches = xml.match(itemRegex) || [];
+    for (const m of matches) {
+      let title = (m.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/)?.[1] || '').trim();
+      let link = (m.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '').trim();
+      const pubDate = (m.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1] || '').trim();
+      link = normalizeUrl(link);
+      title = unescapeEntities(unwrapCdata(title));
+      if (title && link) items.push({ title, link, pubDate });
+    }
+    return items;
+  } catch (e) { console.error("rss err", url, e); return []; }
+}
+
+async function sendTelegram(msg: string) {
+  try {
+    const token = await getSecret('realplan_telegram_token');
+    const chatId = await getSecret('realplan_telegram_chat_id');
+    if (!token || !chatId) return;
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML', disable_web_page_preview: true })
+    });
+  } catch (e) { console.error("tg err", e); }
+}
+
+// v4.2: 임계값 0.30 / 핵심키워드 병행 비교
+async function syncToSlot(channelName: string, rssTitle: string, url: string): Promise<string | null> {
+  try {
+    const isTistory = channelName.includes('티스토리');
+    const since = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
+    const { data: slots } = await supabase
+      .from('mk_blog_slots')
+      .select('id, 최종제목, 핵심키워드, 실행로그, 티스토리포스트id, 상태')
+      .eq('채널', channelName)
+      .gte('발행일', since)
+      .limit(60);
+
+    if (!slots || slots.length === 0) return null;
+
+    let best: { slot: any; sim: number } | null = null;
+    for (const s of slots) {
+      const sim1 = levSim(s.최종제목 || '', rssTitle);
+      const sim2 = levSim(s.핵심키워드 || '', rssTitle);
+      const sim = Math.max(sim1, sim2);
+      if (!best || sim > best.sim) best = { slot: s, sim };
+    }
+    if (!best || best.sim < 0.30) return null;
+
+    const existingLog = Array.isArray(best.slot.실행로그) ? best.slot.실행로그 : [];
+    if (existingLog.some((e: any) => e.url === url)) return null;
+
+    const logEntry = { step: '발행감지', url, ts: new Date().toISOString(), sim: parseFloat(best.sim.toFixed(2)) };
+    const newLog = [...existingLog, logEntry];
+
+    const updateData: any = { 실행로그: newLog };
+    if (isTistory && !best.slot.티스토리포스트id) {
+      updateData.티스토리포스트id = url;
+    }
+    if (best.slot.상태 === 'pending') {
+      updateData.상태 = 'completed';
+    }
+
+    const { error } = await supabase.from('mk_blog_slots').update(updateData).eq('id', best.slot.id);
+    if (error) { console.error('syncToSlot update err', error); return null; }
+    return best.slot.id;
+  } catch (e) {
+    console.error('syncToSlot err', channelName, e);
+    return null;
+  }
+}
+
+Deno.serve(async (_req) => {
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  let totalNew = 0;
+  const newPosts: { channel: string; title: string; url: string }[] = [];
+  const channelStats: { ch: string; 신규: number; 감지: number; 슬롯매칭: number }[] = [];
+
+  for (const ch of CHANNELS) {
+    const items = await parseRSS(ch.rss);
+    let newCount = 0, detectedCount = 0, slotMatched = 0;
+    for (const it of items.slice(0, 10)) {
+      detectedCount++;
+      const { data: dup } = await supabase.from('mk_blog_publish_log').select('id').eq('외부_url', it.link).maybeSingle();
+      if (dup) continue;
+      const pubDateStr = it.pubDate ? new Date(it.pubDate).toISOString().slice(0, 10) : today;
+      if (pubDateStr < yesterday) continue;
+      await supabase.from('mk_blog_publish_log').insert({
+        발행일: pubDateStr, 채널: ch.name, 외부_url: it.link, rss_제목: it.title, 상태: '감지됨'
+      });
+      const matchedSlotId = await syncToSlot(ch.name, it.title, it.link);
+      if (matchedSlotId) {
+        slotMatched++;
+        await supabase.from('mk_blog_publish_log')
+          .update({ 매칭_슬롯_id: matchedSlotId, 상태: '슬롯매칭' })
+          .eq('외부_url', it.link);
+      }
+      newCount++;
+      newPosts.push({ channel: ch.name, title: it.title, url: it.link });
+    }
+    totalNew += newCount;
+    channelStats.push({ ch: ch.name, 신규: newCount, 감지: detectedCount, 슬롯매칭: slotMatched });
+  }
+
+  if (totalNew > 0) {
+    try {
+      await fetch(`${SUPABASE_URL}/functions/v1/notion-publish-url-pusher`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}` },
+        body: JSON.stringify({ trigger: 'chained_from_publish_detector_v4' })
+      });
+    } catch (e) { console.error('chain err', e); }
+
+    let msg = `📢 <b>블로그 발행 감지 (11 KST)</b>\n\n`;
+    const totalMatched = channelStats.reduce((a, s) => a + s.슬롯매칭, 0);
+    msg += `<b>신규 ${totalNew}건 · 슬롯매칭 ${totalMatched}건</b>\n\n`;
+    const maxList = Math.min(newPosts.length, 5);
+    for (let i = 0; i < maxList; i++) {
+      const p = newPosts[i];
+      const titleTrim = p.title.length > 40 ? p.title.slice(0, 40) + '...' : p.title;
+      msg += `${i+1}・ <b>${p.channel}</b>\n   ${escapeHtml(titleTrim)}\n   ${p.url}\n\n`;
+    }
+    if (newPosts.length > 5) msg += `… 외 ${newPosts.length - 5}건\n\n`;
+    msg += `→ 노션 PUSH 자동 연계 (11:30 KST 매칭 확인)`;
+    await sendTelegram(msg);
+  }
+
+  return new Response(JSON.stringify({ ok: true, totalNew, channelStats, version: 'v4.2' }), {
+    headers: { 'Content-Type': 'application/json' }
+  });
+});
+                                                                                                                                                                                                                                                    

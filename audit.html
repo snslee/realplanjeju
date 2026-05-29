@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>리얼플랜제주 감사 대시보드 — 5축 24h 통합</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;background:#f0f4f8;color:#1a2942;padding:20px}
+  .container{max-width:1280px;margin:0 auto}
+  h1{font-size:24px;color:#1a4d7e;margin-bottom:8px}
+  .subtitle{color:#5a6878;font-size:13px;margin-bottom:20px}
+  .tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid #d0d8e0}
+  .tab{padding:10px 20px;cursor:pointer;border-radius:8px 8px 0 0;background:#e5ebf2;font-weight:600;font-size:14px;color:#5a6878}
+  .tab.active{background:#1a4d7e;color:#fff}
+  .panel{display:none;background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+  .panel.active{display:block}
+  .axis-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:20px}
+  .axis-card{padding:18px;border-radius:10px;border-left:5px solid #1a4d7e;background:#f8fafc}
+  .axis-card.warning{border-left-color:#f59e0b;background:#fef9ed}
+  .axis-card.error{border-left-color:#ef4444;background:#fef0f0}
+  .axis-card.ok{border-left-color:#10b981;background:#f0fdf4}
+  .axis-name{font-size:13px;color:#5a6878;font-weight:600}
+  .axis-status{font-size:24px;font-weight:700;margin:8px 0;color:#1a2942}
+  .axis-detail{font-size:12px;color:#5a6878;line-height:1.6}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:#1a4d7e;color:#fff;padding:10px;text-align:left;font-weight:600}
+  td{padding:10px;border-bottom:1px solid #e5ebf2}
+  tr:hover{background:#f8fafc}
+  .badge{padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;display:inline-block}
+  .badge-p1{background:#ef4444;color:#fff}
+  .badge-p2{background:#f59e0b;color:#fff}
+  .badge-p3{background:#94a3b8;color:#fff}
+  .badge-info{background:#e0e7ff;color:#3730a3}
+  .badge-warning{background:#fef3c7;color:#92400e}
+  .badge-error{background:#fee2e2;color:#991b1b}
+  .badge-ok{background:#d1fae5;color:#065f46}
+  .btn{padding:8px 16px;background:#1a4d7e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600}
+  .btn:hover{background:#143a5e}
+  .btn-secondary{background:#5a6878}
+  .meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding:12px 16px;background:#f0f4f8;border-radius:8px;font-size:12px;color:#5a6878}
+  .learning-mode{background:#fef9ed;color:#92400e;padding:6px 12px;border-radius:6px;font-weight:600}
+  .empty{text-align:center;padding:40px;color:#94a3b8;font-size:14px}
+  .info-box{background:#eff6ff;border-left:4px solid #3b82f6;padding:14px 18px;border-radius:6px;font-size:13px;color:#1e3a8a;line-height:1.7;margin-bottom:16px}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🛡 리얼플랜제주 감사 대시보드</h1>
+  <div class="subtitle">6축 통합 감사 시스템 v1.1 — Google SRE 4 시그널 + F축 개선 제안 / 49-1차 / 2026-05-21</div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab(0)">5축 상태</div>
+    <div class="tab" onclick="showTab(1)">최근 알림</div>
+    <div class="tab" onclick="showTab(2)">룰 관리</div>
+    <div class="tab" onclick="showTab(3)">통계</div>
+    <div class="tab" onclick="showTab(4)">설정</div>
+  </div>
+
+  <div class="panel active" id="p0">
+    <div class="meta">
+      <div>최근 24시간 / <span id="lastTime">-</span></div>
+      <div>
+        <span id="learningBadge"></span>
+        <button class="btn" onclick="refreshAll()">🔄 새로고침</button>
+        <button class="btn btn-secondary" onclick="runAudit()">▶ 지금 감사 실행</button>
+      </div>
+    </div>
+    <div class="axis-grid" id="axisGrid"></div>
+    <h3 style="margin:20px 0 12px;font-size:16px;color:#1a4d7e">🚨 활성 경고·오류</h3>
+    <table id="alertTable"><thead><tr><th>시각</th><th>축</th><th>룰</th><th>상태</th><th>심각도</th><th>메시지</th></tr></thead><tbody></tbody></table>
+  </div>
+
+  <div class="panel" id="p1">
+    <h3 style="margin-bottom:12px">최근 알림 (7일)</h3>
+    <table id="recentTable"><thead><tr><th>시각</th><th>축</th><th>룰</th><th>상태</th><th>심각도</th><th>메시지</th></tr></thead><tbody></tbody></table>
+  </div>
+
+  <div class="panel" id="p2">
+    <h3 style="margin-bottom:12px">감사 룰 13종</h3>
+    <table id="ruleTable"><thead><tr><th>룰 코드</th><th>축</th><th>이름</th><th>점검 방법</th><th>심각도</th><th>활성</th></tr></thead><tbody></tbody></table>
+  </div>
+
+  <div class="panel" id="p3">
+    <h3 style="margin-bottom:12px">7일·30일 추세</h3>
+    <table id="statTable"><thead><tr><th>기간</th><th>전체</th><th>정상</th><th>경고</th><th>오류</th><th>경고율</th></tr></thead><tbody></tbody></table>
+  </div>
+
+  <div class="panel" id="p4">
+    <div class="info-box">
+      <b>현재 운영 모드</b><br>
+      • <b>학습모드:</b> <span id="learningStatus">-</span> (2026-05-27 이후 정식 가동)<br>
+      • <b>P1 알림 채널:</b> 텔레그램 (Vault realplan_telegram_*)<br>
+      • <b>일일 다이제스트:</b> 매일 09:00 KST<br>
+      • <b>매시 자동 점검:</b> 매시 0분 (system-audit-hourly)<br>
+      • <b>비용:</b> $0 추가 (Supabase Free 0.5% 사용)
+    </div>
+    <div class="info-box">
+      <b>학습모드 종료 시 (2026-05-27)</b><br>
+      ① 임계치 튜닝 자동 가동 → 거짓 양성 ↓<br>
+      ② P1 즉시 텔레그램 + 일일 다이제스트 발송 시작<br>
+      ③ admin v2.27에서 룰 추가·조정 가능
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL = 'https://iodfqlkeiwxyuojwcozv.supabase.co';
+const SUPA_ANON = 'sb_publishable_qsxqIzqEgYpgnPHIxbg5sw_Z7tNa7sn'; // public anon
+const supa = window.supabase.createClient(SUPA_URL, SUPA_ANON);
+
+const AXIS_NAMES = {
+  'A_EF헬스': 'A. EF 헬스',
+  'B_DB무결성': 'B. DB 무결성',
+  'C_3축동기': 'C. 3축 동기',
+  'D_결재흐름': 'D. 결재 흐름',
+  'E_보안시크릿': 'E. 보안·시크릿',
+  'F_시스템개선': 'F. 시스템 개선 제안'
+};
+
+function showTab(i){
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',i===j));
+  document.querySelectorAll('.panel').forEach((p,j)=>p.classList.toggle('active',i===j));
+  if(i===1)loadRecent();else if(i===2)loadRules();else if(i===3)loadStats();
+}
+
+async function refreshAll(){
+  document.getElementById('lastTime').textContent = new Date().toLocaleString('ko-KR');
+  const {data:lm} = await supa.rpc('realplan_audit_learning_mode');
+  const isLearning = Boolean(lm);
+  document.getElementById('learningBadge').innerHTML = isLearning ? '<span class="learning-mode">📚 학습모드</span>' : '<span class="badge badge-ok">✅ 정식 가동</span>';
+  document.getElementById('learningStatus').textContent = isLearning ? '가동중 (메일·텔레그램 X)' : '종료 (정식 발송중)';
+
+  const {data:summary} = await supa.from('v_hr_audit_24h_summary').select('*');
+  const grid = document.getElementById('axisGrid');
+  grid.innerHTML = '';
+  const axes = ['A_EF헬스','B_DB무결성','C_3축동기','D_결재흐름','E_보안시크릿','F_시스템개선'];
+  axes.forEach(축=>{
+    const row = (summary||[]).find(s=>s.감사축===축) || {정상_건수:0,경고_건수:0,오류_건수:0,마지막_점검:null};
+    const cls = row.오류_건수>0?'error':row.경고_건수>0?'warning':'ok';
+    const icon = row.오류_건수>0?'🔴':row.경고_건수>0?'⚠️':'✅';
+    grid.innerHTML += `<div class="axis-card ${cls}"><div class="axis-name">${AXIS_NAMES[축]}</div><div class="axis-status">${icon} ${row.오류_건수>0?'오류':row.경고_건수>0?'경고':'정상'}</div><div class="axis-detail">정상 ${row.정상_건수||0} · 경고 ${row.경고_건수||0} · 오류 ${row.오류_건수||0}<br>${row.마지막_점검?new Date(row.마지막_점검).toLocaleString('ko-KR'):'-'}</div></div>`;
+  });
+
+  // 활성 경고·오류
+  const {data:alerts} = await supa.from('hr_audit_log').select('*').in('상태',['경고','오류']).gte('발생시각', new Date(Date.now()-24*60*60*1000).toISOString()).order('발생시각',{ascending:false}).limit(20);
+  const tb = document.querySelector('#alertTable tbody');
+  tb.innerHTML = '';
+  if(!alerts || alerts.length===0){tb.innerHTML = '<tr><td colspan="6" class="empty">24시간 이상 없음 ✅</td></tr>';}
+  else alerts.forEach(a=>{
+    tb.innerHTML += `<tr><td>${new Date(a.발생시각).toLocaleString('ko-KR')}</td><td>${AXIS_NAMES[a.감사축]||a.감사축}</td><td>${a.룰_코드}</td><td><span class="badge badge-${a.상태==='오류'?'error':'warning'}">${a.상태}</span></td><td><span class="badge badge-${a.심각도.toLowerCase()}">${a.심각도}</span></td><td>${a.메시지}</td></tr>`;
+  });
+}
+
+async function loadRecent(){
+  const {data} = await supa.from('hr_audit_log').select('*').gte('발생시각', new Date(Date.now()-7*24*60*60*1000).toISOString()).order('발생시각',{ascending:false}).limit(200);
+  const tb = document.querySelector('#recentTable tbody');
+  tb.innerHTML = (data||[]).map(a=>`<tr><td>${new Date(a.발생시각).toLocaleString('ko-KR')}</td><td>${AXIS_NAMES[a.감사축]||a.감사축}</td><td>${a.룰_코드}</td><td><span class="badge badge-${a.상태==='오류'?'error':a.상태==='경고'?'warning':'ok'}">${a.상태}</span></td><td><span class="badge badge-${a.심각도.toLowerCase()}">${a.심각도}</span></td><td>${a.메시지}</td></tr>`).join('') || '<tr><td colspan="6" class="empty">데이터 없음</td></tr>';
+}
+
+async function loadRules(){
+  const {data} = await supa.from('hr_audit_rule').select('*').order('감사축').order('룰_코드');
+  const tb = document.querySelector('#ruleTable tbody');
+  tb.innerHTML = (data||[]).map(r=>`<tr><td><code>${r.룰_코드}</code></td><td>${AXIS_NAMES[r.감사축]||r.감사축}</td><td>${r.룰_이름}</td><td>${r.점검_방법}</td><td><span class="badge badge-${r.심각도.toLowerCase()}">${r.심각도}</span></td><td>${r.활성?'✅':'❌'}</td></tr>`).join('');
+}
+
+async function loadStats(){
+  const periods = [{name:'24시간',hours:24},{name:'7일',hours:24*7},{name:'30일',hours:24*30}];
+  const tb = document.querySelector('#statTable tbody');
+  tb.innerHTML = '';
+  for(const p of periods){
+    const {data} = await supa.from('hr_audit_log').select('상태').gte('발생시각', new Date(Date.now()-p.hours*60*60*1000).toISOString());
+    const all = data||[];
+    const n = all.filter(l=>l.상태==='정상').length;
+    const w = all.filter(l=>l.상태==='경고').length;
+    const e = all.filter(l=>l.상태==='오류').length;
+    const total = all.length;
+    const wRate = total>0?((w+e)/total*100).toFixed(1):0;
+    tb.innerHTML += `<tr><td>${p.name}</td><td>${total}</td><td>${n}</td><td>${w}</td><td>${e}</td><td>${wRate}%</td></tr>`;
+  }
+}
+
+async function runAudit(){
+  if(!confirm('지금 감사를 실행하시겠습니까? (수초 소요)'))return;
+  const res = await fetch(`${SUPA_URL}/functions/v1/system-audit-hourly`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  const j = await res.json();
+  alert(`감사 완료\n룰 ${j.룰_수}건 / 정상 ${j.정상} / 경고 ${j.경고} / 오류 ${j.오류}\n학습모드: ${j.학습모드?'O':'X'} / 알림 ${j.알림수}건`);
+  refreshAll();
+}
+
+refreshAll();
+</script>
+</body>
+</html>

@@ -8,106 +8,86 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
-:root{--primary:#2563eb;--accent:#3b82f6;--sidebar:200px;--hdr:56px}
+:root{--primary:#2563eb;--sidebar:200px;--hdr:56px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
-/* ── 로그인 ── */
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e3a8a,#2563eb)}
 .login-card{background:#fff;border-radius:16px;padding:40px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.2);text-align:center}
-.login-card h1{font-size:1.4rem;font-weight:700;margin-bottom:4px;color:#1e293b}
+.login-card h1{font-size:1.4rem;font-weight:700;margin-bottom:4px}
 .login-card .sub{font-size:.85rem;color:#64748b;margin-bottom:32px}
 .btn-google{width:100%;background:#fff;color:#3c4043;border:1px solid #dadce0;border-radius:8px;padding:12px 16px;font-size:.95rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:.2s}
-.btn-google:hover{background:#f8fafc;border-color:#bdc1c6;box-shadow:0 1px 6px rgba(0,0,0,.1)}
+.btn-google:hover{background:#f8fafc;box-shadow:0 1px 6px rgba(0,0,0,.1)}
 .btn-google:disabled{opacity:.6;cursor:not-allowed}
-.login-note{font-size:.78rem;color:#94a3b8;margin-top:16px}
-/* ── 앱 ── */
+.login-note{font-size:.75rem;color:#94a3b8;margin-top:14px}
+#login-err{color:#ef4444;font-size:.8rem;margin-top:12px;min-height:18px}
 #app{display:none;min-height:100vh}
-/* header */
 .hdr{height:var(--hdr);background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 20px;gap:12px;position:fixed;top:0;left:0;right:0;z-index:100}
-.hdr-logo{font-weight:700;font-size:1rem;color:var(--primary);white-space:nowrap}
+.hdr-logo{font-weight:700;font-size:1rem;color:var(--primary)}
 .hdr-badge{background:#eff6ff;color:var(--primary);font-size:.72rem;padding:3px 8px;border-radius:20px;font-weight:600}
 .hdr-spacer{flex:1}
 .hdr-user{font-size:.82rem;color:#64748b}
-.btn-logout{font-size:.8rem;padding:6px 14px;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;background:#fff;color:#64748b;transition:.2s}
+.btn-logout{font-size:.8rem;padding:6px 14px;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;background:#fff;color:#64748b}
 .btn-logout:hover{background:#f1f5f9}
-/* sidebar */
 .sidebar{position:fixed;top:var(--hdr);left:0;width:var(--sidebar);height:calc(100vh - var(--hdr));background:#fff;border-right:1px solid #e2e8f0;overflow-y:auto;padding:12px 0}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;font-size:.87rem;color:#475569;border-radius:0;transition:.15s;border-left:3px solid transparent}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;font-size:.87rem;color:#475569;transition:.15s;border-left:3px solid transparent}
 .nav-item:hover{background:#f8fafc;color:#1e293b}
 .nav-item.active{background:#eff6ff;color:var(--primary);font-weight:600;border-left-color:var(--primary)}
-.nav-item .icon{font-size:1rem;width:20px;text-align:center}
 .nav-section{padding:8px 18px 4px;font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em}
-/* main content */
-.main{margin-left:var(--sidebar);margin-top:var(--hdr);padding:24px;min-height:calc(100vh - var(--hdr))}
+.main{margin-left:var(--sidebar);margin-top:var(--hdr);padding:24px}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
-/* KPI cards */
 .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
-.kpi-card{background:#fff;border-radius:12px;padding:20px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.kpi-card{background:#fff;border-radius:12px;padding:20px;border:1px solid #e2e8f0}
 .kpi-label{font-size:.78rem;color:#64748b;font-weight:600;margin-bottom:6px}
-.kpi-value{font-size:1.6rem;font-weight:700;color:#1e293b}
+.kpi-value{font-size:1.6rem;font-weight:700}
 .kpi-sub{font-size:.75rem;color:#94a3b8;margin-top:4px}
-.kpi-up{color:#10b981}.kpi-dn{color:#ef4444}
-/* cards */
-.card{background:#fff;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:20px}
+.card{background:#fff;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:20px}
 .card-hdr{padding:16px 20px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:8px}
-.card-hdr h3{font-size:.95rem;font-weight:700;color:#1e293b}
+.card-hdr h3{font-size:.95rem;font-weight:700}
 .card-body{padding:16px 20px}
-/* table */
 .tbl{width:100%;border-collapse:collapse;font-size:.83rem}
 .tbl th{background:#f8fafc;padding:10px 12px;text-align:left;font-weight:600;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap}
-.tbl td{padding:10px 12px;border-bottom:1px solid #f1f5f9;color:#374151}
+.tbl td{padding:10px 12px;border-bottom:1px solid #f1f5f9}
 .tbl tr:hover td{background:#f8fafc}
-/* status badges */
 .badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
 .badge-draft{background:#fef3c7;color:#92400e}
 .badge-approved{background:#d1fae5;color:#065f46}
 .badge-published{background:#dbeafe;color:#1e40af}
 .badge-rejected{background:#fee2e2;color:#991b1b}
-/* filter buttons */
 .filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .filter-btn{padding:6px 14px;border-radius:20px;border:1px solid #e2e8f0;font-size:.8rem;cursor:pointer;background:#fff;color:#64748b;transition:.15s}
 .filter-btn:hover,.filter-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-/* action buttons */
-.btn-sm{padding:4px 12px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;border:none;transition:.15s}
-.btn-approve{background:#d1fae5;color:#065f46}.btn-approve:hover{background:#a7f3d0}
-.btn-reject{background:#fee2e2;color:#991b1b}.btn-reject:hover{background:#fecaca}
-.btn-copy{background:#e0e7ff;color:#3730a3}.btn-copy:hover{background:#c7d2fe}
-/* placeholder */
+.btn-sm{padding:4px 12px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;border:none}
+.btn-approve{background:#d1fae5;color:#065f46}
+.btn-reject{background:#fee2e2;color:#991b1b}
+.btn-copy{background:#e0e7ff;color:#3730a3}
 .placeholder-card{text-align:center;padding:60px 20px;color:#94a3b8}
-.placeholder-card .icon{font-size:3rem;margin-bottom:12px}
+.placeholder-card .ico{font-size:3rem;margin-bottom:12px}
 .placeholder-card h3{font-size:1rem;font-weight:600;margin-bottom:8px;color:#64748b}
-.placeholder-card p{font-size:.85rem}
-/* loading */
 .loading{text-align:center;padding:40px;color:#94a3b8;font-size:.9rem}
-/* mobile */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;max-width:520px;width:100%}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.modal-close{font-size:1.4rem;cursor:pointer;color:#64748b}
+.modal-body{padding:20px 22px}
+.reject-input{width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:.9rem;margin-top:8px;resize:vertical}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:.85rem;z-index:9999;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;z-index:100;height:56px}
+.mob-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.65rem;color:#94a3b8;cursor:pointer;gap:2px}
+.mob-item.active{color:var(--primary)}
 @media(max-width:768px){
   .sidebar{display:none}
   .main{margin-left:0;padding:16px;margin-bottom:64px}
   .kpi-grid{grid-template-columns:repeat(2,1fr)}
-  .mobile-nav{display:flex!important}
+  .mobile-nav{display:flex}
 }
-.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;z-index:100;height:56px}
-.mob-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.65rem;color:#94a3b8;cursor:pointer;gap:2px;padding:4px 0}
-.mob-item.active{color:var(--primary)}
-.mob-item .icon{font-size:1.2rem}
-/* toast */
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:.85rem;z-index:9999;opacity:0;transition:.3s;pointer-events:none}
-.toast.show{opacity:1}
-/* modal */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-bg.open{display:flex}
-.modal{background:#fff;border-radius:16px;max-width:680px;width:100%;max-height:85vh;overflow-y:auto}
-.modal-hdr{padding:20px 24px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center}
-.modal-hdr h3{font-weight:700;font-size:1rem}
-.modal-close{font-size:1.4rem;cursor:pointer;color:#64748b;line-height:1}
-.modal-body{padding:20px 24px}
-.reject-input{width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:.9rem;margin-top:8px;resize:vertical}
 </style>
 </head>
 <body>
 
-<!-- ════ 로그인 화면 ════ -->
+<!-- 로그인 화면 -->
 <div id="login-screen">
   <div class="login-card">
     <div style="font-size:2.5rem;margin-bottom:12px">📊</div>
@@ -117,14 +97,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Google로 로그인
     </button>
-    <p id="login-err" style="color:#ef4444;font-size:.8rem;margin-top:14px"></p>
-    <p class="login-note">기존 admin과 동일한 Google 계정 사용</p>
+    <p id="login-err"></p>
+    <p class="login-note">기존 admin과 동일한 Google 계정</p>
   </div>
 </div>
 
-<!-- ════ 앱 ════ -->
+<!-- 앱 -->
 <div id="app">
-  <!-- 헤더 -->
   <header class="hdr">
     <span class="hdr-logo">📊 마케팅 운영</span>
     <span class="hdr-badge">v1.1</span>
@@ -133,142 +112,96 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
   </header>
 
-  <!-- 사이드바 -->
-  <nav class="sidebar" id="sidebar">
+  <nav class="sidebar">
     <div class="nav-section">콘텐츠</div>
-    <div class="nav-item active" data-tab="t1" onclick="switchTab('t1',this)"><span class="icon">📊</span>통계 대시보드</div>
-    <div class="nav-item" data-tab="t2" onclick="switchTab('t2',this)"><span class="icon">📝</span>초안 보관소</div>
-    <div class="nav-item" data-tab="t3" onclick="switchTab('t3',this)"><span class="icon">🎯</span>다음달 슬롯</div>
-    <div class="nav-item" data-tab="t4" onclick="switchTab('t4',this)"><span class="icon">🔍</span>잠자는 거인</div>
-    <div class="nav-item" data-tab="t5" onclick="switchTab('t5',this)"><span class="icon">🏆</span>상위노출 진입</div>
+    <div class="nav-item active" onclick="switchTab('t1',this)"><span>📊</span>통계 대시보드</div>
+    <div class="nav-item" onclick="switchTab('t2',this)"><span>📝</span>초안 보관소</div>
+    <div class="nav-item" onclick="switchTab('t3',this)"><span>🎯</span>다음달 슬롯</div>
+    <div class="nav-item" onclick="switchTab('t4',this)"><span>🔍</span>잠자는 거인</div>
+    <div class="nav-item" onclick="switchTab('t5',this)"><span>🏆</span>상위노출 진입</div>
     <div class="nav-section">설정</div>
-    <div class="nav-item" data-tab="t6" onclick="switchTab('t6',this)"><span class="icon">🎨</span>톤 가이드</div>
-    <div class="nav-item" data-tab="t7" onclick="switchTab('t7',this)"><span class="icon">📅</span>콘텐츠 스케줄</div>
-    <div class="nav-item" data-tab="t8" onclick="switchTab('t8',this)"><span class="icon">🔄</span>이관 진행률</div>
+    <div class="nav-item" onclick="switchTab('t6',this)"><span>🎨</span>톤 가이드</div>
+    <div class="nav-item" onclick="switchTab('t7',this)"><span>📅</span>콘텐츠 스케줄</div>
+    <div class="nav-item" onclick="switchTab('t8',this)"><span>🔄</span>이관 진행률</div>
   </nav>
 
-  <!-- 모바일 탭바 -->
   <div class="mobile-nav">
-    <div class="mob-item active" onclick="switchTab('t1',null)"><span class="icon">📊</span>통계</div>
-    <div class="mob-item" onclick="switchTab('t2',null)"><span class="icon">📝</span>초안</div>
-    <div class="mob-item" onclick="switchTab('t3',null)"><span class="icon">🎯</span>슬롯</div>
-    <div class="mob-item" onclick="switchTab('t5',null)"><span class="icon">🏆</span>진입</div>
-    <div class="mob-item" onclick="switchTab('t7',null)"><span class="icon">📅</span>스케줄</div>
+    <div class="mob-item active" onclick="switchTab('t1',null)"><span style="font-size:1.2rem">📊</span>통계</div>
+    <div class="mob-item" onclick="switchTab('t2',null)"><span style="font-size:1.2rem">📝</span>초안</div>
+    <div class="mob-item" onclick="switchTab('t3',null)"><span style="font-size:1.2rem">🎯</span>슬롯</div>
+    <div class="mob-item" onclick="switchTab('t5',null)"><span style="font-size:1.2rem">🏆</span>진입</div>
+    <div class="mob-item" onclick="switchTab('t7',null)"><span style="font-size:1.2rem">📅</span>스케줄</div>
   </div>
 
-  <!-- 메인 콘텐츠 -->
   <main class="main">
 
-    <!-- ── TAB 1: 통계 대시보드 ── -->
+    <!-- TAB 1: 통계 대시보드 -->
     <div class="tab-panel active" id="t1">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div>
-          <h2 style="font-size:1.2rem;font-weight:700">📊 통계 대시보드</h2>
-          <p style="font-size:.82rem;color:#64748b;margin-top:2px">mk_metrics 기준 / 최근 7일</p>
-        </div>
+        <div><h2 style="font-size:1.2rem;font-weight:700">📊 통계 대시보드</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">mk_metrics 기준 / 최근 7일</p></div>
         <button onclick="loadStats()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
-
-      <!-- KPI 카드 -->
-      <div class="kpi-grid" id="kpi-grid">
+      <div class="kpi-grid">
         <div class="kpi-card"><div class="kpi-label">📈 티스토리 총노출</div><div class="kpi-value" id="kpi-노출">--</div><div class="kpi-sub">최근 7일</div></div>
         <div class="kpi-card"><div class="kpi-label">👆 티스토리 총클릭</div><div class="kpi-value" id="kpi-클릭">--</div><div class="kpi-sub">최근 7일</div></div>
         <div class="kpi-card"><div class="kpi-label">🎯 평균 CTR</div><div class="kpi-value" id="kpi-ctr">--</div><div class="kpi-sub">클릭/노출</div></div>
         <div class="kpi-card"><div class="kpi-label">🏆 네이버 평균순위</div><div class="kpi-value" id="kpi-순위">--</div><div class="kpi-sub">블A·B·C 평균</div></div>
       </div>
-
-      <!-- 차트 -->
       <div class="card">
-        <div class="card-hdr">
-          <h3>📈 채널별 티스토리 노출 추세 (7일)</h3>
-          <div style="flex:1"></div>
-          <span style="font-size:.78rem;color:#94a3b8">GSC 데이터 기준</span>
-        </div>
+        <div class="card-hdr"><h3>📈 채널별 티스토리 노출 추세 (7일)</h3></div>
         <div class="card-body" style="height:260px;position:relative">
           <canvas id="trendChart"></canvas>
           <div id="chart-loading" class="loading">데이터 로딩 중...</div>
         </div>
       </div>
-
-      <!-- 채널별 상세 테이블 -->
       <div class="card">
         <div class="card-hdr"><h3>📋 채널별 어제 지표</h3></div>
         <div class="card-body" style="padding:0;overflow-x:auto">
-          <table class="tbl" id="stats-tbl">
-            <thead><tr><th>채널</th><th>소스</th><th>노출</th><th>클릭</th><th>CTR%</th><th>평균순위</th><th>측정일</th></tr></thead>
-            <tbody id="stats-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody>
-          </table>
+          <table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>노출</th><th>클릭</th><th>CTR%</th><th>평균순위</th><th>측정일</th></tr></thead>
+          <tbody id="stats-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
         </div>
       </div>
     </div>
 
-    <!-- ── TAB 2: 초안 보관소 ── -->
+    <!-- TAB 2: 초안 보관소 -->
     <div class="tab-panel" id="t2">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div>
-          <h2 style="font-size:1.2rem;font-weight:700">📝 초안 보관소</h2>
-          <p style="font-size:.82rem;color:#64748b;margin-top:2px">mk_blog_drafts — 승인·반려·복사</p>
-        </div>
+        <div><h2 style="font-size:1.2rem;font-weight:700">📝 초안 보관소</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">mk_blog_drafts</p></div>
         <button onclick="loadDrafts()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
-
       <div class="filter-bar" id="draft-filters">
-        <button class="filter-btn active" data-status="all" onclick="filterDrafts('all',this)">전체</button>
-        <button class="filter-btn" data-status="draft" onclick="filterDrafts('draft',this)">📋 초안</button>
-        <button class="filter-btn" data-status="approved" onclick="filterDrafts('approved',this)">✅ 승인</button>
-        <button class="filter-btn" data-status="published" onclick="filterDrafts('published',this)">🚀 발행</button>
-        <button class="filter-btn" data-status="rejected" onclick="filterDrafts('rejected',this)">❌ 반려</button>
+        <button class="filter-btn active" onclick="filterDrafts('all',this)">전체</button>
+        <button class="filter-btn" onclick="filterDrafts('draft',this)">📋 초안</button>
+        <button class="filter-btn" onclick="filterDrafts('approved',this)">✅ 승인</button>
+        <button class="filter-btn" onclick="filterDrafts('published',this)">🚀 발행</button>
+        <button class="filter-btn" onclick="filterDrafts('rejected',this)">❌ 반려</button>
       </div>
-
       <div class="card">
         <div class="card-body" style="padding:0;overflow-x:auto">
-          <table class="tbl" id="drafts-tbl">
-            <thead><tr><th>채널</th><th>핵심키워드</th><th>제목</th><th>점수</th><th>상태</th><th>생성일</th><th>액션</th></tr></thead>
-            <tbody id="drafts-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody>
-          </table>
+          <table class="tbl"><thead><tr><th>채널</th><th>핵심키워드</th><th>제목</th><th>점수</th><th>상태</th><th>생성일</th><th>액션</th></tr></thead>
+          <tbody id="drafts-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
         </div>
       </div>
     </div>
 
-    <!-- ── TABS 3-8: Placeholder ── -->
-    <div class="tab-panel" id="t3">
-      <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px">🎯 다음달 슬롯</h2>
-      <div class="card"><div class="placeholder-card"><div class="icon">🎯</div><h3>v1.2 예정</h3><p>다음달 콘텐츠 슬롯 30개 제안 · 분석 결과 기반 · 일괄 승인</p></div></div>
-    </div>
-    <div class="tab-panel" id="t4">
-      <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px">🔍 잠자는 거인</h2>
-      <div class="card"><div class="placeholder-card"><div class="icon">🔍</div><h3>v1.2 예정</h3><p>노출↑·CTR↓ Top 10 글 · AI 제목 개선 제안 · 즉시 액션</p></div></div>
-    </div>
-    <div class="tab-panel" id="t5">
-      <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px">🏆 상위노출 진입</h2>
-      <div class="card"><div class="placeholder-card"><div class="icon">🏆</div><h3>v1.2 예정</h3><p>D+7·14·30·90 순위 추이 · ✅⚠️🔶❌ 진입판정 · 노션 연동</p></div></div>
-    </div>
-    <div class="tab-panel" id="t6">
-      <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px">🎨 톤 가이드</h2>
-      <div class="card"><div class="placeholder-card"><div class="icon">🎨</div><h3>v1.3 예정</h3><p>인플루언서 톤 정의 · Good vs Bad 예시 · 학습 시드 50편</p></div></div>
-    </div>
-    <div class="tab-panel" id="t7">
-      <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px">📅 콘텐츠 스케줄</h2>
-      <div class="card"><div class="placeholder-card"><div class="icon">📅</div><h3>v1.3 예정</h3><p>월간 캘린더 뷰 · 슬롯 CRUD · CSV 가져오기·내보내기</p></div></div>
-    </div>
-    <div class="tab-panel" id="t8">
-      <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px">🔄 이관 진행률</h2>
-      <div class="card"><div class="placeholder-card"><div class="icon">🔄</div><h3>v1.3 예정</h3><p>노션→Supabase 0~100% · 단계별 게이트 통과 여부</p></div></div>
-    </div>
+    <!-- TABS 3-8: 플레이스홀더 -->
+    <div class="tab-panel" id="t3"><h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px">🎯 다음달 슬롯</h2><div class="card"><div class="placeholder-card"><div class="ico">🎯</div><h3>v1.2 예정</h3><p>분석 결과 기반 30개 슬롯 제안</p></div></div></div>
+    <div class="tab-panel" id="t4"><h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px">🔍 잠자는 거인</h2><div class="card"><div class="placeholder-card"><div class="ico">🔍</div><h3>v1.2 예정</h3><p>노출↑·CTR↓ Top 10 + AI 제목 제안</p></div></div></div>
+    <div class="tab-panel" id="t5"><h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px">🏆 상위노출 진입</h2><div class="card"><div class="placeholder-card"><div class="ico">🏆</div><h3>v1.2 예정</h3><p>D+7·14·30·90 순위 추이</p></div></div></div>
+    <div class="tab-panel" id="t6"><h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px">🎨 톤 가이드</h2><div class="card"><div class="placeholder-card"><div class="ico">🎨</div><h3>v1.3 예정</h3><p>인플루언서 톤 정의</p></div></div></div>
+    <div class="tab-panel" id="t7"><h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px">📅 콘텐츠 스케줄</h2><div class="card"><div class="placeholder-card"><div class="ico">📅</div><h3>v1.3 예정</h3><p>월간 캘린더 + 슬롯 CRUD</p></div></div></div>
+    <div class="tab-panel" id="t8"><h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px">🔄 이관 진행률</h2><div class="card"><div class="placeholder-card"><div class="ico">🔄</div><h3>v1.3 예정</h3><p>노션→Supabase 마이그레이션 상태</p></div></div></div>
 
   </main>
 </div>
 
-<!-- ── 반려 모달 ── -->
+<!-- 반려 모달 -->
 <div class="modal-bg" id="reject-modal">
   <div class="modal">
-    <div class="modal-hdr">
-      <h3>❌ 초안 반려</h3>
-      <span class="modal-close" onclick="closeModal()">✕</span>
-    </div>
+    <div class="modal-hdr">❌ 초안 반려 <span class="modal-close" onclick="closeModal()">✕</span></div>
     <div class="modal-body">
-      <p style="font-size:.88rem;color:#475569;margin-bottom:8px">반려 사유를 입력하세요.</p>
-      <textarea class="reject-input" id="reject-reason" rows="4" placeholder="예) 키워드 방향성 수정 필요 / 제목 리라이팅 후 재제출"></textarea>
+      <p style="font-size:.88rem;color:#475569">반려 사유를 입력하세요.</p>
+      <textarea class="reject-input" id="reject-reason" rows="4" placeholder="예) 키워드 방향성 수정 필요"></textarea>
       <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
         <button class="filter-btn" onclick="closeModal()">취소</button>
         <button class="btn-sm btn-reject" style="padding:8px 20px" onclick="confirmReject()">반려 확정</button>
@@ -277,56 +210,52 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
   </div>
 </div>
 
-<!-- 토스트 -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════════
-//  Supabase 초기화
-// ══════════════════════════════════════════
+// ══ Supabase 초기화 (admin.html v0.7 동일 방식) ══
 const SUPA_URL = 'https://iodfqlkeiwxyuojwcozv.supabase.co';
-const SUPA_KEY = 'sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext'; // admin.html과 동일 key
-// admin.html v0.7과 동일한 PKCE 수동 교환 방식
+const SUPA_KEY = 'sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
 const PROJECT_REF = 'iodfqlkeiwxyuojwcozv';
 const SB_AUTH_KEY = 'sb-' + PROJECT_REF + '-auth-token';
 const SB_VERIFIER_KEY = 'sb-' + PROJECT_REF + '-auth-token-code-verifier';
 
-const sb = supabase.createClient(SUPA_URL, SUPA_KEY, {
-  auth: { detectSessionInUrl: false, persistSession: true, autoRefreshToken: true, flowType: 'pkce', lock: (name, t, fn) => fn() }
+const sb = window.supabase.createClient(SUPA_URL, SUPA_KEY, {
+  auth: { detectSessionInUrl: false, persistSession: true, autoRefreshToken: true, flowType: 'pkce', lock: (n,t,fn) => fn() }
 });
 
 let trendChart = null;
 let allDrafts = [];
 let rejectTargetId = null;
 
-// ── admin.html v0.7과 동일: 수동 PKCE 코드 교환 ──
+// ══ PKCE 수동 교환 (admin.html v0.7 동일) ══
 async function manualExchangeCode(code) {
   const verifierRaw = localStorage.getItem(SB_VERIFIER_KEY);
-  if (!verifierRaw) throw new Error('code_verifier not found');
+  if (!verifierRaw) throw new Error('code_verifier 없음');
   let verifier = verifierRaw;
   try {
-    const parsed = JSON.parse(verifierRaw);
-    if (typeof parsed === 'string') verifier = parsed;
-    else if (parsed && parsed.codeVerifier) verifier = parsed.codeVerifier;
+    const p = JSON.parse(verifierRaw);
+    if (typeof p === 'string') verifier = p;
+    else if (p && p.codeVerifier) verifier = p.codeVerifier;
   } catch(e) {}
   const res = await fetch(SUPA_URL + '/auth/v1/token?grant_type=pkce', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY },
     body: JSON.stringify({ auth_code: code, code_verifier: verifier })
   });
-  if (!res.ok) { const t = await res.text(); throw new Error('exchange failed (' + res.status + '): ' + t); }
-  const tokenData = await res.json();
+  if (!res.ok) { const t = await res.text(); throw new Error('교환 실패(' + res.status + '): ' + t); }
+  const d = await res.json();
   try { localStorage.removeItem(SB_VERIFIER_KEY); } catch(e) {}
-  const sessionObj = {
-    access_token: tokenData.access_token,
-    token_type: tokenData.token_type || 'bearer',
-    expires_in: tokenData.expires_in || 3600,
-    expires_at: Math.floor(Date.now() / 1000) + (tokenData.expires_in || 3600),
-    refresh_token: tokenData.refresh_token,
-    user: tokenData.user
+  const s = {
+    access_token: d.access_token,
+    token_type: d.token_type || 'bearer',
+    expires_in: d.expires_in || 3600,
+    expires_at: Math.floor(Date.now() / 1000) + (d.expires_in || 3600),
+    refresh_token: d.refresh_token,
+    user: d.user
   };
-  try { localStorage.setItem(SB_AUTH_KEY, JSON.stringify(sessionObj)); } catch(e) {}
-  return sessionObj;
+  try { localStorage.setItem(SB_AUTH_KEY, JSON.stringify(s)); } catch(e) {}
+  return s;
 }
 
 function readLocalAuthSession() {
@@ -340,9 +269,8 @@ function readLocalAuthSession() {
   } catch(e) { return null; }
 }
 
-// ── 초기화: admin.html init() 방식 그대로 ──
+// ══ 인증 초기화 ══
 async function initAuth() {
-  // Step 1: URL에 ?code= 있으면 수동 PKCE 교환
   const urlObj = new URL(window.location.href);
   const urlCode = urlObj.searchParams.get('code');
   if (urlCode) {
@@ -353,20 +281,15 @@ async function initAuth() {
       const session = await manualExchangeCode(urlCode);
       sb.auth.setSession({ access_token: session.access_token, refresh_token: session.refresh_token }).catch(() => {});
       showApp(session.user);
-      return;
     } catch(err) {
-      // 실패 시 localStorage 초기화 후 로그인 화면
       try { localStorage.removeItem(SB_AUTH_KEY); localStorage.removeItem(SB_VERIFIER_KEY); } catch(e) {}
-      document.getElementById('login-err').textContent = '로그인 처리 실패: ' + (err.message || err) + ' · 다시 시도해주세요.';
+      document.getElementById('login-err').textContent = '로그인 처리 실패: ' + (err.message || String(err));
       showLogin();
-      return;
     }
+    return;
   }
-
-  // Step 2: localStorage에서 세션 복원
   const session = readLocalAuthSession();
   if (session) { showApp(session.user); return; }
-
   showLogin();
 }
 
@@ -378,19 +301,23 @@ function showLogin() {
 function showApp(user) {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
-  document.getElementById('hdr-email').textContent = user.email || user.email || '';
+  document.getElementById('hdr-email').textContent = user ? (user.email || '') : '';
   loadStats();
 }
 
 async function doLogin() {
   const btn = document.getElementById('login-btn');
-  const err = document.getElementById('login-err');
+  const errEl = document.getElementById('login-err');
+  errEl.textContent = '';
   btn.disabled = true;
   btn.textContent = '연결 중...';
   const redirectTo = window.location.origin + window.location.pathname;
   const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
-  btn.disabled = false;
-  if (error) { err.textContent = 'Google 로그인 실패: ' + error.message; btn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google로 로그인'; }
+  if (error) {
+    errEl.textContent = 'Google 로그인 실패: ' + error.message;
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google로 로그인';
+  }
 }
 
 async function doLogout() {
@@ -399,9 +326,7 @@ async function doLogout() {
   showLogin();
 }
 
-// ══════════════════════════════════════════
-//  탭 전환
-// ══════════════════════════════════════════
+// ══ 탭 전환 ══
 function switchTab(id, el) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -412,118 +337,126 @@ function switchTab(id, el) {
   if (id === 't2') loadDrafts();
 }
 
-// ══════════════════════════════════════════
-//  TAB 1: 통계 대시보드
-// ══════════════════════════════════════════
+// ══ TAB 1: 통계 ══
 async function loadStats() {
   document.getElementById('chart-loading').style.display = 'block';
-  const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-
-  const { data, error } = await sb
-    .from('mk_metrics')
+  const since = new Date(Date.now() - 7 * 86400000).toISOString();
+  const { data, error } = await sb.from('mk_metrics')
     .select('채널, 데이터_소스, 노출_수, 클릭_수, ctr_pct, 평균_순위, 수집_시각')
-    .gte('수집_시각', sevenDaysAgo)
-    .order('수집_시각', { ascending: false });
-
-  if (error) { showToast('통계 로드 실패: ' + error.message); return; }
-
-  // KPI 계산
+    .gte('수집_시각', since).order('수집_시각', { ascending: false });
+  if (error) { showToast('통계 로드 실패'); return; }
   const gsc = data.filter(r => r.데이터_소스 === 'gsc');
-  const naver = data.filter(r => r.데이터_소스 === 'naver_search');
-  const totalImp = gsc.reduce((s, r) => s + (r.노출_수 || 0), 0);
-  const totalClk = gsc.reduce((s, r) => s + (r.클릭_수 || 0), 0);
-  const avgCtr = totalImp > 0 ? ((totalClk / totalImp) * 100).toFixed(2) : '--';
-  const naverRanks = naver.filter(r => r.평균_순위).map(r => r.평균_순위);
-  const avgRank = naverRanks.length ? (naverRanks.reduce((a,b)=>a+Number(b),0)/naverRanks.length).toFixed(1) : '--';
-
-  document.getElementById('kpi-노출').textContent = totalImp.toLocaleString();
-  document.getElementById('kpi-클릭').textContent = totalClk.toLocaleString();
-  document.getElementById('kpi-ctr').textContent = avgCtr + '%';
-  document.getElementById('kpi-순위').textContent = avgRank + '위';
-
-  // 채널별 테이블 (어제 기준)
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-  const ydData = data.filter(r => r.수집_시각 && r.수집_시각.startsWith(yesterday));
+  const nav = data.filter(r => r.데이터_소스 === 'naver_search');
+  const imp = gsc.reduce((s,r) => s+(r.노출_수||0), 0);
+  const clk = gsc.reduce((s,r) => s+(r.클릭_수||0), 0);
+  const ranks = nav.filter(r => r.평균_순위).map(r => Number(r.평균_순위));
+  document.getElementById('kpi-노출').textContent = imp.toLocaleString();
+  document.getElementById('kpi-클릭').textContent = clk.toLocaleString();
+  document.getElementById('kpi-ctr').textContent = imp > 0 ? ((clk/imp)*100).toFixed(2)+'%' : '--';
+  document.getElementById('kpi-순위').textContent = ranks.length ? (ranks.reduce((a,b)=>a+b,0)/ranks.length).toFixed(1)+'위' : '--';
+  const yd = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  const ydData = data.filter(r => r.수집_시각 && r.수집_시각.startsWith(yd));
   const tbody = document.getElementById('stats-body');
-  if (ydData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">최근 데이터 없음</td></tr>';
-  } else {
-    tbody.innerHTML = ydData.map(r => `
-      <tr>
-        <td><span style="font-weight:600">${r.채널||'-'}</span></td>
-        <td><span style="font-size:.75rem;color:#64748b">${r.데이터_소스||'-'}</span></td>
-        <td>${(r.노출_수||0).toLocaleString()}</td>
-        <td>${(r.클릭_수||0).toLocaleString()}</td>
-        <td>${r.ctr_pct != null ? Number(r.ctr_pct).toFixed(2)+'%' : '-'}</td>
-        <td>${r.평균_순위 != null ? Number(r.평균_순위).toFixed(1)+'위' : '-'}</td>
-        <td style="color:#94a3b8;font-size:.78rem">${r.수집_시각 ? r.수집_시각.slice(0,10) : '-'}</td>
-      </tr>`).join('');
-  }
-
-  // 차트 — 채널별 티스토리 일별 노출
-  const gscData = data.filter(r => r.데이터_소스 === 'gsc' && r.노출_수);
-  const byDayCh = {};
-  gscData.forEach(r => {
-    const day = r.수집_시각 ? r.수집_시각.slice(5,10) : '-';
-    const key = `${r.채널}|${day}`;
-    byDayCh[key] = (byDayCh[key] || 0) + (r.노출_수 || 0);
-  });
-  const channels = [...new Set(gscData.map(r => r.채널))].sort();
-  const days = [...new Set(gscData.map(r => r.수집_시각 ? r.수집_시각.slice(5,10) : ''))].sort().slice(-7);
-  const colors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'];
-
-  const chartData = {
-    labels: days,
-    datasets: channels.map((ch, i) => ({
-      label: ch,
-      data: days.map(d => byDayCh[`${ch}|${d}`] || 0),
-      borderColor: colors[i % colors.length],
-      backgroundColor: colors[i % colors.length] + '20',
-      tension: 0.4, fill: false, pointRadius: 4
-    }))
-  };
-
+  tbody.innerHTML = ydData.length ? ydData.map(r =>
+    `<tr><td><b>${r.채널||'-'}</b></td><td style="font-size:.75rem;color:#64748b">${r.데이터_소스||'-'}</td>
+    <td>${(r.노출_수||0).toLocaleString()}</td><td>${(r.클릭_수||0).toLocaleString()}</td>
+    <td>${r.ctr_pct!=null?Number(r.ctr_pct).toFixed(2)+'%':'-'}</td>
+    <td>${r.평균_순위!=null?Number(r.평균_순위).toFixed(1)+'위':'-'}</td>
+    <td style="color:#94a3b8;font-size:.78rem">${r.수집_시각?r.수집_시각.slice(0,10):'-'}</td></tr>`).join('')
+    : '<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">데이터 없음</td></tr>';
+  const gscD = data.filter(r => r.데이터_소스==='gsc' && r.노출_수);
+  const byd = {};
+  gscD.forEach(r => { const d=r.수집_시각?r.수집_시각.slice(5,10):'-'; const k=r.채널+'|'+d; byd[k]=(byd[k]||0)+(r.노출_수||0); });
+  const chs = [...new Set(gscD.map(r=>r.채널))].sort();
+  const days = [...new Set(gscD.map(r=>r.수집_시각?r.수집_시각.slice(5,10):''))].sort().slice(-7);
+  const clrs = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'];
   document.getElementById('chart-loading').style.display = 'none';
   if (trendChart) trendChart.destroy();
-  const ctx = document.getElementById('trendChart').getContext('2d');
-  trendChart = new Chart(ctx, {
+  trendChart = new Chart(document.getElementById('trendChart').getContext('2d'), {
     type: 'line',
-    data: chartData,
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'top', labels: { font: { size: 11 } } } },
-      scales: {
-        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } },
-        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
-      }
-    }
+    data: { labels: days, datasets: chs.map((ch,i) => ({
+      label: ch, data: days.map(d=>byd[ch+'|'+d]||0),
+      borderColor: clrs[i%clrs.length], backgroundColor: clrs[i%clrs.length]+'20',
+      tension: 0.4, fill: false, pointRadius: 4
+    })) },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{font:{size:11}}}},
+      scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}},x:{grid:{display:false}}} }
   });
 }
 
-// ══════════════════════════════════════════
-//  TAB 2: 초안 보관소
-// ══════════════════════════════════════════
+// ══ TAB 2: 초안 ══
 async function loadDrafts() {
-  document.getElementById('drafts-body').innerHTML =
-    '<tr><td colspan="7" class="loading">로딩 중...</td></tr>';
-
-  const { data, error } = await sb
-    .from('mk_blog_drafts')
+  document.getElementById('drafts-body').innerHTML = '<tr><td colspan="7" class="loading">로딩 중...</td></tr>';
+  const { data, error } = await sb.from('mk_blog_drafts')
     .select('id, 채널, 핵심키워드, 제목, 자가검증_점수, 상태, 생성일, 발행_url, 거절_사유')
-    .order('생성일', { ascending: false })
-    .limit(100);
-
-  if (error) { showToast('초안 로드 실패: ' + error.message); return; }
+    .order('생성일', { ascending: false }).limit(100);
+  if (error) { showToast('초안 로드 실패'); return; }
   allDrafts = data || [];
   renderDrafts(allDrafts);
 }
 
 function renderDrafts(list) {
   const tbody = document.getElementById('drafts-body');
-  if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">초안 없음</td></tr>';
-    return;
-  }
-  const statusMap = { draft:'badge-draft', approved:'badge-approved', published:'badge-published', rejected:'badge-rejected' };
-  const statusLabel = { draft:'초안', approved:'승인', published:'발행', rejected:'반려' };
-  tbody.inne
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">초안 없음</td></tr>'; return; }
+  const sm = {draft:'badge-draft',approved:'badge-approved',published:'badge-published',rejected:'badge-rejected'};
+  const sl = {draft:'초안',approved:'승인',published:'발행',rejected:'반려'};
+  tbody.innerHTML = list.map(r => {
+    const sc = r.자가검증_점수;
+    const scColor = sc==null?'#94a3b8':sc>=9?'#10b981':sc>=7?'#f59e0b':'#ef4444';
+    return `<tr>
+      <td><span style="font-size:.8rem;background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px">${r.채널||'-'}</span></td>
+      <td style="font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.핵심키워드||'-'}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.제목||'(없음)'}</td>
+      <td><span style="font-weight:700;color:${scColor}">${sc!=null?sc:'-'}</span></td>
+      <td><span class="badge ${sm[r.상태]||'badge-draft'}">${sl[r.상태]||r.상태||'초안'}</span></td>
+      <td style="color:#94a3b8;font-size:.78rem">${r.생성일?r.생성일.slice(0,10):'-'}</td>
+      <td><div style="display:flex;gap:4px">
+        ${r.상태==='draft'?`<button class="btn-sm btn-approve" onclick="approveDraft('${r.id}')">승인</button><button class="btn-sm btn-reject" onclick="openReject('${r.id}')">반려</button>`:''}
+        <button class="btn-sm btn-copy" onclick="copyTitle('${(r.제목||'').replace(/'/g,"\\'")}')">복사</button>
+        ${r.발행_url?`<a href="${r.발행_url}" target="_blank" style="font-size:.75rem;color:var(--primary);padding:4px 8px">🔗</a>`:''}
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterDrafts(status, btn) {
+  document.querySelectorAll('#draft-filters .filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderDrafts(status === 'all' ? allDrafts : allDrafts.filter(r => r.상태 === status));
+}
+
+async function approveDraft(id) {
+  const { error } = await sb.from('mk_blog_drafts').update({ 상태: 'approved', 승인일: new Date().toISOString() }).eq('id', id);
+  if (error) { showToast('승인 실패: ' + error.message); return; }
+  showToast('✅ 승인 완료'); loadDrafts();
+}
+
+function openReject(id) {
+  rejectTargetId = id;
+  document.getElementById('reject-reason').value = '';
+  document.getElementById('reject-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('reject-modal').classList.remove('open'); rejectTargetId = null; }
+async function confirmReject() {
+  const reason = document.getElementById('reject-reason').value.trim();
+  if (!reason) { showToast('반려 사유를 입력하세요'); return; }
+  const { error } = await sb.from('mk_blog_drafts').update({ 상태: 'rejected', 거절_사유: reason }).eq('id', rejectTargetId);
+  if (error) { showToast('반려 실패'); return; }
+  closeModal(); showToast('❌ 반려 처리됨'); loadDrafts();
+}
+
+function copyTitle(title) { navigator.clipboard.writeText(title).then(() => showToast('📋 제목 복사됨')); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ══ 시작 ══
+initAuth();
+</script>
+</body>
+</html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          

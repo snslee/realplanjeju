@@ -1,0 +1,1 @@
+-- sql/071: mk_blog_algorithm 테이블 신설 (63차 / 2026-05-30)\n-- Supabase apply_migration으로 적용 완료

@@ -161,9 +161,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
       <div class="filter-bar" id="slot-filters">
         <button class="filter-btn active" onclick="filterSlots('all',this)">전체</button>
-        <button class="filter-btn" onclick="filterSlots('STAGE_0',this)">🆕 대기</button>
-        <button class="filter-btn" onclick="filterSlots('STAGE_3',this)">✏️ 작성중</button>
-        <button class="filter-btn" onclick="filterSlots('STAGE_7',this)">✅ 완료</button>
+        <button class="filter-btn" onclick="filterSlots('pending',this)">🆕 대기</button>
+        <button class="filter-btn" onclick="filterSlots('in_progress',this)">✏️ 작성중</button>
+        <button class="filter-btn" onclick="filterSlots('completed',this)">✅ 완료</button>
+        <button class="filter-btn" onclick="filterSlots('halted',this)">⏸️ 보류</button>
       </div>
       <div class="card"><div class="card-body" style="padding:0;overflow-x:auto">
         <table class="tbl"><thead><tr><th>발행일</th><th>채널</th><th>핵심키워드</th><th>콘텐츠방향</th><th>상태</th><th>수정일</th></tr></thead>
@@ -377,4 +378,4 @@ function renderDrafts(list){
   if(!list.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">초안 없음</td></tr>';return;}
   const sm={draft:'badge-draft',approved:'badge-approved',published:'badge-published',rejected:'badge-rejected'};
   const sl={draft:'초안',approved:'승인',published:'발행',rejected:'반려'};
-  tbody.innerHTML=list.map(r=>{const sc=r.자가검증_점수,scc=sc==null?'#94a3b8':sc>=9?'#10b981':sc>=7?'#f59e0b':'#ef4444';return `<tr><td><span style="font-size:.8rem;background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px">${r.채널||'-'}</span></td><td style="font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.핵심키워드||'-'}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.제목||'(없음)'}</td><td><span style="font-weight:700;color:${scc}">${sc!=null?sc:'-'}</span></td><td><span class="badge ${sm[r.상태]||'badge-draft'}">${sl[r.상태]||r.상태|
+  tbody.innerHTML=list.map(r=>{const sc=r.자가검증_점수,scc=sc==null?'#94a3b8':sc>=9?'#10b981':sc>=7?'#f59e0b':'#ef4444';return `<tr><td><span style="font-size:.8rem;background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px">${r.채널||'-'}</span></td><td style="font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.핵심키워드||'-'}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.제목||'(없음)'}</td><td><span style="font-weight:700;color:${scc}">${sc!=nul

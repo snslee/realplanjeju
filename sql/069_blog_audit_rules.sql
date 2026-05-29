@@ -1,16 +1,1 @@
--- sql/069 — 블로그 시스템 감사룰 3종 신설 (62차 / 2026-05-29)
--- 설계: 27_블로그시스템_완성설계도_v1.0 §3.3
-
-INSERT INTO public.hr_audit_rule
-  (룰_코드, 감사축, 룰_이름, 설명, 점검_방법, 임계치, 심각도, 활성)
-VALUES
-  ('G_ALGO_STALE',   'G_블로그헌법', '알고리즘DB 업데이트 지연',  '블로그 알고리즘DB 마지막 업데이트 35일 초과 시 경고', 'manual_check', '{"days":35}'::jsonb,  'P2', true),
-  ('G_KEYWORD_STALE','G_블로그헌법', '연관키워드DB 갱신 지연',     'mk_keywords 마지막 INSERT 100일 초과 시 경고',        'sql_count',    '{"days":100}'::jsonb, 'P3', true),
-  ('G_DRAFT_PENDING','G_블로그헌법', '초안 미처리 장기 대기',       'mk_blog_drafts draft 상태 7일 초과 건수 경고',        'sql_count',    '{"days":7}'::jsonb,   'P2', true)
-ON CONFLICT (룰_코드) DO UPDATE SET
-  룰_이름   = EXCLUDED.룰_이름,
-  설명      = EXCLUDED.설명,
-  심각도    = EXCLUDED.심각도,
-  활성      = EXCLUDED.활성,
-  updated_at = NOW();
--- 검증: SELECT 룰_코드, 감사축, 심각도 FROM hr_audit_rule WHERE 룰_코드 LIKE 'G_%STALE%' OR 룰_코드='G_DRAFT_PENDING';
+LS0gc3FsLzA2OSDigJQg67iU66Gc6re4IOyLnOyKpO2FnCDqsJDsgqzro7AgM+yihSDsi6DshKQgKDYy7LCoIC8gMjAyNi0wNS0yOSkKLS0g7ISk6rOEOiAyN1/ruJTroZzqt7jsi5zsiqTthZxf7JmE7ISx7ISk6rOE64+EX3YxLjAgwqczLjMKCklOU0VSVCBJTlRPIHB1YmxpYy5ocl9hdWRpdF9ydWxlCiAgKOujsF/svZTrk5wsIOqwkOyCrOy2lSwg66OwX+ydtOumhCwg7ISk66qFLCDsoJDqsoBf67Cp67KVLCDsnoTqs4TsuZgsIOyLrOqwgeuPhCwg7Zmc7ISxKQpWQUxVRVMKICAoJ0dfQUxHT19TVEFMRScsICAgJ0df67iU66Gc6re47ZeM67KVJywgJ+yVjOqzoOumrOymmERCIOyXheuNsOydtO2KuCDsp4Dsl7AnLCAgJ+u4lOuhnOq3uCDslYzqs6DrpqzspphEQiDrp4jsp4Drp4kg7JeF642w7J207Yq4IDM17J28IOy0iOqzvCDsi5wg6rK96rOgJywgJ21hbnVhbF9jaGVjaycsICd7ImRheXMiOjM1fSc6Ompzb25iLCAgJ1AyJywgdHJ1ZSksCiAgKCdHX0tFWVdPUkRfU1RBTEUnLCdHX+u4lOuhnOq3uO2XjOuylScsICfsl7DqtIDtgqTsm4zrk5xEQiDqsLHsi6Ag7KeA7JewJywgICAgICdta19rZXl3b3JkcyDrp4jsp4Drp4kgSU5TRVJUIDEwMOydvCDstIjqs7wg7IucIOqyveqzoCcsICAgICAgICAnc3FsX2NvdW50JywgICAgJ3siZGF5cyI6MTAwfSc6Ompzb25iLCAnUDMnLCB0cnVlKSwKICAoJ0dfRFJBRlRfUEVORElORycsJ0df67iU66Gc6re47ZeM67KVJywgJ+y0iOyViCDrr7jsspjrpqwg7J6l6riwIOuMgOq4sCcsICAgICAgICdta19ibG9nX2RyYWZ0cyBkcmFmdCDsg4Htg5wgN+ydvCDstIjqs7wg6rG07IiYIOqyveqzoCcsICAgICAgICAnc3FsX2NvdW50JywgICAgJ3siZGF5cyI6N30nOjpqc29uYiwgICAnUDInLCB0cnVlKQpPTiBDT05GTElDVCAo66OwX+y9lOuTnCkgRE8gVVBEQVRFIFNFVAogIOujsF/snbTrpoQgICA9IEVYQ0xVREVELuujsF/snbTrpoQsCiAg7ISk66qFICAgICAgPSBFWENMVURFRC7shKTrqoUsCiAg7Ius6rCB64+EICAgID0gRVhDTFVERUQu7Ius6rCB64+ELAogIO2ZnOyEsSAgICAgID0gRVhDTFVERUQu7Zmc7ISxLAogIHVwZGF0ZWRfYXQgPSBOT1coKTsKLS0g6rKA7KadOiBTRUxFQ1Qg66OwX+y9lOuTnCwg6rCQ7IKs7LaVLCDsi6zqsIHrj4QgRlJPTSBocl9hdWRpdF9ydWxlIFdIRVJFIOujsF/svZTrk5wgTElLRSAnR18lU1RBTEUlJyBPUiDro7Bf7L2U65OcPSdHX0RSQUZUX1BFTkRJTkcnOwo=

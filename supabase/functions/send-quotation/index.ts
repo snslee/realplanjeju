@@ -1,7 +1,8 @@
-// Supabase Edge Function: send-quotation v2.7
-// Phase 2a stage 4 + v2.7 doc_type 3-way branch (quote / delivery / statement)
-// Created: 2026-04-26 / v2.7 patched: 2026-04-28
+// Supabase Edge Function: send-quotation v2.8
+// Phase 2a + v2.7 doc_type 3-way + v2.8 묶음 5 (인원·박일·안 메타 / 사업부=국내여행)
+// Created: 2026-04-26 / v2.7 patched: 2026-04-28 / v2.8 patched: 2026-04-29 (admin v2.11 정합)
 // RealPlan Jeju Co., Ltd.
+// Backup: 2026-05-20 (Track D 0-① 위험 차단)
 
 import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
@@ -69,11 +70,35 @@ function getDocMeta(docType: string, qNumber: string) {
   }
 }
 
-// Build HTML body (v2.7: docType branch)
+// Build HTML body (v2.7: docType branch / v2.8: 인원·박일·안 메타 추가)
 function buildHtml(p: any, docType: string): string {
   const safe = (s: any) => String(s ?? "").replace(/[<>&"]/g, (c) =>
     ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" } as any)[c]);
   const meta = getDocMeta(docType, p.견적번호);
+
+  // v2.8: 안 번호 (2차/3차 안만 표시)
+  const anNum = Number(p.안_번호 ?? 1);
+  const anMeta = anNum > 1
+    ? `<tr><td style="padding:4px 12px 4px 0;color:#666">견적 안</td><td>${anNum}차 안</td></tr>`
+    : "";
+
+  // v2.8: 사업부=국내여행 시 인원·박일 메타
+  let tourMeta = "";
+  if (p.사업부 === "국내여행") {
+    const adult = Number(p.인원_성인 ?? 0);
+    const child = Number(p.인원_아동 ?? 0);
+    const nights = Number(p.박일수 ?? 0);
+    const total = adult + child;
+    if (total > 0) {
+      const peopleStr = `성인 ${adult}명${child > 0 ? ` / 아동 ${child}명` : ""} (총 ${total}명)`;
+      tourMeta += `<tr><td style="padding:4px 12px 4px 0;color:#666">인원</td><td>${peopleStr}</td></tr>`;
+    }
+    if (nights > 0) {
+      const days = nights + 1;
+      tourMeta += `<tr><td style="padding:4px 12px 4px 0;color:#666">기간</td><td>${nights}박 ${days}일</td></tr>`;
+    }
+  }
+
   return `<div style="font-family:'Malgun Gothic','맑은 고딕',sans-serif;font-size:14px;line-height:1.7;color:#222">
     <p>안녕하세요, <strong>리얼플랜제주 주식회사</strong>입니다.</p>
     <p>${meta.body}</p>
@@ -81,6 +106,8 @@ function buildHtml(p: any, docType: string): string {
       <tr><td style="padding:4px 12px 4px 0;color:#666">${meta.label}번호</td><td><strong>${safe(meta.number)}</strong></td></tr>
       <tr><td style="padding:4px 12px 4px 0;color:#666">사업부</td><td>${safe(p.사업부)}</td></tr>
       <tr><td style="padding:4px 12px 4px 0;color:#666">제목</td><td>${safe(p.제목)}</td></tr>
+      ${anMeta}
+      ${tourMeta}
     </table>
     <p style="margin-top:18px">감사합니다.<br>
       <strong>리얼플랜제주 주식회사</strong> | 1577-2296 | realplan01@naver.com
@@ -110,7 +137,6 @@ serve(async (req: Request) => {
     });
   }
 
-  // v2.7: extract doc_type (default 'quote')
   const { quotation_id, 견적번호, 수신자, pdf_base64, pdf_filename, 제목, doc_type } = payload;
   const docType: string = doc_type || "quote";
   const docMeta = getDocMeta(docType, 견적번호);
@@ -138,7 +164,6 @@ serve(async (req: Request) => {
   }
 
   try {
-    // v2.7: subject branch by docType
     const info = await getTransporter().sendMail({
       from: `"리얼플랜제주 주식회사" <${SMTP_USER}>`,
       to: 수신자.email,
@@ -147,9 +172,13 @@ serve(async (req: Request) => {
       attachments,
     });
 
-    // v2.7: RPC only when docType is quote (avoid status regression on delivery/statement)
+    let rpc_error_msg: string | null = null;
+    let rpc_data_summary: any = null;
+    let rpc_called = false;
+    let service_key_status = SUPABASE_SERVICE_KEY ? `len=${SUPABASE_SERVICE_KEY.length}` : "EMPTY";
     if (docType === "quote" && quotation_id && quotation_id !== "00000000-0000-0000-0000-000000000000") {
-      const { error: rpcErr } = await supabase.rpc("rpc_mark_quotation_sent", {
+      rpc_called = true;
+      const { data: rpcData, error: rpcErr } = await supabase.rpc("rpc_mark_quotation_sent", {
         _quotation_id: quotation_id,
         _recipients: [{
           email: 수신자.email,
@@ -157,7 +186,12 @@ serve(async (req: Request) => {
           담당자: 수신자.담당자 ?? null,
         }],
       });
-      if (rpcErr) console.error("[rpc_mark_quotation_sent]", rpcErr);
+      if (rpcErr) {
+        console.error("[rpc_mark_quotation_sent]", rpcErr);
+        rpc_error_msg = `${rpcErr.code || ""}: ${rpcErr.message || String(rpcErr)}`;
+      } else {
+        rpc_data_summary = rpcData;
+      }
     }
 
     return new Response(JSON.stringify({
@@ -169,6 +203,10 @@ serve(async (req: Request) => {
       recipient: 수신자.email,
       messageId: info.messageId,
       sent_at: new Date().toISOString(),
+      rpc_called,
+      rpc_error: rpc_error_msg,
+      rpc_data: rpc_data_summary,
+      service_key_status,
     }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -178,7 +216,6 @@ serve(async (req: Request) => {
     console.error("[send-quotation]", e);
     const errMsg = (e?.message || String(e)).slice(0, 500);
 
-    // v2.7: failure RPC also only when docType is quote
     if (docType === "quote" && quotation_id && quotation_id !== "00000000-0000-0000-0000-000000000000") {
       try {
         await supabase.rpc("rpc_mark_quotation_failed", {

@@ -1,1 +1,121 @@
-Ly8gYmxvZy1zdGF0cy1jb2xsZWN0b3IgdjMuMCDigJQgNTnssKggUDEg6rKw7ZWoIOyImOyglQovLyDrs4Dqsr06IHB1Ymxpc2hfbG9nIOy1nOq3vCA2MOydvCBVUkwg7KeB7KCRIEdTQyDsobDtmowg7LaU6rCAIOKGkiDti7DsiqTthqDrpqwg66ek7Lmt66WgIOqwnOyEoAovLyDquLDsobQgdG9wLU4g7IiY7KeRIOycoOyngCArIOyLoOq3nCDrsJztlonquIAg7KeB7KCRIOy/vOumrCDrs5HtlokKCmltcG9ydCAianNyOkBzdXBhYmFzZS9mdW5jdGlvbnMtanMvZWRnZS1ydW50aW1lLmQudHMiOwppbXBvcnQgeyBjcmVhdGVDbGllbnQgfSBmcm9tICJodHRwczovL2VzbS5zaC9Ac3VwYWJhc2Uvc3VwYWJhc2UtanNAMi4zOS4wIjsKCmNvbnN0IHN1cGFiYXNlID0gY3JlYXRlQ2xpZW50KAogIERlbm8uZW52LmdldCgiU1VQQUJBU0VfVVJMIikhLAogIERlbm8uZW52LmdldCgiU1VQQUJBU0VfU0VSVklDRV9ST0xFX0tFWSIpISwKICB7IGF1dGg6IHsgcGVyc2lzdFNlc3Npb246IGZhbHNlLCBhdXRvUmVmcmVzaFRva2VuOiBmYWxzZSB9IH0KKTsKCmNvbnN0IEdTQ19TSVRFUyA9IFsKICB7IHNpdGVVcmw6ICdodHRwczovL3dvd2pqODYzMS50aXN0b3J5LmNvbS8nLCDssYTrhJA6ICfruJRB7Yuw7Iqk7Yag66asJyB9LAogIHsgc2l0ZVVybDogJ2h0dHBzOi8vcmVhbHBsYW4tZXZlbnQudGlzdG9yeS5jb20vJywg7LGE64SQOiAn67iUQu2LsOyKpO2GoOumrCcgfSwKICB7IHNpdGVVcmw6ICdodHRwczovL3JlYWxwbGFuLW1hcmtldGluZy50aXN0b3J5LmNvbS8nLCDssYTrhJA6ICfruJRD7Yuw7Iqk7Yag66asJyB9CiAgLy8gcmVhbHBsYW5qZWp1LmNvbeydgCBHU0Mg65Ox66GdIO2bhCDstpTqsIAKXTsKCmFzeW5jIGZ1bmN0aW9uIGdldFNlY3JldChuYW1lOiBzdHJpbmcpOiBQcm9taXNlPHN0cmluZyB8IG51bGw+IHsKICBjb25zdCB7IGRhdGEgfSA9IGF3YWl0IHN1cGFiYXNlLnJwYygncmVhbHBsYW5fZ2V0X3NlY3JldCcsIHsgc2VjcmV0X25hbWU6IG5hbWUgfSk7CiAgcmV0dXJuIGRhdGEgYXMgc3RyaW5nOwp9Cgphc3luYyBmdW5jdGlvbiBnZXRBY2Nlc3NUb2tlbigpOiBQcm9taXNlPHN0cmluZyB8IG51bGw+IHsKICBjb25zdCBpZCA9IGF3YWl0IGdldFNlY3JldCgncmVhbHBsYW5fZ3NjX29hdXRoX2NsaWVudF9pZCcpOwogIGNvbnN0IHNlYyA9IGF3YWl0IGdldFNlY3JldCgncmVhbHBsYW5fZ3NjX29hdXRoX2NsaWVudF9zZWNyZXQnKTsKICBjb25zdCBydCA9IGF3YWl0IGdldFNlY3JldCgncmVhbHBsYW5fZ3NjX29hdXRoX3JlZnJlc2hfdG9rZW4nKTsKICBpZiAoIWlkIHx8ICFzZWMgfHwgIXJ0KSByZXR1cm4gbnVsbDsKICBjb25zdCByID0gYXdhaXQgZmV0Y2goJ2h0dHBzOi8vb2F1dGgyLmdvb2dsZWFwaXMuY29tL3Rva2VuJywgewogICAgbWV0aG9kOiAnUE9TVCcsCiAgICBoZWFkZXJzOiB7ICdDb250ZW50LVR5cGUnOiAnYXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVkJyB9LAogICAgYm9keTogbmV3IFVSTFNlYXJjaFBhcmFtcyh7IGNsaWVudF9pZDogaWQsIGNsaWVudF9zZWNyZXQ6IHNlYywgcmVmcmVzaF90b2tlbjogcnQsIGdyYW50X3R5cGU6ICdyZWZyZXNoX3Rva2VuJyB9KQogIH0pOwogIGlmICghci5vaykgcmV0dXJuIG51bGw7CiAgcmV0dXJuIChhd2FpdCByLmpzb24oKSkuYWNjZXNzX3Rva2VuOwp9Cgphc3luYyBmdW5jdGlvbiBsb2dBdWRpdEVycm9yKHNldmVyaXR5OiBzdHJpbmcsIG1zZzogc3RyaW5nLCBkZXRhaWw6IGFueSkgewogIHRyeSB7CiAgICBhd2FpdCBzdXBhYmFzZS5mcm9tKCdocl9hdWRpdF9sb2cnKS5pbnNlcnQoewogICAgICDqsJDsgqzstpU6ICdDJywKICAgICAg66OwX+y9lOuTnDogJ0NfRUZfSU5TRVJUX0ZBSUwnLAogICAgICDsi6zqsIHrj4Q6IHNldmVyaXR5LAogICAgICDsg4Htg5w6ICdkZXRlY3RlZCcsCiAgICAgIOuplOyLnOyngDogbXNnLAogICAgICDshLjrtoDrjbDsnbTthLA6IHsgZWY6ICdibG9nLXN0YXRzLWNvbGxlY3RvcicsIGRldGFpbCB9CiAgICB9KTsKICB9IGNhdGNoIChlKSB7IGNvbnNvbGUuZXJyb3IoJ2F1ZGl0IGZhaWwnLCBlKTsgfQp9Cgphc3luYyBmdW5jdGlvbiBnc2NRdWVyeSh0b2tlbjogc3RyaW5nLCBzaXRlVXJsOiBzdHJpbmcsIGJvZHk6IG9iamVjdCk6IFByb21pc2U8YW55W10gfCBudWxsPiB7CiAgY29uc3QgciA9IGF3YWl0IGZldGNoKAogICAgYGh0dHBzOi8vc2VhcmNoY29uc29sZS5nb29nbGVhcGlzLmNvbS93ZWJtYXN0ZXJzL3YzL3NpdGVzLyR7ZW5jb2RlVVJJQ29tcG9uZW50KHNpdGVVcmwpfS9zZWFyY2hBbmFseXRpY3MvcXVlcnlgLAogICAgewogICAgICBtZXRob2Q6ICdQT1NUJywKICAgICAgaGVhZGVyczogeyAnQXV0aG9yaXphdGlvbic6IGBCZWFyZXIgJHt0b2tlbn1gLCAnQ29udGVudC1UeXBlJzogJ2FwcGxpY2F0aW9uL2pzb24nIH0sCiAgICAgIGJvZHk6IEpTT04uc3RyaW5naWZ5KGJvZHkpCiAgICB9CiAgKTsKICBpZiAoIXIub2spIHJldHVybiBudWxsOwogIGNvbnN0IGRhdGEgPSBhd2FpdCByLmpzb24oKTsKICByZXR1cm4gZGF0YS5yb3dzIHx8IFtdOwp9Cgphc3luYyBmdW5jdGlvbiB1cHNlcnRNZXRyaWMo7LGE64SQOiBzdHJpbmcsIHVybDogc3RyaW5nLCBkYXRlOiBzdHJpbmcsIHJvdzogYW55KTogUHJvbWlzZTxib29sZWFuPiB7CiAgY29uc3QgeyBlcnJvciB9ID0gYXdhaXQgc3VwYWJhc2UuZnJvbSgnbWtfbWV0cmljcycpLnVwc2VydCh7CiAgICDssYTrhJAsCiAgICDsmbjrtoBfdXJsOiB1cmwsCiAgICDsuKHsoJVf7J287J6QOiBkYXRlLAogICAg64W47LacX+yImDogTWF0aC5yb3VuZChyb3cuaW1wcmVzc2lvbnMgfHwgMCksCiAgICDtgbTrpq1f7IiYOiBNYXRoLnJvdW5kKHJvdy5jbGlja3MgfHwgMCksCiAgICBjdHJfcGN0OiAocm93LmN0ciB8fCAwKSAqIDEwMCwKICAgIO2Pieq3oF/siJzsnIQ6IHJvdy5wb3NpdGlvbiB8fCBudWxsLAogICAg642w7J207YSwX+yGjOyKpDogJ2dzYycsCiAgICDsiJjsp5Ff7Iuc6rCBOiBuZXcgRGF0ZSgpLnRvSVNPU3RyaW5nKCkKICB9LCB7IG9uQ29uZmxpY3Q6ICfssYTrhJAs7Jm467aAX3VybCzsuKHsoJVf7J287J6QJyB9KTsKICByZXR1cm4gIWVycm9yOwp9CgpEZW5vLnNlcnZlKGFzeW5jIChfcmVxKSA9PiB7CiAgY29uc3QgdG9rZW4gPSBhd2FpdCBnZXRBY2Nlc3NUb2tlbigpOwogIGlmICghdG9rZW4pIHsKICAgIGF3YWl0IGxvZ0F1ZGl0RXJyb3IoJ1AxJywgJ2Jsb2ctc3RhdHMgdjMgT0F1dGgg7Iuk7YyoJywge30pOwogICAgcmV0dXJuIG5ldyBSZXNwb25zZShKU09OLnN0cmluZ2lmeSh7IG9rOiBmYWxzZSwgZXJyOiAnb2F1dGgnIH0pLCB7IHN0YXR1czogNTAwIH0pOwogIH0KCiAgY29uc3QgeWVzdGVyZGF5ID0gbmV3IERhdGUoRGF0ZS5ub3coKSAtIDg2NDAwMDAwKS50b0lTT1N0cmluZygpLnNsaWNlKDAsIDEwKTsKICBjb25zdCBzdGFydERhdGU4ZCA9IG5ldyBEYXRlKERhdGUubm93KCkgLSA4ICogODY0MDAwMDApLnRvSVNPU3RyaW5nKCkuc2xpY2UoMCwgMTApOwogIGNvbnN0IHN0YXJ0RGF0ZTYwZCA9IG5ldyBEYXRlKERhdGUubm93KCkgLSA2MCAqIDg2NDAwMDAwKS50b0lTT1N0cmluZygpLnNsaWNlKDAsIDEwKTsKICBsZXQgdG90YWxJbnNlcnRzID0gMCwgZXJyb3JzID0gMDsKICBjb25zdCB0cmFjZTogYW55W10gPSBbXTsKCiAgLy8g4pSA4pSAIFN0ZXAgMTog6riw7KG0IHRvcC1OIOyImOynkSAo7Jik656Y65CcIOyduOq4sOq4gCDthrXqs4QpIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogIGZvciAoY29uc3Qgc2l0ZSBvZiBHU0NfU0lURVMpIHsKICAgIHRyeSB7CiAgICAgIGNvbnN0IHJvd3MgPSBhd2FpdCBnc2NRdWVyeSh0b2tlbiwgc2l0ZS5zaXRlVXJsLCB7CiAgICAgICAgc3RhcnREYXRlOiBzdGFydERhdGU4ZCwgZW5kRGF0ZTogeWVzdGVyZGF5LAogICAgICAgIGRpbWVuc2lvbnM6IFsncGFnZSddLCByb3dMaW1pdDogNTAwCiAgICAgIH0pOwogICAgICBpZiAocm93cyA9PT0gbnVsbCkgeyBlcnJvcnMrKzsgdHJhY2UucHVzaCh7IHN0ZXA6ICd0b3AtbicsIHNpdGU6IHNpdGUu7LGE64SQLCBlcnI6ICdhcGkgZmFpbCcgfSk7IGNvbnRpbnVlOyB9CiAgICAgIHRyYWNlLnB1c2goeyBzdGVwOiAndG9wLW4nLCBzaXRlOiBzaXRlLuyxhOuEkCwgcm93czogcm93cy5sZW5ndGggfSk7CgogICAgICBmb3IgKGNvbnN0IHJvdyBvZiByb3dzKSB7CiAgICAgICAgY29uc3QgdXJsID0gcm93LmtleXM/LlswXSB8fCAnJzsKICAgICAgICBpZiAoIXVybCkgY29udGludWU7CiAgICAgICAgY29uc3Qgb2sgPSBhd2FpdCB1cHNlcnRNZXRyaWMoc2l0ZS7ssYTrhJAsIHVybCwgeWVzdGVyZGF5LCByb3cpOwogICAgICAgIGlmIChvaykgdG90YWxJbnNlcnRzKys7IGVsc2UgZXJyb3JzKys7CiAgICAgIH0KICAgIH0gY2F0Y2ggKGUpIHsKICAgICAgZXJyb3JzKys7CiAgICAgIHRyYWNlLnB1c2goeyBzdGVwOiAndG9wLW4nLCBzaXRlOiBzaXRlLuyxhOuEkCwgZXJyOiBTdHJpbmcoZSkgfSk7CiAgICB9CiAgfQoKICAvLyDilIDilIAgU3RlcCAyOiBwdWJsaXNoX2xvZyDstZzqt7wgNjDsnbwgVVJMIOyngeygkSBHU0Mg7KGw7ZqMICjsi6Dqt5wg67Cc7ZaJ6riAIOy7pOuyhCkg4pSA4pSACiAgdHJ5IHsKICAgIGNvbnN0IHsgZGF0YTogcHVibGlzaFVybHMgfSA9IGF3YWl0IHN1cGFiYXNlCiAgICAgIC5mcm9tKCdta19ibG9nX3B1Ymxpc2hfbG9nJykKICA=
+// blog-stats-collector v3.0 — 59차 P1 결함 수정
+// 변경: publish_log 최근 60일 URL 직접 GSC 조회 추가 → 티스토리 매칭률 개선
+// 기존 top-N 수집 유지 + 신규 발행글 직접 쿼리 병행
+
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  { auth: { persistSession: false, autoRefreshToken: false } }
+);
+
+const GSC_SITES = [
+  { siteUrl: 'https://wowjj8631.tistory.com/', 채널: '블A티스토리' },
+  { siteUrl: 'https://realplan-event.tistory.com/', 채널: '블B티스토리' },
+  { siteUrl: 'https://realplan-marketing.tistory.com/', 채널: '블C티스토리' }
+  // realplanjeju.com은 GSC 등록 후 추가
+];
+
+async function getSecret(name: string): Promise<string | null> {
+  const { data } = await supabase.rpc('realplan_get_secret', { secret_name: name });
+  return data as string;
+}
+
+async function getAccessToken(): Promise<string | null> {
+  const id = await getSecret('realplan_gsc_oauth_client_id');
+  const sec = await getSecret('realplan_gsc_oauth_client_secret');
+  const rt = await getSecret('realplan_gsc_oauth_refresh_token');
+  if (!id || !sec || !rt) return null;
+  const r = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ client_id: id, client_secret: sec, refresh_token: rt, grant_type: 'refresh_token' })
+  });
+  if (!r.ok) return null;
+  return (await r.json()).access_token;
+}
+
+async function logAuditError(severity: string, msg: string, detail: any) {
+  try {
+    await supabase.from('hr_audit_log').insert({
+      감사축: 'C',
+      룰_코드: 'C_EF_INSERT_FAIL',
+      심각도: severity,
+      상태: 'detected',
+      메시지: msg,
+      세부데이터: { ef: 'blog-stats-collector', detail }
+    });
+  } catch (e) { console.error('audit fail', e); }
+}
+
+async function gscQuery(token: string, siteUrl: string, body: object): Promise<any[] | null> {
+  const r = await fetch(
+    `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`,
+    {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }
+  );
+  if (!r.ok) return null;
+  const data = await r.json();
+  return data.rows || [];
+}
+
+async function upsertMetric(채널: string, url: string, date: string, row: any): Promise<boolean> {
+  const { error } = await supabase.from('mk_metrics').upsert({
+    채널,
+    외부_url: url,
+    측정_일자: date,
+    노출_수: Math.round(row.impressions || 0),
+    클릭_수: Math.round(row.clicks || 0),
+    ctr_pct: (row.ctr || 0) * 100,
+    평균_순위: row.position || null,
+    데이터_소스: 'gsc',
+    수집_시각: new Date().toISOString()
+  }, { onConflict: '채널,외부_url,측정_일자' });
+  return !error;
+}
+
+Deno.serve(async (_req) => {
+  const token = await getAccessToken();
+  if (!token) {
+    await logAuditError('P1', 'blog-stats v3 OAuth 실패', {});
+    return new Response(JSON.stringify({ ok: false, err: 'oauth' }), { status: 500 });
+  }
+
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const startDate8d = new Date(Date.now() - 8 * 86400000).toISOString().slice(0, 10);
+  const startDate60d = new Date(Date.now() - 60 * 86400000).toISOString().slice(0, 10);
+  let totalInserts = 0, errors = 0;
+  const trace: any[] = [];
+
+  // ── Step 1: 기존 top-N 수집 (오래된 인기글 통계) ──────────────────────
+  for (const site of GSC_SITES) {
+    try {
+      const rows = await gscQuery(token, site.siteUrl, {
+        startDate: startDate8d, endDate: yesterday,
+        dimensions: ['page'], rowLimit: 500
+      });
+      if (rows === null) { errors++; trace.push({ step: 'top-n', site: site.채널, err: 'api fail' }); continue; }
+      trace.push({ step: 'top-n', site: site.채널, rows: rows.length });
+
+      for (const row of rows) {
+        const url = row.keys?.[0] || '';
+        if (!url) continue;
+        const ok = await upsertMetric(site.채널, url, yesterday, row);
+        if (ok) totalInserts++; else errors++;
+      }
+    } catch (e) {
+      errors++;
+      trace.push({ step: 'top-n', site: site.채널, err: String(e) });
+    }
+  }
+
+  // ── Step 2: publish_log 최근 60일 URL 직접 GSC 조회 (신규 발행글 커버) ──
+  try {
+    const { data: publishUrls } = await supabase
+      .from('mk_blog_publish_log')
+  

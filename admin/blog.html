@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>리얼플랜제주 — 블로그 성과 대시보드 v1.0</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --primary:#1e3a8a;--accent:#2563eb;--success:#16a34a;--warning:#f59e0b;--danger:#dc2626;
+    --bg:#f8fafc;--card:#ffffff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+  header{background:var(--primary);color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+  header h1{font-size:20px}
+  header a{color:#fff;text-decoration:none;font-size:14px;opacity:.9}
+  .container{max-width:1400px;margin:0 auto;padding:24px}
+  .tabs{display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:24px;overflow-x:auto}
+  .tab{padding:12px 20px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap}
+  .tab.active{color:var(--primary);border-bottom-color:var(--accent);font-weight:600}
+  .panel{display:none;background:var(--card);border-radius:12px;padding:20px;border:1px solid var(--border)}
+  .panel.active{display:block}
+  .panel h2{font-size:16px;margin-bottom:16px;color:var(--primary)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left}
+  th{background:#f1f5f9;color:var(--muted);font-weight:600;font-size:12px}
+  tr:hover{background:#f8fafc}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+  .stat-card{background:#f8fafc;border-radius:8px;padding:16px;border:1px solid var(--border)}
+  .stat-label{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .stat-value{font-size:24px;font-weight:700;color:var(--primary)}
+  .stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+  .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+  .badge.success{background:#dcfce7;color:#15803d}
+  .badge.warning{background:#fef3c7;color:#a16207}
+  .badge.danger{background:#fee2e2;color:#b91c1c}
+  .loading{text-align:center;padding:40px;color:var(--muted)}
+  .channel-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .channel-chip{padding:4px 10px;border-radius:12px;background:#e0e7ff;color:#3730a3;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>📊 리얼플랜제주 — 블로그 성과 대시보드 v1.0</h1>
+  <div>
+    <a href="../admin.html">← 관리자</a> |
+    <a href="../audit.html">감사</a> |
+    <a href="agent.html">에이전트</a>
+  </div>
+</header>
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" data-tab="t1">슬롯</button>
+    <button class="tab" data-tab="t2">통계</button>
+    <button class="tab" data-tab="t3">순위</button>
+    <button class="tab" data-tab="t4">승률</button>
+    <button class="tab" data-tab="t5">승리공식</button>
+    <button class="tab" data-tab="t6">스킬패치후보</button>
+  </div>
+
+  <div id="t1" class="panel active">
+    <h2>📅 슬롯 — mk_blog_slots 6채널</h2>
+    <div class="stat-grid" id="slot-stats"><div class="loading">로딩중...</div></div>
+    <table id="slot-table"><thead><tr><th>발행일</th><th>채널</th><th>슬롯유형</th><th>키워드</th><th>제목</th><th>상태</th></tr></thead><tbody></tbody></table>
+  </div>
+
+  <div id="t2" class="panel">
+    <h2>📈 통계 — mk_metrics (GSC + Naver)</h2>
+    <div class="stat-grid" id="stats-summary"><div class="loading">로딩중...</div></div>
+    <table id="stats-table"><thead><tr><th>측정일</th><th>채널</th><th>URL</th><th>노출</th><th>클릭</th><th>CTR%</th><th>평균순위</th></tr></thead><tbody></tbody></table>
+  </div>
+
+  <div id="t3" class="panel">
+    <h2>🏆 순위 — 키워드별 자체 URL 검색 순위</h2>
+    <div class="stat-grid" id="rank-summary"><div class="loading">로딩중...</div></div>
+    <table id="rank-table"><thead><tr><th>측정일</th><th>채널</th><th>키워드</th><th>순위</th><th>자체 URL</th></tr></thead><tbody></tbody></table>
+  </div>
+
+  <div id="t4" class="panel">
+    <h2>📊 승률 — 채널·슬롯유형별 CTR·순위·ROI</h2>
+    <div id="winrate-content"><div class="loading">집계중...</div></div>
+  </div>
+
+  <div id="t5" class="panel">
+    <h2>🎯 승리공식 — CTR≥5% 또는 순위≤10 글</h2>
+    <table id="winner-table"><thead><tr><th>측정일</th><th>채널</th><th>URL</th><th>CTR%</th><th>평균순위</th><th>노출</th><th>클릭</th></tr></thead><tbody></tbody></table>
+  </div>
+
+  <div id="t6" class="panel">
+    <h2>🔧 스킬패치후보 — hr_audit_log SUGGEST (대표 승인 후 반영)</h2>
+    <table id="suggest-table"><thead><tr><th>발생시각</th><th>룰</th><th>메시지</th><th>상태</th></tr></thead><tbody></tbody></table>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://iodfqlkeiwxyuojwcozv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.tab).classList.add('active');
+  });
+});
+
+async function loadSlots(){
+  const {data,error}=await sb.from('mk_blog_slots').select('*').order('생성일',{ascending:false}).limit(50);
+  const tbody=document.querySelector('#slot-table tbody');tbody.innerHTML='';
+  if(error||!data){tbody.innerHTML=`<tr><td colspan=6>로드 실패: ${error?.message||'no data'}</td></tr>`;return;}
+  const statHtml=`
+    <div class="stat-card"><div class="stat-label">총 슬롯</div><div class="stat-value">${data.length}</div></div>
+    <div class="stat-card"><div class="stat-label">완료</div><div class="stat-value">${data.filter(x=>x.상태==='completed').length}</div></div>
+    <div class="stat-card"><div class="stat-label">대기/진행</div><div class="stat-value">${data.filter(x=>x.상태!=='completed').length}</div></div>`;
+  document.getElementById('slot-stats').innerHTML=statHtml;
+  for(const r of data){
+    tbody.innerHTML+=`<tr><td>${r.발행일||'-'}</td><td><span class="channel-chip">${r.채널||'-'}</span></td><td>${r.슬롯유형||'-'}</td><td>${r.핵심키워드||'-'}</td><td>${(r.최종제목||'').slice(0,40)}</td><td><span class="badge ${r.상태==='completed'?'success':'warning'}">${r.상태||'-'}</span></td></tr>`;
+  }
+}
+
+async function loadStats(){
+  const {data,error}=await sb.from('mk_metrics').select('*').order('측정_일자',{ascending:false}).limit(100);
+  const tbody=document.querySelector('#stats-table tbody');tbody.innerHTML='';
+  if(error||!data||data.length===0){tbody.innerHTML=`<tr><td colspan=7>데이터 수집 대기 (매일 11 KST 자동)</td></tr>`;document.getElementById('stats-summary').innerHTML='<div class="stat-card"><div class="stat-label">상태</div><div class="stat-value">대기</div><div class="stat-sub">11 KST blog-stats-collector 자동 수집</div></div>';return;}
+  const avgCtr=data.reduce((s,x)=>s+Number(x.ctr_pct||0),0)/data.length;
+  const avgRank=data.reduce((s,x)=>s+Number(x.평균_순위||0),0)/data.length;
+  document.getElementById('stats-summary').innerHTML=`
+    <div class="stat-card"><div class="stat-label">측정 글 수</div><div class="stat-value">${data.length}</div></div>
+    <div class="stat-card"><div class="stat-label">평균 CTR</div><div class="stat-value">${avgCtr.toFixed(2)}%</div></div>
+    <div class="stat-card"><div class="stat-label">평균 순위</div><div class="stat-value">${avgRank.toFixed(1)}</div></div>`;
+  for(const r of data){
+    tbody.innerHTML+=`<tr><td>${r.측정_일자}</td><td><span class="channel-chip">${r.채널}</span></td><td><a href="${r.외부_url}" target="_blank">${(r.외부_url||'').slice(-30)}</a></td><td>${r.노출_수||0}</td><td>${r.클릭_수||0}</td><td>${Number(r.ctr_pct||0).toFixed(2)}</td><td>${Number(r.평균_순위||0).toFixed(1)}</td></tr>`;
+  }
+}
+
+async function loadRank(){
+  const {data,error}=await sb.from('mk_rank_tracker').select('*').order('측정_일자',{ascending:false}).limit(100);
+  const tbody=document.querySelector('#rank-table tbody');tbody.innerHTML='';
+  if(error||!data||data.length===0){tbody.innerHTML=`<tr><td colspan=5>데이터 수집 대기 (매일 21 KST 자동)</td></tr>`;document.getElementById('rank-summary').innerHTML='<div class="stat-card"><div class="stat-label">상태</div><div class="stat-value">대기</div><div class="stat-sub">21 KST blog-rank-tracker 자동 수집</div></div>';return;}
+  const top10=data.filter(x=>x.순위&&x.순위<=10).length;
+  document.getElementById('rank-summary').innerHTML=`
+    <div class="stat-card"><div class="stat-label">측정 키워드</div><div class="stat-value">${data.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Top 10 진입</div><div class="stat-value">${top10}</div></div>`;
+  for(const r of data){
+    const rankBadge=r.순위?(r.순위<=10?'<span class="badge success">'+r.순위+'</span>':r.순위<=30?'<span class="badge warning">'+r.순위+'</span>':'<span class="badge danger">'+r.순위+'</span>'):'<span class="badge danger">100+</span>';
+    tbody.innerHTML+=`<tr><td>${r.측정_일자}</td><td><span class="channel-chip">${r.채널}</span></td><td>${r.키워드}</td><td>${rankBadge}</td><td>${r.자체_url?'<a href="'+r.자체_url+'" target="_blank">link</a>':'-'}</td></tr>`;
+  }
+}
+
+async function loadWinrate(){
+  const {data}=await sb.from('mk_metrics').select('채널,ctr_pct,평균_순위').not('ctr_pct','is',null);
+  const html=document.getElementById('winrate-content');
+  if(!data||data.length===0){html.innerHTML='<div class="loading">통계 수집 후 자동 집계됩니다</div>';return;}
+  const byCh={};for(const r of data){if(!byCh[r.채널])byCh[r.채널]={n:0,ctr:0,rank:0};byCh[r.채널].n++;byCh[r.채널].ctr+=Number(r.ctr_pct||0);byCh[r.채널].rank+=Number(r.평균_순위||0);}
+  let h='<table><thead><tr><th>채널</th><th>측정 글</th><th>평균 CTR</th><th>평균 순위</th></tr></thead><tbody>';
+  for(const ch in byCh){const s=byCh[ch];h+=`<tr><td>${ch}</td><td>${s.n}</td><td>${(s.ctr/s.n).toFixed(2)}%</td><td>${(s.rank/s.n).toFixed(1)}</td></tr>`;}
+  h+='</tbody></table>';html.innerHTML=h;
+}
+
+async function loadWinners(){
+  const {data,error}=await sb.rpc('rpc_blog_weekly_winners',{_days:30});
+  const tbody=document.querySelector('#winner-table tbody');tbody.innerHTML='';
+  if(error||!data||data.length===0){tbody.innerHTML=`<tr><td colspan=7>승리 글 수집 대기 (통계 수집 후 자동 집계)</td></tr>`;return;}
+  for(const r of data){tbody.innerHTML+=`<tr><td>${r.r_측정_일자}</td><td><span class="channel-chip">${r.r_채널}</span></td><td><a href="${r.r_외부_url}" target="_blank">${(r.r_외부_url||'').slice(-30)}</a></td><td>${Number(r.r_ctr_pct||0).toFixed(2)}</td><td>${Number(r.r_평균_순위||0).toFixed(1)}</td><td>${r.r_노출_수||0}</td><td>${r.r_클릭_수||0}</td></tr>`;}
+}
+
+async function loadSuggest(){
+  const {data,error}=await sb.from('hr_audit_log').select('*').like('룰_코드','F_BLOG_%').order('발생시각',{ascending:false}).limit(30);
+  const tbody=document.querySelector('#suggest-table tbody');tbody.innerHTML='';
+  if(error||!data||data.length===0){tbody.innerHTML=`<tr><td colspan=4>주간 패치 후보 대기 (매주 월 09 KST blog-skill-suggest 자동)</td></tr>`;return;}
+  for(const r of data){tbody.innerHTML+=`<tr><td>${(r.발생시각||'').slice(0,16).replace('T',' ')}</td><td>${r.룰_코드}</td><td>${r.메시지}</td><td><span class="badge ${r.상태==='OPEN'?'warning':'success'}">${r.상태}</span></td></tr>`;}
+}
+
+loadSlots();loadStats();loadRank();loadWinrate();loadWinners();loadSuggest();
+</script>
+</body>
+</html>

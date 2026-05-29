@@ -285,7 +285,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 //  Supabase 초기화
 // ══════════════════════════════════════════
 const SUPA_URL = 'https://iodfqlkeiwxyuojwcozv.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZGZxbGtlaXd4eXVvandjb3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMzIxOTcsImV4cCI6MjA5MjYwODE5N30.S3VrHMcrrr0m74dsMnb3jMzaxBjoFpOnUts2XINbpq0';
+const SUPA_KEY = 'sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext'; // admin.html과 동일 key
 // admin.html v0.7과 동일한 PKCE 수동 교환 방식
 const PROJECT_REF = 'iodfqlkeiwxyuojwcozv';
 const SB_AUTH_KEY = 'sb-' + PROJECT_REF + '-auth-token';
@@ -524,4 +524,6 @@ function renderDrafts(list) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">초안 없음</td></tr>';
     return;
   }
-  const statusMap = { draft:'badge-draft', approved:'badge-approved', published:'badge-published', rejecte
+  const statusMap = { draft:'badge-draft', approved:'badge-approved', published:'badge-published', rejected:'badge-rejected' };
+  const statusLabel = { draft:'초안', approved:'승인', published:'발행', rejected:'반려' };
+  tbody.inne

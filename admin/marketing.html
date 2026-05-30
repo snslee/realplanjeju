@@ -513,7 +513,7 @@ async function loadGiants(){
   const srcLabel={'gsc':'티스토리','naver_search':'네이버'};
   const tbody=document.getElementById('giants-body');
   if(!rows.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">데이터 없음</td></tr>';return;}
-  tbody.innerHTML=rows.map(r=>{const ctr=r.ctr,isNv=r.src==='naver_search';const j=isNv?(r.r==null?'📊 데이터없음':r.r<=5?'🔵 우수':r.r<=15?'🟢 유지':r.r<=30?'🟡 개선필요':'🔴 즉시액션'):(ctr<1?'🔴 즉시액션':ctr<3?'🟡 제목개선':ctr<5?'🟢 유지':'🔵 우수');const jc=isNv?(r.r==null?'#94a3b8':r.r<=5?'#3b82f6':r.r<=15?'#10b981':r.r<=30?'#f59e0b':'#ef4444'):(ctr<1?'#ef4444':ctr<3?'#f59e0b':ctr<5?'#10b981':'#3b82f6');const srcBg=r.src==='gsc'?'#dbeafe':'#dcfce7';const srcTx=r.src==='gsc'?'#1e40af':'#166534';const nStat=isNv?`<span style="font-size:.7rem;color:#94a3b8">(순위기준)</span>`:'';return `<tr><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:.78rem">${r.ch}</span></td><td><span style="background:${srcBg};color:${srcTx};padding:2px 8px;border-radius:12px;font-size:.75rem">${srcLabel[r.src]||r.src}</span></td><td style="font-weight:700">${isNv?'-':r.n.toLocaleString()}</td><td>${isNv?'-':r.c.toLocaleString()}</td><td style="font-weight:700;color:${jc}">${isNv?(r.r?r.r.toFixed(1)+'위':'-'):ctr.toFixed(2)+'%'}</td><td>${r.r?r.r.toFixed(1)+'위':'-'}</td><td>${j} ${nStat}</td></tr>`;}).join('');
+  tbody.innerHTML=rows.map(r=>{const ctr=r.ctr,isNv=r.src==='naver_search';const j=isNv?(r.r==null?'📊 데이터없음':r.r<=5?'🔵 우수':r.r<=15?'🟢 유지':r.r<=30?'🟡 개선필요':'🔴 즉시액션'):(ctr<1?'🔴 즉시액션':ctr<3?'🟡 제목개선':ctr<5?'🟢 유지':'🔵 우수');const jc=isNv?(r.r==null?'#94a3b8':r.r<=5?'#3b82f6':r.r<=15?'#10b981':r.r<=30?'#f59e0b':'#ef4444'):(ctr<1?'#ef4444':ctr<3?'#f59e0b':ctr<5?'#10b981':'#3b82f6');const srcBg=r.src==='gsc'?'#dbeafe':'#dcfce7';const srcTx=r.src==='gsc'?'#1e40af':'#166534';const nStat=isNv?'<span style="font-size:.7rem;color:#94a3b8">(순위기준)</span>':'';return `<tr><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:.78rem">${r.ch}</span></td><td><span style="background:${srcBg};color:${srcTx};padding:2px 8px;border-radius:12px;font-size:.75rem">${srcLabel[r.src]||r.src}</span></td><td style="font-weight:700">${isNv?'-':r.n.toLocaleString()}</td><td>${isNv?'-':r.c.toLocaleString()}</td><td style="font-weight:700;color:${jc}">${isNv?(r.r?r.r.toFixed(1)+'위':'-'):ctr.toFixed(2)+'%'}</td><td>${r.r?r.r.toFixed(1)+'위':'-'}</td><td>${j} ${nStat}</td></tr>`;}).join('');
 }
 
 async function loadRankEntries(){
@@ -585,8 +585,7 @@ function showSlotDetail(day){
   const stl={pending:'대기',in_progress:'작성중',completed:'완료',halted:'보류'};
   const detail=document.getElementById('slot-detail');
   detail.style.display='block';
-  const typeBadge={정보성:'<span style="background:#d1fae5;color:#065f46;padding:1px 6px;border-radius:8px;font-size:.7rem">📗정보성</span>',B2B임박:'<span style="background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:8px;font-size:.7rem">🔴B2B임박</span>',B2B선제:'<span style="background:#fef9c3;color:#78350f;padding:1px 6px;border-radius:8px;font-size:.7rem">🟡B2B선제</span>',예고:'<span style="background:#ede9fe;color:#5b21b6;padding:1px 6px;border-radius:8px;font-size:.7rem">🔔예고</span>'};
-  detail.innerHTML=`<div class="card"><div class="card-hdr"><h3>📋 ${dateStr} 슬롯 (${slots.length}개)</h3></div><div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>채널</th><th>유형</th><th>키워드</th><th>콘텐츠방향</th><th>상태</th><th>변경</th></tr></thead><tbody>${slots.map(s=>`<tr><td><span style="background:${CH_CLR[s.채널]||'#f1f5f9'};color:${CH_TXT[s.채널]||'#475569'};padding:2px 8px;border-radius:10px;font-size:.75rem">${s.채널||'-'}</span></td><td>${typeBadge[s.슬롯유형]||`<span style="font-size:.75rem;color:#94a3b8">${s.슬롯유형||'-'}</span>`}</td><td style="font-weight:600">${s.핵심키워드||'-'}</td><td style="font-size:.82rem;color:#475569;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.콘텐츠방향||'-'}</td><td><span style="font-size:.75rem;background:#f1f5f9;padding:2px 8px;border-radius:10px">${stl[s.상태]||s.상태||'-'}</span></td><td><select onchange="updateSlotStage('${s.id}',this.value)" style="font-size:.75rem;border:1px solid #e2e8f0;border-radius:4px;padding:2px 4px">${Object.entries(stl).map(([k,v])=>`<option value="${k}"${s.상태===k?' selected':''}>${v}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table></div></div>`;
+  detail.innerHTML=`<div class="card"><div class="card-hdr"><h3>📋 ${dateStr} 슬롯 (${slots.length}개)</h3></div><div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>채널</th><th>유형</th><th>키워드</th><th>콘텐츠방향</th><th>상태</th><th>변경</th></tr></thead><tbody>${slots.map(s=>`<tr><td><span style="background:${CH_CLR[s.채널]||'#f1f5f9'};color:${CH_TXT[s.채널]||'#475569'};padding:2px 8px;border-radius:10px;font-size:.75rem">${s.채널||'-'}</span></td><td style="font-weight:600">${s.핵심키워드||'-'}</td><td style="font-size:.82rem;color:#475569;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.콘텐츠방향||'-'}</td><td><span style="font-size:.75rem;background:#f1f5f9;padding:2px 8px;border-radius:10px">${stl[s.상태]||s.상태||'-'}</span></td><td><select onchange="updateSlotStage('${s.id}',this.value)" style="font-size:.75rem;border:1px solid #e2e8f0;border-radius:4px;padding:2px 4px">${Object.entries(stl).map(([k,v])=>`<option value="${k}"${s.상태===k?' selected':''}>${v}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table></div></div>`;
 }
 async function updateSlotStage(id,stage){
   const{error}=await sb.from('mk_blog_slots').update({상태:stage,수정일:new Date().toISOString().slice(0,10)}).eq('id',id);
@@ -685,4 +684,31 @@ async function viewDraft(id){
     <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
       <div>
         <div style="font-weight:700;color:#1d4ed8;margin-bottom:8px;font-size:.9rem">📱 네이버 본문</div>
-        <div style="background:#f8fafc;bo
+        <div style="background:#f8fafc;border-radius:8px;padding:12px;font-size:.82rem;line-height:1.7;max-height:500px;overflow-y:auto;white-space:pre-wrap">${nav}</div>
+      </div>
+      <div>
+        <div style="font-weight:700;color:#7e22ce;margin-bottom:8px;font-size:.9rem">💻 티스토리 본문</div>
+        <div style="background:#f8fafc;border-radius:8px;padding:12px;font-size:.82rem;line-height:1.7;max-height:500px;overflow-y:auto;white-space:pre-wrap">${tis}</div>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
+}
+
+// ── 톤 가이드 필터 ───────────────────────────────────────────────
+function filterTone(f,b){
+  document.querySelectorAll('#t6 .filter-btn').forEach(x=>x.classList.remove('active'));
+  if(b)b.classList.add('active');
+  document.querySelectorAll('.tone-card').forEach(c=>{
+    if(f==='all')c.style.display='';
+    else if(f==='naver')c.style.display=c.classList.contains('tone-naver')?'':'none';
+    else c.style.display=c.classList.contains('tone-tistory')?'':'none';
+  });
+}
+
+
+initAuth();
+</script>
+</body>
+</h

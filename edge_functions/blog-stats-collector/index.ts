@@ -1,6 +1,6 @@
-// blog-stats-collector v3.0 — 59차 P1 결함 수정
-// 변경: publish_log 최근 60일 URL 직접 GSC 조회 추가 → 티스토리 매칭률 개선
-// 기존 top-N 수집 유지 + 신규 발행글 직접 쿼리 병행
+// blog-stats-collector v4.0 — 69차 skip guard 추가
+// v3 대비: 당일 이미 수집된 경우 skip (중복 API 낭비 방지)
+// ?force=1 파라미터로 강제 재수집 가능
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
@@ -68,10 +68,31 @@ async function upsertMetric(채널: string, url: string, date: string, row: any)
   return !error;
 }
 
-Deno.serve(async (_req) => {
+Deno.serve(async (req) => {
+  const url = new URL(req.url);
+  const force = url.searchParams.get('force') === '1';
+
+  // ── Skip guard: 당일 이미 수집했으면 skip (force=1 제외) ──────────────
+  if (!force) {
+    const todayUTC = new Date().toISOString().slice(0, 10);
+    const { count } = await supabase.from('mk_metrics')
+      .select('id', { count: 'exact', head: true })
+      .eq('데이터_소스', 'gsc')
+      .gte('수집_시각', todayUTC + 'T00:00:00Z');
+    if (count && count > 0) {
+      return new Response(JSON.stringify({
+        ok: true, skipped: true,
+        reason: 'already_collected_today',
+        count, todayUTC,
+        tip: 'add ?force=1 to override'
+      }), { headers: { 'Content-Type': 'application/json' } });
+    }
+  }
+  // ────────────────────────────────────────────────────────────────────
+
   const token = await getAccessToken();
   if (!token) {
-    await logAuditError('P1', 'blog-stats v3 OAuth 실패', {});
+    await logAuditError('P1', 'blog-stats v4 OAuth 실패', {});
     return new Response(JSON.stringify({ ok: false, err: 'oauth' }), { status: 500 });
   }
 
@@ -130,9 +151,9 @@ Deno.serve(async (_req) => {
   } catch (e) { trace.push({ step: 'direct', err: String(e) }); }
 
   if (totalInserts === 0 && errors === 0) {
-    await logAuditError('P3', 'blog-stats v3 GSC lag (데이터 0)', { trace });
+    await logAuditError('P3', 'blog-stats v4 GSC lag (데이터 0)', { trace });
   }
-  return new Response(JSON.stringify({ ok: true, totalInserts, errors, trace, version: 'v3' }), {
+  return new Response(JSON.stringify({ ok: true, totalInserts, errors, trace, version: 'v4', force }), {
     headers: { 'Content-Type': 'application/json' }
   });
 });

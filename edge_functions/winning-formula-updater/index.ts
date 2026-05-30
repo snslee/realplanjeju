@@ -1,1 +1,157 @@
-Ly8gd2lubmluZy1mb3JtdWxhLXVwZGF0ZXIgdjEuMCDigJQgRCtOIOy4oeyglSDrjbDsnbTthLAg4oaSIG1rX2Jsb2dfd2lubmluZ19mb3JtdWxhIOyekOuPmSDqsLHsi6AgKDIwMjYtMDUtMzApCi8vIOyLpO2WiTog7IiY64+ZIO2KuOumrOqxsCB8IO2Wpe2bhCBwZ19jcm9uIOyjvCAx7ZqMIOyblOyalOydvCDsl7Drj5kg6rCA64qlCi8vIOuhnOyngToKLy8gICAxKSBta19ibG9nX3B1Ymxpc2hfbG9n7JeQ7IScIGRfcGx1c183X3JhbmsgSVMgTk9UIE5VTEwg66CI7L2U65OcIOyhsO2ajAovLyAgIDIpIOunpOy5rV/siqzroa9faWTroZwgbWtfYmxvZ19zbG90cyBKT0lOIOKGkiDsiqzroa/snKDtmJXCt+yLnOymjCDtjIzslYUKLy8gICAzKSDssYTrhJAr7Iqs66Gv7Jyg7ZiVIOq4sOykgCDsp5Hqs4QgKO2Pieq3oOyInOychCwgMTDsnITsnbTrgrTsnKgsIOyDmO2UjOyImCkKLy8gICA0KSBta19ibG9nX3dpbm5pbmdfZm9ybXVsYSBVUFNFUlQKLy8gICA1KSDthZTroIjqt7jrnqgg7JWM66a8CgppbXBvcnQgImpzcjpAc3VwYWJhc2UvZnVuY3Rpb25zLWpzL2VkZ2UtcnVudGltZS5kLnRzIjsKaW1wb3J0IHsgY3JlYXRlQ2xpZW50IH0gZnJvbSAiaHR0cHM6Ly9lc20uc2gvQHN1cGFiYXNlL3N1cGFiYXNlLWpzQDIuMzkuMCI7Cgpjb25zdCBTVVBBQkFTRV9VUkwgICAgICAgICA9IERlbm8uZW52LmdldCgiU1VQQUJBU0VfVVJMIikhOwpjb25zdCBTVVBBQkFTRV9TRVJWSUNFX0tFWSA9IERlbm8uZW52LmdldCgiU1VQQUJBU0VfU0VSVklDRV9ST0xFX0tFWSIpITsKY29uc3Qgc3VwYWJhc2UgPSBjcmVhdGVDbGllbnQoU1VQQUJBU0VfVVJMLCBTVVBBQkFTRV9TRVJWSUNFX0tFWSwgewogIGF1dGg6IHsgcGVyc2lzdFNlc3Npb246IGZhbHNlLCBhdXRvUmVmcmVzaFRva2VuOiBmYWxzZSB9Cn0pOwoKYXN5bmMgZnVuY3Rpb24gZ2V0U2VjcmV0KG5hbWU6IHN0cmluZyk6IFByb21pc2U8c3RyaW5nIHwgbnVsbD4gewogIGNvbnN0IHsgZGF0YSB9ID0gYXdhaXQgc3VwYWJhc2UucnBjKCdyZWFscGxhbl9nZXRfc2VjcmV0JywgeyBzZWNyZXRfbmFtZTogbmFtZSB9KTsKICByZXR1cm4gZGF0YSBhcyBzdHJpbmc7Cn0KCmFzeW5jIGZ1bmN0aW9uIHNlbmRUZWxlZ3JhbShtc2c6IHN0cmluZykgewogIHRyeSB7CiAgICBjb25zdCB0b2tlbiAgPSBhd2FpdCBnZXRTZWNyZXQoJ3JlYWxwbGFuX3RlbGVncmFtX3Rva2VuJyk7CiAgICBjb25zdCBjaGF0SWQgPSBhd2FpdCBnZXRTZWNyZXQoJ3JlYWxwbGFuX3RlbGVncmFtX2NoYXRfaWQnKTsKICAgIGlmICghdG9rZW4gfHwgIWNoYXRJZCkgcmV0dXJuOwogICAgYXdhaXQgZmV0Y2goYGh0dHBzOi8vYXBpLnRlbGVncmFtLm9yZy9ib3Qke3Rva2VufS9zZW5kTWVzc2FnZWAsIHsKICAgICAgbWV0aG9kOiAnUE9TVCcsIGhlYWRlcnM6IHsgJ0NvbnRlbnQtVHlwZSc6ICdhcHBsaWNhdGlvbi9qc29uJyB9LAogICAgICBib2R5OiBKU09OLnN0cmluZ2lmeSh7IGNoYXRfaWQ6IGNoYXRJZCwgdGV4dDogbXNnLCBwYXJzZV9tb2RlOiAnSFRNTCcsIGRpc2FibGVfd2ViX3BhZ2VfcHJldmlldzogdHJ1ZSB9KQogICAgfSk7CiAgfSBjYXRjaCAoZSkgeyBjb25zb2xlLmVycm9yKCd0ZyBlcnInLCBlKTsgfQp9CgovLyDsi5zspowg7YyQ67OEICjrsJztlonsm5Qg6riw67CYKQpmdW5jdGlvbiBnZXRTZWFzb24oZGF0ZVN0cjogc3RyaW5nKTogc3RyaW5nIHsKICBjb25zdCBtb250aCA9IG5ldyBEYXRlKGRhdGVTdHIpLmdldE1vbnRoKCkgKyAxOwogIGlmIChtb250aCA+PSAzICYmIG1vbnRoIDw9IDUpIHJldHVybiAn67SEJzsKICBpZiAobW9udGggPj0gNiAmJiBtb250aCA8PSA4KSByZXR1cm4gJ+yXrOumhCc7CiAgaWYgKG1vbnRoID49IDkgJiYgbW9udGggPD0gMTEpIHJldHVybiAn6rCA7J2EJzsKICByZXR1cm4gJ+qyqOyauCc7Cn0KCkRlbm8uc2VydmUoYXN5bmMgKF9yZXEpID0+IHsKICAvLyDikaAgRCs3IOy4oeyglSDsmYTro4zrkJwg67Cc7ZaJIOuhnOq3uCDsobDtmowKICBjb25zdCB7IGRhdGE6IGxvZ3MsIGVycm9yOiBsb2dFcnIgfSA9IGF3YWl0IHN1cGFiYXNlCiAgICAuZnJvbSgnbWtfYmxvZ19wdWJsaXNoX2xvZycpCiAgICAuc2VsZWN0KCfssYTrhJAsIOuwnO2WieydvCwg66ek7LmtX+yKrOuhr19pZCwgZF9wbHVzXzdfcmFuaywgZF9wbHVzXzE0X3JhbmssIO2VteyLrO2CpOybjOuTnCcpCiAgICAubm90KCdkX3BsdXNfN19yYW5rJywgJ2lzJywgbnVsbCkKICAgIC5ub3QoJ+unpOy5rV/siqzroa9faWQnLCAnaXMnLCBudWxsKQogICAgLm9yZGVyKCfrsJztlonsnbwnLCB7IGFzY2VuZGluZzogZmFsc2UgfSkKICAgIC5saW1pdCg1MDApOwoKICBpZiAobG9nRXJyKSB7CiAgICBhd2FpdCBzZW5kVGVsZWdyYW0oYOKdjCA8Yj7sirnrpqzqs7Xsi50g7JeF642w7J207YSwIOyLpO2MqDwvYj5cblxu67Cc7ZaJ66Gc6re4IOyhsO2ajCDsmKTrpZg6ICR7bG9nRXJyLm1lc3NhZ2V9YCk7CiAgICByZXR1cm4gbmV3IFJlc3BvbnNlKEpTT04uc3RyaW5naWZ5KHsgb2s6IGZhbHNlLCBlcnJvcjogbG9nRXJyLm1lc3NhZ2UgfSksIHsgc3RhdHVzOiA1MDAgfSk7CiAgfQogIGlmICghbG9ncyB8fCBsb2dzLmxlbmd0aCA9PT0gMCkgewogICAgcmV0dXJuIG5ldyBSZXNwb25zZShKU09OLnN0cmluZ2lmeSh7IG9rOiB0cnVlLCBtZXNzYWdlOiAnRCs3IOy4oeyglSDsmYTro4wg642w7J207YSwIOyXhuydjCcsIHVwZGF0ZWQ6IDAgfSkpOwogIH0KCiAgLy8g4pGhIOyKrOuhryDsoJXrs7Qg67Cw7LmYIOyhsO2ajAogIGNvbnN0IHNsb3RJZHMgPSBbLi4ubmV3IFNldChsb2dzLm1hcChsID0+IGwu66ek7LmtX+yKrOuhr19pZCkuZmlsdGVyKEJvb2xlYW4pKV07CiAgY29uc3QgeyBkYXRhOiBzbG90cyB9ID0gYXdhaXQgc3VwYWJhc2UKICAgIC5mcm9tKCdta19ibG9nX3Nsb3RzJykKICAgIC5zZWxlY3QoJ2lkLCDsiqzroa/snKDtmJUsIOuwnO2WieydvCcpCiAgICAuaW4oJ2lkJywgc2xvdElkcyk7CiAgY29uc3Qgc2xvdE1hcCA9IG5ldyBNYXAoKHNsb3RzIHx8IFtdKS5tYXAocyA9PiBbcy5pZCwgc10pKTsKCiAgLy8g4pGiIOyxhOuEkCvsiqzroa/snKDtmJUg6riw7KSAIOynkeqzhAogIGNvbnN0IGdyb3VwczogUmVjb3JkPHN0cmluZywgewogICAg7LGE64SQOiBzdHJpbmc7IOyKrOuhr+ycoO2YlTogc3RyaW5nOyDsi5zspow6IHN0cmluZzsKICAgIHJhbmtzOiBudW1iZXJbXTsgc2FtcGxlOiBudW1iZXI7CiAgfT4gPSB7fTsKCiAgZm9yIChjb25zdCBsb2cgb2YgbG9ncykgewogICAgY29uc3Qgc2xvdCA9IHNsb3RNYXAuZ2V0KGxvZy7rp6Tsua1f7Iqs66GvX2lkKTsKICAgIGNvbnN0IHNsb3RUeXBlID0gc2xvdD8u7Iqs66Gv7Jyg7ZiVIHx8ICfsoJXrs7TshLEnOwogICAgY29uc3Qgc2Vhc29uID0gZ2V0U2Vhc29uKGxvZy7rsJztlonsnbwgfHwgbmV3IERhdGUoKS50b0lTT1N0cmluZygpKTsKICAgIGNvbnN0IGtleSA9IGAke2xvZy7ssYTrhJB9fCR7c2xvdFR5cGV9YDsKCiAgICBpZiAoIWdyb3Vwc1trZXldKSB7CiAgICAgIGdyb3Vwc1trZXldID0geyDssYTrhJA6IGxvZy7ssYTrhJAsIOyKrOuhr+ycoO2YlTogc2xvdFR5cGUsIOyLnOymjDogc2Vhc29uLCByYW5rczogW10sIHNhbXBsZTogMCB9OwogICAgfQogICAgaWYgKGxvZy5kX3BsdXNfN19yYW5rKSBncm91cHNba2V5XS5yYW5rcy5wdXNoKGxvZy5kX3BsdXNfN19yYW5rKTsKICAgIGdyb3Vwc1trZXldLnNhbXBsZSsrOwogIH0KCiAgLy8g4pGjIG1rX2Jsb2dfd2lubmluZ19mb3JtdWxhIFVQU0VSVAogIGxldCB1cGRhdGVkQ291bnQgPSAwOwogIGNvbnN0IGVycm9yczogc3RyaW5nW10gPSBbXTsKCiAgZm9yIChjb25zdCBbLCBnXSBvZiBPYmplY3QuZW50cmllcyhncm91cHMpKSB7CiAgICBpZiAoZy5yYW5rcy5sZW5ndGggPT09IDApIGNvbnRpbnVlOwogICAgY29uc3QgYXZnUmFuayAgID0gZy5yYW5rcy5yZWR1Y2UoKGEsIGIpID0+IGEgKyBiLCAwKSAvIGcucmFua3MubGVuZ3RoOwogICAgY29uc3QgdG9wMTBSYXRlID0gKGcucmFua3MuZmlsdGVyKHIgPT4gciA8PSAxMCkubGVuZ3RoIC8gZy5yYW5rcy5sZW5ndGgpICogMTAwOwogICAgY29uc3QgYWNoaWV2ZWQgID0gZy5yYW5rcy5maWx0ZXIociA9PiByIDw9IDEwKS5sZW5ndGg7CgogICAgY29uc3QgeyBkYXRhOiBleGlzdGluZyB9ID0gYXdhaXQgc3VwYWJhc2UKICAgICAgLmZyb20oJ21rX2Jsb2dfd2lubmluZ19mb3JtdWxhJykKICAgICAgLnNlbGVjdCgnaWQnKQogICAgICAuZXEoJ+yxhOuEkCcsIGcu7LGE64SQKQogICAgICAuZXEoJ+yKrOuhr+ycoO2YlScsIGcu7Iqs66Gv7Jyg7ZiVKQogICAgICAubWF5YmVTaW5nbGUoKTsKCiAgICBjb25zdCBwYXlsb2FkOiBhbnkgPSB7CiAgICAgIOyxhOuEkDogZy7ssYTrhJAsCiAgICAgIOyKrOuhr+ycoO2YlTogZy7siqzroa/snKDtmJUsCiAgICAgIOyLnOymjDogZy7si5zspowsCiAgICAgIGQ3X+2Pieq3oOyInOychDogcGFyc2VGbG9hdChhdmdSYW5rLnRvRml4ZWQoMSkpLAogICAgICBkN18xMOychOydtOuCtOycqDogcGFyc2VGbG9hdCh0b3AxMFJhdGUudG9GaXhlZCgxKSksCiAgICAgIGQ3X+uLrOyEse2an+yImDogYWNoaWV2ZWQsCiAgICAgIOyDmO2UjOyImDogZy5zYW1wbGUsCiAgICAgIO2VmeyKtV/sg4Htg5w6IGcuc2FtcGxlID49IDUgPyAnc3RhYmxlJyA6ICdsZWFybmluZycsCiAgICAgIGxhc3RfdXBkYXRlZDogbmV3IERhdGUoKS50b0lTT1N0cmluZygpLnNsaWNlKDAsIDEwKSwKICAgIH07CgogICAgbGV0IGVycjsKICAgIGlmIChleGlzdGluZykgewogICAgICAoeyBlcnJvcjogZXJyIH0gPSBhd2FpdCBzdXBhYmFzZS5mcm9tKCdta19ibG9nX3dpbm5pbmdfZm9ybXVsYScpLnVwZGF0ZShwYXlsb2FkKS5lcSgnaWQnLCBleGlzdGluZy5pZCkpOwogICAgfSBlbHNlIHsKICAgICAgKHsgZXJyb3I6IGVyciB9ID0gYXdhaXQgc3VwYWJhc2UuZnJvbSgnbWtfYmxvZ193aW5uaW5nX2Zvcm11bGEnKS5pbnNlcnQocGF5bG9hZCkpOwogICAgfQoKICAgIGlmIChlcnIpIHsgZXJyb3JzLnB1c2goYCR7Zy7ssYTrhJB9LyR7Zy7siqzroa/snKDtmJV9OiAke2Vyci5tZXNzYWdlfWApOyB9CiAgICBlbHNlIHVwZGF0ZWRDb3VudCsrOwogIH0KCiAgLy8g4pGkIO2FlOugiOq3uOueqCDslYzrprwKICBjb25zdCB0b3BHcm91cHMgPSBPYmplY3QudmFsdWVzKGdyb3VwcykKICAgIC5zb3J0KChhLCBiKSA9PiAoYi5yYW5rcy5maWx0ZXIociA9PiByIDw9IDEwKS5sZW5ndGggLyAoYi5yYW5rcy5sZW5ndGggfHwgMSkpIC0gKGEucmFua3MuZmlsdGVyKHIgPT4gciA8PSAxMCkubGVuZ3RoIC8gKGEucmFua3MubGVuZ3RoIHx8IDEpKSkKICAgIC5zbGljZSgwLCAzKTsKCiAgY29uc3QgbGluZXMgPSBbCiAgICBg8J+PhiA8Yj7sirnrpqzqs7Xsi50gREIg6rCx7IugIOyZhOujjDwvYj5gLAogICAgYGAsCiAgICBg67aE7ISdIOyDmO2UjDogPGI+JHtsb2dzLmxlbmd0aH3qsbQ8L2I+YCwKICAgIGDqsLHsi6Ag6re466O5OiA8Yj4ke3VwZGF0ZWRDb3VudH3qsJw8L2I+YCwKICAgIGBgLAogICAgYPCfk4ogVE9QIDMg7LGE64SQL+ycoO2YlTpgLAogICAgLi4udG9wR3JvdXBzLm1hcChnID0+IHsKICAgICAgY29uc3QgciA9IGcucmFua3M7CiAgICAgIGNvbnN0IHRvcDEwID0gci5sZW5ndGggPiAwID8gKChyLmZpbHRlcih4ID0+IHggPD0gMTApLmxlbmd0aCAvIHIubGVuZ3RoKSAqIDEwMCkudG9GaXhlZCgwKSA6ICcwJzsKICAgICAgY29uc3QgYXZnID0gci5sZW5ndGggPiAwID8gKHIucmVkdWNlKChhLCBiKSA9PiBhICsgYiwgMCkgLyByLmxlbmd0aCkudG9GaXhlZCgxKSA6ICctJzsKICAgICAgcmV0dXJuIGDigKIgJHtnLuyxhOuEkH0gLyAke2cu7Iqs66Gv7Jyg7ZiVfSDigJQg7Y+J6regJHthdmd97JyEIC8gMTDsnITsnbTrgrQgJHt0b3AxMH0lYDsKICAgIH0pLAogICAgYGAsCiAgICBlcnJvcnMubGVuZ3RoID4gMCA/IGDimqDvuI8g7Jik66WYICR7ZXJyb3JzLmxlbmd0aH3qsbQ6ICR7ZXJyb3JzWzBdfWAgOiBg4pyFIOyYpOulmCDsl4bsnYxgLAogICAgYOKGkiA8YSBocmVmPSJodHRwczovL3JlYWxwbGFuamVqdS5jb20vYWRtaW4vbWFya2V0aW5nLmh0bWwiPuuniOy8gO2MhSDrjIDsi5zrs7Trk5w8L2E+YAogIF07CiAgYXdhaXQgc2VuZFRlbGVncmFtKGxpbmVzLmpvaW4oJ1xuJykpOwoKICByZXR1cm4gbmV3IFJlc3BvbnNlKAogICAgSlNPTi5zdHJpbmdpZnkoeyBvazogdHJ1ZSwgYW5hbHl6ZWQ6IGxvZ3MubGVuZ3RoLCB1cGRhdGVkOiB1cGRhdGVkQ291bnQsIGVycm9ycyB9KSwKICAgIHsgaGVhZGVyczogeyAnQ29udGVudC1UeXBlJzogJ2FwcGxpY2F0aW9uL2pzb24nIH0gfQogICk7Cn0pOwo=
+// winning-formula-updater v1.0 — D+N 측정 데이터 → mk_blog_winning_formula 자동 갱신 (2026-05-30)
+// 실행: 수동 트리거 | 향후 pg_cron 주 1회 월요일 연동 가능
+// 로직:
+//   1) mk_blog_publish_log에서 d_plus_7_rank IS NOT NULL 레코드 조회
+//   2) 매칭_슬롯_id로 mk_blog_slots JOIN → 슬롯유형·시즌 파악
+//   3) 채널+슬롯유형 기준 집계 (평균순위, 10위이내율, 샘플수)
+//   4) mk_blog_winning_formula UPSERT
+//   5) 텔레그램 알림
+
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+
+const SUPABASE_URL         = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false }
+});
+
+async function getSecret(name: string): Promise<string | null> {
+  const { data } = await supabase.rpc('realplan_get_secret', { secret_name: name });
+  return data as string;
+}
+
+async function sendTelegram(msg: string) {
+  try {
+    const token  = await getSecret('realplan_telegram_token');
+    const chatId = await getSecret('realplan_telegram_chat_id');
+    if (!token || !chatId) return;
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML', disable_web_page_preview: true })
+    });
+  } catch (e) { console.error('tg err', e); }
+}
+
+// 시즌 판별 (발행월 기반)
+function getSeason(dateStr: string): string {
+  const month = new Date(dateStr).getMonth() + 1;
+  if (month >= 3 && month <= 5) return '봄';
+  if (month >= 6 && month <= 8) return '여름';
+  if (month >= 9 && month <= 11) return '가을';
+  return '겨울';
+}
+
+Deno.serve(async (_req) => {
+  // ① D+7 측정 완료된 발행 로그 조회
+  const { data: logs, error: logErr } = await supabase
+    .from('mk_blog_publish_log')
+    .select('채널, 발행일, 매칭_슬롯_id, d_plus_7_rank, d_plus_14_rank, 핵심키워드')
+    .not('d_plus_7_rank', 'is', null)
+    .not('매칭_슬롯_id', 'is', null)
+    .order('발행일', { ascending: false })
+    .limit(500);
+
+  if (logErr) {
+    await sendTelegram(`❌ <b>승리공식 업데이터 실패</b>\n\n발행로그 조회 오류: ${logErr.message}`);
+    return new Response(JSON.stringify({ ok: false, error: logErr.message }), { status: 500 });
+  }
+  if (!logs || logs.length === 0) {
+    return new Response(JSON.stringify({ ok: true, message: 'D+7 측정 완료 데이터 없음', updated: 0 }));
+  }
+
+  // ② 슬롯 정보 배치 조회
+  const slotIds = [...new Set(logs.map(l => l.매칭_슬롯_id).filter(Boolean))];
+  const { data: slots } = await supabase
+    .from('mk_blog_slots')
+    .select('id, 슬롯유형, 발행일')
+    .in('id', slotIds);
+  const slotMap = new Map((slots || []).map(s => [s.id, s]));
+
+  // ③ 채널+슬롯유형 기준 집계
+  const groups: Record<string, {
+    채널: string; 슬롯유형: string; 시즌: string;
+    ranks: number[]; sample: number;
+  }> = {};
+
+  for (const log of logs) {
+    const slot = slotMap.get(log.매칭_슬롯_id);
+    const slotType = slot?.슬롯유형 || '정보성';
+    const season = getSeason(log.발행일 || new Date().toISOString());
+    const key = `${log.채널}|${slotType}`;
+
+    if (!groups[key]) {
+      groups[key] = { 채널: log.채널, 슬롯유형: slotType, 시즌: season, ranks: [], sample: 0 };
+    }
+    if (log.d_plus_7_rank) groups[key].ranks.push(log.d_plus_7_rank);
+    groups[key].sample++;
+  }
+
+  // ④ mk_blog_winning_formula UPSERT
+  let updatedCount = 0;
+  const errors: string[] = [];
+
+  for (const [, g] of Object.entries(groups)) {
+    if (g.ranks.length === 0) continue;
+    const avgRank   = g.ranks.reduce((a, b) => a + b, 0) / g.ranks.length;
+    const top10Rate = (g.ranks.filter(r => r <= 10).length / g.ranks.length) * 100;
+    const achieved  = g.ranks.filter(r => r <= 10).length;
+
+    const { data: existing } = await supabase
+      .from('mk_blog_winning_formula')
+      .select('id')
+      .eq('채널', g.채널)
+      .eq('슬롯유형', g.슬롯유형)
+      .eq('시즌', g.시즌)
+      .maybeSingle();
+
+    const payload: any = {
+      채널: g.채널,
+      슬롯유형: g.슬롯유형,
+      시즌: g.시즌,
+      d7_평균순위: parseFloat(avgRank.toFixed(1)),
+      d7_10위이내율: parseFloat(top10Rate.toFixed(1)),
+      d7_달성횟수: achieved,
+      샘플수: g.sample,
+      학습_상태: g.sample >= 5 ? 'stable' : 'learning',
+      last_updated: new Date().toISOString().slice(0, 10),
+    };
+
+    let err;
+    if (existing) {
+      ({ error: err } = await supabase.from('mk_blog_winning_formula').update(payload).eq('id', existing.id));
+    } else {
+      ({ error: err } = await supabase.from('mk_blog_winning_formula').insert(payload));
+    }
+
+    if (err) { errors.push(`${g.채널}/${g.슬롯유형}: ${err.message}`); }
+    else updatedCount++;
+  }
+
+  // ⑤ 텔레그램 알림
+  const topGroups = Object.values(groups)
+    .sort((a, b) => (b.ranks.filter(r => r <= 10).length / (b.ranks.length || 1)) - (a.ranks.filter(r => r <= 10).length / (a.ranks.length || 1)))
+    .slice(0, 3);
+
+  const lines = [
+    `🏆 <b>승리공식 DB 갱신 완료</b>`,
+    ``,
+    `분석 샘플: <b>${logs.length}건</b>`,
+    `갱신 그룹: <b>${updatedCount}개</b>`,
+    ``,
+    `📊 TOP 3 채널/유형:`,
+    ...topGroups.map(g => {
+      const r = g.ranks;
+      const top10 = r.length > 0 ? ((r.filter(x => x <= 10).length / r.length) * 100).toFixed(0) : '0';
+      const avg = r.length > 0 ? (r.reduce((a, b) => a + b, 0) / r.length).toFixed(1) : '-';
+      return `• ${g.채널} / ${g.슬롯유형} — 평균${avg}위 / 10위이내 ${top10}%`;
+    }),
+    ``,
+    errors.length > 0 ? `⚠️ 오류 ${errors.length}건: ${errors[0]}` : `✅ 오류 없음`,
+    `→ <a href="https://realplanjeju.com/admin/marketing.html">마케팅 대시보드</a>`
+  ];
+  await sendTelegram(lines.join('\n'));
+
+  return new Response(
+    JSON.stringify({ ok: true, analyzed: logs.length, updated: updatedCount, errors }),
+    { headers: { 'Content-Type': 'a

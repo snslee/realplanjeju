@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.4</title>
+<title>리얼플랜제주 마케팅 운영 v1.5</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -90,7 +90,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.4</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.5</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -130,6 +130,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <div class="card"><div class="card-hdr"><h3>📈 채널별 노출 추세 (7일)</h3></div>
         <div class="card-body" style="height:260px;position:relative"><canvas id="trendChart"></canvas><div id="chart-loading" class="loading">로딩 중...</div></div>
       </div>
+      <div class="card"><div class="card-hdr"><h3>📈 네이버 채널별 평균순위 추세 (7일)</h3></div>
+        <div class="card-body" style="height:220px;position:relative"><canvas id="naverRankChart"></canvas><div id="naver-chart-loading" class="loading">로딩 중...</div></div>
+      </div>
       <div class="card"><div class="card-hdr"><h3>📋 채널별 어제 지표</h3></div>
         <div class="card-body" style="padding:0;overflow-x:auto">
           <table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>노출</th><th>클릭</th><th>CTR%</th><th>평균순위</th><th>측정일</th></tr></thead>
@@ -150,7 +153,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn" onclick="filterDrafts('rejected',this)">❌ 반려</button>
       </div>
       <div class="card"><div class="card-body" style="padding:0;overflow-x:auto">
-        <table class="tbl"><thead><tr><th>채널</th><th>키워드</th><th>제목</th><th>점수</th><th>상태</th><th>생성일</th><th>액션</th></tr></thead>
+        <table class="tbl"><thead><tr><th>채널</th><th>키워드</th><th>제목 (클릭=본문보기)</th><th>점수</th><th>상태</th><th>생성일</th><th>액션</th></tr></thead>
         <tbody id="drafts-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
       </div></div>
     </div>
@@ -178,7 +181,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
       <div class="card"><div class="card-hdr"><h3>📊 채널별 노출·CTR 현황</h3></div>
         <div class="card-body" style="padding:0;overflow-x:auto">
-          <table class="tbl"><thead><tr><th>채널</th><th>총노출</th><th>총클릭</th><th>평균CTR%</th><th>평균순위</th><th>판정</th></tr></thead>
+          <table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>총노출</th><th>총클릭</th><th>평균CTR%</th><th>평균순위</th><th>판정</th></tr></thead>
           <tbody id="giants-body"><tr><td colspan="6" class="loading">로딩 중...</td></tr></tbody></table>
         </div>
       </div>
@@ -208,48 +211,90 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div></div>
     </div>
     <div class="tab-panel" id="t6">
-      <div style="margin-bottom:20px"><h2 style="font-size:1.2rem;font-weight:700">🎨 톤 가이드</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">채널별 콘텐츠 작성 기준</p></div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px">
-        <div class="card">
-          <div class="card-hdr" style="background:#eff6ff"><h3 style="color:#1d4ed8">🏔️ 블A — 여행 (네이버블로그)</h3></div>
+      <div style="margin-bottom:20px"><h2 style="font-size:1.2rem;font-weight:700">🎨 톤 가이드</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">6채널 × 네이버/티스토리 작성 기준 — 알고리즘 반영</p></div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="filter-btn active" onclick="filterTone('all',this)">전체</button>
+        <button class="filter-btn" onclick="filterTone('naver',this)">네이버만</button>
+        <button class="filter-btn" onclick="filterTone('tistory',this)">티스토리만</button>
+      </div>
+      <div id="tone-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px">
+
+        <!-- 블A 네이버 -->
+        <div class="card tone-card tone-naver">
+          <div class="card-hdr" style="background:#eff6ff"><h3 style="color:#1d4ed8">🏔️ 블A 네이버 — 여행 정보성</h3></div>
           <div class="card-body" style="font-size:.85rem;line-height:1.7">
-            <div style="margin-bottom:12px"><span style="font-weight:700;color:#64748b">말투</span><br>친근한 존댓말 (-해요/-이에요) / 반말 금지 / 1인칭 "저는~"</div>
-            <div style="margin-bottom:12px"><span style="font-weight:700;color:#64748b">제목 패턴</span><br><span style="background:#dbeafe;padding:2px 8px;border-radius:4px;font-size:.78rem">[지역] + [핵심경험] + [감성키워드]</span><br><span style="color:#64748b;font-size:.78rem">예) "제주 성산 현지인 맛집, 2박3일 숨은 코스"</span></div>
-            <div style="margin-bottom:12px"><span style="font-weight:700;color:#64748b">핵심 감정</span><br>설렘 · 힐링 · 특별함 · 추억 · 로컬 감성</div>
-            <div style="margin-bottom:12px"><span style="font-weight:700;color:#64748b">본문 구조</span><br>배경(왜 갔나) → 과정(직접 경험) → 감동 포인트 → 실용 팁</div>
-            <div style="background:#fee2e2;border-radius:6px;padding:10px"><span style="font-weight:700;color:#991b1b;font-size:.78rem">⛔ 금지어</span><br><span style="font-size:.78rem;color:#7f1d1d">최고 · 최저가 · 보장 · 무조건 · 꼭 가야해</span></div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">말투</span><br>친근한 존댓말 (-해요·-이에요) / 1인칭 "저는~" / 직접 다녀온 경험담 필수</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">제목</span><br><span style="background:#dbeafe;padding:2px 8px;border-radius:4px;font-size:.78rem">[지역] + [경험] + [감성키워드]</span> 15~25자</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">핵심 감정</span><br>설렘 · 힐링 · 특별함 · 로컬 감성</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">구조</span><br>배경 → 직접경험 → 감동포인트 → 실용팁</div>
+            <div style="background:#fee2e2;border-radius:6px;padding:8px"><span style="font-weight:700;color:#991b1b;font-size:.78rem">⛔ 금지</span> <span style="font-size:.78rem;color:#7f1d1d">최고·최저가·보장·무조건·꼭 가야해</span></div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-hdr" style="background:#f0fdf4"><h3 style="color:#166534">🎪 블B — 행사 (네이버블로그)</h3></div>
+        <!-- 블A 티스토리 -->
+        <div class="card tone-card tone-tistory">
+          <div class="card-hdr" style="background:#e0f2fe"><h3 style="color:#0369a1">🏔️ 블A 티스토리 — 여행 정보심화</h3></div>
           <div class="card-body" style="font-size:.85rem;line-height:1.7">
-            <div style="margin-bottom:12px"><span style="font-weight:700;color:#64748b">말투</span><br>격식체 (-합니다/-입니다) / B2B 신뢰 우선 / 수치 강조</div>
-            <div style="margin-bottom:12px"><span style="font-weight:700;color:#64748b">제목 패턴</span><br><span style="background:#dcfce7;padding:2px 8px;border-radius:4px;font-size:.78rem">[행사종류] + [규모/특징] + [성과]</span><br><span style="color:#64748b;font-size:.78rem">예) "기업 워크샵 200명, 제주 3일 성공 운영 사례"</span></div>
-            <div style="margin-bottom:12px"><span style="font-weight:700;color:#64748b">핵심 키워드</span><br>전문성 · 신뢰 · 실적 · 숫자 · 맞춤 기획</div>
-            <div style="margin-bottom:12px"><span style="font-weight:700;color:#64748b">본문 구조</span><br>결론(성과) → 기획 배경 → 진행 과정 → 고객 반응</div>
-            <div style="background:#fee2e2;border-radius:6px;padding:10px"><span style="font-weight:700;color:#991b1b;font-size:.78rem">⛔ 금지어</span><br><span style="font-size:.78rem;color:#7f1d1d">저렴 · 싸게 · 대충 · 막연한 미사여구</span></div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">말투</span><br>정보 전달형 (-입니다·-합니다) / 구글 검색자 대상 / 데이터·수치 강조</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">제목</span><br><span style="background:#e0f2fe;padding:2px 8px;border-radius:4px;font-size:.78rem">[숫자] + [구체지역] + [완벽가이드/코스]</span> 20~35자</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">구조</span><br>결론요약(300자) → H2 정의형 → 세부정보 → FAQ 3개</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">SEO 포인트</span><br>내부링크 클러스터 3~5개 / alt 텍스트 필수</div>
+            <div style="background:#fee2e2;border-radius:6px;padding:8px"><span style="font-weight:700;color:#991b1b;font-size:.78rem">⛔ 금지</span> <span style="font-size:.78rem;color:#7f1d1d">감성 과잉 표현 / AI 복붙 그대로</span></div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-hdr" style="background:#fdf4ff"><h3 style="color:#7e22ce">📚 블C — 마케팅교육 (티스토리)</h3></div>
+        <!-- 블B 네이버 -->
+        <div class="card tone-card tone-naver">
+          <div class="card-hdr" style="background:#f0fdf4"><h3 style="color:#166534">🎪 블B 네이버 — 행사 B2B신뢰</h3></div>
           <div class="card-body" style="font-size:.85rem;line-height:1.7">
-            <div style="margin-bottom:12px"><span style="font-weight:700;color:#64748b">말투</span><br>친근한 격식체 (-할 수 있어요/-됩니다) / 전문가 포지션 유지</div>
-            <div style="margin-bottom:12px"><span style="font-weight:700;color:#64748b">제목 패턴</span><br><span style="background:#f3e8ff;padding:2px 8px;border-radius:4px;font-size:.78rem">[숫자] + [구체 방법/결과]</span><br><span style="color:#64748b;font-size:.78rem">예) "소상공인 블로그 3개월 만에 방문자 1만 만드는 법"</span></div>
-            <div style="margin-bottom:12px"><span style="font-weight:700;color:#64748b">핵심 키워드</span><br>구체적 숫자 · 실전 팁 · 실증 사례 · 따라하기 쉬운</div>
-            <div style="margin-bottom:12px"><span style="font-weight:700;color:#64748b">본문 구조</span><br>문제 공감 → 원인 진단 → 해결책 제시 → 단계별 실행</div>
-            <div style="background:#fee2e2;border-radius:6px;padding:10px"><span style="font-weight:700;color:#991b1b;font-size:.78rem">⛔ 금지어</span><br><span style="font-size:.78rem;color:#7f1d1d">무조건 · 쉽게 · 누구나 · 100% · 무조건 성공</span></div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">말투</span><br>격식체 (-합니다·-입니다) / B2B 신뢰 우선 / 수치·실적 강조</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">제목</span><br><span style="background:#dcfce7;padding:2px 8px;border-radius:4px;font-size:.78rem">[행사종류] + [규모/특징] + [성과]</span> 15~25자</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">구조</span><br>결론(성과) → 기획배경 → 진행과정 → 고객반응</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">B2B 타겟</span><br>기업담당자·학교교사·어린이집원장 검색의도 반영</div>
+            <div style="background:#fee2e2;border-radius:6px;padding:8px"><span style="font-weight:700;color:#991b1b;font-size:.78rem">⛔ 금지</span> <span style="font-size:.78rem;color:#7f1d1d">저렴·싸게·대충·막연한 미사여구</span></div>
+          </div>
+        </div>
+        <!-- 블B 티스토리 -->
+        <div class="card tone-card tone-tistory">
+          <div class="card-hdr" style="background:#dcfce7"><h3 style="color:#166534">🎪 블B 티스토리 — 행사 실무가이드</h3></div>
+          <div class="card-body" style="font-size:.85rem;line-height:1.7">
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">말투</span><br>실무 전문가형 / 체크리스트·단계별 구성 / 구글 SEO 최적화</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">제목</span><br><span style="background:#dcfce7;padding:2px 8px;border-radius:4px;font-size:.78rem">[행사종류] + [완벽가이드/A to Z/체크리스트]</span> 20~35자</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">구조</span><br>H2 정의형 → 단계별 설명 → 체크리스트 → FAQ</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">포트폴리오</span><br>사례명만 자연 삽입 / 과장 금지</div>
+            <div style="background:#fee2e2;border-radius:6px;padding:8px"><span style="font-weight:700;color:#991b1b;font-size:.78rem">⛔ 금지</span> <span style="font-size:.78rem;color:#7f1d1d">업체명 직접 광고 / 과잉 홍보</span></div>
+          </div>
+        </div>
+        <!-- 블C 네이버 -->
+        <div class="card tone-card tone-naver">
+          <div class="card-hdr" style="background:#fdf4ff"><h3 style="color:#7e22ce">📚 블C 네이버 — 마케팅교육 실전</h3></div>
+          <div class="card-body" style="font-size:.85rem;line-height:1.7">
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">말투</span><br>친근한 격식체 / 소상공인·중소기업 눈높이 / "이렇게 하면 됩니다" 실용형</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">제목</span><br><span style="background:#f3e8ff;padding:2px 8px;border-radius:4px;font-size:.78rem">[숫자] + [구체방법/결과]</span> 15~25자</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">구조</span><br>문제공감 → 원인진단 → 해결책 → 단계별 실행</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">경력 삽입</span><br>19년 경험·협회장·교수 → 본문 서론·사례에만 자연 삽입</div>
+            <div style="background:#fee2e2;border-radius:6px;padding:8px"><span style="font-weight:700;color:#991b1b;font-size:.78rem">⛔ 금지</span> <span style="font-size:.78rem;color:#7f1d1d">무조건·100%·누구나·쉽게</span></div>
+          </div>
+        </div>
+        <!-- 블C 티스토리 -->
+        <div class="card tone-card tone-tistory">
+          <div class="card-hdr" style="background:#f5f3ff"><h3 style="color:#7e22ce">📚 블C 티스토리 — 마케팅교육 심화</h3></div>
+          <div class="card-body" style="font-size:.85rem;line-height:1.7">
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">말투</span><br>전문가 분석형 / 구글 롱테일 키워드 최적화 / 데이터 기반</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">제목</span><br><span style="background:#f5f3ff;padding:2px 8px;border-radius:4px;font-size:.78rem">[2026] + [전략명] + [완벽가이드/실전]</span> 20~35자</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">구조</span><br>결론요약 → H2 정의형 → 심화분석 → FAQ 3개+</div>
+            <div style="margin-bottom:10px"><span style="font-weight:700;color:#64748b">SEO</span><br>내부링크 마케팅교육 클러스터 / 관련글 3개+</div>
+            <div style="background:#fee2e2;border-radius:6px;padding:8px"><span style="font-weight:700;color:#991b1b;font-size:.78rem">⛔ 금지</span> <span style="font-size:.78rem;color:#7f1d1d">근거 없는 수치 / 무조건 성공</span></div>
           </div>
         </div>
       </div>
       <div class="card" style="margin-top:20px">
-        <div class="card-hdr"><h3>📐 공통 SEO 원칙</h3></div>
+        <div class="card-hdr"><h3>📐 공통 SEO 원칙 (네이버 AI 브리핑 기준 포함)</h3></div>
         <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;font-size:.83rem">
-          <div style="background:#f8fafc;border-radius:8px;padding:12px"><div style="font-weight:700;margin-bottom:4px">🔤 제목</div>핵심 키워드 첫 10자 이내 배치 / 25~35자 최적</div>
-          <div style="background:#f8fafc;border-radius:8px;padding:12px"><div style="font-weight:700;margin-bottom:4px">📝 본문</div>2,000자 이상 / h2·h3 목차 필수 / 단락 4~6줄</div>
-          <div style="background:#f8fafc;border-radius:8px;padding:12px"><div style="font-weight:700;margin-bottom:4px">🖼️ 이미지</div>alt 텍스트 키워드 포함 / 대표이미지 필수</div>
-          <div style="background:#f8fafc;border-radius:8px;padding:12px"><div style="font-weight:700;margin-bottom:4px">🔗 내부링크</div>관련 글 2~3개 링크 / 클러스터 구조</div>
-          <div style="background:#f8fafc;border-radius:8px;padding:12px"><div style="font-weight:700;margin-bottom:4px">⏱️ 발행 시간</div>평일 오전 9~11시 / 주말 오전 8~10시</div>
-          <div style="background:#f8fafc;border-radius:8px;padding:12px"><div style="font-weight:700;margin-bottom:4px">🤖 AI 주의</div>생성형 AI 그대로 복붙 금지 / 직접 경험 필수 추가</div>
+          <div style="background:#f8fafc;border-radius:8px;padding:12px"><div style="font-weight:700;margin-bottom:4px">🔤 제목</div>핵심 키워드 첫 10자 이내 배치 / 네이버 15~25자 · 티스토리 20~35자</div>
+          <div style="background:#f8fafc;border-radius:8px;padding:12px"><div style="font-weight:700;margin-bottom:4px">📝 본문</div>2,000자 이상 / H2·H3 목차 필수 / H2 첫 문장 정의형("X란 ~이다") 의무</div>
+          <div style="background:#f8fafc;border-radius:8px;padding:12px"><div style="font-weight:700;margin-bottom:4px">🤖 AI 브리핑</div>FAQ 3개 이상 / 통계 숫자 1개 이상 / 요약 단락 300자 이내</div>
+          <div style="background:#f8fafc;border-radius:8px;padding:12px"><div style="font-weight:700;margin-bottom:4px">🖼️ 이미지</div>alt 텍스트 키워드 포함 / 대표이미지 필수 / 티스토리 alt 최적화 강화</div>
+          <div style="background:#f8fafc;border-radius:8px;padding:12px"><div style="font-weight:700;margin-bottom:4px">🔗 내부링크</div>클러스터 그룹 내 3~5개 상호링크 / 체류시간↑</div>
+          <div style="background:#f8fafc;border-radius:8px;padding:12px"><div style="font-weight:700;margin-bottom:4px">⏱️ 발행시간</div>네이버 평일 8~9시 / 티스토리 평일 9~11시</div>
         </div>
       </div>
     </div>
@@ -415,6 +460,12 @@ async function loadStats(){
   document.getElementById('chart-loading').style.display='none';
   if(trendChart)trendChart.destroy();
   trendChart=new Chart(document.getElementById('trendChart').getContext('2d'),{type:'line',data:{labels:days,datasets:chs.map((ch,i)=>({label:ch,data:days.map(d=>byd[ch+'|'+d]||0),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.4,fill:false,pointRadius:4}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}},x:{grid:{display:false}}}}});
+  // 네이버 순위 차트
+  document.getElementById('naver-chart-loading').style.display='none';
+  const navD=data.filter(r=>r.데이터_소스==='naver_search'&&r.평균_순위),navChs=[...new Set(navD.map(r=>r.채널))].sort(),navByD={};
+  navD.forEach(r=>{const d=r.수집_시각?r.수집_시각.slice(5,10):'-';navByD[r.채널+'|'+d]=Number(r.평균_순위);});
+  if(window.naverRankChart)window.naverRankChart.destroy();
+  if(document.getElementById('naverRankChart'))window.naverRankChart=new Chart(document.getElementById('naverRankChart').getContext('2d'),{type:'line',data:{labels:days,datasets:navChs.map((ch,i)=>({label:ch,data:days.map(d=>navByD[ch+'|'+d]||null),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.4,fill:false,pointRadius:4,spanGaps:true}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{reverse:true,beginAtZero:false,grid:{color:'#f1f5f9'},title:{display:true,text:'순위 (낮을수록 좋음)'}},x:{grid:{display:false}}}}});
 }
 
 async function loadDrafts(){
@@ -427,7 +478,7 @@ function renderDrafts(list){
   if(!list.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">초안 없음</td></tr>';return;}
   const sm={draft:'badge-draft',approved:'badge-approved',published:'badge-published',rejected:'badge-rejected'};
   const sl={draft:'초안',approved:'승인',published:'발행',rejected:'반려'};
-  tbody.innerHTML=list.map(r=>{const sc=r.자가검증_점수,scc=sc==null?'#94a3b8':sc>=9?'#10b981':sc>=7?'#f59e0b':'#ef4444';return `<tr><td><span style="font-size:.8rem;background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px">${r.채널||'-'}</span></td><td style="font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.핵심키워드||'-'}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.제목||'(없음)'}</td><td><span style="font-weight:700;color:${scc}">${sc!=null?sc:'-'}</span></td><td><span class="badge ${sm[r.상태]||'badge-draft'}">${sl[r.상태]||r.상태||'초안'}</span></td><td style="color:#94a3b8;font-size:.78rem">${r.생성일?r.생성일.slice(0,10):'-'}</td><td><div style="display:flex;gap:4px">${r.상태==='draft'?`<button class="btn-sm btn-approve" onclick="approveDraft('${r.id}')">승인</button><button class="btn-sm btn-reject" onclick="openReject('${r.id}')">반려</button>`:''}<button class="btn-sm btn-copy" onclick="copyTitle('${(r.제목||'').replace(/'/g,"\\'")}')">복사</button>${r.발행_url?`<a href="${r.발행_url}" target="_blank" style="font-size:.75rem;color:var(--primary);padding:4px 8px">🔗</a>`:''}</div></td></tr>`;}).join('');
+  tbody.innerHTML=list.map(r=>{const sc=r.자가검증_점수,scc=sc==null?'#94a3b8':sc>=9?'#10b981':sc>=7?'#f59e0b':'#ef4444';return `<tr><td><span style="font-size:.8rem;background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px">${r.채널||'-'}</span></td><td style="font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.핵심키워드||'-'}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;color:var(--primary)" onclick="viewDraft('${r.id}')">${r.제목||'(없음)'}</td><td><span style="font-weight:700;color:${scc}">${sc!=null?sc:'-'}</span></td><td><span class="badge ${sm[r.상태]||'badge-draft'}">${sl[r.상태]||r.상태||'초안'}</span></td><td style="color:#94a3b8;font-size:.78rem">${r.생성일?r.생성일.slice(0,10):'-'}</td><td><div style="display:flex;gap:4px">${r.상태==='draft'?`<button class="btn-sm btn-approve" onclick="approveDraft('${r.id}')">승인</button><button class="btn-sm btn-reject" onclick="openReject('${r.id}')">반려</button>`:''}<button class="btn-sm btn-copy" onclick="copyTitle('${(r.제목||'').replace(/'/g,"\\'")}')">복사</button>${r.발행_url?`<a href="${r.발행_url}" target="_blank" style="font-size:.75rem;color:var(--primary);padding:4px 8px">🔗</a>`:''}</div></td></tr>`;}).join('');
 }
 function filterDrafts(s,b){document.querySelectorAll('#draft-filters .filter-btn').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');renderDrafts(s==='all'?allDrafts:allDrafts.filter(r=>r.상태===s));}
 async function approveDraft(id){const{error}=await sb.from('mk_blog_drafts').update({상태:'approved',승인일:new Date().toISOString()}).eq('id',id);if(error){showToast('승인 실패');return;}showToast('✅ 승인 완료');loadDrafts();}
@@ -439,7 +490,7 @@ function copyTitle(t){navigator.clipboard.writeText(t).then(()=>showToast('📋 
 async function loadSlots(){
   document.getElementById('slots-body').innerHTML='<tr><td colspan="6" class="loading">로딩 중...</td></tr>';
   const now=new Date(),from=new Date(now.getFullYear(),now.getMonth(),1).toISOString().slice(0,10),to=new Date(now.getFullYear(),now.getMonth()+2,1).toISOString().slice(0,10);
-  const{data,error}=await sb.from('mk_blog_slots').select('id,발행일,채널,핵심키워드,콘텐츠방향,상태,수정일').gte('발행일',from).lt('발행일',to).order('발행일',{ascending:true}).limit(200);
+  const{data,error}=await sb.from('mk_blog_slots').select('id,발행일,채널,핵심키워드,콘텐츠방향,상태,수정일').gte('발행일',from).lt('발행일',to).order('발행일',{ascending:false}).limit(200);
   if(error){showToast('슬롯 로드 실패');return;}allSlots=data||[];renderSlots(allSlots);
 }
 function renderSlots(list){
@@ -454,13 +505,15 @@ function filterSlots(s,b){document.querySelectorAll('#slot-filters .filter-btn')
 async function loadGiants(){
   document.getElementById('giants-body').innerHTML='<tr><td colspan="6" class="loading">로딩 중...</td></tr>';
   const since=new Date(Date.now()-14*86400000).toISOString();
-  const{data,error}=await sb.from('mk_metrics').select('채널,노출_수,클릭_수,평균_순위').eq('데이터_소스','gsc').gte('수집_시각',since);
+  const{data,error}=await sb.from('mk_metrics').select('채널,데이터_소스,노출_수,클릭_수,평균_순위').gte('수집_시각',since);
   if(error){showToast('잠자는 거인 로드 실패');return;}
-  const byC={};(data||[]).forEach(r=>{if(!byC[r.채널])byC[r.채널]={n:0,c:0,sr:0,sn:0};byC[r.채널].n+=(r.노출_수||0);byC[r.채널].c+=(r.클릭_수||0);if(r.평균_순위){byC[r.채널].sr+=Number(r.평균_순위);byC[r.채널].sn++;}});
-  const rows=Object.entries(byC).map(([ch,v])=>({ch,n:v.n,c:v.c,ctr:v.n>0?(v.c/v.n*100):0,r:v.sn>0?v.sr/v.sn:null})).sort((a,b)=>b.n-a.n);
+  // 채널+소스 기준 집계
+  const byCS={};(data||[]).forEach(r=>{const k=r.채널+'||'+(r.데이터_소스||'gsc');if(!byCS[k])byCS[k]={ch:r.채널,src:r.데이터_소스||'gsc',n:0,c:0,sr:0,sn:0};byCS[k].n+=(r.노출_수||0);byCS[k].c+=(r.클릭_수||0);if(r.평균_순위){byCS[k].sr+=Number(r.평균_순위);byCS[k].sn++;}});
+  const rows=Object.values(byCS).map(v=>({ch:v.ch,src:v.src,n:v.n,c:v.c,ctr:v.n>0?(v.c/v.n*100):0,r:v.sn>0?v.sr/v.sn:null})).sort((a,b)=>b.n-a.n);
+  const srcLabel={'gsc':'티스토리','naver_search':'네이버'};
   const tbody=document.getElementById('giants-body');
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8">데이터 없음</td></tr>';return;}
-  tbody.innerHTML=rows.map(r=>{const ctr=r.ctr,j=ctr<1?'🔴 즉시액션':ctr<3?'🟡 제목개선':ctr<5?'🟢 유지':'🔵 우수',jc=ctr<1?'#ef4444':ctr<3?'#f59e0b':ctr<5?'#10b981':'#3b82f6';return `<tr><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:.78rem">${r.ch}</span></td><td style="font-weight:700">${r.n.toLocaleString()}</td><td>${r.c.toLocaleString()}</td><td style="font-weight:700;color:${jc}">${ctr.toFixed(2)}%</td><td>${r.r?r.r.toFixed(1)+'위':'-'}</td><td>${j}</td></tr>`;}).join('');
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">데이터 없음</td></tr>';return;}
+  tbody.innerHTML=rows.map(r=>{const ctr=r.ctr,j=ctr<1?'🔴 즉시액션':ctr<3?'🟡 제목개선':ctr<5?'🟢 유지':'🔵 우수',jc=ctr<1?'#ef4444':ctr<3?'#f59e0b':ctr<5?'#10b981':'#3b82f6';const srcBg=r.src==='gsc'?'#dbeafe':'#dcfce7';const srcTx=r.src==='gsc'?'#1e40af':'#166534';return `<tr><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:.78rem">${r.ch}</span></td><td><span style="background:${srcBg};color:${srcTx};padding:2px 8px;border-radius:12px;font-size:.75rem">${srcLabel[r.src]||r.src}</span></td><td style="font-weight:700">${r.n.toLocaleString()}</td><td>${r.c.toLocaleString()}</td><td style="font-weight:700;color:${jc}">${ctr.toFixed(2)}%</td><td>${r.r?r.r.toFixed(1)+'위':'-'}</td><td>${j}</td></tr>`;}).join('');
 }
 
 async function loadRankEntries(){
@@ -612,6 +665,46 @@ async function recordLike(id){
   const sc=(nb?.['상호작용_점수']||0)+2;
   const{error}=await sb.from('mk_neighbor_blogs').update({마지막_공감일:today,상호작용_점수:sc,수정일:new Date().toISOString()}).eq('id',id);
   if(error){showToast('기록 실패');return;}showToast('❤️ 공감 기록 완료');loadNeighbors();
+}
+
+
+// ── 초안 본문 뷰어 ──────────────────────────────────────────────
+async function viewDraft(id){
+  const dr=allDrafts.find(r=>r.id===id);
+  if(!dr){showToast('초안을 찾을 수 없습니다');return;}
+  const{data}=await sb.from('mk_blog_drafts').select('본문_네이버,본문_티스토리,제목,채널').eq('id',id).maybeSingle();
+  const nav=data?.본문_네이버||'(본문 없음)';
+  const tis=data?.본문_티스토리||'(본문 없음)';
+  const modal=document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto';
+  modal.innerHTML=`<div style="background:#fff;border-radius:16px;max-width:800px;width:100%;margin:auto">
+    <div style="padding:18px 22px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-weight:700">
+      📄 ${dr.제목||'초안 본문'} <span style="font-size:1.4rem;cursor:pointer;color:#64748b" onclick="this.closest('[style*=fixed]').remove()">✕</span>
+    </div>
+    <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div style="font-weight:700;color:#1d4ed8;margin-bottom:8px;font-size:.9rem">📱 네이버 본문</div>
+        <div style="background:#f8fafc;border-radius:8px;padding:12px;font-size:.82rem;line-height:1.7;max-height:500px;overflow-y:auto;white-space:pre-wrap">${nav}</div>
+      </div>
+      <div>
+        <div style="font-weight:700;color:#7e22ce;margin-bottom:8px;font-size:.9rem">💻 티스토리 본문</div>
+        <div style="background:#f8fafc;border-radius:8px;padding:12px;font-size:.82rem;line-height:1.7;max-height:500px;overflow-y:auto;white-space:pre-wrap">${tis}</div>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
+}
+
+// ── 톤 가이드 필터 ───────────────────────────────────────────────
+function filterTone(f,b){
+  document.querySelectorAll('#t6 .filter-btn').forEach(x=>x.classList.remove('active'));
+  if(b)b.classList.add('active');
+  document.querySelectorAll('.tone-card').forEach(c=>{
+    if(f==='all')c.style.display='';
+    else if(f==='naver')c.style.display=c.classList.contains('tone-naver')?'':'none';
+    else c.style.display=c.classList.contains('tone-tistory')?'':'none';
+  });
 }
 
 

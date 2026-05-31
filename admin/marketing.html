@@ -616,7 +616,7 @@ let allWinning=[];
 async function loadWinning(){
   const box=document.getElementById('winning-board'); if(!box)return;
   box.innerHTML='<div class="loading" style="padding:20px;text-align:center">로딩 중...</div>';
-  const{data,error}=await sb.from('mk_winning_posts').select('id,채널,제목,핵심키워드,외부_url,최고순위,글자수,본문_수집상태,출처').order('본문_수집상태',{ascending:true}).order('최고순위',{ascending:true,nullsFirst:false}).limit(400);
+  const{data,error}=await sb.from('mk_winning_posts').select('id,채널,제목,핵심키워드,외부_url,최고순위,글자수,본문_수집상태,출처').eq('활성',true).order('본문_수집상태',{ascending:true}).order('최고순위',{ascending:true,nullsFirst:false}).limit(400);
   if(error){box.innerHTML='<div style="padding:20px;text-align:center;color:#ef4444">로드 실패: '+error.message+'</div>';return;}
   allWinning=data||[]; renderWinning(allWinning);
 }

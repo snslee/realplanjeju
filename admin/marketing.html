@@ -136,6 +136,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div class="card-body" style="padding:0;overflow-x:auto">
           <table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>노출</th><th>클릭</th><th>CTR%</th><th>평균순위</th><th>측정일</th></tr></thead>
           <tbody id="stats-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
+          <div id="stats-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;padding:12px"></div>
         </div>
       </div>
     </div>
@@ -404,6 +405,8 @@ async function doLogin(){
 async function doLogout(){try{localStorage.removeItem(SB_AUTH_KEY);localStorage.removeItem(SB_VERIFIER_KEY);}catch(e){}await sb.auth.signOut().catch(()=>{});showLogin();}
 function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1')loadStats();if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();}if(id==='t7')initCalendar();}
 
+function renderStatsPage(){var ydData=window._ydView||[];var _sp=Math.max(1,Math.ceil(ydData.length/STAT_PER));if(_statPage>_sp)_statPage=1;var pe=document.getElementById('stats-pager');if(pe)pe.innerHTML=pagerHTML(_statPage,_sp,ydData.length,'gotoStatPage');document.getElementById('stats-body').innerHTML=ydData.length?ydData.slice((_statPage-1)*STAT_PER,_statPage*STAT_PER).map(r=>`<tr><td><b>${r.채널||'-'}</b></td><td style="font-size:.75rem;color:#64748b">${r.데이터_소스||'-'}</td><td>${(r.노출_수||0).toLocaleString()}</td><td>${(r.클릭_수||0).toLocaleString()}</td><td>${r.ctr_pct!=null?Number(r.ctr_pct).toFixed(2)+'%':'-'}</td><td>${r.평균_순위!=null?Number(r.평균_순위).toFixed(1)+'위':'-'}</td><td style="color:#94a3b8;font-size:.78rem">${r.수집_시각?r.수집_시각.slice(0,10):'-'}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">데이터 없음</td></tr>';}
+function gotoStatPage(n){_statPage=n;renderStatsPage();}
 async function loadStats(){
   document.getElementById('chart-loading').style.display='block';
   const since=new Date(Date.now()-7*86400000).toISOString();
@@ -418,7 +421,7 @@ async function loadStats(){
   document.getElementById('kpi-순위').textContent=ranks.length?(ranks.reduce((a,b)=>a+b,0)/ranks.length).toFixed(1)+'위':'--';
   const yd=new Date(Date.now()-86400000).toISOString().slice(0,10);
   const ydData=data.filter(r=>r.수집_시각&&r.수집_시각.startsWith(yd));
-  document.getElementById('stats-body').innerHTML=ydData.length?ydData.map(r=>`<tr><td><b>${r.채널||'-'}</b></td><td style="font-size:.75rem;color:#64748b">${r.데이터_소스||'-'}</td><td>${(r.노출_수||0).toLocaleString()}</td><td>${(r.클릭_수||0).toLocaleString()}</td><td>${r.ctr_pct!=null?Number(r.ctr_pct).toFixed(2)+'%':'-'}</td><td>${r.평균_순위!=null?Number(r.평균_순위).toFixed(1)+'위':'-'}</td><td style="color:#94a3b8;font-size:.78rem">${r.수집_시각?r.수집_시각.slice(0,10):'-'}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">데이터 없음</td></tr>';
+  window._ydView=ydData.slice().sort(function(a,b){return (b.노출_수||0)-(a.노출_수||0)||((b.수집_시각||'')<(a.수집_시각||'')?-1:1);});_statPage=1;renderStatsPage();
   const gscD=data.filter(r=>r.데이터_소스==='gsc'&&r.노출_수),byd={};
   gscD.forEach(r=>{const d=r.수집_시각?r.수집_시각.slice(5,10):'-';const k=r.채널+'|'+d;byd[k]=(byd[k]||0)+(r.노출_수||0);});
   const chs=[...new Set(gscD.map(r=>r.채널))].sort(),days=[...new Set(gscD.map(r=>r.수집_시각?r.수집_시각.slice(5,10):''))].sort().slice(-7);
@@ -439,7 +442,7 @@ async function loadDrafts(){
   const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형').order('생성일',{ascending:false}).limit(100);
   if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];renderDrafts(allDrafts);
 }
-let _draftPage=1,_winPage=1,_slotMonth=0; const DRAFT_PER=10,WIN_PER=10;
+let _draftPage=1,_winPage=1,_slotMonth=0,_statPage=1; const DRAFT_PER=10,WIN_PER=10,STAT_PER=20;
 function pagerHTML(pg,pages,total,fn){ if(pages<=1)return '<span style="font-size:.78rem;color:#94a3b8">총 '+total+'건</span>'; let h=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.max(1,pg-1)})">‹</button>`; for(let i=1;i<=pages;i++){if(i===1||i===pages||Math.abs(i-pg)<=2){h+=`<button class="btn-sm btn-copy" style="${i===pg?'background:#2563eb;color:#fff;border-color:#2563eb':''}" onclick="${fn}(${i})">${i}</button>`;}else if(Math.abs(i-pg)===3){h+='<span style="padding:4px;color:#94a3b8">…</span>';}} h+=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.min(pages,pg+1)})">›</button><span style="align-self:center;font-size:.78rem;color:#94a3b8;margin-left:10px">${pg}/${pages} · 총 ${total}건</span>`; return h; }
 function gotoDraftPage(n){_draftPage=n;renderDrafts(window._draftView||allDrafts);}
 function gotoWinPage(n){_winPage=n;renderWinning(window._winView||allWinning);}

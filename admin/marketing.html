@@ -151,10 +151,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn" onclick="filterDrafts('published',this)">🚀 발행</button>
         <button class="filter-btn" onclick="filterDrafts('rejected',this)">❌ 반려</button>
       </div>
-      <div class="card"><div class="card-body" style="padding:0;overflow-x:auto">
-        <table class="tbl"><thead><tr><th>채널</th><th>키워드</th><th>제목 (클릭=본문보기)</th><th>점수</th><th>상태</th><th>생성일</th><th>액션</th></tr></thead>
-        <tbody id="drafts-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
-      </div></div>
+      <div id="drafts-board" style="display:flex;flex-direction:column;gap:10px"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div>
     </div>
     <div class="tab-panel" id="t3">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
@@ -418,16 +415,39 @@ async function loadStats(){
 }
 
 async function loadDrafts(){
-  document.getElementById('drafts-body').innerHTML='<tr><td colspan="7" class="loading">로딩 중...</td></tr>';
+  document.getElementById('drafts-board').innerHTML='<div class="loading" style="padding:30px;text-align:center">로딩 중...</div>';
   const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행_url,거절_사유').order('생성일',{ascending:false}).limit(100);
   if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];renderDrafts(allDrafts);
 }
 function renderDrafts(list){
-  const tbody=document.getElementById('drafts-body');
-  if(!list.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">초안 없음</td></tr>';return;}
+  const box=document.getElementById('drafts-board');
+  if(!list.length){box.innerHTML='<div style="text-align:center;padding:40px;color:#94a3b8">초안 없음</div>';return;}
   const sm={draft:'badge-draft',approved:'badge-approved',published:'badge-published',rejected:'badge-rejected'};
   const sl={draft:'초안',approved:'승인',published:'발행',rejected:'반려'};
-  tbody.innerHTML=list.map(r=>{const sc=r.자가검증_점수,scc=sc==null?'#94a3b8':sc>=9?'#10b981':sc>=7?'#f59e0b':'#ef4444';return `<tr><td><span style="font-size:.8rem;background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px">${r.채널||'-'}</span></td><td style="font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.핵심키워드||'-'}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;color:var(--primary)" onclick="viewDraft('${r.id}')">${r.제목||'(없음)'}</td><td><span style="font-weight:700;color:${scc}">${sc!=null?sc:'-'}</span></td><td><span class="badge ${sm[r.상태]||'badge-draft'}">${sl[r.상태]||r.상태||'초안'}</span></td><td style="color:#94a3b8;font-size:.78rem">${r.생성일?r.생성일.slice(0,10):'-'}</td><td><div style="display:flex;gap:4px">${r.상태==='draft'?`<button class="btn-sm btn-approve" onclick="approveDraft('${r.id}')">승인</button><button class="btn-sm btn-reject" onclick="openReject('${r.id}')">반려</button>`:''}<button class="btn-sm btn-copy" onclick="copyTitle('${(r.제목||'').replace(/'/g,"\\'")}')">복사</button>${r.발행_url?`<a href="${r.발행_url}" target="_blank" style="font-size:.75rem;color:var(--primary);padding:4px 8px">🔗</a>`:''}</div></td></tr>`;}).join('');
+  box.innerHTML=list.map(r=>{
+    const sc=r.자가검증_점수,scc=sc==null?'#94a3b8':sc>=9?'#10b981':sc>=7?'#f59e0b':'#ef4444';
+    const kw=(r.핵심키워드||'').replace(/^[📋\s]*\[[^\]]*\]\s*\d{0,2}-?\d{0,2}\s*\|?\s*/,'').replace(/^[^가-힣a-zA-Z0-9]+/,'').slice(0,42);
+    const isDraft=r.상태==='draft';
+    return `<div style="background:#fff;border:1px solid ${isDraft?'#c7d2fe':'#e2e8f0'};border-radius:12px;padding:14px 16px">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+        <div style="min-width:0;flex:1">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+            <span style="font-size:.72rem;background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:10px">${r.채널||'-'}</span>
+            <span class="badge ${sm[r.상태]||'badge-draft'}">${sl[r.상태]||r.상태||'초안'}</span>
+            <span style="font-size:.72rem;color:#94a3b8">${kw||'-'}</span>
+          </div>
+          <div onclick="viewDraft('${r.id}')" style="font-size:.98rem;font-weight:700;line-height:1.45;cursor:pointer;color:#1e293b">${r.제목||'(제목 없음)'}</div>
+          <div style="font-size:.75rem;color:#94a3b8;margin-top:6px">${r.생성일?r.생성일.slice(0,10):'-'}${r.발행_url?' · 발행됨':''}</div>
+        </div>
+        <div style="text-align:center;flex-shrink:0;min-width:48px"><div style="font-size:1.4rem;font-weight:800;color:${scc}">${sc!=null?sc:'-'}</div><div style="font-size:.62rem;color:#cbd5e1">점수</div></div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn-sm btn-copy" onclick="viewDraft('${r.id}')">📄 본문 보기</button>
+        ${isDraft?`<button class="btn-sm btn-approve" onclick="approveDraft('${r.id}')">✅ 승인</button><button class="btn-sm btn-reject" onclick="openReject('${r.id}')">❌ 반려</button>`:''}
+        <button class="btn-sm btn-copy" onclick="copyTitle('${(r.제목||'').replace(/'/g,"\\'")}')">제목 복사</button>
+        ${r.발행_url?`<a href="${r.발행_url}" target="_blank" class="btn-sm btn-copy" style="text-decoration:none">🔗 발행글</a>`:''}
+      </div>
+    </div>`;}).join('');
 }
 function filterDrafts(s,b){document.querySelectorAll('#draft-filters .filter-btn').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');renderDrafts(s==='all'?allDrafts:allDrafts.filter(r=>r.상태===s));}
 async function approveDraft(id){const{error}=await sb.from('mk_blog_drafts').update({상태:'approved',승인일:new Date().toISOString()}).eq('id',id);if(error){showToast('승인 실패');return;}showToast('✅ 승인 완료');loadDrafts();}
@@ -548,47 +568,26 @@ function prevMonth(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}initCalend
 function nextMonth(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}initCalendar();}
 function goToday(){calYear=new Date().getFullYear();calMonth=new Date().getMonth();initCalendar();}
 
-// ── 초안 본문 뷰어 ──────────────────────────────────────────────
+// ── 초안 본문 뷰어 (게시판형·원클릭 복사) ──────────────────────────
+function copyDraftPart(k,btn){
+  const t=(window.__dc||{})[k]||'';
+  if(!t){showToast('복사할 내용이 없습니다');return;}
+  const done=()=>{const o=btn?btn.textContent:'';if(btn){btn.textContent='✅ 복사됨!';setTimeout(()=>btn.textContent=o,1500);}showToast('복사 완료 ('+t.length+'자)');};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));}
+  else fallbackCopy(t,done);
+}
+function fallbackCopy(t,cb){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb&&cb();}catch(e){showToast('복사 실패');}document.body.removeChild(ta);}
 async function viewDraft(id){
   const dr=allDrafts.find(r=>r.id===id);
   if(!dr){showToast('초안을 찾을 수 없습니다');return;}
-  const{data}=await sb.from('mk_blog_drafts').select('본문_네이버,본문_티스토리,제목,채널').eq('id',id).maybeSingle();
-  const nav=data?.본문_네이버||'(본문 없음)';
-  const tis=data?.본문_티스토리||'(본문 없음)';
-  const modal=document.createElement('div');
-  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto';
-  modal.innerHTML=`<div style="background:#fff;border-radius:16px;max-width:800px;width:100%;margin:auto">
-    <div style="padding:18px 22px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-weight:700">
-      📄 ${dr.제목||'초안 본문'} <span style="font-size:1.4rem;cursor:pointer;color:#64748b" onclick="this.closest('[style*=fixed]').remove()">✕</span>
-    </div>
-    <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
-      <div>
-        <div style="font-weight:700;color:#1d4ed8;margin-bottom:8px;font-size:.9rem">📱 네이버 본문</div>
-        <div style="background:#f8fafc;border-radius:8px;padding:12px;font-size:.82rem;line-height:1.7;max-height:500px;overflow-y:auto;white-space:pre-wrap">${nav}</div>
-      </div>
-      <div>
-        <div style="font-weight:700;color:#7e22ce;margin-bottom:8px;font-size:.9rem">💻 티스토리 본문</div>
-        <div style="background:#f8fafc;border-radius:8px;padding:12px;font-size:.82rem;line-height:1.7;max-height:500px;overflow-y:auto;white-space:pre-wrap">${tis}</div>
-      </div>
-    </div>
-  </div>`;
-  document.body.appendChild(modal);
-  modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
-}
-
-// ── 톤 가이드 필터 ───────────────────────────────────────────────
-function filterTone(f,b){
-  document.querySelectorAll('#t6 .filter-btn').forEach(x=>x.classList.remove('active'));
-  if(b)b.classList.add('active');
-  document.querySelectorAll('.tone-card').forEach(c=>{
-    if(f==='all')c.style.display='';
-    else if(f==='naver')c.style.display=c.classList.contains('tone-naver')?'':'none';
-    else c.style.display=c.classList.contains('tone-tistory')?'':'none';
-  });
-}
-
-
-initAuth();
-</script>
-</body>
-</html>
+  const{data}=await sb.from('mk_blog_drafts').select('본문_네이버,본문_티스토리,제목,채널,핵심키워드,자가검증_점수,이미지프롬프트,발행_url').eq('id',id).maybeSingle();
+  const nav=data?.본문_네이버||'';
+  const tis=data?.본문_티스토리||'';
+  let imgs=data?.이미지프롬프트; if(typeof imgs==='string'){try{imgs=JSON.parse(imgs);}catch(e){imgs=null;}}
+  const imgArr=Array.isArray(imgs)?imgs:[];
+  const imgText=imgArr.map((p,i)=>`이미지 ${i+1} — ${typeof p==='string'?p:(p.prompt||p.설명||JSON.stringify(p))}`).join('\n\n');
+  window.__dc={nav:nav,tis:tis,img:imgText};
+  const pubUrl=data?.발행_url;
+  const navLen=nav.replace(/\s/g,'').length, tisLen=tis.replace(/\s/g,'').length;
+  const btn='padding:8px 14px;border:none;border-radius:8px;background:var(--primary,#2563eb);color:#fff;font-weight:700;font-size:.85rem;cursor:pointer';
+  const ta='width:100%;box-sizing:border-box;border:1p

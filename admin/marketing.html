@@ -6,78 +6,7 @@
 <title>리얼플랜제주 마케팅 운영 v1.5</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js">
-// WINNING HALL (mk_winning_posts)
-let allWinning=[];
-async function loadWinning(){
-  const box=document.getElementById('winning-board'); if(!box)return;
-  box.innerHTML='<div class="loading" style="padding:20px;text-align:center">로딩 중...</div>';
-  const{data,error}=await sb.from('mk_winning_posts').select('id,채널,제목,핵심키워드,외부_url,최고순위,글자수,본문_수집상태,출처').order('최고순위',{ascending:true,nullsFirst:false}).limit(400);
-  if(error){box.innerHTML='<div style="padding:20px;text-align:center;color:#ef4444">로드 실패: '+error.message+'</div>';return;}
-  allWinning=data||[]; renderWinning(allWinning);
-}
-function renderWinning(list){
-  const box=document.getElementById('winning-board'); if(!box)return;
-  if(!list.length){box.innerHTML='<div style="text-align:center;padding:24px;color:#94a3b8">상위노출 글 없음</div>';return;}
-  const head='<div style="font-size:.75rem;color:#92400e;margin-bottom:6px">총 '+list.length+'건 · 본문보유 '+list.filter(r=>r.본문_수집상태==='collected').length+'건</div>';
-  box.innerHTML=head+list.map(r=>{
-    const rk=r.최고순위==null?'-':Math.round(r.최고순위);
-    const rkc=rk==='-'?'#94a3b8':rk<=5?'#b45309':rk<=10?'#a16207':'#94a3b8';
-    const has=r.본문_수집상태==='collected';
-    const title=r.제목||r.핵심키워드||'(제목 미상)';
-    return `<div style="background:#fff;border:1px solid ${has?'#fcd34d':'#e2e8f0'};border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center">
-      <div style="min-width:0;flex:1;${has?'cursor:pointer':''}" ${has?`onclick="viewWinning('${r.id}')"`:''}>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:3px">
-          <span style="font-size:.68rem;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:9px">${r.채널||r.출처||'-'}</span>
-          ${has?'<span style="font-size:.68rem;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:9px">📄 본문</span>':'<span style="font-size:.68rem;background:#f1f5f9;color:#94a3b8;padding:1px 7px;border-radius:9px">수집대기</span>'}
-        </div>
-        <div style="font-size:.9rem;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${title}</div>
-        ${r.외부_url?`<div style="font-size:.7rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.외부_url}</div>`:''}
-      </div>
-      <div style="text-align:center;flex-shrink:0;min-width:40px"><div style="font-size:1.2rem;font-weight:800;color:${rkc}">${rk}</div><div style="font-size:.58rem;color:#cbd5e1">최고</div></div>
-    </div>`;}).join('');
-}
-function filterWinning(ff,b){
-  if(b){b.parentElement.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');}
-  let l=allWinning;
-  if(ff==='top5')l=allWinning.filter(r=>r.최고순위!=null&&r.최고순위<=5);
-  else if(ff==='top10')l=allWinning.filter(r=>r.최고순위!=null&&r.최고순위<=10);
-  else if(ff==='body')l=allWinning.filter(r=>r.본문_수집상태==='collected');
-  renderWinning(l);
-}
-async function viewWinning(id){
-  const{data}=await sb.from('mk_winning_posts').select('본문_네이버,본문_티스토리,제목,채널,핵심키워드,최고순위,외부_url').eq('id',id).maybeSingle();
-  if(!data){showToast('글을 찾을 수 없습니다');return;}
-  const nav=data.본문_네이버||'',tis=data.본문_티스토리||'';
-  window.__dc={nav:nav,tis:tis,img:''};
-  const navLen=nav.replace(/\s/g,'').length,tisLen=tis.replace(/\s/g,'').length;
-  const btn='padding:8px 14px;border:none;border-radius:8px;background:#b45309;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer';
-  const ta='width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:8px;padding:14px;font-size:.9rem;line-height:1.75;resize:vertical;background:#fff;font-family:inherit';
-  const m=document.createElement('div');
-  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:flex-start;justify-content:center;padding:2vh 1vw;overflow-y:auto';
-  m.innerHTML=`<div style="background:#fff;border-radius:14px;max-width:1000px;width:97%;margin:auto;display:flex;flex-direction:column">
-    <div style="padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center">
-      <div><div style="font-weight:800;font-size:1.05rem">🏆 ${data.제목||data.핵심키워드||'상위노출 글'}</div>
-      <div style="font-size:.8rem;color:#64748b;margin-top:3px">${data.채널||''} · 최고순위 ${data.최고순위!=null?Math.round(data.최고순위):'-'}위 ${data.외부_url?'· <a href="'+data.외부_url+'" target="_blank">🔗글</a>':''}</div></div>
-      <span style="font-size:1.5rem;cursor:pointer;color:#64748b" onclick="this.closest('[style*=fixed]').remove()">✕</span>
-    </div>
-    <div style="padding:14px 20px 20px;overflow-y:auto">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-        ${nav?`<button style="${btn}" onclick="copyDraftPart('nav',this)">📱 네이버 본문 복사</button>`:''}
-        ${tis?`<button style="${btn};background:#7e22ce" onclick="copyDraftPart('tis',this)">💻 티스토리 복사</button>`:''}
-      </div>
-      ${nav?`<div style="font-weight:700;color:#b45309;margin-bottom:6px;font-size:.9rem">📱 네이버 본문 <span style="color:#94a3b8;font-weight:400">(공백제외 ${navLen}자)</span></div>
-      <textarea readonly style="${ta};min-height:46vh" onclick="this.select()">${nav.replace(/</g,'&lt;')}</textarea>`:''}
-      ${tis?`<div style="font-weight:700;color:#7e22ce;margin:16px 0 6px;font-size:.9rem">💻 티스토리 본문 <span style="color:#94a3b8;font-weight:400">(공백제외 ${tisLen}자)</span></div>
-      <textarea readonly style="${ta};min-height:30vh" onclick="this.select()">${tis.replace(/</g,'&lt;')}</textarea>`:''}
-      ${!nav&&!tis?'<div style="text-align:center;padding:30px;color:#94a3b8">본문 미수집 — 적재 대기 중</div>':''}
-    </div>
-  </div>`;
-  document.body.appendChild(m);
-  m.addEventListener('click',e=>{if(e.target===m)m.remove();});
-}
-
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
 <style>
 :root{--primary:#2563eb;--sidebar:200px;--hdr:56px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -653,10 +582,118 @@ function prevMonth(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}initCalend
 function nextMonth(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}initCalendar();}
 function goToday(){calYear=new Date().getFullYear();calMonth=new Date().getMonth();initCalendar();}
 
-// ── 초안 본문 뷰어 (게시판형·원클릭 복사) ──────────────────────────
-function copyDraftPart(k,btn){
-  const t=(window.__dc||{})[k]||'';
-  if(!t){showToast('복사할 내용이 없습니다');return;}
-  const done=()=>{const o=btn?btn.textContent:'';if(btn){btn.textContent='✅ 복사됨!';setTimeout(()=>btn.textContent=o,1500);}showToast('복사 완료 ('+t.length+'자)');};
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));}
-  else fallbackCopy(t,done
+// ── 초안 본문 뷰어 ──────────────────────────────────────────────
+async function viewDraft(id){
+  const dr=allDrafts.find(r=>r.id===id);
+  if(!dr){showToast('초안을 찾을 수 없습니다');return;}
+  const{data}=await sb.from('mk_blog_drafts').select('본문_네이버,본문_티스토리,제목,채널').eq('id',id).maybeSingle();
+  const nav=data?.본문_네이버||'(본문 없음)';
+  const tis=data?.본문_티스토리||'(본문 없음)';
+  const modal=document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto';
+  modal.innerHTML=`<div style="background:#fff;border-radius:16px;max-width:800px;width:100%;margin:auto">
+    <div style="padding:18px 22px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-weight:700">
+      📄 ${dr.제목||'초안 본문'} <span style="font-size:1.4rem;cursor:pointer;color:#64748b" onclick="this.closest('[style*=fixed]').remove()">✕</span>
+    </div>
+    <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div style="font-weight:700;color:#1d4ed8;margin-bottom:8px;font-size:.9rem">📱 네이버 본문</div>
+        <div style="background:#f8fafc;border-radius:8px;padding:12px;font-size:.82rem;line-height:1.7;max-height:500px;overflow-y:auto;white-space:pre-wrap">${nav}</div>
+      </div>
+      <div>
+        <div style="font-weight:700;color:#7e22ce;margin-bottom:8px;font-size:.9rem">💻 티스토리 본문</div>
+        <div style="background:#f8fafc;border-radius:8px;padding:12px;font-size:.82rem;line-height:1.7;max-height:500px;overflow-y:auto;white-space:pre-wrap">${tis}</div>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
+}
+
+// ── 톤 가이드 필터 ───────────────────────────────────────────────
+function filterTone(f,b){
+  document.querySelectorAll('#t6 .filter-btn').forEach(x=>x.classList.remove('active'));
+  if(b)b.classList.add('active');
+  document.querySelectorAll('.tone-card').forEach(c=>{
+    if(f==='all')c.style.display='';
+    else if(f==='naver')c.style.display=c.classList.contains('tone-naver')?'':'none';
+    else c.style.display=c.classList.contains('tone-tistory')?'':'none';
+  });
+}
+
+
+
+// WINNING HALL (mk_winning_posts)
+let allWinning=[];
+async function loadWinning(){
+  const box=document.getElementById('winning-board'); if(!box)return;
+  box.innerHTML='<div class="loading" style="padding:20px;text-align:center">로딩 중...</div>';
+  const{data,error}=await sb.from('mk_winning_posts').select('id,채널,제목,핵심키워드,외부_url,최고순위,글자수,본문_수집상태,출처').order('최고순위',{ascending:true,nullsFirst:false}).limit(400);
+  if(error){box.innerHTML='<div style="padding:20px;text-align:center;color:#ef4444">로드 실패: '+error.message+'</div>';return;}
+  allWinning=data||[]; renderWinning(allWinning);
+}
+function renderWinning(list){
+  const box=document.getElementById('winning-board'); if(!box)return;
+  if(!list.length){box.innerHTML='<div style="text-align:center;padding:24px;color:#94a3b8">상위노출 글 없음</div>';return;}
+  const head='<div style="font-size:.75rem;color:#92400e;margin-bottom:6px">총 '+list.length+'건 · 본문보유 '+list.filter(r=>r.본문_수집상태==='collected').length+'건</div>';
+  box.innerHTML=head+list.map(r=>{
+    const rk=r.최고순위==null?'-':Math.round(r.최고순위);
+    const rkc=rk==='-'?'#94a3b8':rk<=5?'#b45309':rk<=10?'#a16207':'#94a3b8';
+    const has=r.본문_수집상태==='collected';
+    const title=r.제목||r.핵심키워드||'(제목 미상)';
+    return `<div style="background:#fff;border:1px solid ${has?'#fcd34d':'#e2e8f0'};border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center">
+      <div style="min-width:0;flex:1;${has?'cursor:pointer':''}" ${has?`onclick="viewWinning('${r.id}')"`:''}>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:3px">
+          <span style="font-size:.68rem;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:9px">${r.채널||r.출처||'-'}</span>
+          ${has?'<span style="font-size:.68rem;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:9px">📄 본문</span>':'<span style="font-size:.68rem;background:#f1f5f9;color:#94a3b8;padding:1px 7px;border-radius:9px">수집대기</span>'}
+        </div>
+        <div style="font-size:.9rem;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${title}</div>
+        ${r.외부_url?`<div style="font-size:.7rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.외부_url}</div>`:''}
+      </div>
+      <div style="text-align:center;flex-shrink:0;min-width:40px"><div style="font-size:1.2rem;font-weight:800;color:${rkc}">${rk}</div><div style="font-size:.58rem;color:#cbd5e1">최고</div></div>
+    </div>`;}).join('');
+}
+function filterWinning(ff,b){
+  if(b){b.parentElement.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');}
+  let l=allWinning;
+  if(ff==='top5')l=allWinning.filter(r=>r.최고순위!=null&&r.최고순위<=5);
+  else if(ff==='top10')l=allWinning.filter(r=>r.최고순위!=null&&r.최고순위<=10);
+  else if(ff==='body')l=allWinning.filter(r=>r.본문_수집상태==='collected');
+  renderWinning(l);
+}
+async function viewWinning(id){
+  const{data}=await sb.from('mk_winning_posts').select('본문_네이버,본문_티스토리,제목,채널,핵심키워드,최고순위,외부_url').eq('id',id).maybeSingle();
+  if(!data){showToast('글을 찾을 수 없습니다');return;}
+  const nav=data.본문_네이버||'',tis=data.본문_티스토리||'';
+  window.__dc={nav:nav,tis:tis,img:''};
+  const navLen=nav.replace(/\s/g,'').length,tisLen=tis.replace(/\s/g,'').length;
+  const btn='padding:8px 14px;border:none;border-radius:8px;background:#b45309;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer';
+  const ta='width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:8px;padding:14px;font-size:.9rem;line-height:1.75;resize:vertical;background:#fff;font-family:inherit';
+  const m=document.createElement('div');
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:flex-start;justify-content:center;padding:2vh 1vw;overflow-y:auto';
+  m.innerHTML=`<div style="background:#fff;border-radius:14px;max-width:1000px;width:97%;margin:auto;display:flex;flex-direction:column">
+    <div style="padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-weight:800;font-size:1.05rem">🏆 ${data.제목||data.핵심키워드||'상위노출 글'}</div>
+      <div style="font-size:.8rem;color:#64748b;margin-top:3px">${data.채널||''} · 최고순위 ${data.최고순위!=null?Math.round(data.최고순위):'-'}위 ${data.외부_url?'· <a href="'+data.외부_url+'" target="_blank">🔗글</a>':''}</div></div>
+      <span style="font-size:1.5rem;cursor:pointer;color:#64748b" onclick="this.closest('[style*=fixed]').remove()">✕</span>
+    </div>
+    <div style="padding:14px 20px 20px;overflow-y:auto">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        ${nav?`<button style="${btn}" onclick="copyDraftPart('nav',this)">📱 네이버 본문 복사</button>`:''}
+        ${tis?`<button style="${btn};background:#7e22ce" onclick="copyDraftPart('tis',this)">💻 티스토리 복사</button>`:''}
+      </div>
+      ${nav?`<div style="font-weight:700;color:#b45309;margin-bottom:6px;font-size:.9rem">📱 네이버 본문 <span style="color:#94a3b8;font-weight:400">(공백제외 ${navLen}자)</span></div>
+      <textarea readonly style="${ta};min-height:46vh" onclick="this.select()">${nav.replace(/</g,'&lt;')}</textarea>`:''}
+      ${tis?`<div style="font-weight:700;color:#7e22ce;margin:16px 0 6px;font-size:.9rem">💻 티스토리 본문 <span style="color:#94a3b8;font-weight:400">(공백제외 ${tisLen}자)</span></div>
+      <textarea readonly style="${ta};min-height:30vh" onclick="this.select()">${tis.replace(/</g,'&lt;')}</textarea>`:''}
+      ${!nav&&!tis?'<div style="text-align:center;padding:30px;color:#94a3b8">본문 미수집 — 적재 대기 중</div>':''}
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  m.addEventListener('click',e=>{if(e.target===m)m.remove();});
+}
+
+initAuth();
+</script>
+</body>
+</html>

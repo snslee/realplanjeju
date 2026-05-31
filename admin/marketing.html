@@ -106,7 +106,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     <div class="nav-section">설정</div>
     <div class="nav-item" onclick="switchTab('t6',this)"><span>🎨</span>톤 가이드</div>
     <div class="nav-item" onclick="switchTab('t7',this)"><span>📅</span>스케줄</div>
-    <div class="nav-item" onclick="switchTab('t8',this)"><span>🤝</span>이웃 관리</div>
   </nav>
   <div class="mobile-nav">
     <div class="mob-item active" onclick="switchTab('t1',null)"><span style="font-size:1.1rem">📊</span>통계</div>
@@ -326,56 +325,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
       <div id="slot-detail" style="display:none;margin-top:16px"></div>
     </div>
-    <div class="tab-panel" id="t8">
-      <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div><h2 style="font-size:1.2rem;font-weight:700">🤝 이웃 관리</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">mk_neighbor_blogs — 발행 후 48시간 활동 관리</p></div>
-        <button onclick="openNeighborModal(null)" style="padding:8px 16px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:.85rem;cursor:pointer;font-weight:600">+ 이웃 추가</button>
-      </div>
-      <div class="card">
-        <div class="card-hdr"><h3>이웃 블로그 목록</h3><span id="neighbor-count" style="font-size:.8rem;color:#94a3b8;margin-left:auto"></span></div>
-        <div class="card-body" style="padding:0;overflow-x:auto">
-          <div class="filter-bar" style="padding:12px 16px 0">
-            <button class="filter-btn active" onclick="filterNeighbors('all',this)">전체</button>
-            <button class="filter-btn" onclick="filterNeighbors('블A네이버',this)">블A</button>
-            <button class="filter-btn" onclick="filterNeighbors('블B네이버',this)">블B</button>
-            <button class="filter-btn" onclick="filterNeighbors('블C네이버',this)">블C</button>
-            <button class="filter-btn" onclick="filterNeighbors('활성',this)">활성만</button>
-          </div>
-          <table class="tbl"><thead><tr><th>채널</th><th>닉네임</th><th>블로그</th><th>이웃구분</th><th>상호작용</th><th>마지막방문</th><th>마지막공감</th><th>액션</th></tr></thead>
-          <tbody id="neighbor-body"><tr><td colspan="8" class="loading">로딩 중...</td></tr></tbody></table>
-        </div>
-      </div>
-      <div class="modal-bg" id="neighbor-modal">
-        <div class="modal">
-          <div class="modal-hdr"><span id="nb-modal-title">🤝 이웃 추가</span><span class="modal-close" onclick="closeNeighborModal()">✕</span></div>
-          <div class="modal-body">
-            <input type="hidden" id="nb-id">
-            <div style="display:grid;gap:12px">
-              <div><label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">채널 *</label>
-                <select id="nb-ch" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:.9rem">
-                  <option value="블A네이버">블A네이버</option><option value="블B네이버">블B네이버</option><option value="블C네이버">블C네이버</option>
-                </select></div>
-              <div><label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">블로그 URL *</label>
-                <input id="nb-url" type="text" placeholder="https://blog.naver.com/..." style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:.9rem"></div>
-              <div><label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">닉네임</label>
-                <input id="nb-nick" type="text" placeholder="블로거 닉네임" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:.9rem"></div>
-              <div><label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">주제</label>
-                <input id="nb-topic" type="text" placeholder="여행, 행사, 마케팅 등" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:.9rem"></div>
-              <div><label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">이웃 구분</label>
-                <select id="nb-type" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:.9rem">
-                  <option value="맞이웃">맞이웃</option><option value="내이웃">내이웃</option><option value="구독">구독</option>
-                </select></div>
-              <div><label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">비고</label>
-                <input id="nb-note" type="text" placeholder="메모 (선택)" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:.9rem"></div>
-            </div>
-            <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
-              <button onclick="closeNeighborModal()" style="padding:8px 16px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;cursor:pointer;font-size:.85rem">취소</button>
-              <button onclick="saveNeighbor()" style="padding:8px 16px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600">저장</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </main>
 </div>
 <div class="modal-bg" id="reject-modal">
@@ -399,7 +348,7 @@ const PROJECT_REF='iodfqlkeiwxyuojwcozv';
 const SB_AUTH_KEY='sb-'+PROJECT_REF+'-auth-token';
 const SB_VERIFIER_KEY='sb-'+PROJECT_REF+'-auth-token-code-verifier';
 const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{detectSessionInUrl:false,persistSession:true,autoRefreshToken:true,flowType:'pkce',lock:(n,t,fn)=>fn()}});
-let trendChart=null,allDrafts=[],allSlots=[],allRankEntries=[],allNeighbors=[],rejectTargetId=null;
+let trendChart=null,allDrafts=[],allSlots=[],allRankEntries=[],rejectTargetId=null;
 
 async function manualExchangeCode(code){
   const vr=localStorage.getItem(SB_VERIFIER_KEY);
@@ -436,7 +385,7 @@ async function doLogin(){
   if(error){e.textContent='Google 로그인 실패: '+error.message;btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google로 로그인';}
 }
 async function doLogout(){try{localStorage.removeItem(SB_AUTH_KEY);localStorage.removeItem(SB_VERIFIER_KEY);}catch(e){}await sb.auth.signOut().catch(()=>{});showLogin();}
-function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1')loadStats();if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5')loadRankEntries();if(id==='t7')initCalendar();if(id==='t8')loadNeighbors();}
+function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1')loadStats();if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5')loadRankEntries();if(id==='t7')initCalendar();}
 
 async function loadStats(){
   document.getElementById('chart-loading').style.display='block';
@@ -599,77 +548,6 @@ function prevMonth(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}initCalend
 function nextMonth(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}initCalendar();}
 function goToday(){calYear=new Date().getFullYear();calMonth=new Date().getMonth();initCalendar();}
 
-// ── 이웃 관리 (t8) ─────────────────────────────────────────────
-async function loadNeighbors(){
-  document.getElementById('neighbor-body').innerHTML='<tr><td colspan="8" class="loading">로딩 중...</td></tr>';
-  const{data,error}=await sb.from('mk_neighbor_blogs').select('*').eq('활성',true).order('마지막_방문일',{ascending:true,nullsFirst:true}).limit(200);
-  if(error){showToast('이웃 로드 실패');return;}
-  allNeighbors=data||[];
-  document.getElementById('neighbor-count').textContent='총 '+allNeighbors.length+'명';
-  renderNeighbors(allNeighbors);
-}
-function renderNeighbors(list){
-  const tbody=document.getElementById('neighbor-body');
-  if(!list.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:#94a3b8">이웃 없음 — + 이웃 추가 버튼으로 등록하세요</td></tr>';return;}
-  const tc={'맞이웃':'#dbeafe','내이웃':'#dcfce7','구독':'#f3e8ff'};
-  const tt={'맞이웃':'#1e40af','내이웃':'#166534','구독':'#7e22ce'};
-  const today=new Date();
-  tbody.innerHTML=list.map(r=>{
-    const dv=r['마지막_방문일']?Math.floor((today-new Date(r['마지막_방문일']))/86400000):null;
-    const vb=dv===null?'<span style="color:#ef4444;font-size:.75rem">미방문</span>':dv<=3?`<span style="color:#10b981;font-size:.75rem">${dv}일 전</span>`:dv<=7?`<span style="color:#f59e0b;font-size:.75rem">${dv}일 전</span>`:`<span style="color:#ef4444;font-size:.75rem">${dv}일 전</span>`;
-    const dl=r['마지막_공감일']?Math.floor((today-new Date(r['마지막_공감일']))/86400000):null;
-    const lb=dl===null?'<span style="color:#94a3b8;font-size:.75rem">-</span>':`<span style="font-size:.75rem;color:${dl>7?'#ef4444':'#10b981'}">${dl}일 전</span>`;
-    const sc=r['상호작용_점수']||0;
-    return `<tr><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:.75rem">${r['채널']||'-'}</span></td><td style="font-weight:600">${r['닉네임']||'(닉네임없음)'}</td><td><a href="${r['블로그_url']}" target="_blank" style="color:var(--primary);font-size:.78rem">🔗 방문</a></td><td><span style="background:${tc[r['이웃_구분']]||'#f1f5f9'};color:${tt[r['이웃_구분']]||'#475569'};padding:2px 8px;border-radius:12px;font-size:.75rem">${r['이웃_구분']||'-'}</span></td><td style="font-weight:700;color:${sc>50?'#10b981':sc>20?'#f59e0b':'#94a3b8'}">${sc}점</td><td>${vb}</td><td>${lb}</td><td><div style="display:flex;gap:4px"><button class="btn-sm" style="background:#dbeafe;color:#1e40af" onclick="recordVisit('${r.id}')">방문✓</button><button class="btn-sm" style="background:#fce7f3;color:#9d174d" onclick="recordLike('${r.id}')">공감✓</button><button class="btn-sm btn-copy" onclick="openNeighborModal('${r.id}')">수정</button></div></td></tr>`;
-  }).join('');
-}
-function filterNeighbors(f,b){
-  document.querySelectorAll('#t8 .filter-btn').forEach(x=>x.classList.remove('active'));
-  if(b)b.classList.add('active');
-  if(f==='all')renderNeighbors(allNeighbors);
-  else if(f==='활성')renderNeighbors(allNeighbors.filter(r=>r['활성']));
-  else renderNeighbors(allNeighbors.filter(r=>r['채널']===f));
-}
-function openNeighborModal(id){
-  document.getElementById('nb-id').value=id||'';
-  const m=id?allNeighbors.find(r=>r.id===id):null;
-  document.getElementById('nb-modal-title').textContent=m?'🤝 이웃 수정':'🤝 이웃 추가';
-  document.getElementById('nb-ch').value=m?.['채널']||'블A네이버';
-  document.getElementById('nb-url').value=m?.['블로그_url']||'';
-  document.getElementById('nb-nick').value=m?.['닉네임']||'';
-  document.getElementById('nb-topic').value=m?.['주제']||'';
-  document.getElementById('nb-type').value=m?.['이웃_구분']||'맞이웃';
-  document.getElementById('nb-note').value=m?.['비고']||'';
-  document.getElementById('neighbor-modal').classList.add('open');
-}
-function closeNeighborModal(){document.getElementById('neighbor-modal').classList.remove('open');}
-async function saveNeighbor(){
-  const id=document.getElementById('nb-id').value;
-  const url=document.getElementById('nb-url').value.trim();
-  if(!url){showToast('블로그 URL을 입력하세요');return;}
-  const payload={채널:document.getElementById('nb-ch').value,블로그_url:url,닉네임:document.getElementById('nb-nick').value.trim()||null,주제:document.getElementById('nb-topic').value.trim()||null,이웃_구분:document.getElementById('nb-type').value,비고:document.getElementById('nb-note').value.trim()||null,수정일:new Date().toISOString()};
-  let error;
-  if(id){({error}=await sb.from('mk_neighbor_blogs').update(payload).eq('id',id));}
-  else{({error}=await sb.from('mk_neighbor_blogs').insert({...payload,활성:true,상호작용_점수:0}));}
-  if(error){showToast('저장 실패: '+error.message);return;}
-  closeNeighborModal();showToast(id?'✅ 이웃 수정 완료':'✅ 이웃 추가 완료');loadNeighbors();
-}
-async function recordVisit(id){
-  const today=new Date().toISOString().slice(0,10);
-  const nb=allNeighbors.find(r=>r.id===id);
-  const sc=(nb?.['상호작용_점수']||0)+1;
-  const{error}=await sb.from('mk_neighbor_blogs').update({마지막_방문일:today,상호작용_점수:sc,수정일:new Date().toISOString()}).eq('id',id);
-  if(error){showToast('기록 실패');return;}showToast('👍 방문 기록 완료');loadNeighbors();
-}
-async function recordLike(id){
-  const today=new Date().toISOString().slice(0,10);
-  const nb=allNeighbors.find(r=>r.id===id);
-  const sc=(nb?.['상호작용_점수']||0)+2;
-  const{error}=await sb.from('mk_neighbor_blogs').update({마지막_공감일:today,상호작용_점수:sc,수정일:new Date().toISOString()}).eq('id',id);
-  if(error){showToast('기록 실패');return;}showToast('❤️ 공감 기록 완료');loadNeighbors();
-}
-
-
 // ── 초안 본문 뷰어 ──────────────────────────────────────────────
 async function viewDraft(id){
   const dr=allDrafts.find(r=>r.id===id);
@@ -713,4 +591,4 @@ function filterTone(f,b){
 initAuth();
 </script>
 </body>
-</h
+</html>

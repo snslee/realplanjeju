@@ -151,7 +151,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn" onclick="filterDrafts('published',this)">🚀 발행</button>
         <button class="filter-btn" onclick="filterDrafts('rejected',this)">❌ 반려</button>
       </div>
-      <div id="drafts-board" style="display:flex;flex-direction:column;gap:10px"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div>
+      <div id="drafts-board" style="border:0.5px solid #e2e8f0;border-radius:12px;background:#fff;max-height:46vh;overflow-y:auto"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div>
+      <div id="drafts-reader" style="margin-top:14px"></div>
     </div>
     <div class="tab-panel" id="t3">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
@@ -205,7 +206,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
             <button class="filter-btn" onclick="loadWinning()">🔄</button>
           </div>
         </div>
-        <div id="winning-board" style="display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto"><div class="loading" style="padding:20px;text-align:center">로딩 중...</div></div>
+        <div id="winning-board" style="border:0.5px solid #fde68a;border-radius:10px;background:#fff;max-height:40vh;overflow-y:auto"><div class="loading" style="padding:20px;text-align:center">로딩 중...</div></div>
+        <div id="winning-reader" style="margin-top:12px"></div>
       </div>
       <div style="font-weight:700;font-size:.95rem;margin:0 0 8px;color:#334155">📊 D+N 순위 추적 로그</div>
       <div class="filter-bar" id="rank-filters">
@@ -436,31 +438,17 @@ async function loadDrafts(){
 function renderDrafts(list){
   const box=document.getElementById('drafts-board');
   if(!list.length){box.innerHTML='<div style="text-align:center;padding:40px;color:#94a3b8">초안 없음</div>';return;}
-  const sm={draft:'badge-draft',approved:'badge-approved',published:'badge-published',rejected:'badge-rejected'};
   const sl={draft:'초안',approved:'승인',published:'발행',rejected:'반려'};
-  box.innerHTML=list.map(r=>{
-    const sc=r.자가검증_점수,scc=sc==null?'#94a3b8':sc>=9?'#10b981':sc>=7?'#f59e0b':'#ef4444';
-    const kw=(r.핵심키워드||'').replace(/^[📋\s]*\[[^\]]*\]\s*\d{0,2}-?\d{0,2}\s*\|?\s*/,'').replace(/^[^가-힣a-zA-Z0-9]+/,'').slice(0,42);
-    const isDraft=r.상태==='draft';
-    return `<div style="background:#fff;border:1px solid ${isDraft?'#c7d2fe':'#e2e8f0'};border-radius:12px;padding:14px 16px">
-      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
-        <div style="min-width:0;flex:1">
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
-            <span style="font-size:.72rem;background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:10px">${r.채널||'-'}</span>
-            <span class="badge ${sm[r.상태]||'badge-draft'}">${sl[r.상태]||r.상태||'초안'}</span>
-            <span style="font-size:.72rem;color:#94a3b8">${kw||'-'}</span>
-          </div>
-          <div onclick="viewDraft('${r.id}')" style="font-size:.98rem;font-weight:700;line-height:1.45;cursor:pointer;color:#1e293b">${r.제목||'(제목 없음)'}</div>
-          <div style="font-size:.75rem;color:#94a3b8;margin-top:6px">${r.생성일?r.생성일.slice(0,10):'-'}${r.발행_url?' · 발행됨':''}</div>
-        </div>
-        <div style="text-align:center;flex-shrink:0;min-width:48px"><div style="font-size:1.4rem;font-weight:800;color:${scc}">${sc!=null?sc:'-'}</div><div style="font-size:.62rem;color:#cbd5e1">점수</div></div>
-      </div>
-      <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap">
-        <button class="btn-sm btn-copy" onclick="viewDraft('${r.id}')">📄 본문 보기</button>
-        ${isDraft?`<button class="btn-sm btn-approve" onclick="approveDraft('${r.id}')">✅ 승인</button><button class="btn-sm btn-reject" onclick="openReject('${r.id}')">❌ 반려</button>`:''}
-        <button class="btn-sm btn-copy" onclick="copyTitle('${(r.제목||'').replace(/'/g,"\\'")}')">제목 복사</button>
-        ${r.발행_url?`<a href="${r.발행_url}" target="_blank" class="btn-sm btn-copy" style="text-decoration:none">🔗 발행글</a>`:''}
-      </div>
+  const sbg={draft:'#fef3c7',approved:'#d1fae5',published:'#dbeafe',rejected:'#fee2e2'};
+  const stx={draft:'#92400e',approved:'#065f46',published:'#1d4ed8',rejected:'#b91c1c'};
+  box.innerHTML=list.map((r,i)=>{
+    const sc=r.자가검증_점수;
+    return `<div onclick="openDraftReader('${r.id}')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;${i?'border-top:0.5px solid #f1f5f9;':''}cursor:pointer">
+      <span style="font-size:.7rem;background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px;flex-shrink:0">${r.채널||'-'}</span>
+      <span style="flex:1;min-width:0;font-weight:600;font-size:.9rem;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.제목||'(제목 없음)'}</span>
+      <span style="font-size:.68rem;background:${sbg[r.상태]||'#f1f5f9'};color:${stx[r.상태]||'#64748b'};padding:2px 7px;border-radius:9px;flex-shrink:0">${sl[r.상태]||r.상태||'초안'}</span>
+      <span style="font-size:.72rem;color:#94a3b8;flex-shrink:0;width:40px;text-align:right">${r.생성일?r.생성일.slice(5,10):'-'}</span>
+      <span style="font-size:.8rem;font-weight:700;color:${sc==null?'#cbd5e1':sc>=9?'#10b981':'#f59e0b'};flex-shrink:0;width:26px;text-align:right">${sc!=null?sc:'-'}</span>
     </div>`;}).join('');
 }
 function filterDrafts(s,b){document.querySelectorAll('#draft-filters .filter-btn').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');renderDrafts(s==='all'?allDrafts:allDrafts.filter(r=>r.상태===s));}
@@ -635,22 +623,15 @@ async function loadWinning(){
 function renderWinning(list){
   const box=document.getElementById('winning-board'); if(!box)return;
   if(!list.length){box.innerHTML='<div style="text-align:center;padding:24px;color:#94a3b8">상위노출 글 없음</div>';return;}
-  const head='<div style="font-size:.75rem;color:#92400e;margin-bottom:6px">총 '+list.length+'건 · 본문보유 '+list.filter(r=>r.본문_수집상태==='collected').length+'건</div>';
-  box.innerHTML=head+list.map(r=>{
+  box.innerHTML='<div style="font-size:.72rem;color:#92400e;padding:8px 14px;border-bottom:0.5px solid #fde68a">총 '+list.length+'건 · 본문보유 '+list.filter(r=>r.본문_수집상태==='collected').length+'건</div>'+list.map((r,i)=>{
     const rk=r.최고순위==null?'-':Math.round(r.최고순위);
-    const rkc=rk==='-'?'#94a3b8':rk<=5?'#b45309':rk<=10?'#a16207':'#94a3b8';
+    const rkc=rk==='-'?'#cbd5e1':rk<=5?'#b45309':rk<=10?'#a16207':'#94a3b8';
     const has=r.본문_수집상태==='collected';
-    const title=r.제목||r.핵심키워드||'(제목 미상)';
-    return `<div style="background:#fff;border:1px solid ${has?'#fcd34d':'#e2e8f0'};border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center">
-      <div style="min-width:0;flex:1;${has?'cursor:pointer':''}" ${has?`onclick="viewWinning('${r.id}')"`:''}>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:3px">
-          <span style="font-size:.68rem;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:9px">${r.채널||r.출처||'-'}</span>
-          ${has?'<span style="font-size:.68rem;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:9px">📄 본문</span>':'<span style="font-size:.68rem;background:#f1f5f9;color:#94a3b8;padding:1px 7px;border-radius:9px">수집대기</span>'}
-        </div>
-        <div style="font-size:.9rem;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${title}</div>
-        ${r.외부_url?`<div style="font-size:.7rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.외부_url}</div>`:''}
-      </div>
-      <div style="text-align:center;flex-shrink:0;min-width:40px"><div style="font-size:1.2rem;font-weight:800;color:${rkc}">${rk}</div><div style="font-size:.58rem;color:#cbd5e1">최고</div></div>
+    return `<div ${has?`onclick="openWinningReader('${r.id}')" style="cursor:pointer;`:'style="opacity:.7;'}display:flex;align-items:center;gap:10px;padding:10px 14px;${i?'border-top:0.5px solid #fef3c7;':''}">
+      <span style="font-size:.8rem;font-weight:800;color:${rkc};flex-shrink:0;width:26px;text-align:center">${rk}</span>
+      <span style="font-size:.68rem;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:9px;flex-shrink:0">${r.채널||r.출처||'-'}</span>
+      <span style="flex:1;min-width:0;font-weight:600;font-size:.88rem;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.제목||r.핵심키워드||'(제목 미상)'}</span>
+      ${has?'<span style="font-size:.66rem;background:#d1fae5;color:#065f46;padding:2px 7px;border-radius:9px;flex-shrink:0">📄</span>':'<span style="font-size:.66rem;color:#cbd5e1;flex-shrink:0">수집대기</span>'}
     </div>`;}).join('');
 }
 function filterWinning(ff,b){
@@ -691,6 +672,74 @@ async function viewWinning(id){
   </div>`;
   document.body.appendChild(m);
   m.addEventListener('click',e=>{if(e.target===m)m.remove();});
+}
+
+
+// 블로그형 본문 렌더 + 리더
+function fmtBody(t){
+  if(!t) return '<div style="color:#94a3b8">(본문 없음)</div>';
+  return t.split(/\n{2,}/).map(function(p){
+    p=p.trim(); if(!p) return '';
+    var esc=p.replace(/</g,'&lt;');
+    if(/^#{1,3}\s/.test(p)) return '<h3 style="font-size:1.05rem;font-weight:700;margin:18px 0 8px;color:#0f172a">'+esc.replace(/^#{1,3}\s/,'')+'</h3>';
+    return '<p style="margin:0 0 14px;line-height:1.9">'+esc.replace(/\n/g,'<br>')+'</p>';
+  }).join('');
+}
+async function openDraftReader(id){
+  const box=document.getElementById('drafts-reader'); if(!box)return;
+  box.innerHTML='<div class="loading" style="padding:20px;text-align:center">불러오는 중...</div>';
+  const{data}=await sb.from('mk_blog_drafts').select('본문_네이버,본문_티스토리,제목,채널,핵심키워드,자가검증_점수,이미지프롬프트,발행_url,상태,생성일').eq('id',id).maybeSingle();
+  if(!data){box.innerHTML='';return;}
+  const nav=data.본문_네이버||'',tis=data.본문_티스토리||'';
+  let imgs=data.이미지프롬프트; if(typeof imgs==='string'){try{imgs=JSON.parse(imgs);}catch(e){imgs=null;}}
+  const imgArr=Array.isArray(imgs)?imgs:[];
+  window.__dc={nav:nav,tis:tis,img:imgArr.map((p,i)=>'이미지 '+(i+1)+' — '+(typeof p==='string'?p:(p.prompt||p.설명||JSON.stringify(p)))).join('\n\n')};
+  const navLen=nav.replace(/\s/g,'').length,tisLen=tis.replace(/\s/g,'').length;
+  const isDraft=data.상태==='draft';
+  box.innerHTML=`<div style="background:#fff;border:0.5px solid #e2e8f0;border-radius:12px;padding:22px 26px">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+      <span style="font-size:.72rem;background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:9px">${data.채널||'-'}</span>
+      ${data.발행_url?`<a href="${data.발행_url}" target="_blank" style="font-size:.72rem;color:var(--primary)">🔗 발행글</a>`:''}
+      <span style="font-size:.72rem;color:#94a3b8">네이버 공백제외 ${navLen}자${tis?(' · 티스토리 '+tisLen+'자'):''}</span>
+    </div>
+    <div style="font-size:1.35rem;font-weight:800;line-height:1.4;margin-bottom:14px">${(data.제목||'(제목 없음)').replace(/</g,'&lt;')}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;border-bottom:0.5px solid #e2e8f0;padding-bottom:14px">
+      <button class="btn-sm btn-copy" onclick="copyDraftPart('nav',this)">📱 네이버 복사</button>
+      ${tis?`<button class="btn-sm btn-copy" onclick="copyDraftPart('tis',this)">💻 티스토리 복사</button>`:''}
+      ${window.__dc.img?`<button class="btn-sm btn-copy" onclick="copyDraftPart('img',this)">🖼 이미지프롬프트</button>`:''}
+      ${isDraft?`<button class="btn-sm btn-approve" onclick="approveDraft('${id}')">✅ 승인</button><button class="btn-sm btn-reject" onclick="openReject('${id}')">❌ 반려</button>`:''}
+    </div>
+    <div style="font-weight:700;color:#1d4ed8;margin-bottom:8px;font-size:.92rem">📱 네이버 본문</div>
+    <div style="max-height:55vh;overflow-y:auto;padding-right:10px;font-size:.95rem;color:#1e293b">${fmtBody(nav)}</div>
+    ${tis?`<div style="font-weight:700;color:#7e22ce;margin:20px 0 8px;font-size:.92rem">💻 티스토리 본문</div><div style="max-height:45vh;overflow-y:auto;padding-right:10px;font-size:.95rem;color:#1e293b">${fmtBody(tis)}</div>`:''}
+  </div>`;
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function openWinningReader(id){
+  const box=document.getElementById('winning-reader'); if(!box)return;
+  box.innerHTML='<div class="loading" style="padding:20px;text-align:center">불러오는 중...</div>';
+  const{data}=await sb.from('mk_winning_posts').select('본문_네이버,본문_티스토리,제목,채널,핵심키워드,최고순위,외부_url').eq('id',id).maybeSingle();
+  if(!data){box.innerHTML='';return;}
+  const nav=data.본문_네이버||'',tis=data.본문_티스토리||'';
+  window.__dc={nav:nav,tis:tis,img:''};
+  const navLen=nav.replace(/\s/g,'').length,tisLen=tis.replace(/\s/g,'').length;
+  box.innerHTML=`<div style="background:#fff;border:0.5px solid #fcd34d;border-radius:12px;padding:22px 26px">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+      <span style="font-size:.78rem;font-weight:800;color:#b45309">🏆 최고 ${data.최고순위!=null?Math.round(data.최고순위):'-'}위</span>
+      <span style="font-size:.72rem;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:9px">${data.채널||'-'}</span>
+      ${data.외부_url?`<a href="${data.외부_url}" target="_blank" style="font-size:.72rem;color:var(--primary)">🔗 글</a>`:''}
+      <span style="font-size:.72rem;color:#94a3b8">네이버 ${navLen}자${tis?(' · 티스토리 '+tisLen+'자'):''}</span>
+    </div>
+    <div style="font-size:1.35rem;font-weight:800;line-height:1.4;margin-bottom:14px">${(data.제목||data.핵심키워드||'상위노출 글').replace(/</g,'&lt;')}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;border-bottom:0.5px solid #fde68a;padding-bottom:14px">
+      ${nav?`<button class="btn-sm btn-copy" onclick="copyDraftPart('nav',this)">📱 네이버 복사</button>`:''}
+      ${tis?`<button class="btn-sm btn-copy" onclick="copyDraftPart('tis',this)">💻 티스토리 복사</button>`:''}
+    </div>
+    ${nav?`<div style="font-weight:700;color:#b45309;margin-bottom:8px;font-size:.92rem">📱 네이버 본문</div><div style="max-height:55vh;overflow-y:auto;padding-right:10px;font-size:.95rem;color:#1e293b">${fmtBody(nav)}</div>`:''}
+    ${tis?`<div style="font-weight:700;color:#7e22ce;margin:20px 0 8px;font-size:.92rem">💻 티스토리 본문</div><div style="max-height:45vh;overflow-y:auto;padding-right:10px;font-size:.95rem;color:#1e293b">${fmtBody(tis)}</div>`:''}
+    ${!nav&&!tis?'<div style="text-align:center;padding:30px;color:#94a3b8">본문 미수집 — 적재 대기 중</div>':''}
+  </div>`;
+  box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 initAuth();

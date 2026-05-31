@@ -753,6 +753,16 @@ async function openWinningReader(id){
   box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
+
+function copyDraftPart(k,btn){
+  const t=(window.__dc||{})[k]||'';
+  if(!t){showToast('복사할 내용이 없습니다');return;}
+  const done=()=>{const o=btn?btn.textContent:'';if(btn){btn.textContent='✅ 복사됨!';setTimeout(()=>btn.textContent=o,1500);}showToast('복사 완료 ('+t.length+'자)');};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));}
+  else fallbackCopy(t,done);
+}
+function fallbackCopy(t,cb){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb&&cb();}catch(e){showToast('복사 실패');}document.body.removeChild(ta);}
+
 initAuth();
 </script>
 </body>

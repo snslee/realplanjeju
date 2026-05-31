@@ -170,6 +170,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <table class="tbl"><thead><tr><th>발행일</th><th>채널</th><th>핵심키워드</th><th>콘텐츠방향</th><th>상태</th><th>수정일</th></tr></thead>
         <tbody id="slots-body"><tr><td colspan="6" class="loading">로딩 중...</td></tr></tbody></table>
       </div></div>
+      <div id="slots-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:14px"></div>
     </div>
     <div class="tab-panel" id="t4">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
@@ -460,17 +461,27 @@ function copyTitle(t){navigator.clipboard.writeText(t).then(()=>showToast('📋 
 
 async function loadSlots(){
   document.getElementById('slots-body').innerHTML='<tr><td colspan="6" class="loading">로딩 중...</td></tr>';
-  const now=new Date(),from=new Date(now.getFullYear(),now.getMonth(),1).toISOString().slice(0,10),to=new Date(now.getFullYear(),now.getMonth()+2,1).toISOString().slice(0,10);
-  const{data,error}=await sb.from('mk_blog_slots').select('id,발행일,채널,핵심키워드,콘텐츠방향,상태,수정일').gte('발행일',from).lt('발행일',to).order('발행일',{ascending:false}).limit(200);
-  if(error){showToast('슬롯 로드 실패');return;}allSlots=data||[];renderSlots(allSlots);
+  const{data,error}=await sb.from('mk_blog_slots').select('id,발행일,채널,핵심키워드,콘텐츠방향,상태,수정일').order('발행일',{ascending:false}).limit(1000);
+  if(error){showToast('슬롯 로드 실패');return;}allSlots=data||[];_slotPage=1;renderSlots(allSlots);
 }
+let _slotList=[],_slotPage=1; const SLOT_PER=30;
 function renderSlots(list){
-  const tbody=document.getElementById('slots-body');
-  if(!list.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8">슬롯 없음 (이번달·다음달)</td></tr>';return;}
+  const tbody=document.getElementById('slots-body'); _slotList=list||[];
+  const pg=document.getElementById('slots-pager');
+  if(!_slotList.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8">슬롯 없음</td></tr>';if(pg)pg.innerHTML='';return;}
+  const pages=Math.ceil(_slotList.length/SLOT_PER); if(_slotPage>pages)_slotPage=1;
+  const st=(_slotPage-1)*SLOT_PER, slice=_slotList.slice(st,st+SLOT_PER);
   const sc={'pending':'#fef3c7','in_progress':'#dbeafe','completed':'#d1fae5','halted':'#f1f5f9'};
   const sl={'pending':'대기','in_progress':'작성중','completed':'완료','halted':'보류'};
-  tbody.innerHTML=list.map(r=>`<tr><td style="font-weight:600">${r.발행일||'-'}</td><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:.78rem">${r.채널||'-'}</span></td><td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${r.핵심키워드||'-'}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.82rem;color:#475569">${r.콘텐츠방향||'-'}</td><td><span style="background:${sc[r.상태]||'#f1f5f9'};padding:2px 10px;border-radius:12px;font-size:.75rem;font-weight:600">${sl[r.상태]||r.상태||'-'}</span></td><td style="color:#94a3b8;font-size:.78rem">${r.수정일?r.수정일.slice(0,10):'-'}</td></tr>`).join('');
+  tbody.innerHTML=slice.map(r=>`<tr><td style="font-weight:600">${r.발행일||'-'}</td><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:.78rem">${r.채널||'-'}</span></td><td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${r.핵심키워드||'-'}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.82rem;color:#475569">${r.콘텐츠방향||'-'}</td><td><span style="background:${sc[r.상태]||'#f1f5f9'};padding:2px 10px;border-radius:12px;font-size:.75rem;font-weight:600">${sl[r.상태]||r.상태||'-'}</span></td><td style="color:#94a3b8;font-size:.78rem">${r.수정일?r.수정일.slice(0,10):'-'}</td></tr>`).join('');
+  if(pg){
+    let h=`<button class="btn-sm btn-copy" onclick="gotoSlotPage(${Math.max(1,_slotPage-1)})">‹</button>`;
+    for(let i=1;i<=pages;i++){ if(i===1||i===pages||Math.abs(i-_slotPage)<=2){h+=`<button class="btn-sm btn-copy" style="${i===_slotPage?'background:#2563eb;color:#fff;border-color:#2563eb':''}" onclick="gotoSlotPage(${i})">${i}</button>`;} else if(Math.abs(i-_slotPage)===3){h+='<span style="padding:4px;color:#94a3b8">…</span>';} }
+    h+=`<button class="btn-sm btn-copy" onclick="gotoSlotPage(${Math.min(pages,_slotPage+1)})">›</button><span style="align-self:center;font-size:.78rem;color:#94a3b8;margin-left:10px">${_slotPage}/${pages} · 총 ${_slotList.length}건</span>`;
+    pg.innerHTML=h;
+  }
 }
+function gotoSlotPage(n){_slotPage=n;renderSlots(_slotList);}
 function filterSlots(s,b){document.querySelectorAll('#slot-filters .filter-btn').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');renderSlots(s==='all'?allSlots:allSlots.filter(r=>r.상태===s));}
 
 async function loadGiants(){

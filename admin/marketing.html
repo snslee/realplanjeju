@@ -152,6 +152,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn" onclick="filterDrafts('rejected',this)">❌ 반려</button>
       </div>
       <div id="drafts-board" style="border:0.5px solid #e2e8f0;border-radius:12px;background:#fff;max-height:46vh;overflow-y:auto"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div>
+      <div id="drafts-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin:12px 0"></div>
       <div id="drafts-reader" style="margin-top:14px"></div>
     </div>
     <div class="tab-panel" id="t3">
@@ -166,6 +167,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn" onclick="filterSlots('completed',this)">✅ 완료</button>
         <button class="filter-btn" onclick="filterSlots('halted',this)">⏸️ 보류</button>
       </div>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;flex-wrap:wrap"><button class="btn-sm btn-copy" onclick="slotMonthNav(-1)">‹ 이전달</button><button class="btn-sm btn-copy" onclick="slotMonthNav(0)">오늘</button><button class="btn-sm btn-copy" onclick="slotMonthNav(1)">다음달 ›</button><span id="slot-month-label" style="font-weight:700;margin-left:8px;font-size:.9rem"></span></div>
       <div class="card"><div class="card-body" style="padding:0;overflow-x:auto">
         <table class="tbl"><thead><tr><th>발행일</th><th>채널</th><th>핵심키워드</th><th>콘텐츠방향</th><th>상태</th><th>수정일</th></tr></thead>
         <tbody id="slots-body"><tr><td colspan="6" class="loading">로딩 중...</td></tr></tbody></table>
@@ -208,6 +210,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
           </div>
         </div>
         <div id="winning-board" style="border:0.5px solid #fde68a;border-radius:10px;background:#fff;max-height:40vh;overflow-y:auto"><div class="loading" style="padding:20px;text-align:center">로딩 중...</div></div>
+        <div id="winning-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin:12px 0"></div>
         <div id="winning-reader" style="margin-top:12px"></div>
       </div>
       <div style="font-weight:700;font-size:.95rem;margin:0 0 8px;color:#334155">📊 D+N 순위 추적 로그</div>
@@ -436,13 +439,20 @@ async function loadDrafts(){
   const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형').order('생성일',{ascending:false}).limit(100);
   if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];renderDrafts(allDrafts);
 }
+let _draftPage=1,_winPage=1,_slotMonth=0; const DRAFT_PER=10,WIN_PER=10;
+function pagerHTML(pg,pages,total,fn){ if(pages<=1)return '<span style="font-size:.78rem;color:#94a3b8">총 '+total+'건</span>'; let h=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.max(1,pg-1)})">‹</button>`; for(let i=1;i<=pages;i++){if(i===1||i===pages||Math.abs(i-pg)<=2){h+=`<button class="btn-sm btn-copy" style="${i===pg?'background:#2563eb;color:#fff;border-color:#2563eb':''}" onclick="${fn}(${i})">${i}</button>`;}else if(Math.abs(i-pg)===3){h+='<span style="padding:4px;color:#94a3b8">…</span>';}} h+=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.min(pages,pg+1)})">›</button><span style="align-self:center;font-size:.78rem;color:#94a3b8;margin-left:10px">${pg}/${pages} · 총 ${total}건</span>`; return h; }
+function gotoDraftPage(n){_draftPage=n;renderDrafts(window._draftView||allDrafts);}
+function gotoWinPage(n){_winPage=n;renderWinning(window._winView||allWinning);}
+function slotYM(){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+_slotMonth);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function applySlotView(){const ym=slotYM();const l=(allSlots||[]).filter(r=>(r.발행일||'').slice(0,7)===ym);_slotPage=1;renderSlots(l);const lb=document.getElementById('slot-month-label');if(lb)lb.textContent=ym+' · '+l.length+'건';}
+function slotMonthNav(d){if(d===0)_slotMonth=0;else _slotMonth+=d;applySlotView();}
 function renderDrafts(list){
   const box=document.getElementById('drafts-board');
   if(!list.length){box.innerHTML='<div style="text-align:center;padding:40px;color:#94a3b8">초안 없음</div>';return;}
   const sl={draft:'초안',approved:'승인',published:'발행',rejected:'반려'};
   const sbg={draft:'#fef3c7',approved:'#d1fae5',published:'#dbeafe',rejected:'#fee2e2'};
   const stx={draft:'#92400e',approved:'#065f46',published:'#1d4ed8',rejected:'#b91c1c'};
-  box.innerHTML=list.map((r,i)=>{
+  box.innerHTML=(function(){window._draftView=list;const _dp=Math.max(1,Math.ceil(list.length/DRAFT_PER));if(_draftPage>_dp)_draftPage=1;const pe=document.getElementById('drafts-pager');if(pe)pe.innerHTML=pagerHTML(_draftPage,_dp,list.length,'gotoDraftPage');return list.slice((_draftPage-1)*DRAFT_PER,_draftPage*DRAFT_PER);})().map((r,i)=>{
     const sc=r.자가검증_점수;
     return `<div onclick="openDraftReader('${r.id}')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;${i?'border-top:0.5px solid #f1f5f9;':''}cursor:pointer">
       <span style="font-size:.7rem;background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px;flex-shrink:0">${r.채널||'-'}</span>
@@ -462,7 +472,7 @@ function copyTitle(t){navigator.clipboard.writeText(t).then(()=>showToast('📋 
 async function loadSlots(){
   document.getElementById('slots-body').innerHTML='<tr><td colspan="6" class="loading">로딩 중...</td></tr>';
   const{data,error}=await sb.from('mk_blog_slots').select('id,발행일,채널,핵심키워드,콘텐츠방향,상태,수정일').order('발행일',{ascending:false}).limit(1000);
-  if(error){showToast('슬롯 로드 실패');return;}allSlots=data||[];_slotPage=1;renderSlots(allSlots);
+  if(error){showToast('슬롯 로드 실패');return;}allSlots=data||[];_slotMonth=0;applySlotView();
 }
 let _slotList=[],_slotPage=1; const SLOT_PER=30;
 function renderSlots(list){
@@ -627,14 +637,14 @@ let allWinning=[];
 async function loadWinning(){
   const box=document.getElementById('winning-board'); if(!box)return;
   box.innerHTML='<div class="loading" style="padding:20px;text-align:center">로딩 중...</div>';
-  const{data,error}=await sb.from('mk_winning_posts').select('id,채널,제목,핵심키워드,외부_url,최고순위,글자수,본문_수집상태,출처').eq('활성',true).order('본문_수집상태',{ascending:true}).order('최고순위',{ascending:true,nullsFirst:false}).limit(400);
+  const{data,error}=await sb.from('mk_winning_posts').select('id,채널,제목,핵심키워드,외부_url,최고순위,글자수,본문_수집상태,출처,생성일').eq('활성',true).order('생성일',{ascending:false}).limit(400);
   if(error){box.innerHTML='<div style="padding:20px;text-align:center;color:#ef4444">로드 실패: '+error.message+'</div>';return;}
   allWinning=data||[]; renderWinning(allWinning);
 }
 function renderWinning(list){
   const box=document.getElementById('winning-board'); if(!box)return;
   if(!list.length){box.innerHTML='<div style="text-align:center;padding:24px;color:#94a3b8">상위노출 글 없음</div>';return;}
-  box.innerHTML='<div style="font-size:.72rem;color:#92400e;padding:8px 14px;border-bottom:0.5px solid #fde68a">총 '+list.length+'건 · 본문보유 '+list.filter(r=>r.본문_수집상태==='collected').length+'건</div>'+list.map((r,i)=>{
+  box.innerHTML='<div style="font-size:.72rem;color:#92400e;padding:8px 14px;border-bottom:0.5px solid #fde68a">총 '+list.length+'건 · 본문보유 '+list.filter(r=>r.본문_수집상태==='collected').length+'건</div>'+(function(){window._winView=list;const _wp=Math.max(1,Math.ceil(list.length/WIN_PER));if(_winPage>_wp)_winPage=1;const pe=document.getElementById('winning-pager');if(pe)pe.innerHTML=pagerHTML(_winPage,_wp,list.length,'gotoWinPage');return list.slice((_winPage-1)*WIN_PER,_winPage*WIN_PER);})().map((r,i)=>{
     const rk=r.최고순위==null?'-':Math.round(r.최고순위);
     const rkc=rk==='-'?'#cbd5e1':rk<=5?'#b45309':rk<=10?'#a16207':'#94a3b8';
     const has=r.본문_수집상태==='collected';

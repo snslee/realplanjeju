@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>초안 보관소 게시판 — 리얼플랜제주</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:'Malgun Gothic',sans-serif;background:#f1f5f9;color:#1e293b}
+.top{background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 22px;display:flex;justify-content:space-between;align-items:center}
+.top h1{font-size:1.1rem;margin:0} .top .sub{font-size:.78rem;color:#94a3b8}
+.wrap{max-width:1100px;margin:0 auto;padding:18px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.fb{padding:7px 14px;border:1px solid #e2e8f0;background:#fff;border-radius:20px;cursor:pointer;font-size:.85rem}
+.fb.on{background:#2563eb;color:#fff;border-color:#2563eb}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.card:hover{border-color:#2563eb;box-shadow:0 2px 10px rgba(37,99,235,.08)}
+.card .t{font-weight:700;font-size:.95rem;margin-bottom:4px} .card .m{font-size:.78rem;color:#64748b}
+.badge{font-size:.72rem;padding:2px 9px;border-radius:12px;font-weight:700}
+.b-draft{background:#fef3c7;color:#92400e}.b-approved{background:#d1fae5;color:#065f46}.b-published{background:#dbeafe;color:#1e40af}.b-rejected{background:#fee2e2;color:#991b1b}
+.chip{font-size:.72rem;background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:10px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:none;align-items:flex-start;justify-content:center;padding:2vh 1vw;overflow-y:auto}
+.modal{background:#fff;border-radius:14px;max-width:1000px;width:97%;margin:auto}
+.mh{padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center}
+.mb{padding:14px 20px 22px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;position:sticky;top:0;background:#fff;padding:6px 0}
+.cpy{padding:9px 15px;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer}
+textarea{width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:14px;font-size:.9rem;line-height:1.75;resize:vertical;font-family:inherit}
+.lbl{font-weight:700;margin:14px 0 6px;font-size:.9rem} .cnt{color:#94a3b8;font-weight:400;font-size:.8rem}
+.act{display:flex;gap:6px}.sm{padding:6px 12px;border:none;border-radius:7px;font-size:.8rem;font-weight:700;cursor:pointer;color:#fff}
+.ap{background:#10b981}.rj{background:#ef4444}
+.x{font-size:1.5rem;cursor:pointer;color:#64748b}
+.loading{text-align:center;padding:40px;color:#94a3b8}
+</style></head>
+<body>
+<div class="top"><div><h1>📋 초안 보관소 게시판</h1><div class="sub">mk_blog_drafts · 클릭하면 본문 전체를 한 번에 복사할 수 있어요</div></div>
+<button class="fb" onclick="load()">🔄 새로고침</button></div>
+<div class="wrap">
+  <div class="filters" id="filters">
+    <span class="fb on" data-f="all" onclick="setF(this)">전체</span>
+    <span class="fb" data-f="draft" onclick="setF(this)">📋 초안</span>
+    <span class="fb" data-f="approved" onclick="setF(this)">✅ 승인</span>
+    <span class="fb" data-f="published" onclick="setF(this)">🚀 발행</span>
+    <span class="fb" data-f="rejected" onclick="setF(this)">❌ 반려</span>
+  </div>
+  <div id="list"><div class="loading">로딩 중...</div></div>
+</div>
+<div class="ov" id="ov"><div class="modal" id="modal"></div></div>
+<script>
+const SB_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZGZxbGtlaXd4eXVvandjb3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMzIxOTcsImV4cCI6MjA5MjYwODE5N30.S3VrHMcrrr0m74dsMnb3jMzaxBjoFpOnUts2XINbpq0';
+const sb=supabase.createClient(SB_URL,SB_KEY);
+let rows=[],flt='all';
+const SL={draft:'초안',approved:'승인',published:'발행',rejected:'반려'};
+function setF(el){document.querySelectorAll('.fb[data-f]').forEach(x=>x.classList.remove('on'));el.classList.add('on');flt=el.dataset.f;render();}
+async function load(){
+  document.getElementById('list').innerHTML='<div class="loading">로딩 중...</div>';
+  const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행_url').order('생성일',{ascending:false}).limit(200);
+  if(error){document.getElementById('list').innerHTML='<div class="loading">로드 실패: '+error.message+'</div>';return;}
+  rows=data||[];render();
+}
+function render(){
+  const list=document.getElementById('list');
+  const f=flt==='all'?rows:rows.filter(r=>r.상태===flt);
+  if(!f.length){list.innerHTML='<div class="loading">초안 없음</div>';return;}
+  list.innerHTML=f.map(r=>`<div class="card" onclick="openD('${r.id}')">
+    <div><div class="t">${esc(r.제목||'(제목 없음)')}</div>
+    <div class="m"><span class="chip">${r.채널||'-'}</span> ${esc(r.핵심키워드||'')} · 점수 ${r.자가검증_점수??'-'} · ${r.생성일?r.생성일.slice(0,10):''}</div></div>
+    <span class="badge b-${r.상태||'draft'}">${SL[r.상태]||r.상태||'초안'}</span></div>`).join('');
+}
+function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+let DC={};
+async function openD(id){
+  const{data}=await sb.from('mk_blog_drafts').select('*').eq('id',id).maybeSingle();
+  if(!data){alert('초안을 찾을 수 없습니다');return;}
+  const nav=data.본문_네이버||'',tis=data.본문_티스토리||'';
+  let imgs=data.이미지프롬프트;if(typeof imgs==='string'){try{imgs=JSON.parse(imgs);}catch(e){imgs=null;}}
+  const imgArr=Array.isArray(imgs)?imgs:[];
+  const imgText=imgArr.map((p,i)=>`이미지 ${i+1} — ${typeof p==='string'?p:(p.prompt||p.설명||'')}`).join('\n\n');
+  DC={nav,tis,img:imgText};
+  const navLen=nav.replace(/\s/g,'').length,tisLen=tis.replace(/\s/g,'').length;
+  const pub=data.발행_url?` · <a href="${data.발행_url}" target="_blank">🔗발행글</a>`:'';
+  const acts=data.상태==='draft'?`<div class="act"><button class="sm ap" onclick="setStatus('${id}','approved')">승인</button><button class="sm rj" onclick="rej('${id}')">반려</button></div>`:'';
+  document.getElementById('modal').innerHTML=`
+    <div class="mh"><div><div style="font-weight:800;font-size:1.05rem">${esc(data.제목||'초안')}</div>
+    <div style="font-size:.8rem;color:#64748b;margin-top:3px">${data.채널||''} · ${esc(data.핵심키워드||'')} · 점수 ${data.자가검증_점수??'-'} · <span class="badge b-${data.상태}">${SL[data.상태]||data.상태}</span>${pub}</div></div>
+    <div style="display:flex;gap:14px;align-items:center">${acts}<span class="x" onclick="closeD()">✕</span></div></div>
+    <div class="mb">
+      <div class="tools">
+        <button class="cpy" style="background:#2563eb" onclick="cp('nav',this)">📱 네이버 본문 전체 복사</button>
+        ${tis?`<button class="cpy" style="background:#7e22ce" onclick="cp('tis',this)">💻 티스토리 복사</button>`:''}
+        ${imgText?`<button class="cpy" style="background:#c2410c" onclick="cp('img',this)">🖼 이미지 프롬프트 복사</button>`:''}
+      </div>
+      <div class="lbl" style="color:#1d4ed8">📱 네이버 본문 <span class="cnt">(공백제외 ${navLen}자)</span></div>
+      <textarea readonly style="min-height:46vh" onclick="this.select()">${esc(nav)||'(본문 없음)'}</textarea>
+      ${tis?`<div class="lbl" style="color:#7e22ce">💻 티스토리 본문 <span class="cnt">(공백제외 ${tisLen}자)</span></div><textarea readonly style="min-height:30vh" onclick="this.select()">${esc(tis)}</textarea>`:''}
+    </div>`;
+  document.getElementById('ov').style.display='flex';
+}
+function closeD(){document.getElementById('ov').style.display='none';}
+function cp(k,btn){const t=DC[k]||'';if(!t){alert('내용 없음');return;}
+  const ok=()=>{const o=btn.textContent;btn.textContent='✅ 복사됨!';setTimeout(()=>btn.textContent=o,1500);};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok).catch(()=>fb(t,ok));else fb(t,ok);}
+function fb(t,cb){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb&&cb();}catch(e){alert('복사 실패');}document.body.removeChild(ta);}
+async function setStatus(id,st){const{error}=await sb.from('mk_blog_drafts').update({상태:st,승인일:st==='approved'?new Date().toISOString():null}).eq('id',id);if(error){alert('실패: '+error.message);return;}closeD();load();}
+async function rej(id){const r=prompt('반려 사유를 입력하세요');if(!r)return;const{error}=await sb.from('mk_blog_drafts').update({상태:'rejected',거절_사유:r}).eq('id',id);if(error){alert('실패: '+error.message);return;}closeD();load();}
+document.getElementById('ov').addEventListener('click',e=>{if(e.target.id==='ov')closeD();});
+load();
+</script></body></html>

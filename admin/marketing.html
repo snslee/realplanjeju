@@ -6,7 +6,78 @@
 <title>리얼플랜제주 마케팅 운영 v1.5</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js">
+// WINNING HALL (mk_winning_posts)
+let allWinning=[];
+async function loadWinning(){
+  const box=document.getElementById('winning-board'); if(!box)return;
+  box.innerHTML='<div class="loading" style="padding:20px;text-align:center">로딩 중...</div>';
+  const{data,error}=await sb.from('mk_winning_posts').select('id,채널,제목,핵심키워드,외부_url,최고순위,글자수,본문_수집상태,출처').order('최고순위',{ascending:true,nullsFirst:false}).limit(400);
+  if(error){box.innerHTML='<div style="padding:20px;text-align:center;color:#ef4444">로드 실패: '+error.message+'</div>';return;}
+  allWinning=data||[]; renderWinning(allWinning);
+}
+function renderWinning(list){
+  const box=document.getElementById('winning-board'); if(!box)return;
+  if(!list.length){box.innerHTML='<div style="text-align:center;padding:24px;color:#94a3b8">상위노출 글 없음</div>';return;}
+  const head='<div style="font-size:.75rem;color:#92400e;margin-bottom:6px">총 '+list.length+'건 · 본문보유 '+list.filter(r=>r.본문_수집상태==='collected').length+'건</div>';
+  box.innerHTML=head+list.map(r=>{
+    const rk=r.최고순위==null?'-':Math.round(r.최고순위);
+    const rkc=rk==='-'?'#94a3b8':rk<=5?'#b45309':rk<=10?'#a16207':'#94a3b8';
+    const has=r.본문_수집상태==='collected';
+    const title=r.제목||r.핵심키워드||'(제목 미상)';
+    return `<div style="background:#fff;border:1px solid ${has?'#fcd34d':'#e2e8f0'};border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center">
+      <div style="min-width:0;flex:1;${has?'cursor:pointer':''}" ${has?`onclick="viewWinning('${r.id}')"`:''}>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:3px">
+          <span style="font-size:.68rem;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:9px">${r.채널||r.출처||'-'}</span>
+          ${has?'<span style="font-size:.68rem;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:9px">📄 본문</span>':'<span style="font-size:.68rem;background:#f1f5f9;color:#94a3b8;padding:1px 7px;border-radius:9px">수집대기</span>'}
+        </div>
+        <div style="font-size:.9rem;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${title}</div>
+        ${r.외부_url?`<div style="font-size:.7rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.외부_url}</div>`:''}
+      </div>
+      <div style="text-align:center;flex-shrink:0;min-width:40px"><div style="font-size:1.2rem;font-weight:800;color:${rkc}">${rk}</div><div style="font-size:.58rem;color:#cbd5e1">최고</div></div>
+    </div>`;}).join('');
+}
+function filterWinning(ff,b){
+  if(b){b.parentElement.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');}
+  let l=allWinning;
+  if(ff==='top5')l=allWinning.filter(r=>r.최고순위!=null&&r.최고순위<=5);
+  else if(ff==='top10')l=allWinning.filter(r=>r.최고순위!=null&&r.최고순위<=10);
+  else if(ff==='body')l=allWinning.filter(r=>r.본문_수집상태==='collected');
+  renderWinning(l);
+}
+async function viewWinning(id){
+  const{data}=await sb.from('mk_winning_posts').select('본문_네이버,본문_티스토리,제목,채널,핵심키워드,최고순위,외부_url').eq('id',id).maybeSingle();
+  if(!data){showToast('글을 찾을 수 없습니다');return;}
+  const nav=data.본문_네이버||'',tis=data.본문_티스토리||'';
+  window.__dc={nav:nav,tis:tis,img:''};
+  const navLen=nav.replace(/\s/g,'').length,tisLen=tis.replace(/\s/g,'').length;
+  const btn='padding:8px 14px;border:none;border-radius:8px;background:#b45309;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer';
+  const ta='width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:8px;padding:14px;font-size:.9rem;line-height:1.75;resize:vertical;background:#fff;font-family:inherit';
+  const m=document.createElement('div');
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:flex-start;justify-content:center;padding:2vh 1vw;overflow-y:auto';
+  m.innerHTML=`<div style="background:#fff;border-radius:14px;max-width:1000px;width:97%;margin:auto;display:flex;flex-direction:column">
+    <div style="padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-weight:800;font-size:1.05rem">🏆 ${data.제목||data.핵심키워드||'상위노출 글'}</div>
+      <div style="font-size:.8rem;color:#64748b;margin-top:3px">${data.채널||''} · 최고순위 ${data.최고순위!=null?Math.round(data.최고순위):'-'}위 ${data.외부_url?'· <a href="'+data.외부_url+'" target="_blank">🔗글</a>':''}</div></div>
+      <span style="font-size:1.5rem;cursor:pointer;color:#64748b" onclick="this.closest('[style*=fixed]').remove()">✕</span>
+    </div>
+    <div style="padding:14px 20px 20px;overflow-y:auto">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        ${nav?`<button style="${btn}" onclick="copyDraftPart('nav',this)">📱 네이버 본문 복사</button>`:''}
+        ${tis?`<button style="${btn};background:#7e22ce" onclick="copyDraftPart('tis',this)">💻 티스토리 복사</button>`:''}
+      </div>
+      ${nav?`<div style="font-weight:700;color:#b45309;margin-bottom:6px;font-size:.9rem">📱 네이버 본문 <span style="color:#94a3b8;font-weight:400">(공백제외 ${navLen}자)</span></div>
+      <textarea readonly style="${ta};min-height:46vh" onclick="this.select()">${nav.replace(/</g,'&lt;')}</textarea>`:''}
+      ${tis?`<div style="font-weight:700;color:#7e22ce;margin:16px 0 6px;font-size:.9rem">💻 티스토리 본문 <span style="color:#94a3b8;font-weight:400">(공백제외 ${tisLen}자)</span></div>
+      <textarea readonly style="${ta};min-height:30vh" onclick="this.select()">${tis.replace(/</g,'&lt;')}</textarea>`:''}
+      ${!nav&&!tis?'<div style="text-align:center;padding:30px;color:#94a3b8">본문 미수집 — 적재 대기 중</div>':''}
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  m.addEventListener('click',e=>{if(e.target===m)m.remove();});
+}
+
+</script>
 <style>
 :root{--primary:#2563eb;--sidebar:200px;--hdr:56px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -194,6 +265,20 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div><h2 style="font-size:1.2rem;font-weight:700">🏆 상위노출 진입 현황</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">D+7·14·30·90 순위 추적</p></div>
         <button onclick="loadRankEntries()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:14px 16px;margin-bottom:18px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+          <div><div style="font-weight:800;font-size:1.02rem">🏆 상위노출 명예의전당</div><div style="font-size:.78rem;color:#92400e">mk_winning_posts · 역대 상위노출 글 학습 코퍼스</div></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="filter-btn active" onclick="filterWinning('all',this)">전체</button>
+            <button class="filter-btn" onclick="filterWinning('top5',this)">★ 5위 이내</button>
+            <button class="filter-btn" onclick="filterWinning('top10',this)">10위 이내</button>
+            <button class="filter-btn" onclick="filterWinning('body',this)">📄 본문보유</button>
+            <button class="filter-btn" onclick="loadWinning()">🔄</button>
+          </div>
+        </div>
+        <div id="winning-board" style="display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto"><div class="loading" style="padding:20px;text-align:center">로딩 중...</div></div>
+      </div>
+      <div style="font-weight:700;font-size:.95rem;margin:0 0 8px;color:#334155">📊 D+N 순위 추적 로그</div>
       <div class="filter-bar" id="rank-filters">
         <button class="filter-btn active" onclick="filterRank('all',this)">전체</button>
         <button class="filter-btn" onclick="filterRank('✅1~5위',this)">✅ 1~5위</button>
@@ -382,7 +467,7 @@ async function doLogin(){
   if(error){e.textContent='Google 로그인 실패: '+error.message;btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google로 로그인';}
 }
 async function doLogout(){try{localStorage.removeItem(SB_AUTH_KEY);localStorage.removeItem(SB_VERIFIER_KEY);}catch(e){}await sb.auth.signOut().catch(()=>{});showLogin();}
-function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1')loadStats();if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5')loadRankEntries();if(id==='t7')initCalendar();}
+function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1')loadStats();if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();}if(id==='t7')initCalendar();}
 
 async function loadStats(){
   document.getElementById('chart-loading').style.display='block';
@@ -574,20 +659,4 @@ function copyDraftPart(k,btn){
   if(!t){showToast('복사할 내용이 없습니다');return;}
   const done=()=>{const o=btn?btn.textContent:'';if(btn){btn.textContent='✅ 복사됨!';setTimeout(()=>btn.textContent=o,1500);}showToast('복사 완료 ('+t.length+'자)');};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));}
-  else fallbackCopy(t,done);
-}
-function fallbackCopy(t,cb){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb&&cb();}catch(e){showToast('복사 실패');}document.body.removeChild(ta);}
-async function viewDraft(id){
-  const dr=allDrafts.find(r=>r.id===id);
-  if(!dr){showToast('초안을 찾을 수 없습니다');return;}
-  const{data}=await sb.from('mk_blog_drafts').select('본문_네이버,본문_티스토리,제목,채널,핵심키워드,자가검증_점수,이미지프롬프트,발행_url').eq('id',id).maybeSingle();
-  const nav=data?.본문_네이버||'';
-  const tis=data?.본문_티스토리||'';
-  let imgs=data?.이미지프롬프트; if(typeof imgs==='string'){try{imgs=JSON.parse(imgs);}catch(e){imgs=null;}}
-  const imgArr=Array.isArray(imgs)?imgs:[];
-  const imgText=imgArr.map((p,i)=>`이미지 ${i+1} — ${typeof p==='string'?p:(p.prompt||p.설명||JSON.stringify(p))}`).join('\n\n');
-  window.__dc={nav:nav,tis:tis,img:imgText};
-  const pubUrl=data?.발행_url;
-  const navLen=nav.replace(/\s/g,'').length, tisLen=tis.replace(/\s/g,'').length;
-  const btn='padding:8px 14px;border:none;border-radius:8px;background:var(--primary,#2563eb);color:#fff;font-weight:700;font-size:.85rem;cursor:pointer';
-  const ta='width:100%;box-sizing:border-box;border:1p
+  else fallbackCopy(t,done

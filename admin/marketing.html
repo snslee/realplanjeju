@@ -556,7 +556,7 @@ function filterSlots(s,b){document.querySelectorAll('#slot-filters .filter-btn')
 async function loadGiants(){
   document.getElementById('giants-body').innerHTML='<tr><td colspan="6" class="loading">로딩 중...</td></tr>';
   const since=new Date(Date.now()-14*86400000).toISOString();
-  let data;try{data=await fetchAllRows('채널,데이터_소스,노출_수,클릭_수,평균_순위',q=>q.in('데이터_소스',['gsc','naver_search']).gte('수집_시각',since));}catch(e){showToast('잠자는 거인 로드 실패');return;}
+  let data;try{data=await fetchAllRows('채널,데이터_소스,노출_수,클릭_수,평균_순위',q=>q.eq('데이터_소스','gsc').gte('수집_시각',since));}catch(e){showToast('잠자는 거인 로드 실패');return;}
   // 채널+소스 기준 집계
   const byCS={};(data||[]).forEach(r=>{const k=r.채널+'||'+(r.데이터_소스||'gsc');if(!byCS[k])byCS[k]={ch:r.채널,src:r.데이터_소스||'gsc',n:0,c:0,sr:0,sn:0};byCS[k].n+=(r.노출_수||0);byCS[k].c+=(r.클릭_수||0);if(r.평균_순위){byCS[k].sr+=Number(r.평균_순위);byCS[k].sn++;}});
   const rows=Object.values(byCS).map(v=>({ch:v.ch,src:v.src,n:v.n,c:v.c,ctr:v.n>0?(v.c/v.n*100):0,r:v.sn>0?v.sr/v.sn:null})).sort((a,b)=>b.n-a.n);

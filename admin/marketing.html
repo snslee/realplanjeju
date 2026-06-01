@@ -127,8 +127,21 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div class="kpi-card"><div class="kpi-label">🎯 평균 CTR</div><div class="kpi-value" id="kpi-ctr">--</div><div class="kpi-sub">클릭/노출</div></div>
         <div class="kpi-card"><div class="kpi-label">🏆 네이버 평균순위</div><div class="kpi-value" id="kpi-순위">--</div><div class="kpi-sub">블A·B·C 평균</div></div>
       </div>
-      <div class="card"><div class="card-hdr"><h3>📥 네이버 통계 Excel 업로드</h3></div>
-        <div class="card-body">
+      <!-- ▼ 상단 고정: 채널별 추세 2그래프 (노출=티스토리 / 순위=네이버) -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin-bottom:16px">
+        <div class="card" style="margin:0"><div class="card-hdr"><h3>📈 채널별 노출 추세 (7일·티스토리)</h3></div>
+          <div class="card-body" style="height:300px;position:relative"><canvas id="trendChart"></canvas><div id="chart-loading" class="loading">로딩 중...</div></div>
+        </div>
+        <div class="card" style="margin:0"><div class="card-hdr"><h3>🏆 네이버 채널별 평균순위 추세 (7일)</h3></div>
+          <div class="card-body" style="height:300px;position:relative"><canvas id="naverRankChart"></canvas><div id="naver-chart-loading" class="loading">로딩 중...</div></div>
+        </div>
+      </div>
+
+      <!-- ▼ 하단: 접기/펼치기 아코디언 (기본 접힘) -->
+      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden">
+        <summary style="padding:13px 18px;font-weight:700;font-size:.92rem;cursor:pointer">📥 네이버 통계 Excel 업로드</summary>
+        <div style="padding:0 18px 16px">
+          <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:10px">ℹ️ 업로드 데이터(naver_manual)는 아래 <b>게시물별 조회수 · 유입 검색어</b>에만 반영됩니다. 상단 KPI 카드·추세 그래프는 GSC(티스토리)·네이버 순위 <b>자동수집</b> 기준이라 반영되지 않습니다.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
             <select id="nv-channel" style="padding:7px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:.85rem">
               <option value="블A네이버">블A네이버</option><option value="블B네이버">블B네이버</option><option value="블C네이버">블C네이버</option>
@@ -140,29 +153,26 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
           <div style="font-size:.74rem;color:#64748b;margin-bottom:8px">네이버 블로그 통계 &rarr; <b>조회수 순위 &middot; 유입분석 &middot; 조회수</b> 다운로드 파일(여러 개 가능). 종류 자동 판별 &middot; 동일 채널&middot;월 재업로드 시 전체 갱신.</div>
           <div id="nv-preview"></div>
         </div>
-      </div>
-      <div class="card"><div class="card-hdr"><h3>📊 네이버 게시물별 조회수 (naver_manual)</h3></div>
-        <div class="card-body" style="padding:0;overflow-x:auto">
+      </details>
+      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden">
+        <summary style="padding:13px 18px;font-weight:700;font-size:.92rem;cursor:pointer">📊 네이버 게시물별 조회수 (naver_manual)</summary>
+        <div style="overflow-x:auto">
           <table class="tbl"><thead><tr><th>채널</th><th>측정월</th><th>제목</th><th>조회수</th><th>작성일</th></tr></thead>
           <tbody id="nv-views-body"><tr><td colspan="5" class="loading">—</td></tr></tbody></table>
         </div>
-      </div>
-      <div class="card"><div class="card-hdr"><h3>🔎 네이버 유입 검색어 (naver_manual)</h3></div>
-        <div class="card-body" id="nv-kw-body" style="font-size:.82rem;color:#64748b">—</div>
-      </div>
-      <div class="card"><div class="card-hdr"><h3>📈 채널별 노출 추세 (7일)</h3></div>
-        <div class="card-body" style="height:260px;position:relative"><canvas id="trendChart"></canvas><div id="chart-loading" class="loading">로딩 중...</div></div>
-      </div>
-      <div class="card"><div class="card-hdr"><h3>📈 네이버 채널별 평균순위 추세 (7일)</h3></div>
-        <div class="card-body" style="height:220px;position:relative"><canvas id="naverRankChart"></canvas><div id="naver-chart-loading" class="loading">로딩 중...</div></div>
-      </div>
-      <div class="card"><div class="card-hdr"><h3>📋 채널별 어제 지표</h3></div>
-        <div class="card-body" style="padding:0;overflow-x:auto">
+      </details>
+      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden">
+        <summary style="padding:13px 18px;font-weight:700;font-size:.92rem;cursor:pointer">🔎 네이버 유입 검색어 (naver_manual)</summary>
+        <div id="nv-kw-body" style="padding:0 18px 16px;font-size:.82rem;color:#64748b">—</div>
+      </details>
+      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden">
+        <summary style="padding:13px 18px;font-weight:700;font-size:.92rem;cursor:pointer">📋 채널별 어제 지표</summary>
+        <div style="overflow-x:auto">
           <table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>노출</th><th>클릭</th><th>CTR%</th><th>평균순위</th><th>측정일</th></tr></thead>
           <tbody id="stats-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
           <div id="stats-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;padding:12px"></div>
         </div>
-      </div>
+      </details>
     </div>
     <div class="tab-panel" id="t2">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
@@ -434,7 +444,7 @@ function gotoStatPage(n){_statPage=n;renderStatsPage();}
 async function loadStats(){
   document.getElementById('chart-loading').style.display='block';
   const since=new Date(Date.now()-7*86400000).toISOString();
-  const{data,error}=await sb.from('mk_metrics').select('채널,데이터_소스,노출_수,클릭_수,ctr_pct,평균_순위,수집_시각').gte('수집_시각',since).order('수집_시각',{ascending:false});
+  const{data,error}=await sb.from('mk_metrics').select('채널,데이터_소스,노출_수,클릭_수,ctr_pct,평균_순위,수집_시각').gte('수집_시각',since).order('수집_시각',{ascending:false}).limit(20000);
   if(error){showToast('통계 로드 실패');return;}
   const gsc=data.filter(r=>r.데이터_소스==='gsc'),nav=data.filter(r=>r.데이터_소스==='naver_search');
   const imp=gsc.reduce((s,r)=>s+(r.노출_수||0),0),clk=gsc.reduce((s,r)=>s+(r.클릭_수||0),0);
@@ -455,10 +465,12 @@ async function loadStats(){
   trendChart=new Chart(document.getElementById('trendChart').getContext('2d'),{type:'line',data:{labels:days,datasets:chs.map((ch,i)=>({label:ch,data:days.map(d=>byd[ch+'|'+d]||0),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.4,fill:false,pointRadius:4}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}},x:{grid:{display:false}}}}});
   // 네이버 순위 차트
   document.getElementById('naver-chart-loading').style.display='none';
-  const navD=data.filter(r=>r.데이터_소스==='naver_search'&&r.평균_순위),navChs=[...new Set(navD.map(r=>r.채널))].sort(),navByD={};
-  navD.forEach(r=>{const d=r.수집_시각?r.수집_시각.slice(5,10):'-';navByD[r.채널+'|'+d]=Number(r.평균_순위);});
+  const navD=data.filter(r=>r.데이터_소스==='naver_search'&&r.평균_순위),navChs=[...new Set(navD.map(r=>r.채널))].sort(),navByD={},navAgg={};
+  const navDays=[...new Set(navD.map(r=>r.수집_시각?r.수집_시각.slice(5,10):''))].filter(Boolean).sort().slice(-7);
+  navD.forEach(r=>{const d=r.수집_시각?r.수집_시각.slice(5,10):'-';const k=r.채널+'|'+d;if(!navAgg[k])navAgg[k]={s:0,n:0};navAgg[k].s+=Number(r.평균_순위);navAgg[k].n++;});
+  Object.keys(navAgg).forEach(k=>{navByD[k]=Math.round((navAgg[k].s/navAgg[k].n)*10)/10;});
   if(window.naverRankChart)window.naverRankChart.destroy();
-  if(document.getElementById('naverRankChart'))window.naverRankChart=new Chart(document.getElementById('naverRankChart').getContext('2d'),{type:'line',data:{labels:days,datasets:navChs.map((ch,i)=>({label:ch,data:days.map(d=>navByD[ch+'|'+d]||null),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.4,fill:false,pointRadius:4,spanGaps:true}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{reverse:true,beginAtZero:false,grid:{color:'#f1f5f9'},title:{display:true,text:'순위 (낮을수록 좋음)'}},x:{grid:{display:false}}}}});
+  if(document.getElementById('naverRankChart'))window.naverRankChart=new Chart(document.getElementById('naverRankChart').getContext('2d'),{type:'line',data:{labels:navDays,datasets:navChs.map((ch,i)=>({label:ch,data:navDays.map(d=>navByD[ch+'|'+d]??null),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.4,fill:false,pointRadius:4,spanGaps:true}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{reverse:true,beginAtZero:false,grid:{color:'#f1f5f9'},title:{display:true,text:'순위 (낮을수록 좋음)'}},x:{grid:{display:false}}}}});
 }
 
 async function loadDrafts(){

@@ -250,6 +250,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div id="winning-reader" style="margin-top:12px"></div>
       </div>
       <div style="font-weight:700;font-size:.95rem;margin:0 0 8px;color:#334155">📊 D+N 순위 추적 로그</div>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><button class="btn-sm btn-copy" onclick="rankMonthNav(-1)">‹ 이전달</button><button class="btn-sm btn-copy" onclick="rankMonthNav(0)">오늘</button><button class="btn-sm btn-copy" onclick="rankMonthNav(1)">다음달 ›</button><span id="rank-month-label" style="font-weight:700;margin-left:8px;font-size:.9rem;color:#334155"></span></div>
       <div class="filter-bar" id="rank-filters">
         <button class="filter-btn active" onclick="filterRank('all',this)">전체</button>
         <button class="filter-btn" onclick="filterRank('✅1~5위',this)">✅ 1~5위</button>
@@ -260,6 +261,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <div class="card"><div class="card-body" style="padding:0;overflow-x:auto">
         <table class="tbl"><thead><tr><th>발행일</th><th>채널</th><th>키워드</th><th>D+7</th><th>D+14</th><th>D+30</th><th>D+90</th><th>판정</th><th>링크</th></tr></thead>
         <tbody id="rank-body"><tr><td colspan="9" class="loading">로딩 중...</td></tr></tbody></table>
+        <div id="rank-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;padding:12px"></div>
       </div></div>
     </div>
     <div class="tab-panel" id="t6">
@@ -268,6 +270,21 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn active" onclick="filterTone('all',this)">전체</button>
         <button class="filter-btn" onclick="filterTone('naver',this)">네이버만</button>
         <button class="filter-btn" onclick="filterTone('tistory',this)">티스토리만</button>
+      </div>
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-hdr"><h3>🧭 콘텐츠 엔진 · 스킬 맵</h3></div>
+        <div class="card-body" style="font-size:.84rem;line-height:1.7">
+          <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:#0c4a6e;font-size:.78rem">ℹ️ 규칙의 <b>원본(단일 소스)</b>은 아래에 있습니다. 톤 카드 = 작성 톤 / 알고리즘 표 = 상위노출 기준(DB 실시간) / 스킬 = 실제 생성 엔진. 톤 가이드에 복붙하지 않아 스킬·DB 수정 시 자동 정합 유지됩니다.</div>
+          <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>영역</th><th>엔진 / 위치</th><th>역할</th></tr></thead><tbody>
+            <tr><td><b>상위노출 알고리즘</b></td><td>mk_blog_algorithm (DB · 아래 표)</td><td>네이버·티스토리·이미지 상위노출 기준 = 작성 정답</td></tr>
+            <tr><td><b>블로그 초안 생성</b></td><td>realplan-blog 스킬</td><td>STAGE 0~7 · 자가검증 · 불변 20개 → mk_blog_drafts</td></tr>
+            <tr><td><b>이미지 프롬프트</b></td><td>realplan-blog 스킬(IMAGES) → mk_blog_drafts.이미지프롬프트</td><td>8장 · 썸네일 CTR 표준 · 본문 H2 매칭</td></tr>
+            <tr><td><b>SNS 콘텐츠</b></td><td>realplan-sns 스킬</td><td>블로그 1슬롯 → 유튜브·틱톡·인스타·페북·쓰레드</td></tr>
+            <tr><td><b>월 콘텐츠 스케줄</b></td><td>realplan-schedule 스킬</td><td>시즌·B2B 리드타임 슬롯 자동 생성</td></tr>
+          </tbody></table></div>
+          <div style="font-weight:700;margin:14px 0 6px;color:#334155">📡 상위노출 알고리즘 (mk_blog_algorithm · 실시간)</div>
+          <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>플랫폼</th><th>버전</th><th>마지막 업데이트</th><th>핵심 변경사항</th></tr></thead><tbody id="algo-body"><tr><td colspan="4" class="loading">로딩 중...</td></tr></tbody></table></div>
+        </div>
       </div>
       <div id="tone-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px">
 
@@ -438,7 +455,7 @@ async function doLogin(){
   if(error){e.textContent='Google 로그인 실패: '+error.message;btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google로 로그인';}
 }
 async function doLogout(){try{localStorage.removeItem(SB_AUTH_KEY);localStorage.removeItem(SB_VERIFIER_KEY);}catch(e){}await sb.auth.signOut().catch(()=>{});showLogin();}
-function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();}if(id==='t7')initCalendar();}
+function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();}if(id==='t6')loadAlgo();if(id==='t7')initCalendar();}
 
 function renderStatsPage(){var ydData=window._ydView||[];var _sp=Math.max(1,Math.ceil(ydData.length/STAT_PER));if(_statPage>_sp)_statPage=1;var pe=document.getElementById('stats-pager');if(pe)pe.innerHTML=pagerHTML(_statPage,_sp,ydData.length,'gotoStatPage');document.getElementById('stats-body').innerHTML=ydData.length?ydData.slice((_statPage-1)*STAT_PER,_statPage*STAT_PER).map(r=>`<tr><td><b>${r.채널||'-'}</b></td><td style="font-size:.75rem;color:#64748b">${r.데이터_소스||'-'}</td><td>${(r.노출_수||0).toLocaleString()}</td><td>${(r.클릭_수||0).toLocaleString()}</td><td>${r.ctr_pct!=null?Number(r.ctr_pct).toFixed(2)+'%':'-'}</td><td>${r.평균_순위!=null?Number(r.평균_순위).toFixed(1)+'위':'-'}</td><td style="color:#94a3b8;font-size:.78rem">${r.수집_시각?r.수집_시각.slice(0,10):'-'}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">데이터 없음</td></tr>';}
 function gotoStatPage(n){_statPage=n;renderStatsPage();}
@@ -480,7 +497,7 @@ async function loadDrafts(){
   const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형').order('발행일',{ascending:false,nullsFirst:false}).order('생성일',{ascending:false}).limit(100);
   if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];renderDrafts(allDrafts);
 }
-let _draftPage=1,_winPage=1,_slotMonth=0,_statPage=1,_nvPage=1; const DRAFT_PER=10,WIN_PER=10,STAT_PER=20,NV_PER=20;
+let _draftPage=1,_winPage=1,_slotMonth=0,_statPage=1,_nvPage=1,_rankPage=1,_rankMonth=0,_rankJ='all'; const DRAFT_PER=10,WIN_PER=10,STAT_PER=20,NV_PER=20,RANK_PER=15;
 function pagerHTML(pg,pages,total,fn){ if(pages<=1)return '<span style="font-size:.78rem;color:#94a3b8">총 '+total+'건</span>'; let h=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.max(1,pg-1)})">‹</button>`; for(let i=1;i<=pages;i++){if(i===1||i===pages||Math.abs(i-pg)<=2){h+=`<button class="btn-sm btn-copy" style="${i===pg?'background:#2563eb;color:#fff;border-color:#2563eb':''}" onclick="${fn}(${i})">${i}</button>`;}else if(Math.abs(i-pg)===3){h+='<span style="padding:4px;color:#94a3b8">…</span>';}} h+=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.min(pages,pg+1)})">›</button><span style="align-self:center;font-size:.78rem;color:#94a3b8;margin-left:10px">${pg}/${pages} · 총 ${total}건</span>`; return h; }
 function gotoDraftPage(n){_draftPage=n;renderDrafts(window._draftView||allDrafts);}
 function gotoWinPage(n){_winPage=n;renderWinning(window._winView||allWinning);}
@@ -538,7 +555,7 @@ function filterSlots(s,b){document.querySelectorAll('#slot-filters .filter-btn')
 async function loadGiants(){
   document.getElementById('giants-body').innerHTML='<tr><td colspan="6" class="loading">로딩 중...</td></tr>';
   const since=new Date(Date.now()-14*86400000).toISOString();
-  const{data,error}=await sb.from('mk_metrics').select('채널,데이터_소스,노출_수,클릭_수,평균_순위').gte('수집_시각',since);
+  const{data,error}=await sb.from('mk_metrics').select('채널,데이터_소스,노출_수,클릭_수,평균_순위').in('데이터_소스',['gsc','naver_search']).gte('수집_시각',since).limit(20000);
   if(error){showToast('잠자는 거인 로드 실패');return;}
   // 채널+소스 기준 집계
   const byCS={};(data||[]).forEach(r=>{const k=r.채널+'||'+(r.데이터_소스||'gsc');if(!byCS[k])byCS[k]={ch:r.채널,src:r.데이터_소스||'gsc',n:0,c:0,sr:0,sn:0};byCS[k].n+=(r.노출_수||0);byCS[k].c+=(r.클릭_수||0);if(r.평균_순위){byCS[k].sr+=Number(r.평균_순위);byCS[k].sn++;}});
@@ -552,16 +569,16 @@ async function loadGiants(){
 async function loadRankEntries(){
   document.getElementById('rank-body').innerHTML='<tr><td colspan="9" class="loading">로딩 중...</td></tr>';
   const{data,error}=await sb.from('mk_blog_publish_log').select('채널,핵심키워드,발행일,외부_url,진입판정,d_plus_7_rank,d_plus_14_rank,d_plus_30_rank,d_plus_90_rank').order('발행일',{ascending:false}).limit(100);
-  if(error){showToast('진입 현황 로드 실패');return;}allRankEntries=data||[];renderRankEntries(allRankEntries);
+  if(error){showToast('진입 현황 로드 실패');return;}allRankEntries=data||[];_rankMonth=0;_rankJ='all';_rankPage=1;applyRankView();
 }
 function rb(v){if(v==null)return '<span style="color:#94a3b8">-</span>';const c=v<=5?'#10b981':v<=15?'#f59e0b':v<=30?'#f97316':'#ef4444';return `<span style="font-weight:700;color:${c}">${v}위</span>`;}
-function renderRankEntries(list){
-  const tbody=document.getElementById('rank-body');
-  if(!list.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:#94a3b8">데이터 없음</td></tr>';return;}
-  const jmap={'✅1~5위':'#10b981','⚠️6~10위':'#f59e0b','🔶11~30위':'#f97316','❌미진입':'#ef4444','측정중':'#94a3b8'};
-  tbody.innerHTML=list.map(r=>`<tr><td style="font-size:.78rem">${r.발행일||'-'}</td><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:.75rem">${r.채널||'-'}</span></td><td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${r.핵심키워드||'-'}</td><td>${rb(r.d_plus_7_rank)}</td><td>${rb(r.d_plus_14_rank)}</td><td>${rb(r.d_plus_30_rank)}</td><td>${rb(r.d_plus_90_rank)}</td><td><span style="font-weight:700;color:${jmap[r.진입판정]||'#94a3b8'}">${r.진입판정||'-'}</span></td><td>${r.외부_url?`<a href="${r.외부_url}" target="_blank" style="color:var(--primary);font-size:.78rem">🔗</a>`:'-'}</td></tr>`).join('');
-}
-function filterRank(j,b){document.querySelectorAll('#rank-filters .filter-btn').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');renderRankEntries(j==='all'?allRankEntries:allRankEntries.filter(r=>r.진입판정===j));}
+function rankMonthYM(){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+_rankMonth);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function rankMonthNav(d){if(d===0)_rankMonth=0;else _rankMonth+=d;_rankPage=1;applyRankView();}
+function applyRankView(){const ym=rankMonthYM();let l=(allRankEntries||[]).filter(r=>(r.발행일||'').slice(0,7)===ym);if(_rankJ!=='all')l=l.filter(r=>r.진입판정===_rankJ);const lb=document.getElementById('rank-month-label');if(lb)lb.textContent=ym+' · '+l.length+'건';renderRankPage(l);}
+function renderRankPage(list){const tbody=document.getElementById('rank-body');const jmap={'✅1~5위':'#10b981','⚠️6~10위':'#f59e0b','🔶11~30위':'#f97316','❌미진입':'#ef4444','측정중':'#94a3b8'};const sp=Math.max(1,Math.ceil(list.length/RANK_PER));if(_rankPage>sp)_rankPage=1;const pe=document.getElementById('rank-pager');if(pe)pe.innerHTML=pagerHTML(_rankPage,sp,list.length,'gotoRankPage');if(!list.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:#94a3b8">데이터 없음</td></tr>';return;}tbody.innerHTML=list.slice((_rankPage-1)*RANK_PER,_rankPage*RANK_PER).map(r=>`<tr><td style="font-size:.78rem">${r.발행일||'-'}</td><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:.75rem">${r.채널||'-'}</span></td><td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${r.핵심키워드||'-'}</td><td>${rb(r.d_plus_7_rank)}</td><td>${rb(r.d_plus_14_rank)}</td><td>${rb(r.d_plus_30_rank)}</td><td>${rb(r.d_plus_90_rank)}</td><td><span style="font-weight:700;color:${jmap[r.진입판정]||'#94a3b8'}">${r.진입판정||'-'}</span></td><td>${r.외부_url?`<a href="${r.외부_url}" target="_blank" style="color:var(--primary);font-size:.78rem">🔗</a>`:'-'}</td></tr>`).join('');}
+function gotoRankPage(n){_rankPage=n;applyRankView();}
+function filterRank(j,b){document.querySelectorAll('#rank-filters .filter-btn').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');_rankJ=j;_rankPage=1;applyRankView();}
+async function loadAlgo(){const tb=document.getElementById('algo-body');if(!tb)return;const{data,error}=await sb.from('mk_blog_algorithm').select('플랫폼,알고리즘_버전,마지막_업데이트일,핵심변경사항,활성').eq('활성',true).order('플랫폼');if(error){tb.innerHTML='<tr><td colspan="4" style="color:#ef4444">로드 실패</td></tr>';return;}tb.innerHTML=(data||[]).map(r=>{var k=r.핵심변경사항;if(k&&typeof k==='object')k=Array.isArray(k)?k.join(' / '):JSON.stringify(k);return '<tr><td style="font-weight:700">'+(r.플랫폼||'-')+'</td><td><span style="background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:9px;font-size:.75rem">'+(r.알고리즘_버전||'-')+'</span></td><td style="color:#94a3b8;font-size:.78rem">'+(r.마지막_업데이트일||'-')+'</td><td style="font-size:.8rem;line-height:1.6">'+(k||'-')+'</td></tr>';}).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">없음</td></tr>';}
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 

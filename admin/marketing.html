@@ -7,6 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{--primary:#2563eb;--sidebar:200px;--hdr:56px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -125,6 +126,29 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div class="kpi-card"><div class="kpi-label">👆 티스토리 총클릭</div><div class="kpi-value" id="kpi-클릭">--</div><div class="kpi-sub">최근 7일</div></div>
         <div class="kpi-card"><div class="kpi-label">🎯 평균 CTR</div><div class="kpi-value" id="kpi-ctr">--</div><div class="kpi-sub">클릭/노출</div></div>
         <div class="kpi-card"><div class="kpi-label">🏆 네이버 평균순위</div><div class="kpi-value" id="kpi-순위">--</div><div class="kpi-sub">블A·B·C 평균</div></div>
+      </div>
+      <div class="card"><div class="card-hdr"><h3>📥 네이버 통계 Excel 업로드</h3></div>
+        <div class="card-body">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+            <select id="nv-channel" style="padding:7px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:.85rem">
+              <option value="블A네이버">블A네이버</option><option value="블B네이버">블B네이버</option><option value="블C네이버">블C네이버</option>
+            </select>
+            <input type="file" id="nv-file" accept=".xlsx,.xls" multiple style="font-size:.8rem">
+            <button onclick="nvPreview()" class="filter-btn active" style="border-radius:8px">미리보기</button>
+            <button onclick="nvCommit()" class="btn-sm btn-copy" id="nv-commit" disabled style="opacity:.5">적재</button>
+          </div>
+          <div style="font-size:.74rem;color:#64748b;margin-bottom:8px">네이버 블로그 통계 &rarr; <b>조회수 순위 &middot; 유입분석 &middot; 조회수</b> 다운로드 파일(여러 개 가능). 종류 자동 판별 &middot; 동일 채널&middot;월 재업로드 시 전체 갱신.</div>
+          <div id="nv-preview"></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-hdr"><h3>📊 네이버 게시물별 조회수 (naver_manual)</h3></div>
+        <div class="card-body" style="padding:0;overflow-x:auto">
+          <table class="tbl"><thead><tr><th>채널</th><th>측정월</th><th>제목</th><th>조회수</th><th>작성일</th></tr></thead>
+          <tbody id="nv-views-body"><tr><td colspan="5" class="loading">—</td></tr></tbody></table>
+        </div>
+      </div>
+      <div class="card"><div class="card-hdr"><h3>🔎 네이버 유입 검색어 (naver_manual)</h3></div>
+        <div class="card-body" id="nv-kw-body" style="font-size:.82rem;color:#64748b">—</div>
       </div>
       <div class="card"><div class="card-hdr"><h3>📈 채널별 노출 추세 (7일)</h3></div>
         <div class="card-body" style="height:260px;position:relative"><canvas id="trendChart"></canvas><div id="chart-loading" class="loading">로딩 중...</div></div>
@@ -395,7 +419,7 @@ async function initAuth(){
   const s=readLocalAuthSession();if(s){showApp(s.user);return;}showLogin();
 }
 function showLogin(){document.getElementById('login-screen').style.display='flex';document.getElementById('app').style.display='none';}
-function showApp(user){document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';document.getElementById('hdr-email').textContent=user?(user.email||''):'';loadStats();}
+function showApp(user){document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';document.getElementById('hdr-email').textContent=user?(user.email||''):'';loadStats();loadNaverManual();}
 async function doLogin(){
   const btn=document.getElementById('login-btn'),e=document.getElementById('login-err');
   e.textContent='';btn.disabled=true;btn.textContent='연결 중...';
@@ -403,7 +427,7 @@ async function doLogin(){
   if(error){e.textContent='Google 로그인 실패: '+error.message;btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google로 로그인';}
 }
 async function doLogout(){try{localStorage.removeItem(SB_AUTH_KEY);localStorage.removeItem(SB_VERIFIER_KEY);}catch(e){}await sb.auth.signOut().catch(()=>{});showLogin();}
-function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1')loadStats();if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();}if(id==='t7')initCalendar();}
+function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();}if(id==='t7')initCalendar();}
 
 function renderStatsPage(){var ydData=window._ydView||[];var _sp=Math.max(1,Math.ceil(ydData.length/STAT_PER));if(_statPage>_sp)_statPage=1;var pe=document.getElementById('stats-pager');if(pe)pe.innerHTML=pagerHTML(_statPage,_sp,ydData.length,'gotoStatPage');document.getElementById('stats-body').innerHTML=ydData.length?ydData.slice((_statPage-1)*STAT_PER,_statPage*STAT_PER).map(r=>`<tr><td><b>${r.채널||'-'}</b></td><td style="font-size:.75rem;color:#64748b">${r.데이터_소스||'-'}</td><td>${(r.노출_수||0).toLocaleString()}</td><td>${(r.클릭_수||0).toLocaleString()}</td><td>${r.ctr_pct!=null?Number(r.ctr_pct).toFixed(2)+'%':'-'}</td><td>${r.평균_순위!=null?Number(r.평균_순위).toFixed(1)+'위':'-'}</td><td style="color:#94a3b8;font-size:.78rem">${r.수집_시각?r.수집_시각.slice(0,10):'-'}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">데이터 없음</td></tr>';}
 function gotoStatPage(n){_statPage=n;renderStatsPage();}
@@ -785,6 +809,49 @@ function copyDraftPart(k,btn){
   else fallbackCopy(t,done);
 }
 function fallbackCopy(t,cb){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb&&cb();}catch(e){showToast('복사 실패');}document.body.removeChild(ta);}
+
+// ===== 네이버 Excel 수동 업로드 (큐2 / naver_manual) =====
+let nvParsed=[];
+function nvPad(n){return String(n).padStart(2,'0');}
+function nvMonth(s){if(!s)return null;s=String(s);const m=s.match(/(\d{4})[.\-\s]+(\d{1,2})/);return m?m[1]+'-'+nvPad(m[2])+'-01':null;}
+function nvDate(v){if(v==null||v==='')return null;if(v instanceof Date)return v.getFullYear()+'-'+nvPad(v.getMonth()+1)+'-'+nvPad(v.getDate());const s=String(v);const m=s.match(/(\d{4})[.\-](\d{1,2})[.\-](\d{1,2})/);return m?m[1]+'-'+nvPad(m[2])+'-'+nvPad(m[3]):null;}
+function nvMeta(rows,l){for(const r of rows){if(r&&String(r[0]).trim()===l)return r[1];}return null;}
+function nvHdr(rows,c){for(let i=0;i<rows.length;i++){if(rows[i]&&String(rows[i][0]).trim()===c)return i;}return -1;}
+function nvParse(rows){
+  const dn=(nvMeta(rows,'데이터명')||'').toString().trim();const month=nvMonth(nvMeta(rows,'데이터 기간'));let t=null,out=[];
+  if(dn==='조회수 순위'){t='조회수순위';const h=nvHdr(rows,'순위');for(let i=h+1;i<rows.length;i++){const r=rows[i];if(!r||r[1]==null||String(r[1]).trim()==='')continue;out.push({측정_일자:month,제목:String(r[1]).trim(),조회_수:r[2]!=null?String(r[2]).replace(/[, ]/g,''):null,발행_시각:nvDate(r[3])});}}
+  else if(dn==='유입분석'){t='유입분석';const h=nvHdr(rows,'유입경로');const k=[];for(let i=h+1;i<rows.length;i++){const r=rows[i];if(!r)continue;const kw=r[2]!=null?String(r[2]).trim():'';if(!kw||/^https?:\/\//i.test(kw))continue;k.push(kw);}if(k.length)out.push({측정_일자:month,유입_검색어:k.slice(0,30)});}
+  else if(dn==='조회수'){t='조회수';const h=nvHdr(rows,'기간');for(let i=h+1;i<rows.length;i++){const r=rows[i];if(!r||r[0]==null)continue;const mm=nvMonth(r[0]);if(!mm)continue;out.push({측정_일자:mm,제목:null,조회_수:r[2]!=null?String(r[2]).replace(/[, ]/g,''):null});}}
+  return {종류:t,dataName:dn,month,rows:out};
+}
+function nvReadFile(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=e=>{try{const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});const ws=wb.Sheets[wb.SheetNames[0]];const rows=XLSX.utils.sheet_to_json(ws,{header:1,blankrows:true,defval:null});res({file:file.name,...nvParse(rows)});}catch(err){rej(err);}};fr.onerror=rej;fr.readAsArrayBuffer(file);});}
+async function nvPreview(){
+  const fi=document.getElementById('nv-file');if(!fi.files.length){showToast('파일을 선택하세요');return;}
+  nvParsed=[];const box=document.getElementById('nv-preview');box.innerHTML='<div class="loading">파싱 중...</div>';
+  try{for(const f of fi.files){const p=await nvReadFile(f);nvParsed.push(p);}}catch(e){box.innerHTML='';showToast('파싱 실패: '+e.message);return;}
+  let html='<table class="tbl"><thead><tr><th>파일</th><th>종류</th><th>월</th><th>행수</th></tr></thead><tbody>';let okCnt=0;
+  for(const p of nvParsed){const ok=p.종류&&p.rows.length;if(ok)okCnt++;html+='<tr><td style="font-size:.75rem">'+p.file+'</td><td>'+(p.종류||'<span style="color:#ef4444">판별불가</span>')+'</td><td>'+(p.month||'-')+'</td><td>'+p.rows.length+'</td></tr>';}
+  html+='</tbody></table>';box.innerHTML=html;
+  const btn=document.getElementById('nv-commit');btn.disabled=okCnt===0;btn.style.opacity=okCnt?'1':'.5';
+}
+async function nvCommit(){
+  const ch=document.getElementById('nv-channel').value;let tot=0,fail=0;
+  for(const p of nvParsed){if(!p.종류||!p.rows.length)continue;
+    const{data,error}=await sb.rpc('rpc_insert_naver_metric',{p_채널:ch,p_종류:p.종류,p_rows:p.rows});
+    if(error){fail++;console.error(p.file,error);}else{tot+=data||0;}}
+  showToast(fail?('일부 실패('+fail+') · '+tot+'건 적재'):('✅ '+tot+'건 적재 완료'));
+  const b=document.getElementById('nv-commit');b.disabled=true;b.style.opacity='.5';
+  document.getElementById('nv-preview').innerHTML='';document.getElementById('nv-file').value='';nvParsed=[];loadNaverManual();
+}
+async function loadNaverManual(){
+  const{data,error}=await sb.from('mk_metrics').select('채널,측정_일자,제목,조회_수,유입_검색어,발행_시각').eq('데이터_소스','naver_manual').order('측정_일자',{ascending:false}).limit(300);
+  const vb=document.getElementById('nv-views-body'),kb=document.getElementById('nv-kw-body');if(!vb)return;
+  if(error){vb.innerHTML='<tr><td colspan="5" style="color:#ef4444">로드 실패</td></tr>';return;}
+  const views=(data||[]).filter(r=>r.제목).sort((a,b)=>(b.조회_수||0)-(a.조회_수||0));
+  vb.innerHTML=views.length?views.slice(0,50).map(r=>'<tr><td><b>'+r.채널+'</b></td><td>'+(r.측정_일자||'').slice(0,7)+'</td><td style="max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+r.제목+'</td><td>'+(r.조회_수||0).toLocaleString()+'</td><td style="color:#94a3b8;font-size:.78rem">'+(r.발행_시각?r.발행_시각.slice(0,10):'-')+'</td></tr>').join(''):'<tr><td colspan="5" style="text-align:center;padding:18px;color:#94a3b8">업로드된 네이버 통계 없음</td></tr>';
+  const kws=(data||[]).filter(r=>r.유입_검색어&&r.유입_검색어.length);
+  kb.innerHTML=kws.length?kws.map(r=>'<div style="margin-bottom:10px"><div style="font-weight:700;font-size:.8rem;margin-bottom:4px">'+r.채널+' · '+(r.측정_일자||'').slice(0,7)+'</div><div style="display:flex;flex-wrap:wrap;gap:5px">'+r.유입_검색어.map(k=>'<span style="background:#eef2ff;color:#3730a3;padding:2px 8px;border-radius:9px;font-size:.74rem">'+k+'</span>').join('')+'</div></div>').join(''):'업로드된 유입 검색어 없음';
+}
 
 initAuth();
 </script>

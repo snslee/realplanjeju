@@ -105,7 +105,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     <div class="nav-item" onclick="switchTab('t2',this)"><span>📝</span>초안 보관소</div>
     <div class="nav-item" onclick="switchTab('t3',this)"><span>🎯</span>콘텐츠 슬롯</div>
     <div class="nav-section">설정</div>
-    <div class="nav-item" onclick="switchTab('t6',this)"><span>🎨</span>톤 가이드</div>
+    <div class="nav-item" onclick="switchTab('t6',this)"><span>🎨</span>작성 가이드</div>
     <div class="nav-item" onclick="switchTab('t7',this)"><span>📅</span>스케줄</div>
   </nav>
   <div class="mobile-nav">
@@ -265,12 +265,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div></div>
     </div>
     <div class="tab-panel" id="t6">
-      <div style="margin-bottom:20px"><h2 style="font-size:1.2rem;font-weight:700">🎨 톤 가이드</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">6채널 × 네이버/티스토리 작성 기준 — 알고리즘 반영</p></div>
-      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-        <button class="filter-btn active" onclick="filterTone('all',this)">전체</button>
-        <button class="filter-btn" onclick="filterTone('naver',this)">네이버만</button>
-        <button class="filter-btn" onclick="filterTone('tistory',this)">티스토리만</button>
-      </div>
+      <div style="margin-bottom:16px"><h2 style="font-size:1.2rem;font-weight:700">🎨 작성 가이드</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">상위노출 알고리즘 · 엔진/스킬 맵 · 6채널 톤 · 공통 SEO — 작성 전 기준</p></div>
       <div class="card" style="margin-bottom:18px">
         <div class="card-hdr"><h3>🧭 콘텐츠 엔진 · 스킬 맵</h3></div>
         <div class="card-body" style="font-size:.84rem;line-height:1.7">
@@ -285,6 +280,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
           <div style="font-weight:700;margin:14px 0 6px;color:#334155">📡 상위노출 알고리즘 (mk_blog_algorithm · 실시간)</div>
           <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>플랫폼</th><th>버전</th><th>마지막 업데이트</th><th>핵심 변경사항</th></tr></thead><tbody id="algo-body"><tr><td colspan="4" class="loading">로딩 중...</td></tr></tbody></table></div>
         </div>
+      </div>
+      <div style="font-weight:800;font-size:1.05rem;margin:6px 0 10px;color:#334155">🎨 채널별 톤 가이드 (6채널 × 네이버/티스토리)</div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="filter-btn active" onclick="filterTone('all',this)">전체</button>
+        <button class="filter-btn" onclick="filterTone('naver',this)">네이버만</button>
+        <button class="filter-btn" onclick="filterTone('tistory',this)">티스토리만</button>
       </div>
       <div id="tone-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px">
 
@@ -459,11 +460,11 @@ function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.c
 
 function renderStatsPage(){var ydData=window._ydView||[];var _sp=Math.max(1,Math.ceil(ydData.length/STAT_PER));if(_statPage>_sp)_statPage=1;var pe=document.getElementById('stats-pager');if(pe)pe.innerHTML=pagerHTML(_statPage,_sp,ydData.length,'gotoStatPage');document.getElementById('stats-body').innerHTML=ydData.length?ydData.slice((_statPage-1)*STAT_PER,_statPage*STAT_PER).map(r=>`<tr><td><b>${r.채널||'-'}</b></td><td style="font-size:.75rem;color:#64748b">${r.데이터_소스||'-'}</td><td>${(r.노출_수||0).toLocaleString()}</td><td>${(r.클릭_수||0).toLocaleString()}</td><td>${r.ctr_pct!=null?Number(r.ctr_pct).toFixed(2)+'%':'-'}</td><td>${r.평균_순위!=null?Number(r.평균_순위).toFixed(1)+'위':'-'}</td><td style="color:#94a3b8;font-size:.78rem">${r.수집_시각?r.수집_시각.slice(0,10):'-'}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">데이터 없음</td></tr>';}
 function gotoStatPage(n){_statPage=n;renderStatsPage();}
+async function fetchAllRows(sel,filt){let all=[],f=0;const sz=1000;for(;;){let q=sb.from('mk_metrics').select(sel);q=filt(q).range(f,f+sz-1);const{data,error}=await q;if(error)throw error;all=all.concat(data||[]);if(!data||data.length<sz)break;f+=sz;if(f>60000)break;}return all;}
 async function loadStats(){
   document.getElementById('chart-loading').style.display='block';
   const since=new Date(Date.now()-7*86400000).toISOString();
-  const{data,error}=await sb.from('mk_metrics').select('채널,데이터_소스,노출_수,클릭_수,ctr_pct,평균_순위,수집_시각').gte('수집_시각',since).order('수집_시각',{ascending:false}).limit(20000);
-  if(error){showToast('통계 로드 실패');return;}
+  let data;try{data=await fetchAllRows('채널,데이터_소스,노출_수,클릭_수,ctr_pct,평균_순위,수집_시각',q=>q.gte('수집_시각',since).order('수집_시각',{ascending:false}));}catch(e){showToast('통계 로드 실패');return;}
   const gsc=data.filter(r=>r.데이터_소스==='gsc'),nav=data.filter(r=>r.데이터_소스==='naver_search');
   const imp=gsc.reduce((s,r)=>s+(r.노출_수||0),0),clk=gsc.reduce((s,r)=>s+(r.클릭_수||0),0);
   const ranks=nav.filter(r=>r.평균_순위).map(r=>Number(r.평균_순위));
@@ -555,8 +556,7 @@ function filterSlots(s,b){document.querySelectorAll('#slot-filters .filter-btn')
 async function loadGiants(){
   document.getElementById('giants-body').innerHTML='<tr><td colspan="6" class="loading">로딩 중...</td></tr>';
   const since=new Date(Date.now()-14*86400000).toISOString();
-  const{data,error}=await sb.from('mk_metrics').select('채널,데이터_소스,노출_수,클릭_수,평균_순위').in('데이터_소스',['gsc','naver_search']).gte('수집_시각',since).limit(20000);
-  if(error){showToast('잠자는 거인 로드 실패');return;}
+  let data;try{data=await fetchAllRows('채널,데이터_소스,노출_수,클릭_수,평균_순위',q=>q.in('데이터_소스',['gsc','naver_search']).gte('수집_시각',since));}catch(e){showToast('잠자는 거인 로드 실패');return;}
   // 채널+소스 기준 집계
   const byCS={};(data||[]).forEach(r=>{const k=r.채널+'||'+(r.데이터_소스||'gsc');if(!byCS[k])byCS[k]={ch:r.채널,src:r.데이터_소스||'gsc',n:0,c:0,sr:0,sn:0};byCS[k].n+=(r.노출_수||0);byCS[k].c+=(r.클릭_수||0);if(r.평균_순위){byCS[k].sr+=Number(r.평균_순위);byCS[k].sn++;}});
   const rows=Object.values(byCS).map(v=>({ch:v.ch,src:v.src,n:v.n,c:v.c,ctr:v.n>0?(v.c/v.n*100):0,r:v.sn>0?v.sr/v.sn:null})).sort((a,b)=>b.n-a.n);

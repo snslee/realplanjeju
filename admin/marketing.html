@@ -495,7 +495,7 @@ async function loadStats(){
 
 async function loadDrafts(){
   document.getElementById('drafts-board').innerHTML='<div class="loading" style="padding:30px;text-align:center">로딩 중...</div>';
-  const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형').order('채널',{ascending:true}).order('발행일',{ascending:false,nullsFirst:false}).limit(100);
+  const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형').order('발행일',{ascending:false,nullsFirst:false}).order('채널',{ascending:true}).limit(100);
   if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];renderDrafts(allDrafts);
 }
 let _draftPage=1,_winPage=1,_slotMonth=0,_statPage=1,_nvPage=1,_rankPage=1,_rankMonth=0,_rankJ='all'; const DRAFT_PER=10,WIN_PER=10,STAT_PER=20,NV_PER=20,RANK_PER=15;

@@ -757,8 +757,18 @@ async function viewWinning(id){
 // 블로그형 본문 렌더 + 리더
 function fmtBody(t){
   if(!t) return '<div style="color:#94a3b8">(본문 없음)</div>';
+  function tbl(p){/*RPTBL*/
+    var ls=p.split(/\n/).filter(function(l){return /^\s*\|.*\|\s*$/.test(l);});
+    if(ls.length<2||!/^\s*\|[\s\-|:]+\|\s*$/.test(ls[1])) return null;
+    var cells=function(l){return l.trim().replace(/^\||\|$/g,'').split('|').map(function(x){return x.trim().replace(/</g,'&lt;');});};
+    var head=cells(ls[0]), body=ls.slice(2).map(cells);
+    var th='<tr>'+head.map(function(h){return '<th style="border:1px solid #cbd5e1;padding:7px 10px;background:#f1f5f9;font-weight:700;text-align:left">'+h+'</th>';}).join('')+'</tr>';
+    var tb=body.map(function(r){return '<tr>'+r.map(function(d){return '<td style="border:1px solid #cbd5e1;padding:7px 10px;vertical-align:top">'+d+'</td>';}).join('')+'</tr>';}).join('');
+    return '<table style="border-collapse:collapse;margin:12px 0;width:100%;font-size:.9rem">'+th+tb+'</table>';
+  }
   return t.split(/\n{2,}/).map(function(p){
     p=p.trim(); if(!p) return '';
+    if(/^\s*\|.*\|\s*$/.test(p.split(/\n/)[0])){var T=tbl(p);if(T)return T;}
     var esc=p.replace(/</g,'&lt;');
     if(/^#{1,3}\s/.test(p)) return '<h3 style="font-size:1.05rem;font-weight:700;margin:18px 0 8px;color:#0f172a">'+esc.replace(/^#{1,3}\s/,'')+'</h3>';
     return '<p style="margin:0 0 14px;line-height:1.9">'+esc.replace(/\n/g,'<br>')+'</p>';
@@ -837,6 +847,12 @@ function copyDraftPart(k,btn){
   const t=(window.__dc||{})[k]||'';
   if(!t){showToast('복사할 내용이 없습니다');return;}
   const done=()=>{const o=btn?btn.textContent:'';if(btn){btn.textContent='✅ 복사됨!';setTimeout(()=>btn.textContent=o,1500);}showToast('복사 완료 ('+t.length+'자)');};
+  if((k==='nav'||k==='tis')&&window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
+    const html='<div>'+fmtBody(t)+'</div>';
+    const item=new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([t],{type:'text/plain'})});
+    navigator.clipboard.write([item]).then(done).catch(()=>{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));else fallbackCopy(t,done);});
+    return;
+  }
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));}
   else fallbackCopy(t,done);
 }

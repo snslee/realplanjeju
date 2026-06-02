@@ -495,7 +495,7 @@ async function loadStats(){
 
 async function loadDrafts(){
   document.getElementById('drafts-board').innerHTML='<div class="loading" style="padding:30px;text-align:center">로딩 중...</div>';
-  const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형').order('발행일',{ascending:false,nullsFirst:false}).order('생성일',{ascending:false}).limit(100);
+  const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형').order('채널',{ascending:true}).order('발행일',{ascending:false,nullsFirst:false}).limit(100);
   if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];renderDrafts(allDrafts);
 }
 let _draftPage=1,_winPage=1,_slotMonth=0,_statPage=1,_nvPage=1,_rankPage=1,_rankMonth=0,_rankJ='all'; const DRAFT_PER=10,WIN_PER=10,STAT_PER=20,NV_PER=20,RANK_PER=15;
@@ -517,7 +517,7 @@ function renderDrafts(list){
       <span style="font-size:.7rem;background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px;flex-shrink:0">${r.채널||'-'}</span>
       <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:.9rem;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.제목||'(제목 없음)'}</div><div style="font-size:.68rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🔑 ${r.핵심키워드||'-'}${r.글자수_네이버?(' · '+r.글자수_네이버+'자'):''}${r.슬롯유형?(' · '+r.슬롯유형):''}${r.생성일?(' · 업로드 '+r.생성일.slice(5,10)):''}</div></div>
       <span style="font-size:.68rem;background:${sbg[r.상태]||'#f1f5f9'};color:${stx[r.상태]||'#64748b'};padding:2px 7px;border-radius:9px;flex-shrink:0">${sl[r.상태]||r.상태||'초안'}</span>
-      <span style="font-size:.7rem;color:#475569;flex-shrink:0;width:60px;text-align:right" title="발행일">📅${r.발행일?r.발행일.slice(5):(r.생성일?r.생성일.slice(5,10):'-')}</span>
+      <span style="font-size:.7rem;color:#475569;flex-shrink:0;width:60px;text-align:right" title="발행일">📅${r.발행일?r.발행일.slice(5,10):(r.생성일?r.생성일.slice(5,10):'-')}</span>
       <span style="font-size:.8rem;font-weight:700;color:${sc==null?'#cbd5e1':sc>=9?'#10b981':'#f59e0b'};flex-shrink:0;width:26px;text-align:right">${sc!=null?sc:'-'}</span>
     </div>`;}).join('');
 }

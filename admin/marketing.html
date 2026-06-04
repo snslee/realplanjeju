@@ -133,7 +133,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div class="card" style="margin:0"><div class="card-hdr"><h3>📈 티스토리 채널별 노출 추세 (최근 14일) · 노출수↑ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">로그축</span></h3></div>
           <div class="card-body" style="height:300px;position:relative"><canvas id="trendChart"></canvas><div id="chart-loading" class="loading">로딩 중...</div></div>
         </div>
-        <div class="card" style="margin:0"><div class="card-hdr"><h3>🏆 네이버 채널별 평균순위 추세 (7일) · 순위↓ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">등수</span></h3></div>
+        <div class="card" style="margin:0"><div class="card-hdr"><h3>🏆 네이버 채널별 평균순위 추세 (최근 14일) · 순위↓ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">등수</span></h3></div>
           <div class="card-body" style="height:300px;position:relative"><canvas id="naverRankChart"></canvas><div id="naver-chart-loading" class="loading">로딩 중...</div></div>
         </div>
       </div>
@@ -511,7 +511,7 @@ async function loadStats(){
   document.getElementById('naver-chart-loading').style.display='none';
   const{data:navRows}=await sb.from('mk_metrics').select('채널,평균_순위,수집_시각').eq('데이터_소스','naver_search').not('평균_순위','is',null).gte('수집_시각',since).order('수집_시각',{ascending:false}).limit(5000);
   const navD=(navRows||[]),navChs=[...new Set(navD.map(r=>r.채널))].sort(),navByD={},navAgg={};
-  const navDays=[...new Set(navD.map(r=>r.수집_시각?r.수집_시각.slice(5,10):''))].filter(Boolean).sort().slice(-7);
+  const navDays=[...new Set(navD.map(r=>r.수집_시각?r.수집_시각.slice(5,10):''))].filter(Boolean).sort().slice(-14);
   navD.forEach(r=>{const d=r.수집_시각?r.수집_시각.slice(5,10):'-';const k=r.채널+'|'+d;if(!navAgg[k])navAgg[k]={s:0,n:0};navAgg[k].s+=Number(r.평균_순위);navAgg[k].n++;});
   Object.keys(navAgg).forEach(k=>{navByD[k]=Math.round((navAgg[k].s/navAgg[k].n)*10)/10;});
   if(window._naverRankChart)window._naverRankChart.destroy();

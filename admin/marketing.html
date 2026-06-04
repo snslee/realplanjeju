@@ -107,6 +107,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     <div class="nav-section">설정</div>
     <div class="nav-item" onclick="switchTab('t6',this)"><span>🎨</span>작성 가이드</div>
     <div class="nav-item" onclick="switchTab('t7',this)"><span>📅</span>스케줄</div>
+    <div class="nav-item" onclick="switchTab('t8',this)"><span>🔑</span>키워드·인사이트</div>
   </nav>
   <div class="mobile-nav">
     <div class="mob-item active" onclick="switchTab('t1',null)"><span style="font-size:1.1rem">📊</span>통계</div>
@@ -421,6 +422,20 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
       <div id="slot-detail" style="display:none;margin-top:16px"></div>
     </div>
+    <div class="tab-panel" id="t8">
+      <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><h2 style="font-size:1.2rem;font-weight:700">🔑 키워드·인사이트</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">로컬 13개월 통계 적재 · rpc_blog_brief 허브</p></div>
+        <button onclick="loadKeywordInsight()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
+      </div>
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:14px">ℹ️ 키워드 풀은 전부 <b>참고용(활성 off)</b>입니다. STAGE 0에서 rpc_blog_brief가 채널·주제·시즌에 맞는 키워드·상위글·오디언스를 자동 반환합니다.</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:16px" id="ki-kpi"></div>
+      <div class="card" style="margin:0 0 16px"><div class="card-hdr"><h3>🏆 조회수 상위 글 (mk_top_posts)</h3></div>
+        <div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>채널</th><th>월</th><th>순위</th><th>제목</th><th>조회수</th></tr></thead><tbody id="ki-top"><tr><td colspan="5" class="loading">로딩 중...</td></tr></tbody></table></div>
+      </div>
+      <div class="card" style="margin:0"><div class="card-hdr"><h3>👥 오디언스 요약 (블A네이버 최신월)</h3></div>
+        <div class="card-body" id="ki-aud" style="font-size:.85rem;color:#475569;line-height:1.7">로딩 중...</div>
+      </div>
+    </div>
   </main>
 </div>
 <div class="modal-bg" id="reject-modal">
@@ -481,7 +496,26 @@ async function doLogin(){
   if(error){e.textContent='Google 로그인 실패: '+error.message;btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google로 로그인';}
 }
 async function doLogout(){try{localStorage.removeItem(SB_AUTH_KEY);localStorage.removeItem(SB_VERIFIER_KEY);}catch(e){}await sb.auth.signOut().catch(()=>{});showLogin();}
-function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6')loadAlgo();if(id==='t7')initCalendar();}
+function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6')loadAlgo();if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();}
+async function loadKeywordInsight(){
+  const[tot,yk,ui]=await Promise.all([
+    sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}),
+    sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}).eq('출처','연관키워드DB'),
+    sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}).eq('출처','naver_유입검색어')]);
+  const{count:tp}=await sb.from('mk_top_posts').select('*',{count:'exact',head:true});
+  const kpi=[['키워드 풀 총',tot.count],['연관키워드DB',yk.count],['유입검색어',ui.count],['상위글',tp]];
+  document.getElementById('ki-kpi').innerHTML=kpi.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+((k[1]||0).toLocaleString())+'</div></div>').join('');
+  const{data:top}=await sb.from('mk_top_posts').select('채널,측정월,순위,제목,조회수').order('조회수',{ascending:false}).limit(20);
+  document.getElementById('ki-top').innerHTML=(top||[]).map(r=>'<tr><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px;font-size:.75rem">'+(r.채널||'-')+'</span></td><td style="font-size:.78rem">'+((r.측정월||'').slice(0,7))+'</td><td>'+r.순위+'</td><td style="max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.제목||'-')+'</td><td style="font-weight:700">'+((r.조회수||0).toLocaleString())+'</td></tr>').join('')||'<tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8">없음</td></tr>';
+  const{data:aud}=await sb.from('mk_audience_stats').select('유형,항목,세부,비율,측정월').eq('채널','블A네이버').order('측정월',{ascending:false}).limit(300);
+  const latest=(aud&&aud.length)?aud[0].측정월:null;
+  const cur=(aud||[]).filter(r=>r.측정월===latest);
+  const bt={};cur.forEach(r=>{(bt[r.유형]=bt[r.유형]||[]).push(r);});
+  let h='<div style="font-size:.78rem;color:#94a3b8;margin-bottom:8px">최신월 '+((latest||'').slice(0,7))+'</div>';
+  for(const t of Object.keys(bt)){const t5=bt[t].sort((a,b)=>(b.비율||0)-(a.비율||0)).slice(0,6);h+='<div style="margin-bottom:8px"><b>'+t+'</b> : '+t5.map(r=>(r.항목+((r.세부&&r.세부!=='-')?'/'+r.세부:''))+' '+(r.비율||0)+'%').join(' · ')+'</div>';}
+  document.getElementById('ki-aud').innerHTML=h||'데이터 없음';
+}
+
 
 function renderStatsPage(){var ydData=window._ydView||[];var _sp=Math.max(1,Math.ceil(ydData.length/STAT_PER));if(_statPage>_sp)_statPage=1;var pe=document.getElementById('stats-pager');if(pe)pe.innerHTML=pagerHTML(_statPage,_sp,ydData.length,'gotoStatPage');document.getElementById('stats-body').innerHTML=ydData.length?ydData.slice((_statPage-1)*STAT_PER,_statPage*STAT_PER).map(r=>`<tr><td><b>${r.채널||'-'}</b></td><td style="font-size:.75rem;color:#64748b">${r.데이터_소스||'-'}</td><td>${(r.노출_수||0).toLocaleString()}</td><td>${(r.클릭_수||0).toLocaleString()}</td><td>${r.ctr_pct!=null?Number(r.ctr_pct).toFixed(2)+'%':'-'}</td><td>${r.평균_순위!=null?Number(r.평균_순위).toFixed(1)+'위':'-'}</td><td style="color:#94a3b8;font-size:.78rem">${r.수집_시각?r.수집_시각.slice(0,10):'-'}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">데이터 없음</td></tr>';}
 function gotoStatPage(n){_statPage=n;renderStatsPage();}

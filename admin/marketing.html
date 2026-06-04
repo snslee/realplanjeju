@@ -128,11 +128,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div class="kpi-card"><div class="kpi-label">🏆 네이버 평균순위</div><div class="kpi-value" id="kpi-순위">--</div><div class="kpi-sub">블A·B·C 평균</div></div>
       </div>
       <!-- ▼ 상단 고정: 채널별 추세 2그래프 (노출=티스토리 / 순위=네이버) -->
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:10px">📐 <b>두 그래프는 측정 기준이 다릅니다.</b> 왼쪽=티스토리 <b>노출수</b>(높을수록 좋음·GSC 자동수집) / 오른쪽=네이버 <b>평균순위</b>(낮을수록 좋음·순위 자동수집). 같은 잣대로 비교하지 마세요.</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin-bottom:16px">
-        <div class="card" style="margin:0"><div class="card-hdr"><h3>📈 티스토리 채널별 노출 추세 (7일)</h3></div>
+        <div class="card" style="margin:0"><div class="card-hdr"><h3>📈 티스토리 채널별 노출 추세 (7일) · 노출수↑ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">로그축</span></h3></div>
           <div class="card-body" style="height:300px;position:relative"><canvas id="trendChart"></canvas><div id="chart-loading" class="loading">로딩 중...</div></div>
         </div>
-        <div class="card" style="margin:0"><div class="card-hdr"><h3>🏆 네이버 채널별 평균순위 추세 (7일)</h3></div>
+        <div class="card" style="margin:0"><div class="card-hdr"><h3>🏆 네이버 채널별 평균순위 추세 (7일) · 순위↓ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">등수</span></h3></div>
           <div class="card-body" style="height:300px;position:relative"><canvas id="naverRankChart"></canvas><div id="naver-chart-loading" class="loading">로딩 중...</div></div>
         </div>
       </div>
@@ -496,7 +497,7 @@ async function loadStats(){
   const clrs=['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'];
   document.getElementById('chart-loading').style.display='none';
   if(trendChart)trendChart.destroy();
-  trendChart=new Chart(document.getElementById('trendChart').getContext('2d'),{type:'line',data:{labels:days,datasets:chs.map((ch,i)=>({label:ch,data:days.map(d=>byd[ch+'|'+d]||0),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.4,fill:false,pointRadius:4}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}},x:{grid:{display:false}}}}});
+  trendChart=new Chart(document.getElementById('trendChart').getContext('2d'),{type:'line',data:{labels:days,datasets:chs.map((ch,i)=>({label:ch,data:days.map(d=>byd[ch+'|'+d]||null),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.4,fill:false,pointRadius:4,spanGaps:true}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{type:'logarithmic',grid:{color:'#f1f5f9'},title:{display:true,text:'노출수 (로그축·작은 채널도 보임)'},ticks:{callback:function(v){return Number(v).toLocaleString();}}},x:{grid:{display:false}}}}});
   // 네이버 순위 차트
   document.getElementById('naver-chart-loading').style.display='none';
   const{data:navRows}=await sb.from('mk_metrics').select('채널,평균_순위,수집_시각').eq('데이터_소스','naver_search').not('평균_순위','is',null).gte('수집_시각',since).order('수집_시각',{ascending:false}).limit(5000);
@@ -510,7 +511,7 @@ async function loadStats(){
 
 async function loadDrafts(){
   document.getElementById('drafts-board').innerHTML='<div class="loading" style="padding:30px;text-align:center">로딩 중...</div>';
-  const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형').order('발행일',{ascending:false,nullsFirst:false}).order('채널',{ascending:true}).limit(100);
+  const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형').order('발행일',{ascending:false,nullsFirst:false}).order('생성일',{ascending:false}).limit(100);
   if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];renderDrafts(allDrafts);
 }
 let _draftPage=1,_winPage=1,_slotMonth=0,_statPage=1,_nvPage=1,_rankPage=1,_rankMonth=0,_rankJ='all'; const DRAFT_PER=10,WIN_PER=10,STAT_PER=20,NV_PER=20,RANK_PER=15;
@@ -532,7 +533,7 @@ function renderDrafts(list){
       <span style="font-size:.7rem;background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px;flex-shrink:0">${r.채널||'-'}</span>
       <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:.9rem;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.제목||'(제목 없음)'}</div><div style="font-size:.68rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🔑 ${r.핵심키워드||'-'}${r.글자수_네이버?(' · '+r.글자수_네이버+'자'):''}${r.슬롯유형?(' · '+r.슬롯유형):''}${r.생성일?(' · 업로드 '+r.생성일.slice(5,10)):''}</div></div>
       <span style="font-size:.68rem;background:${sbg[r.상태]||'#f1f5f9'};color:${stx[r.상태]||'#64748b'};padding:2px 7px;border-radius:9px;flex-shrink:0">${sl[r.상태]||r.상태||'초안'}</span>
-      <span style="font-size:.7rem;color:#475569;flex-shrink:0;width:60px;text-align:right" title="발행일">📅${r.발행일?r.발행일.slice(5,10):(r.생성일?r.생성일.slice(5,10):'-')}</span>
+      <span style="font-size:.7rem;color:#475569;flex-shrink:0;width:60px;text-align:right" title="발행일">📅${r.발행일?r.발행일.slice(5):(r.생성일?r.생성일.slice(5,10):'-')}</span>
       <span style="font-size:.8rem;font-weight:700;color:${sc==null?'#cbd5e1':sc>=9?'#10b981':'#f59e0b'};flex-shrink:0;width:26px;text-align:right">${sc!=null?sc:'-'}</span>
     </div>`;}).join('');
 }
@@ -783,18 +784,8 @@ async function viewWinning(id){
 // 블로그형 본문 렌더 + 리더
 function fmtBody(t){
   if(!t) return '<div style="color:#94a3b8">(본문 없음)</div>';
-  function tbl(p){/*RPTBL*/
-    var ls=p.split(/\n/).filter(function(l){return /^\s*\|.*\|\s*$/.test(l);});
-    if(ls.length<2||!/^\s*\|[\s\-|:]+\|\s*$/.test(ls[1])) return null;
-    var cells=function(l){return l.trim().replace(/^\||\|$/g,'').split('|').map(function(x){return x.trim().replace(/</g,'&lt;');});};
-    var head=cells(ls[0]), body=ls.slice(2).map(cells);
-    var th='<tr>'+head.map(function(h){return '<th style="border:1px solid #cbd5e1;padding:7px 10px;background:#f1f5f9;font-weight:700;text-align:left">'+h+'</th>';}).join('')+'</tr>';
-    var tb=body.map(function(r){return '<tr>'+r.map(function(d){return '<td style="border:1px solid #cbd5e1;padding:7px 10px;vertical-align:top">'+d+'</td>';}).join('')+'</tr>';}).join('');
-    return '<table style="border-collapse:collapse;margin:12px 0;width:100%;font-size:.9rem">'+th+tb+'</table>';
-  }
   return t.split(/\n{2,}/).map(function(p){
     p=p.trim(); if(!p) return '';
-    if(/^\s*\|.*\|\s*$/.test(p.split(/\n/)[0])){var T=tbl(p);if(T)return T;}
     var esc=p.replace(/</g,'&lt;');
     if(/^#{1,3}\s/.test(p)) return '<h3 style="font-size:1.05rem;font-weight:700;margin:18px 0 8px;color:#0f172a">'+esc.replace(/^#{1,3}\s/,'')+'</h3>';
     return '<p style="margin:0 0 14px;line-height:1.9">'+esc.replace(/\n/g,'<br>')+'</p>';
@@ -873,12 +864,6 @@ function copyDraftPart(k,btn){
   const t=(window.__dc||{})[k]||'';
   if(!t){showToast('복사할 내용이 없습니다');return;}
   const done=()=>{const o=btn?btn.textContent:'';if(btn){btn.textContent='✅ 복사됨!';setTimeout(()=>btn.textContent=o,1500);}showToast('복사 완료 ('+t.length+'자)');};
-  if((k==='nav'||k==='tis')&&window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
-    const html='<div>'+fmtBody(t)+'</div>';
-    const item=new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([t],{type:'text/plain'})});
-    navigator.clipboard.write([item]).then(done).catch(()=>{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));else fallbackCopy(t,done);});
-    return;
-  }
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));}
   else fallbackCopy(t,done);
 }

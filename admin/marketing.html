@@ -130,11 +130,19 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <!-- ▼ 상단 고정: 채널별 추세 2그래프 (노출=티스토리 / 순위=네이버) -->
       <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:10px">📐 <b>두 그래프는 측정 기준이 다릅니다.</b> 왼쪽=티스토리 <b>노출수</b>(높을수록 좋음·GSC 자동수집) / 오른쪽=네이버 <b>평균순위</b>(낮을수록 좋음·순위 자동수집). 같은 잣대로 비교하지 마세요.</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin-bottom:16px">
-        <div class="card" style="margin:0"><div class="card-hdr"><h3>📈 티스토리 채널별 노출 추세 (7일) · 노출수↑ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">로그축</span></h3></div>
+        <div class="card" style="margin:0"><div class="card-hdr"><h3>📈 티스토리 채널별 노출 추세 (최근 14일) · 노출수↑ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">로그축</span></h3></div>
           <div class="card-body" style="height:300px;position:relative"><canvas id="trendChart"></canvas><div id="chart-loading" class="loading">로딩 중...</div></div>
         </div>
         <div class="card" style="margin:0"><div class="card-hdr"><h3>🏆 네이버 채널별 평균순위 추세 (7일) · 순위↓ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">등수</span></h3></div>
           <div class="card-body" style="height:300px;position:relative"><canvas id="naverRankChart"></canvas><div id="naver-chart-loading" class="loading">로딩 중...</div></div>
+        </div>
+      </div>
+
+      <!-- ▼ 네이버 월별 조회수 (C' / naver_manual 월별총계 · 제목 NULL) -->
+      <div class="card" style="margin:0 0 16px"><div class="card-hdr"><h3>📊 네이버 채널별 월별 조회수 추세 (최근 12개월) · 조회수↑ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">로그축</span></h3></div>
+        <div class="card-body" style="position:relative">
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.72rem;padding:7px 11px;border-radius:8px;margin-bottom:10px">ℹ️ 월별·수동 업로드 기준(최신 2026-05). 상단 자동수집(일별) 차트와 별개입니다.</div>
+          <div style="height:280px;position:relative"><canvas id="naverMonthlyChart"></canvas><div id="naver-monthly-loading" class="loading">로딩 중...</div></div>
         </div>
       </div>
 
@@ -479,9 +487,10 @@ function gotoStatPage(n){_statPage=n;renderStatsPage();}
 async function fetchAllRows(sel,filt){let all=[],f=0;const sz=1000;for(;;){let q=sb.from('mk_metrics').select(sel);q=filt(q).range(f,f+sz-1);const{data,error}=await q;if(error)throw error;all=all.concat(data||[]);if(!data||data.length<sz)break;f+=sz;if(f>60000)break;}return all;}
 async function loadStats(){
   document.getElementById('chart-loading').style.display='block';
-  const since=new Date(Date.now()-7*86400000).toISOString();
+  const since=new Date(Date.now()-14*86400000).toISOString();
+  const since7=new Date(Date.now()-7*86400000).toISOString();
   let data;try{data=await fetchAllRows('채널,데이터_소스,노출_수,클릭_수,ctr_pct,평균_순위,수집_시각',q=>q.gte('수집_시각',since).order('수집_시각',{ascending:false}));}catch(e){showToast('통계 로드 실패');return;}
-  const gsc=data.filter(r=>r.데이터_소스==='gsc'),nav=data.filter(r=>r.데이터_소스==='naver_search');
+  const gsc=data.filter(r=>r.데이터_소스==='gsc'&&r.수집_시각>=since7),nav=data.filter(r=>r.데이터_소스==='naver_search'&&r.수집_시각>=since7);
   const imp=gsc.reduce((s,r)=>s+(r.노출_수||0),0),clk=gsc.reduce((s,r)=>s+(r.클릭_수||0),0);
   const ranks=nav.filter(r=>r.평균_순위).map(r=>Number(r.평균_순위));
   document.getElementById('kpi-노출').textContent=imp.toLocaleString();
@@ -493,7 +502,7 @@ async function loadStats(){
   window._ydView=ydData.slice().sort(function(a,b){return (b.노출_수||0)-(a.노출_수||0)||((b.수집_시각||'')<(a.수집_시각||'')?-1:1);});_statPage=1;renderStatsPage();
   const gscD=data.filter(r=>r.데이터_소스==='gsc'&&r.노출_수),byd={};
   gscD.forEach(r=>{const d=r.수집_시각?r.수집_시각.slice(5,10):'-';const k=r.채널+'|'+d;byd[k]=(byd[k]||0)+(r.노출_수||0);});
-  const chs=[...new Set(gscD.map(r=>r.채널))].sort(),days=[...new Set(gscD.map(r=>r.수집_시각?r.수집_시각.slice(5,10):''))].sort().slice(-7);
+  const chs=[...new Set(gscD.map(r=>r.채널))].sort(),days=[...new Set(gscD.map(r=>r.수집_시각?r.수집_시각.slice(5,10):''))].sort().slice(-14);
   const clrs=['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'];
   document.getElementById('chart-loading').style.display='none';
   if(trendChart)trendChart.destroy();
@@ -507,6 +516,24 @@ async function loadStats(){
   Object.keys(navAgg).forEach(k=>{navByD[k]=Math.round((navAgg[k].s/navAgg[k].n)*10)/10;});
   if(window._naverRankChart)window._naverRankChart.destroy();
   if(document.getElementById('naverRankChart'))window._naverRankChart=new Chart(document.getElementById('naverRankChart').getContext('2d'),{type:'line',data:{labels:navDays,datasets:navChs.map((ch,i)=>({label:ch,data:navDays.map(d=>navByD[ch+'|'+d]??null),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.4,fill:false,pointRadius:4,spanGaps:true}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{reverse:true,beginAtZero:false,grid:{color:'#f1f5f9'},title:{display:true,text:'순위 (낮을수록 좋음)'}},x:{grid:{display:false}}}}});
+  loadNaverMonthly(clrs);
+}
+
+// 네이버 채널별 월별 조회수 (C' / naver_manual 월별총계 = 제목 NULL / 최근 12개월 / 로그축)
+async function loadNaverMonthly(clrs){
+  const ld=document.getElementById('naver-monthly-loading'); if(ld)ld.style.display='block';
+  const cutoff=new Date(); cutoff.setMonth(cutoff.getMonth()-11); cutoff.setDate(1);
+  const cutStr=cutoff.toISOString().slice(0,10);
+  const{data,error}=await sb.from('mk_metrics').select('채널,측정_일자,조회_수').eq('데이터_소스','naver_manual').is('제목',null).gte('측정_일자',cutStr).not('조회_수','is',null).limit(5000);
+  if(ld)ld.style.display='none';
+  if(error){showToast('네이버 월별 조회수 로드 실패');return;}
+  const rows=data||[];
+  const months=[...new Set(rows.map(r=>(r.측정_일자||'').slice(0,7)))].filter(Boolean).sort();
+  const chs=[...new Set(rows.map(r=>r.채널))].sort();
+  const agg={}; rows.forEach(r=>{const m=(r.측정_일자||'').slice(0,7);const k=r.채널+'|'+m;agg[k]=(agg[k]||0)+(Number(r.조회_수)||0);});
+  if(window._naverMonthlyChart)window._naverMonthlyChart.destroy();
+  const cv=document.getElementById('naverMonthlyChart'); if(!cv)return;
+  window._naverMonthlyChart=new Chart(cv.getContext('2d'),{type:'line',data:{labels:months,datasets:chs.map((ch,i)=>({label:ch,data:months.map(m=>{const v=agg[ch+'|'+m];return v&&v>0?v:null;}),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.3,fill:false,pointRadius:3,spanGaps:true}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{type:'logarithmic',grid:{color:'#f1f5f9'},title:{display:true,text:'조회수 (로그축·작은 채널도 보임)'},ticks:{callback:function(v){const n=Number(v);return [1,10,100,1000,10000,100000].indexOf(n)>=0?n.toLocaleString():'';}}},x:{grid:{display:false}}}}});
 }
 
 async function loadDrafts(){

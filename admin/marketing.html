@@ -221,7 +221,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     </div>
     <div class="tab-panel" id="t4">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div><h2 style="font-size:1.2rem;font-weight:700">🔍 잠자는 거인</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">노출 높고 CTR 낮은 채널 — 최근 14일 GSC</p></div>
+        <div><h2 style="font-size:1.2rem;font-weight:700">🔍 잠자는 거인</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">티스토리=노출·CTR / 네이버=순위 — 최근 14일</p></div>
         <button onclick="loadGiants()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
       <div class="card"><div class="card-hdr"><h3>📊 채널별 노출·CTR 현황</h3></div>
@@ -230,6 +230,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
           <tbody id="giants-body"><tr><td colspan="6" class="loading">로딩 중...</td></tr></tbody></table>
         </div>
       </div>
+      <div class="card"><div class="card-hdr"><h3>🏆 네이버 채널별 순위 현황 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">naver_search · 최근 14일 · 순위↓</span></h3></div><div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>평균순위</th><th>표본수</th><th>판정</th></tr></thead><tbody id="giants-naver-body"><tr><td colspan="5" class="loading">로딩 중...</td></tr></tbody></table></div></div>
       <div class="card"><div class="card-hdr"><h3>💡 액션 가이드</h3></div>
         <div class="card-body"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;font-size:.85rem">
           <div style="background:#fee2e2;border-radius:8px;padding:14px"><div style="font-weight:700;margin-bottom:6px;color:#991b1b">🔴 CTR 1% 미만</div><p style="color:#7f1d1d">제목 리프레시 + 썸네일 교체 즉시</p></div>
@@ -596,7 +597,16 @@ function renderSlots(list){
 function gotoSlotPage(n){_slotPage=n;renderSlots(_slotList);}
 function filterSlots(s,b){document.querySelectorAll('#slot-filters .filter-btn').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');renderSlots(s==='all'?allSlots:allSlots.filter(r=>r.상태===s));}
 
-async function loadGiants(){
+async function loadGiantsNaver(){
+  const nb=document.getElementById('giants-naver-body'); if(!nb)return;
+  const since14=new Date(Date.now()-14*86400000).toISOString();
+  const{data,error}=await sb.from('mk_metrics').select('채널,평균_순위').eq('데이터_소스','naver_search').not('평균_순위','is',null).gte('수집_시각',since14).limit(5000);
+  if(error){nb.innerHTML='<tr><td colspan="5" style="color:#ef4444">로드 실패</td></tr>';return;}
+  const agg={};(data||[]).forEach(r=>{const k=r.채널;if(!agg[k])agg[k]={s:0,n:0};agg[k].s+=Number(r.평균_순위);agg[k].n++;});
+  const rows=Object.keys(agg).sort().map(ch=>({ch,r:agg[ch].s/agg[ch].n,n:agg[ch].n}));
+  nb.innerHTML=rows.length?rows.map(r=>{const j=r.r<=5?'🔵 우수':r.r<=15?'🟢 유지':r.r<=30?'🟡 개선필요':'🔴 즉시액션';const jc=r.r<=5?'#3b82f6':r.r<=15?'#10b981':r.r<=30?'#f59e0b':'#ef4444';return '<tr><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:.78rem">'+r.ch+'</span></td><td><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:12px;font-size:.75rem">네이버</span></td><td style="font-weight:700;color:'+jc+'">'+r.r.toFixed(1)+'위</td><td>'+r.n+'</td><td>'+j+'</td></tr>';}).join(''):'<tr><td colspan="5" style="text-align:center;padding:30px;color:#94a3b8">네이버 순위 데이터 없음</td></tr>';
+}
+async function loadGiants(){ loadGiantsNaver();
   document.getElementById('giants-body').innerHTML='<tr><td colspan="6" class="loading">로딩 중...</td></tr>';
   const since=new Date(Date.now()-14*86400000).toISOString();
   let data;try{data=await fetchAllRows('채널,데이터_소스,노출_수,클릭_수,평균_순위',q=>q.eq('데이터_소스','gsc').gte('수집_시각',since));}catch(e){showToast('잠자는 거인 로드 실패');return;}
@@ -927,7 +937,7 @@ async function nvCommit(){
     if(error){fail++;console.error(p.file,error);}else{tot+=data||0;}}
   showToast(fail?('일부 실패('+fail+') · '+tot+'건 적재'):('✅ '+tot+'건 적재 완료'));
   const b=document.getElementById('nv-commit');b.disabled=true;b.style.opacity='.5';
-  document.getElementById('nv-preview').innerHTML='';document.getElementById('nv-file').value='';nvParsed=[];loadNaverManual();
+  document.getElementById('nv-preview').innerHTML='';document.getElementById('nv-file').value='';nvParsed=[];loadNaverManual();sb.rpc('rpc_ingest_naver_keywords').then(()=>showToast('🔑 유입검색어 키워드DB 반영'));
 }
 function renderNvViews(){var v=window._nvViews||[];var vb=document.getElementById('nv-views-body');if(!vb)return;var sp=Math.max(1,Math.ceil(v.length/NV_PER));if(_nvPage>sp)_nvPage=1;var pe=document.getElementById('nv-views-pager');if(pe)pe.innerHTML=pagerHTML(_nvPage,sp,v.length,'gotoNvPage');vb.innerHTML=v.length?v.slice((_nvPage-1)*NV_PER,_nvPage*NV_PER).map(r=>'<tr><td><b>'+r.채널+'</b></td><td>'+(r.측정_일자||'').slice(0,7)+'</td><td style="max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+r.제목+'</td><td>'+(r.조회_수||0).toLocaleString()+'</td><td style="color:#94a3b8;font-size:.78rem">'+(r.발행_시각?r.발행_시각.slice(0,10):'-')+'</td></tr>').join(''):'<tr><td colspan="5" style="text-align:center;padding:18px;color:#94a3b8">업로드된 네이버 통계 없음</td></tr>';}
 function gotoNvPage(n){_nvPage=n;renderNvViews();}

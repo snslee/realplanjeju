@@ -195,8 +195,8 @@ function renderRegime(rows){
   rows.forEach(r=>{if(r.metric==="sharpe")sharpe[r.exp_code+"|"+r.regime]=num(r.value);if(r.metric==="long_frac")lf[r.exp_code+"|"+r.regime]=num(r.value);});
   const regimes=[["all","전체"],["bull","상승장"],["side","횡보장"],["bear","하락장"]];
   const cell=(exp,rk)=>{let v=sharpe[exp+"|"+rk];
-    if(rk==="bear"&&(v===null||v===0)){const l=lf[exp+"|bear"];if(v===0||l===0||(l===null&&exp==="EXP-001"))return '<td class="num">현금(0)</td>';}
-    if(v===null)return '<td class="num">–</td>';
+    if(rk==="bear"&&(v==null||v===0)){const l=lf[exp+"|bear"];if(v===0||l===0||(l==null&&exp==="EXP-001"))return '<td class="num">현금(0)</td>';}
+    if(v==null)return '<td class="num">–</td>';
     const cls=v>0?(rk==="side"?"pos":""):"neg";return `<td class="num ${cls}">${(v>0&&rk==='side'?'+':'')}${v.toFixed(2)}</td>`;};
   document.getElementById("regime").innerHTML=regimes.map(([rk,rl])=>`<tr><td>${rl}</td>${EXPS.map(e=>cell(e,rk)).join("")}</tr>`).join("");
   const allS=EXPS.map(e=>[EXPLABEL[e],sharpe[e+"|all"]]).filter(x=>x[1]!=null).sort((a,b)=>b[1]-a[1]);

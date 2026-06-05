@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.6</title>
+<title>리얼플랜제주 마케팅 운영 v1.7</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -91,7 +91,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.6</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.7</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -431,10 +431,17 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
       <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:14px">ℹ️ 키워드 풀은 전부 <b>참고용(활성 off)</b>입니다. STAGE 0에서 rpc_blog_brief가 채널·주제·시즌에 맞는 키워드·상위글·오디언스를 자동 반환합니다.</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:16px" id="ki-kpi"></div>
-      <div class="card" style="margin:0 0 16px"><div class="card-hdr"><h3>🏆 조회수 상위 글 (mk_top_posts)</h3></div>
+      <div class="card" style="margin:0 0 16px"><div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🏆 조회수 상위 글 (mk_top_posts)</h3>
+        <div id="ki-top-filter" style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="filter-btn active" data-ch="전체" onclick="renderKiTop('전체')">전체</button>
+          <button class="filter-btn" data-ch="블A" onclick="renderKiTop('블A')">블A 여행</button>
+          <button class="filter-btn" data-ch="블B" onclick="renderKiTop('블B')">블B 행사</button>
+          <button class="filter-btn" data-ch="블C" onclick="renderKiTop('블C')">블C 마케팅</button>
+        </div></div>
+        <div style="font-size:.72rem;color:#94a3b8;padding:6px 16px 0">블A=13개월 풀데이터 · 블B·블C=2026-03 한 달치만(네이버 통계 추가 업로드 시 확장)</div>
         <div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>채널</th><th>월</th><th>순위</th><th>제목</th><th>조회수</th></tr></thead><tbody id="ki-top"><tr><td colspan="5" class="loading">로딩 중...</td></tr></tbody></table></div>
       </div>
-      <div class="card" style="margin:0"><div class="card-hdr"><h3>👥 오디언스 요약 (블A네이버 최신월)</h3></div>
+      <div class="card" style="margin:0"><div class="card-hdr"><h3>👥 오디언스 요약 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">성·연령·시간대·기기 / 블A네이버 (블B·블C는 원본 미수집)</span></h3></div>
         <div class="card-body" id="ki-aud" style="font-size:.85rem;color:#475569;line-height:1.7">로딩 중...</div>
       </div>
     </div>
@@ -448,8 +455,16 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
       <div id="aj-banner" style="background:#fef9c3;border:1px solid #fde68a;color:#854d0e;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:14px">ℹ️ 실험 게시판입니다. 워커는 한 번 호출에 한 섹션씩 이어 생성하며(섹션_완료부터 자동 재개), Anthropic 크레딧 충전 후 정상 가동됩니다. 크레딧이 없으면 시도 3회 후 '실패'로 표시됩니다.</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:16px" id="aj-kpi"></div>
-      <div class="card" style="margin:0"><div class="card-hdr"><h3>📋 생성 큐</h3></div>
+      <div class="card" style="margin:0"><div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>📋 생성 큐</h3>
+        <div id="aj-filter" style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="filter-btn active" data-f="전체" onclick="ajFilter('전체')">전체</button>
+          <button class="filter-btn" data-f="대기" onclick="ajFilter('대기')">대기</button>
+          <button class="filter-btn" data-f="생성중" onclick="ajFilter('생성중')">생성중</button>
+          <button class="filter-btn" data-f="완료" onclick="ajFilter('완료')">완료</button>
+          <button class="filter-btn" data-f="실패" onclick="ajFilter('실패')">실패</button>
+        </div></div>
         <div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>상태</th><th>채널</th><th>핵심키워드 / 제목</th><th>진행</th><th>점수</th><th>메모</th><th>수정</th></tr></thead><tbody id="aj-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table></div>
+        <div id="aj-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;padding:12px"></div>
       </div>
     </div>
   </main>
@@ -521,8 +536,8 @@ async function loadKeywordInsight(){
   const{count:tp}=await sb.from('mk_top_posts').select('*',{count:'exact',head:true});
   const kpi=[['키워드 풀 총',tot.count],['연관키워드DB',yk.count],['유입검색어',ui.count],['상위글',tp]];
   document.getElementById('ki-kpi').innerHTML=kpi.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+((k[1]||0).toLocaleString())+'</div></div>').join('');
-  const{data:top}=await sb.from('mk_top_posts').select('채널,측정월,순위,제목,조회수').order('조회수',{ascending:false}).limit(20);
-  document.getElementById('ki-top').innerHTML=(top||[]).map(r=>'<tr><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px;font-size:.75rem">'+(r.채널||'-')+'</span></td><td style="font-size:.78rem">'+((r.측정월||'').slice(0,7))+'</td><td>'+r.순위+'</td><td style="max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.제목||'-')+'</td><td style="font-weight:700">'+((r.조회수||0).toLocaleString())+'</td></tr>').join('')||'<tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8">없음</td></tr>';
+  const{data:top}=await sb.from('mk_top_posts').select('채널,측정월,순위,제목,조회수').order('조회수',{ascending:false}).limit(500);
+  window._kiTop=top||[]; renderKiTop(window._kiCh||'전체');
   const{data:aud}=await sb.from('mk_audience_stats').select('유형,항목,세부,비율,측정월').eq('채널','블A네이버').order('측정월',{ascending:false}).limit(300);
   const latest=(aud&&aud.length)?aud[0].측정월:null;
   const cur=(aud||[]).filter(r=>r.측정월===latest);
@@ -531,17 +546,31 @@ async function loadKeywordInsight(){
   for(const t of Object.keys(bt)){const t5=bt[t].sort((a,b)=>(b.비율||0)-(a.비율||0)).slice(0,6);h+='<div style="margin-bottom:8px"><b>'+t+'</b> : '+t5.map(r=>(r.항목+((r.세부&&r.세부!=='-')?'/'+r.세부:''))+' '+(r.비율||0)+'%').join(' · ')+'</div>';}
   document.getElementById('ki-aud').innerHTML=h||'데이터 없음';
 }
+function renderKiTop(ch){
+  window._kiCh=ch;
+  const all=window._kiTop||[];
+  const list=(ch==='전체'?all:all.filter(r=>String(r.채널||'').indexOf(ch)===0)).slice(0,30);
+  document.getElementById('ki-top').innerHTML=list.map(r=>'<tr><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px;font-size:.75rem">'+(r.채널||'-')+'</span></td><td style="font-size:.78rem">'+((r.측정월||'').slice(0,7))+'</td><td>'+r.순위+'</td><td style="max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.제목||'-')+'</td><td style="font-weight:700">'+((r.조회수||0).toLocaleString())+'</td></tr>').join('')||'<tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8">해당 채널 데이터 없음 (네이버 월간통계 업로드 필요)</td></tr>';
+  document.querySelectorAll('#ki-top-filter .filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.ch===ch));
+}
 
+let _ajRows=[],_ajFilter='전체',_ajPage=1; const AJ_PER=10;
 async function loadAutogenJobs(){
-  const{data,error}=await sb.from('mk_autogen_jobs').select('*').order('수정일',{ascending:false}).limit(50);
+  const{data,error}=await sb.from('mk_autogen_jobs').select('*').order('수정일',{ascending:false}).limit(200);
   if(error){document.getElementById('aj-body').innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:#ef4444">로드 실패: '+error.message+'</td></tr>';return;}
-  const rows=data||[];const cnt={대기:0,생성중:0,완료:0,실패:0};
-  rows.forEach(r=>{cnt[r.상태]=(cnt[r.상태]||0)+1;});
-  const kpis=[['전체',rows.length],['대기',cnt.대기||0],['생성중',cnt.생성중||0],['완료',cnt.완료||0],['실패',cnt.실패||0]];
+  _ajRows=data||[];const cnt={대기:0,생성중:0,완료:0,실패:0};
+  _ajRows.forEach(r=>{cnt[r.상태]=(cnt[r.상태]||0)+1;});
+  const kpis=[['전체',_ajRows.length],['대기',cnt.대기||0],['생성중',cnt.생성중||0],['완료',cnt.완료||0],['실패',cnt.실패||0]];
   document.getElementById('aj-kpi').innerHTML=kpis.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+k[1]+'</div></div>').join('');
+  _ajPage=1;renderAj();
+}
+function renderAj(){
   const badge={대기:'#fef3c7|#92400e',생성중:'#dbeafe|#1e40af',완료:'#d1fae5|#047857',실패:'#fee2e2|#b91c1c'};
   const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  document.getElementById('aj-body').innerHTML=rows.length?rows.map(r=>{
+  const list=_ajFilter==='전체'?_ajRows:_ajRows.filter(r=>r.상태===_ajFilter);
+  const pages=Math.max(1,Math.ceil(list.length/AJ_PER));if(_ajPage>pages)_ajPage=1;
+  const slice=list.slice((_ajPage-1)*AJ_PER,_ajPage*AJ_PER);
+  document.getElementById('aj-body').innerHTML=slice.length?slice.map(r=>{
     const b=(badge[r.상태]||'#e2e8f0|#475569').split('|');
     const len=(r.누적_본문||'').replace(/\s/g,'').length;
     const memo=r.오류?('<span style="color:#b91c1c">'+esc(String(r.오류).slice(0,60))+'</span>'):(r.draft_id?'<span style="color:#047857">초안 적재됨</span>':'-');
@@ -552,8 +581,12 @@ async function loadAutogenJobs(){
       +'<td style="font-weight:700">'+(r.자가검증_점수!=null?Number(r.자가검증_점수).toFixed(1):'-')+'</td>'
       +'<td style="font-size:.74rem;max-width:200px">'+memo+'</td>'
       +'<td style="color:#94a3b8;font-size:.73rem">'+(String(r.수정일||'').slice(5,16).replace('T',' '))+'</td></tr>';
-  }).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">큐가 비어 있습니다</td></tr>';
+  }).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">'+(_ajRows.length?'해당 상태 없음':'큐가 비어 있습니다')+'</td></tr>';
+  document.querySelectorAll('#aj-filter .filter-btn').forEach(x=>x.classList.toggle('active',x.dataset.f===_ajFilter));
+  const pe=document.getElementById('aj-pager');if(pe)pe.innerHTML=pagerHTML(_ajPage,pages,list.length,'ajGoPage');
 }
+function ajFilter(f){_ajFilter=f;_ajPage=1;renderAj();}
+function ajGoPage(n){_ajPage=n;renderAj();}
 async function runAutogenTick(){
   if(!confirm('워커를 1회 호출해 다음 섹션을 생성합니다.\n(Anthropic 크레딧이 없으면 실패로 기록될 수 있습니다)\n진행할까요?'))return;
   showToast('워커 호출 중...');

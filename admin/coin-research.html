@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>코인 퀀트 · research 대시보드</title>
+<style>
+  :root{
+    --bg:#f5f4ef; --card:#ffffff; --line:#e3e1d8; --ink:#23221e; --muted:#6c6a62;
+    --teal:#0f6e56; --teal-bg:#e1f5ee; --amber:#854f0b; --amber-bg:#faeeda;
+    --red:#a32d2d; --red-bg:#fcebeb; --green:#3b6d11; --green-bg:#eaf3de;
+    --purple:#534ab7; --purple-bg:#eeedfe; --gray-bg:#f1efe8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.6;font-size:15px}
+  /* 로그인 화면 */
+  #login-screen{min-height:100vh;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e3a8a,#2563eb)}
+  .login-card{background:#fff;border-radius:16px;padding:40px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,.2);text-align:center}
+  .login-card h1{font-size:1.3rem;font-weight:700;margin-bottom:4px}
+  .login-card .sub{font-size:.85rem;color:#64748b;margin-bottom:28px}
+  .login-card a.btn{display:inline-block;background:#2563eb;color:#fff;text-decoration:none;border-radius:10px;padding:12px 20px;font-weight:600;font-size:.9rem}
+  .login-note{font-size:.75rem;color:#94a3b8;margin-top:16px}
+  /* 앱 */
+  #app{display:none;padding:28px 18px}
+  .wrap{max-width:1080px;margin:0 auto}
+  header.pg{margin-bottom:20px}
+  h1.pg{font-size:22px;font-weight:600}
+  .sub{color:var(--muted);font-size:13px;margin-top:4px}
+  .grid{display:grid;gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  h2{font-size:16px;font-weight:600;margin-bottom:12px}
+  .gates{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+  .gate{border-radius:12px;padding:14px 16px;border:1px solid var(--line)}
+  .gate .t{font-size:13px;color:var(--muted)} .gate .v{font-size:18px;font-weight:600;margin-top:4px} .gate .gsub{font-size:12px;margin-top:2px;color:var(--muted)}
+  .ok{background:var(--green-bg)} .ok .v{color:var(--green)}
+  .warn{background:var(--amber-bg)} .warn .v{color:var(--amber)}
+  .bad{background:var(--red-bg)} .bad .v{color:var(--red)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:500;font-size:13px}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .pos{color:var(--green);font-weight:600} .neg{color:var(--red);font-weight:600}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600}
+  .pill.t{background:var(--teal-bg);color:var(--teal)}
+  .pill.p{background:var(--purple-bg);color:var(--purple)}
+  .pill.g{background:var(--gray-bg);color:var(--muted)}
+  .pill.okp{background:var(--green-bg);color:var(--green)}
+  .pill.badp{background:var(--red-bg);color:var(--red)}
+  .note{background:var(--amber-bg);border:1px solid #f0d9a8;border-radius:10px;padding:12px 14px;font-size:13px;color:var(--amber);margin-top:8px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.cols,.gates{grid-template-columns:1fr}}
+  footer{color:var(--muted);font-size:12px;margin-top:18px;line-height:1.7}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .hbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .hcell{background:var(--gray-bg);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px}
+  .hcell b{font-size:15px}
+  .btn{cursor:pointer;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 14px;font-size:13px;color:var(--ink)}
+  .btn:hover{background:var(--gray-bg)}
+  #status{font-size:12px;color:var(--muted)} .err{color:var(--red)}
+  .logout{font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline}
+</style>
+</head>
+<body>
+
+<!-- 로그인 가드 (admin 공통 Google 세션 공유) -->
+<div id="login-screen">
+  <div class="login-card">
+    <h1>🔒 코인 퀀트 research</h1>
+    <div class="sub">비공개 페이지 · 관리자 전용</div>
+    <a class="btn" href="/admin/marketing.html">admin에서 Google 로그인 후 다시 열기</a>
+    <p class="login-note">기존 admin과 동일한 Google 세션을 사용합니다</p>
+  </div>
+</div>
+
+<!-- 대시보드 -->
+<div id="app">
+<div class="wrap">
+  <div class="topbar">
+    <div></div>
+    <span class="logout" onclick="doLogout()">로그아웃</span>
+  </div>
+  <header class="pg">
+    <h1 class="pg">코인 퀀트 · research 대시보드 <span class="pill p">라이브</span></h1>
+    <div class="sub">출처: Supabase <code>research</code> 스키마 라이브 조회 · 자본 0(Phase 0) · 비공개</div>
+    <div class="hbar" id="health"></div>
+    <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
+      <button class="btn" onclick="loadAll()">↻ 새로고침</button>
+      <span id="status">불러오는 중…</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <h2>적용 게이트 (3중 동시통과 시에만 시스템 반영)</h2>
+      <div class="gates" id="gates"></div>
+      <div class="note" id="gatenote"></div>
+    </section>
+
+    <section class="card">
+      <h2>실험 목록 <span class="pill g" id="expcount"></span></h2>
+      <table>
+        <thead><tr><th>코드</th><th>변형</th><th>벤치마크</th><th>유니버스 규칙</th><th>lockbox</th><th>상태</th></tr></thead>
+        <tbody id="exps"></tbody>
+      </table>
+    </section>
+
+    <div class="cols">
+      <section class="card">
+        <h2>레짐별 비교 (Sharpe)</h2>
+        <table>
+          <thead><tr><th>레짐</th><th class="num">BTC단일</th><th class="num">PIT교차</th><th class="num">+오버레이</th><th class="num">강도집중</th></tr></thead>
+          <tbody id="regime"></tbody>
+        </table>
+        <div class="note" id="regimenote"></div>
+      </section>
+
+      <section class="card">
+        <h2>세계표준 배터리 (EXP-001)</h2>
+        <table>
+          <thead><tr><th>지표</th><th class="num">값</th><th class="num">기준</th><th>판정</th></tr></thead>
+          <tbody id="battery"></tbody>
+        </table>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>종목별 매매 실측 (백테스트 · 수수료 0.1%·다음봉 체결)</h2>
+      <table>
+        <thead><tr><th>코인</th><th class="num">매매</th><th class="num">승률%</th><th class="num">평균수익%</th><th class="num">보유일</th><th class="num">누적%</th></tr></thead>
+        <tbody id="coins"></tbody>
+      </table>
+      <div class="note">승률은 함정 — BTC 승률 57%인데 누적 큼. 추세추종은 "맞을 때 크게·틀리면 짧게".</div>
+    </section>
+
+    <section class="card">
+      <h2>데이터 청정 감사</h2>
+      <table>
+        <thead><tr><th>대상</th><th>중복</th><th>3일초과결측</th><th>급등</th><th>폭락</th><th>음수</th><th class="num">stale(h)</th><th>입장</th></tr></thead>
+        <tbody id="hygiene"></tbody>
+      </table>
+      <div class="note">알트 피드 5/27 정지(stale). 84개 정크코인은 과거 일봉 백필 필요(미실험 #1).</div>
+    </section>
+
+    <footer>
+      <b>한계 명시:</b> 모든 결과는 <b>생존편향 상단치</b> · 알트 피드 5/27 정지 · 온체인 표본부족(15pt). 신호 입력은 100% 데이터+수식.<br>
+      저장: Supabase <code>research</code>(append-only·live 격벽·anon은 research 미러뷰만) · 라이브 조회 · realplanjeju.com/admin 비공개.
+    </footer>
+  </div>
+</div>
+</div>
+
+<script>
+/* ===== 로그인 가드: admin 공통 Supabase(realplanjeju) 세션 공유 ===== */
+const AUTH_REF="iodfqlkeiwxyuojwcozv";
+const AUTH_KEY="sb-"+AUTH_REF+"-auth-token";
+function readSession(){
+  try{const raw=localStorage.getItem(AUTH_KEY);if(!raw)return null;
+    const s=JSON.parse(raw);if(!s||!s.access_token||!s.user)return null;
+    if(s.expires_at && s.expires_at*1000<Date.now())return null;return s;}catch(e){return null;}
+}
+function doLogout(){try{localStorage.removeItem(AUTH_KEY);}catch(e){}location.href="/admin/marketing.html";}
+function showLogin(){document.getElementById("login-screen").style.display="flex";document.getElementById("app").style.display="none";}
+function showApp(){document.getElementById("login-screen").style.display="none";document.getElementById("app").style.display="block";loadAll();}
+
+/* ===== 데이터: 코인 프로젝트 research 뷰 (anon, 비민감) ===== */
+const SUPA="https://aznpsgvnattqyobfzoxi.supabase.co";
+const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6bnBzZ3ZuYXR0cXlvYmZ6b3hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNjE4NjIsImV4cCI6MjA5MzgzNzg2Mn0.YEREAwuCGhueCnLdLOLuIEwZ3bVsfe3aLdBA62qA-P0";
+async function q(view,qs=""){const r=await fetch(`${SUPA}/rest/v1/${view}?${qs}`,{headers:{apikey:KEY,Authorization:"Bearer "+KEY}});if(!r.ok)throw new Error(view+" "+r.status);return r.json();}
+const EXPS=["EXP-001","EXP-002","EXP-003","EXP-004"];
+const EXPLABEL={"EXP-001":"BTC단일","EXP-002":"PIT교차","EXP-003":"+오버레이","EXP-004":"강도집중"};
+const num=v=>v===null||v===undefined||v===""?null:Number(v);
+function renderHealth(h,rg){
+  const reg=rg?rg.regime:null;
+  const regColor=reg==="BEAR"?"var(--red)":(reg==="BULL"?"var(--green)":"var(--amber)");
+  const viol=h?h.open_violations:null;
+  const st=(reg&&Number(viol)===0)?"정상가동":(h?h.overall_status:"–");
+  const mom=rg&&rg.mom12m!=null?(Number(rg.mom12m)*100).toFixed(0)+"%":"–";
+  document.getElementById("health").innerHTML=`
+    <div class="hcell">상태 <b style="color:var(--green)">${st}</b></div>
+    <div class="hcell">레짐 <b style="color:${regColor}">${reg||'–'}</b> <span style="color:var(--muted)">(${rg?rg.persistence_days:'–'}일·BTC 12m ${mom})</span></div>
+    <div class="hcell">phase1 점수 <b>${h?h.phase1_score:'–'}</b></div>
+    <div class="hcell">매매 <b>${h?h.trades_total:'–'}</b> · 위반 <b>${viol??'–'}</b></div>
+    <div class="hcell">최근신호 <b>${h?h.last_signal_h_ago:'–'}h</b> 전</div>`;
+}
+function renderExps(rows){
+  document.getElementById("expcount").textContent=rows.length+"건";
+  document.getElementById("exps").innerHTML=rows.sort((a,b)=>a.exp_code.localeCompare(b.exp_code)).map(e=>{
+    const lb=(e.lockbox_from||e.lockbox_to)?`${e.lockbox_from||''}~${e.lockbox_to||''}`:'<span class="pill badp">없음</span>';
+    return `<tr><td><span class="pill t">${e.exp_code}</span></td><td>${e.variant_name||''}</td><td>${e.benchmark||''}</td><td>${e.universe_rule||''}</td><td>${lb}</td><td>${e.status||''}</td></tr>`;
+  }).join("");
+}
+function renderRegime(rows){
+  const sharpe={},lf={};
+  rows.forEach(r=>{if(r.metric==="sharpe")sharpe[r.exp_code+"|"+r.regime]=num(r.value);if(r.metric==="long_frac")lf[r.exp_code+"|"+r.regime]=num(r.value);});
+  const regimes=[["all","전체"],["bull","상승장"],["side","횡보장"],["bear","하락장"]];
+  const cell=(exp,rk)=>{let v=sharpe[exp+"|"+rk];
+    if(rk==="bear"&&(v===null||v===0)){const l=lf[exp+"|bear"];if(v===0||l===0||(l===null&&exp==="EXP-001"))return '<td class="num">현금(0)</td>';}
+    if(v===null)return '<td class="num">–</td>';
+    const cls=v>0?(rk==="side"?"pos":""):"neg";return `<td class="num ${cls}">${(v>0&&rk==='side'?'+':'')}${v.toFixed(2)}</td>`;};
+  document.getElementById("regime").innerHTML=regimes.map(([rk,rl])=>`<tr><td>${rl}</td>${EXPS.map(e=>cell(e,rk)).join("")}</tr>`).join("");
+  const allS=EXPS.map(e=>[EXPLABEL[e],sharpe[e+"|all"]]).filter(x=>x[1]!=null).sort((a,b)=>b[1]-a[1]);
+  document.getElementById("regimenote").innerHTML="전체 Sharpe 순위: "+allS.map(x=>`${x[0]} <b>${x[1].toFixed(2)}</b>`).join(" &gt; ")+`. <b>${allS[0]?allS[0][0]:'?'}이(가) 최상위</b> — 다종목 변형이 BTC를 넘지 못함.`;
+}
+function renderBattery(rows){
+  const M={};rows.filter(r=>r.exp_code==="EXP-001"&&r.regime==="all").forEach(r=>{M[r.metric]={v:r.value,b:r.benchmark_value};});
+  const pass=p=>p?'<span class="pill okp">PASS</span>':'<span class="pill badp">FAIL</span>';
+  const lines=[
+    ["DSR pass",M.dsr_pass?M.dsr_pass.v:null,"1",num(M.dsr_pass?M.dsr_pass.v:0)>0],
+    ["WF median OOS",M.wf_median_oos?M.wf_median_oos.v:null,M.wf_median_oos?M.wf_median_oos.b:null,num(M.wf_median_oos?M.wf_median_oos.v:0)>=num(M.wf_median_oos?M.wf_median_oos.b:1)],
+    ["PBO-CSCV",M.pbo?M.pbo.v:null,"<"+(M.pbo?M.pbo.b:"0.5"),num(M.pbo?M.pbo.v:1)<num(M.pbo?M.pbo.b:0.5)],
+    ["overall",M.overall_pass?M.overall_pass.v:null,"1",num(M.overall_pass?M.overall_pass.v:0)>0]];
+  document.getElementById("battery").innerHTML=lines.map(l=>`<tr><td>${l[0]}</td><td class="num">${l[1]??'–'}</td><td class="num">${l[2]??'–'}</td><td>${pass(l[3])}</td></tr>`).join("");
+}
+function renderCoins(rows){
+  rows.sort((a,b)=>num(b.compound_pct)-num(a.compound_pct));
+  document.getElementById("coins").innerHTML=rows.map(c=>{const comp=num(c.compound_pct),cls=comp>0?"pos":(comp<0?"neg":"");
+    return `<tr><td><b>${c.sym}</b></td><td class="num">${c.trades??'–'}</td><td class="num">${c.win_pct??'–'}</td><td class="num">${c.avg_ret_pct??'–'}</td><td class="num">${c.avg_hold_d??'–'}</td><td class="num ${cls}">${comp>0?'+':''}${comp??'–'}</td></tr>`;}).join("");
+}
+function renderHygiene(rows){
+  document.getElementById("hygiene").innerHTML=rows.map(h=>{const adm=h.admitted?'<span class="pill okp">허용</span>':'<span class="pill badp">제외</span>';
+    return `<tr><td><b>${h.sym}</b></td><td class="pos">${h.dup_rows}</td><td>${h.gaps_gt3d}(최대${h.max_gap_d}일)</td><td class="pos">${h.jump_up}</td><td class="pos">${h.crash_dn}</td><td class="pos">${h.nonpos}</td><td class="num">${h.stale_h}</td><td>${adm}</td></tr>`;}).join("");
+}
+function renderGates(compare,health){
+  const ov=compare.find(r=>r.exp_code==="EXP-001"&&r.metric==="overall_pass");const stdPass=num(ov?ov.value:0)>0;
+  const sa={};compare.filter(r=>r.metric==="sharpe"&&r.regime==="all").forEach(r=>sa[r.exp_code]=num(r.value));
+  const btc=sa["EXP-001"]||0;const altBeat=Object.entries(sa).some(([k,v])=>k!=="EXP-001"&&v>btc);
+  const viol=health?num(health.open_violations):null;
+  const g=[["① 자연검증",viol===0?"통과":"확인필요",viol===0?"ok":"warn",`위반 ${viol??'?'}건·외부 대조 일치`],
+    ["② 비교우위(vs BTC)",altBeat?"우위":"부분",altBeat?"ok":"warn","횡보장만 우위·전체 미달"],
+    ["③ 세계표준 배터리",stdPass?"통과":"미통과",stdPass?"ok":"bad","DSR·WF median 기준 미달"]];
+  document.getElementById("gates").innerHTML=g.map(x=>`<div class="gate ${x[2]}"><div class="t">${x[0]}</div><div class="v">${x[1]}</div><div class="gsub">${x[3]}</div></div>`).join("");
+  document.getElementById("gatenote").innerHTML=stdPass?"3중 게이트 통과 — 다음 단계 검토 가능.":"현재 ③ 미통과 → <b>실거래·스케일업 보류가 정답.</b> 게이트는 결과를 정직하게 반영 중.";
+}
+async function loadAll(){
+  const s=document.getElementById("status");s.textContent="불러오는 중…";s.className="";
+  try{
+    const [health,regime,exps,compare,coins,hyg]=await Promise.all([
+      q("v_research_health","select=*").then(a=>a[0]).catch(()=>null),
+      q("v_research_regime","select=*").then(a=>a[0]).catch(()=>null),
+      q("v_research_experiments","select=*"),
+      q("v_research_compare","select=*"),
+      q("v_research_trades","select=*"),
+      q("v_research_hygiene","select=*")]);
+    renderHealth(health,regime);renderExps(exps);renderRegime(compare);renderBattery(compare);renderCoins(coins);renderHygiene(hyg);renderGates(compare,health);
+    s.textContent="✓ 라이브 조회 완료 · "+new Date().toLocaleString("ko-KR");
+  }catch(e){s.className="err";s.textContent="조회 실패: "+e.message;}
+}
+/* 진입: 세션 있으면 앱, 없으면 로그인 안내 */
+(function(){ if(readSession()) showApp(); else showLogin(); })();
+</script>
+</body>
+</html>

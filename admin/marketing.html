@@ -536,7 +536,7 @@ async function loadKeywordInsight(){
   const{count:tp}=await sb.from('mk_top_posts').select('*',{count:'exact',head:true});
   const kpi=[['키워드 풀 총',tot.count],['연관키워드DB',yk.count],['유입검색어',ui.count],['상위글',tp]];
   document.getElementById('ki-kpi').innerHTML=kpi.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+((k[1]||0).toLocaleString())+'</div></div>').join('');
-  const{data:top}=await sb.from('mk_top_posts').select('채널,측정월,순위,제목,조회수').order('조회수',{ascending:false}).limit(500);
+  const{data:top}=await sb.from('mk_top_posts').select('채널,측정월,순위,제목,조회수').order('측정월',{ascending:false}).order('순위',{ascending:true}).limit(900);
   window._kiTop=top||[]; renderKiTop(window._kiCh||'전체');
   const{data:aud}=await sb.from('mk_audience_stats').select('유형,항목,세부,비율,측정월').eq('채널','블A네이버').order('측정월',{ascending:false}).limit(300);
   const latest=(aud&&aud.length)?aud[0].측정월:null;
@@ -549,7 +549,7 @@ async function loadKeywordInsight(){
 function renderKiTop(ch){
   window._kiCh=ch;
   const all=window._kiTop||[];
-  const list=(ch==='전체'?all:all.filter(r=>String(r.채널||'').indexOf(ch)===0)).slice(0,30);
+  const list=(ch==='전체'?all:all.filter(r=>String(r.채널||'').indexOf(ch)===0)).slice().sort((a,b)=>(b.조회수||0)-(a.조회수||0)).slice(0,30);
   document.getElementById('ki-top').innerHTML=list.map(r=>'<tr><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px;font-size:.75rem">'+(r.채널||'-')+'</span></td><td style="font-size:.78rem">'+((r.측정월||'').slice(0,7))+'</td><td>'+r.순위+'</td><td style="max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.제목||'-')+'</td><td style="font-weight:700">'+((r.조회수||0).toLocaleString())+'</td></tr>').join('')||'<tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8">해당 채널 데이터 없음 (네이버 월간통계 업로드 필요)</td></tr>';
   document.querySelectorAll('#ki-top-filter .filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.ch===ch));
 }

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.7</title>
+<title>리얼플랜제주 마케팅 운영 v1.8</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -91,7 +91,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.7</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.8</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -441,8 +441,14 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div style="font-size:.72rem;color:#94a3b8;padding:6px 16px 0">블A=13개월 풀데이터 · 블B·블C=2026-03 한 달치만(네이버 통계 추가 업로드 시 확장)</div>
         <div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>채널</th><th>월</th><th>순위</th><th>제목</th><th>조회수</th></tr></thead><tbody id="ki-top"><tr><td colspan="5" class="loading">로딩 중...</td></tr></tbody></table></div>
       </div>
-      <div class="card" style="margin:0"><div class="card-hdr"><h3>👥 오디언스 요약 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">성·연령·시간대·기기 / 블A네이버 (블B·블C는 원본 미수집)</span></h3></div>
-        <div class="card-body" id="ki-aud" style="font-size:.85rem;color:#475569;line-height:1.7">로딩 중...</div>
+      <div class="card" style="margin:0"><div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🔎 유입 검색어 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">방문자가 실제 검색해 들어온 키워드</span></h3>
+        <div id="ki-inflow-filter" style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="filter-btn active" data-ch="전체" onclick="renderKiInflow('전체')">전체</button>
+          <button class="filter-btn" data-ch="블A" onclick="renderKiInflow('블A')">블A 여행</button>
+          <button class="filter-btn" data-ch="블B" onclick="renderKiInflow('블B')">블B 행사</button>
+          <button class="filter-btn" data-ch="블C" onclick="renderKiInflow('블C')">블C 마케팅</button>
+        </div></div>
+        <div class="card-body" id="ki-inflow" style="font-size:.85rem;color:#475569;line-height:1.9">로딩 중...</div>
       </div>
     </div>
     <div class="tab-panel" id="t9">
@@ -538,13 +544,24 @@ async function loadKeywordInsight(){
   document.getElementById('ki-kpi').innerHTML=kpi.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+((k[1]||0).toLocaleString())+'</div></div>').join('');
   const{data:top}=await sb.from('mk_top_posts').select('채널,측정월,순위,제목,조회수').order('측정월',{ascending:false}).order('순위',{ascending:true}).limit(900);
   window._kiTop=top||[]; renderKiTop(window._kiCh||'전체');
-  const{data:aud}=await sb.from('mk_audience_stats').select('유형,항목,세부,비율,측정월').eq('채널','블A네이버').order('측정월',{ascending:false}).limit(300);
-  const latest=(aud&&aud.length)?aud[0].측정월:null;
-  const cur=(aud||[]).filter(r=>r.측정월===latest);
-  const bt={};cur.forEach(r=>{(bt[r.유형]=bt[r.유형]||[]).push(r);});
-  let h='<div style="font-size:.78rem;color:#94a3b8;margin-bottom:8px">최신월 '+((latest||'').slice(0,7))+'</div>';
-  for(const t of Object.keys(bt)){const t5=bt[t].sort((a,b)=>(b.비율||0)-(a.비율||0)).slice(0,6);h+='<div style="margin-bottom:8px"><b>'+t+'</b> : '+t5.map(r=>(r.항목+((r.세부&&r.세부!=='-')?'/'+r.세부:''))+' '+(r.비율||0)+'%').join(' · ')+'</div>';}
-  document.getElementById('ki-aud').innerHTML=h||'데이터 없음';
+  const{data:inflow}=await sb.from('mk_keyword_pool').select('채널,키워드').eq('출처','naver_유입검색어').limit(3000);
+  window._kiInflow=inflow||[];
+  const[cA,cB,cC]=await Promise.all([
+    sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}).eq('출처','naver_유입검색어').eq('채널','블A네이버'),
+    sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}).eq('출처','naver_유입검색어').eq('채널','블B네이버'),
+    sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}).eq('출처','naver_유입검색어').eq('채널','블C네이버')]);
+  window._kiInflowCnt={'블A':cA.count||0,'블B':cB.count||0,'블C':cC.count||0};
+  renderKiInflow(window._kiInflowCh||'전체');
+}
+function renderKiInflow(ch){
+  window._kiInflowCh=ch;
+  const all=window._kiInflow||[], cnt=window._kiInflowCnt||{};
+  const list=(ch==='전체'?all:all.filter(r=>String(r.채널||'').indexOf(ch)===0));
+  const total=ch==='전체'?((cnt['블A']||0)+(cnt['블B']||0)+(cnt['블C']||0)):(cnt[ch]||0);
+  const terms=list.slice(0,60);
+  const tags=terms.map(r=>'<span style="display:inline-block;background:#eef2ff;color:#3730a3;padding:3px 9px;border-radius:9px;font-size:.76rem;margin:0 4px 6px 0">'+String(r.키워드||'').replace(/</g,'&lt;')+'</span>').join('');
+  document.getElementById('ki-inflow').innerHTML='<div style="font-size:.74rem;color:#94a3b8;margin-bottom:8px">채널 총 '+total.toLocaleString()+'개 · 표시 '+terms.length+'개 (방문자가 실제 검색해 들어온 키워드)</div>'+(tags||'<span style="color:#94a3b8">유입 검색어 없음</span>');
+  document.querySelectorAll('#ki-inflow-filter .filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.ch===ch));
 }
 function renderKiTop(ch){
   window._kiCh=ch;

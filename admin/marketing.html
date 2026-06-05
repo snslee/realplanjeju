@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.5</title>
+<title>리얼플랜제주 마케팅 운영 v1.6</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -91,7 +91,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.5</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.6</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -108,6 +108,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     <div class="nav-item" onclick="switchTab('t6',this)"><span>🎨</span>작성 가이드</div>
     <div class="nav-item" onclick="switchTab('t7',this)"><span>📅</span>스케줄</div>
     <div class="nav-item" onclick="switchTab('t8',this)"><span>🔑</span>키워드·인사이트</div>
+    <div class="nav-section">실험</div>
+    <div class="nav-item" onclick="switchTab('t9',this)"><span>🤖</span>무인풀오토 실험</div>
   </nav>
   <div class="mobile-nav">
     <div class="mob-item active" onclick="switchTab('t1',null)"><span style="font-size:1.1rem">📊</span>통계</div>
@@ -436,6 +438,20 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div class="card-body" id="ki-aud" style="font-size:.85rem;color:#475569;line-height:1.7">로딩 중...</div>
       </div>
     </div>
+    <div class="tab-panel" id="t9">
+      <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><h2 style="font-size:1.2rem;font-weight:700">🤖 무인풀오토 실험</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">비동기 분할 생성 큐 (mk_autogen_jobs) · 한 틱 = 한 섹션</p></div>
+        <div style="display:flex;gap:8px">
+          <button onclick="loadAutogenJobs()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
+          <button onclick="runAutogenTick()" class="filter-btn" style="border-radius:8px;background:#ecfdf5;color:#047857;border-color:#a7f3d0">▶ 다음 섹션 생성</button>
+        </div>
+      </div>
+      <div id="aj-banner" style="background:#fef9c3;border:1px solid #fde68a;color:#854d0e;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:14px">ℹ️ 실험 게시판입니다. 워커는 한 번 호출에 한 섹션씩 이어 생성하며(섹션_완료부터 자동 재개), Anthropic 크레딧 충전 후 정상 가동됩니다. 크레딧이 없으면 시도 3회 후 '실패'로 표시됩니다.</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:16px" id="aj-kpi"></div>
+      <div class="card" style="margin:0"><div class="card-hdr"><h3>📋 생성 큐</h3></div>
+        <div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>상태</th><th>채널</th><th>핵심키워드 / 제목</th><th>진행</th><th>점수</th><th>메모</th><th>수정</th></tr></thead><tbody id="aj-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table></div>
+      </div>
+    </div>
   </main>
 </div>
 <div class="modal-bg" id="reject-modal">
@@ -496,7 +512,7 @@ async function doLogin(){
   if(error){e.textContent='Google 로그인 실패: '+error.message;btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google로 로그인';}
 }
 async function doLogout(){try{localStorage.removeItem(SB_AUTH_KEY);localStorage.removeItem(SB_VERIFIER_KEY);}catch(e){}await sb.auth.signOut().catch(()=>{});showLogin();}
-function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6')loadAlgo();if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();}
+function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6')loadAlgo();if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();}
 async function loadKeywordInsight(){
   const[tot,yk,ui]=await Promise.all([
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}),
@@ -516,6 +532,38 @@ async function loadKeywordInsight(){
   document.getElementById('ki-aud').innerHTML=h||'데이터 없음';
 }
 
+async function loadAutogenJobs(){
+  const{data,error}=await sb.from('mk_autogen_jobs').select('*').order('수정일',{ascending:false}).limit(50);
+  if(error){document.getElementById('aj-body').innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:#ef4444">로드 실패: '+error.message+'</td></tr>';return;}
+  const rows=data||[];const cnt={대기:0,생성중:0,완료:0,실패:0};
+  rows.forEach(r=>{cnt[r.상태]=(cnt[r.상태]||0)+1;});
+  const kpis=[['전체',rows.length],['대기',cnt.대기||0],['생성중',cnt.생성중||0],['완료',cnt.완료||0],['실패',cnt.실패||0]];
+  document.getElementById('aj-kpi').innerHTML=kpis.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+k[1]+'</div></div>').join('');
+  const badge={대기:'#fef3c7|#92400e',생성중:'#dbeafe|#1e40af',완료:'#d1fae5|#047857',실패:'#fee2e2|#b91c1c'};
+  const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  document.getElementById('aj-body').innerHTML=rows.length?rows.map(r=>{
+    const b=(badge[r.상태]||'#e2e8f0|#475569').split('|');
+    const len=(r.누적_본문||'').replace(/\s/g,'').length;
+    const memo=r.오류?('<span style="color:#b91c1c">'+esc(String(r.오류).slice(0,60))+'</span>'):(r.draft_id?'<span style="color:#047857">초안 적재됨</span>':'-');
+    return '<tr><td><span style="background:'+b[0]+';color:'+b[1]+';padding:2px 8px;border-radius:9px;font-size:.74rem;font-weight:600">'+(r.상태||'-')+'</span></td>'
+      +'<td><span style="background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px;font-size:.74rem">'+(r.채널||'-')+'</span></td>'
+      +'<td style="max-width:280px"><div style="font-weight:600;font-size:.8rem">'+esc(r.핵심키워드||'-')+'</div><div style="color:#94a3b8;font-size:.74rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.제목||'')+'</div></td>'
+      +'<td style="font-size:.78rem">섹션 '+(r.섹션_완료||0)+'/'+(r.섹션_총||0)+'<br><span style="color:#64748b">'+len.toLocaleString()+'자</span></td>'
+      +'<td style="font-weight:700">'+(r.자가검증_점수!=null?Number(r.자가검증_점수).toFixed(1):'-')+'</td>'
+      +'<td style="font-size:.74rem;max-width:200px">'+memo+'</td>'
+      +'<td style="color:#94a3b8;font-size:.73rem">'+(String(r.수정일||'').slice(5,16).replace('T',' '))+'</td></tr>';
+  }).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">큐가 비어 있습니다</td></tr>';
+}
+async function runAutogenTick(){
+  if(!confirm('워커를 1회 호출해 다음 섹션을 생성합니다.\n(Anthropic 크레딧이 없으면 실패로 기록될 수 있습니다)\n진행할까요?'))return;
+  showToast('워커 호출 중...');
+  try{
+    const{data,error}=await sb.functions.invoke('autogen-async-worker',{body:{}});
+    if(error)throw error;
+    showToast(data&&data.ok?('완료: 섹션 '+(data.섹션||'')+' · '+(data.상태||'')):(data&&data.error?('오류: '+String(data.error).slice(0,40)):'응답 확인됨'));
+  }catch(e){showToast('호출 실패: '+String(e.message||e).slice(0,40));}
+  setTimeout(loadAutogenJobs,1000);
+}
 
 function renderStatsPage(){var ydData=window._ydView||[];var _sp=Math.max(1,Math.ceil(ydData.length/STAT_PER));if(_statPage>_sp)_statPage=1;var pe=document.getElementById('stats-pager');if(pe)pe.innerHTML=pagerHTML(_statPage,_sp,ydData.length,'gotoStatPage');document.getElementById('stats-body').innerHTML=ydData.length?ydData.slice((_statPage-1)*STAT_PER,_statPage*STAT_PER).map(r=>`<tr><td><b>${r.채널||'-'}</b></td><td style="font-size:.75rem;color:#64748b">${r.데이터_소스||'-'}</td><td>${(r.노출_수||0).toLocaleString()}</td><td>${(r.클릭_수||0).toLocaleString()}</td><td>${r.ctr_pct!=null?Number(r.ctr_pct).toFixed(2)+'%':'-'}</td><td>${r.평균_순위!=null?Number(r.평균_순위).toFixed(1)+'위':'-'}</td><td style="color:#94a3b8;font-size:.78rem">${r.수집_시각?r.수집_시각.slice(0,10):'-'}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">데이터 없음</td></tr>';}
 function gotoStatPage(n){_statPage=n;renderStatsPage();}

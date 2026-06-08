@@ -104,4 +104,48 @@ async function openD(id){
 function closeD(){document.getElementById('ov').style.display='none';}
 /* 마크다운 → HTML 변환 (표·소제목·단락·URL) — 붙여넣기 시 정상 표 렌더 */
 function mdToHtml(md){
-  const esc=s=>String(s
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const inline=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  const lines=String(md).split(/\r?\n/);
+  const isRow=l=>/^\s*\|.*\|\s*$/.test(l);
+  const isSep=l=>l.includes('-')&&/^\s*\|?[\s:|-]*-{2,}[\s:|-]*\|?\s*$/.test(l);
+  let html='',i=0;
+  while(i<lines.length){
+    const ln=lines[i];
+    if(/^\s*$/.test(ln)){i++;continue;}
+    if(isRow(ln)&&i+1<lines.length&&isSep(lines[i+1])){
+      const cells=l=>l.trim().replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+      const head=cells(ln);i+=2;const body=[];
+      while(i<lines.length&&isRow(lines[i])){body.push(cells(lines[i]));i++;}
+      let t='<table style="border-collapse:collapse;width:100%;margin:12px 0">';
+      t+='<thead><tr>'+head.map(h=>`<th style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:center">${inline(h)}</th>`).join('')+'</tr></thead><tbody>';
+      t+=body.map(r=>'<tr>'+r.map(c=>`<td style="border:1px solid #cbd5e1;padding:8px">${inline(c)}</td>`).join('')+'</tr>').join('');
+      html+=t+'</tbody></table>';continue;
+    }
+    const h=ln.match(/^(#{1,6})\s+(.*)$/);
+    if(h){const lv=Math.min(h[1].length,6);html+=`<h${lv}>${inline(h[2])}</h${lv}>`;i++;continue;}
+    if(/^https?:\/\/\S+$/.test(ln.trim())){const u=ln.trim();html+=`<p><a href="${u}">${u}</a></p>`;i++;continue;}
+    const para=[ln];i++;
+    while(i<lines.length&&!/^\s*$/.test(lines[i])&&!isRow(lines[i])&&!/^#{1,6}\s/.test(lines[i])&&!/^https?:\/\/\S+$/.test(lines[i].trim())){para.push(lines[i]);i++;}
+    html+=`<p>${para.map(inline).join('<br>')}</p>`;
+  }
+  return html;
+}
+async function cp(k,btn){const t=DC[k]||'';if(!t){alert('내용 없음');return;}
+  const ok=()=>{const o=btn.textContent;btn.textContent='✅ 복사됨!';setTimeout(()=>btn.textContent=o,1500);};
+  if(k==='img'){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok).catch(()=>fb(t,ok));else fb(t,ok);return;}
+  const html=mdToHtml(t);
+  try{
+    if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
+      await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([t],{type:'text/plain'})})]);
+      ok();return;
+    }
+  }catch(e){}
+  fbHtml(html,ok);}
+function fbHtml(html,cb){const d=document.createElement('div');d.contentEditable=true;d.style.position='fixed';d.style.left='-9999px';d.innerHTML=html;document.body.appendChild(d);const r=document.createRange();r.selectNodeContents(d);const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');cb&&cb();}catch(e){alert('복사 실패');}s.removeAllRanges();document.body.removeChild(d);}
+function fb(t,cb){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb&&cb();}catch(e){alert('복사 실패');}document.body.removeChild(ta);}
+async function setStatus(id,st){const{error}=await sb.from('mk_blog_drafts').update({상태:st,승인일:st==='approved'?new Date().toISOString():null}).eq('id',id);if(error){alert('실패: '+error.message);return;}closeD();load();}
+async function rej(id){const r=prompt('반려 사유를 입력하세요');if(!r)return;const{error}=await sb.from('mk_blog_drafts').update({상태:'rejected',거절_사유:r}).eq('id',id);if(error){alert('실패: '+error.message);return;}closeD();load();}
+document.getElementById('ov').addEventListener('click',e=>{if(e.target.id==='ov')closeD();});
+load();
+</script></body></html>

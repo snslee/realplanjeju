@@ -28,6 +28,12 @@ textarea{width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:14px;font
 .ap{background:#10b981}.rj{background:#ef4444}
 .x{font-size:1.5rem;cursor:pointer;color:#64748b}
 .loading{text-align:center;padding:40px;color:#94a3b8}
+.preview{border:1px solid #e2e8f0;border-radius:8px;padding:16px 18px;max-height:46vh;overflow-y:auto;background:#fff;font-size:.92rem;line-height:1.8}
+.preview h1{font-size:1.25rem;margin:6px 0 12px} .preview h2{font-size:1.05rem;margin:16px 0 8px;color:#1e3a8a}
+.preview p{margin:8px 0} .preview a{color:#2563eb;word-break:break-all}
+.preview table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.88rem}
+.preview th{border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:center}
+.preview td{border:1px solid #cbd5e1;padding:8px}
 </style></head>
 <body>
 <div class="top"><div><h1>📋 초안 보관소 게시판</h1><div class="sub">mk_blog_drafts · 클릭하면 본문 전체를 한 번에 복사할 수 있어요</div></div>
@@ -88,28 +94,14 @@ async function openD(id){
         ${tis?`<button class="cpy" style="background:#7e22ce" onclick="cp('tis',this)">💻 티스토리 복사</button>`:''}
         ${imgText?`<button class="cpy" style="background:#c2410c" onclick="cp('img',this)">🖼 이미지 프롬프트 복사</button>`:''}
       </div>
-      <div class="lbl" style="color:#1d4ed8">📱 네이버 본문 <span class="cnt">(공백제외 ${navLen}자)</span></div>
-      <textarea readonly style="min-height:46vh" onclick="this.select()">${esc(nav)||'(본문 없음)'}</textarea>
-      ${tis?`<div class="lbl" style="color:#7e22ce">💻 티스토리 본문 <span class="cnt">(공백제외 ${tisLen}자)</span></div><textarea readonly style="min-height:30vh" onclick="this.select()">${esc(tis)}</textarea>`:''}
+      <div class="lbl" style="color:#1d4ed8">📱 네이버 본문 미리보기 <span class="cnt">(공백제외 ${navLen}자 · 복사하면 이 표 형식 그대로 붙습니다)</span></div>
+      <div class="preview">${nav?mdToHtml(nav):'(본문 없음)'}</div>
+      <details style="margin-top:6px"><summary style="cursor:pointer;color:#94a3b8;font-size:.8rem">원문(마크다운) 보기</summary><textarea readonly style="min-height:28vh;margin-top:6px" onclick="this.select()">${esc(nav)||'(본문 없음)'}</textarea></details>
+      ${tis?`<div class="lbl" style="color:#7e22ce">💻 티스토리 본문 미리보기 <span class="cnt">(공백제외 ${tisLen}자)</span></div><div class="preview">${mdToHtml(tis)}</div><details style="margin-top:6px"><summary style="cursor:pointer;color:#94a3b8;font-size:.8rem">원문(마크다운) 보기</summary><textarea readonly style="min-height:22vh;margin-top:6px" onclick="this.select()">${esc(tis)}</textarea></details>`:''}
     </div>`;
   document.getElementById('ov').style.display='flex';
 }
 function closeD(){document.getElementById('ov').style.display='none';}
 /* 마크다운 → HTML 변환 (표·소제목·단락·URL) — 붙여넣기 시 정상 표 렌더 */
 function mdToHtml(md){
-  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const inline=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-  const lines=String(md).split(/\r?\n/);
-  const isRow=l=>/^\s*\|.*\|\s*$/.test(l);
-  const isSep=l=>l.includes('-')&&/^\s*\|?[\s:|-]*-{2,}[\s:|-]*\|?\s*$/.test(l);
-  let html='',i=0;
-  while(i<lines.length){
-    const ln=lines[i];
-    if(/^\s*$/.test(ln)){i++;continue;}
-    if(isRow(ln)&&i+1<lines.length&&isSep(lines[i+1])){
-      const cells=l=>l.trim().replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
-      const head=cells(ln);i+=2;const body=[];
-      while(i<lines.length&&isRow(lines[i])){body.push(cells(lines[i]));i++;}
-      let t='<table style="border-collapse:collapse;width:100%;margin:12px 0">';
-      t+='<thead><tr>'+head.map(h=>`<th style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:center">${inline(h)}</th>`).join('')+'</tr></thead><tbody>';
-      t+=body.map(r=>'<tr>'+r.map(c=>`<td style="border:1px solid #cbd5e1;padding:8px">${inline(c)}</td>`).join('')+'</tr>').join('
+  const esc=s=>String(s

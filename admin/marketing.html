@@ -953,12 +953,36 @@ async function viewWinning(id){
 // 블로그형 본문 렌더 + 리더
 function fmtBody(t){
   if(!t) return '<div style="color:#94a3b8">(본문 없음)</div>';
-  return t.split(/\n{2,}/).map(function(p){
-    p=p.trim(); if(!p) return '';
-    var esc=p.replace(/</g,'&lt;');
-    if(/^#{1,3}\s/.test(p)) return '<h3 style="font-size:1.05rem;font-weight:700;margin:18px 0 8px;color:#0f172a">'+esc.replace(/^#{1,3}\s/,'')+'</h3>';
-    return '<p style="margin:0 0 14px;line-height:1.9">'+esc.replace(/\n/g,'<br>')+'</p>';
-  }).join('');
+  return mdRender(t);
+}
+/* 마크다운 → HTML (표·소제목·단락·URL) — 표가 raw로 안 보이게 렌더 */
+function mdRender(md){
+  var esc=function(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+  var inline=function(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');};
+  var lines=String(md).split(/\r?\n/);
+  var isRow=function(l){return /^\s*\|.*\|\s*$/.test(l);};
+  var isSep=function(l){return l.indexOf('-')>=0 && /^\s*\|?[\s:|-]*-{2,}[\s:|-]*\|?\s*$/.test(l);};
+  var html='',i=0;
+  while(i<lines.length){
+    var ln=lines[i];
+    if(/^\s*$/.test(ln)){i++;continue;}
+    if(isRow(ln)&&i+1<lines.length&&isSep(lines[i+1])){
+      var cells=function(l){return l.trim().replace(/^\||\|$/g,'').split('|').map(function(c){return c.trim();});};
+      var head=cells(ln);i+=2;var body=[];
+      while(i<lines.length&&isRow(lines[i])){body.push(cells(lines[i]));i++;}
+      var tb='<table style="border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem">';
+      tb+='<thead><tr>'+head.map(function(h){return '<th style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:center">'+inline(h)+'</th>';}).join('')+'</tr></thead><tbody>';
+      tb+=body.map(function(r){return '<tr>'+r.map(function(c){return '<td style="border:1px solid #cbd5e1;padding:8px">'+inline(c)+'</td>';}).join('')+'</tr>';}).join('');
+      html+=tb+'</tbody></table>';continue;
+    }
+    var hm=ln.match(/^(#{1,6})\s+(.*)$/);
+    if(hm){html+='<h3 style="font-size:1.05rem;font-weight:700;margin:18px 0 8px;color:#0f172a">'+inline(hm[2])+'</h3>';i++;continue;}
+    if(/^https?:\/\/\S+$/.test(ln.trim())){var u=ln.trim();html+='<p style="margin:0 0 14px"><a href="'+u+'" style="color:#2563eb;word-break:break-all">'+u+'</a></p>';i++;continue;}
+    var para=[ln];i++;
+    while(i<lines.length&&!/^\s*$/.test(lines[i])&&!isRow(lines[i])&&!/^#{1,6}\s/.test(lines[i])&&!/^https?:\/\/\S+$/.test(lines[i].trim())){para.push(lines[i]);i++;}
+    html+='<p style="margin:0 0 14px;line-height:1.9">'+para.map(inline).join('<br>')+'</p>';
+  }
+  return html;
 }
 async function openDraftReader(id){
   const box=document.getElementById('drafts-reader'); if(!box)return;
@@ -1029,13 +1053,21 @@ async function openWinningReader(id){
 }
 
 
-function copyDraftPart(k,btn){
+async function copyDraftPart(k,btn){
   const t=(window.__dc||{})[k]||'';
   if(!t){showToast('복사할 내용이 없습니다');return;}
   const done=()=>{const o=btn?btn.textContent:'';if(btn){btn.textContent='✅ 복사됨!';setTimeout(()=>btn.textContent=o,1500);}showToast('복사 완료 ('+t.length+'자)');};
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));}
-  else fallbackCopy(t,done);
+  if(k==='img'){ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));} else fallbackCopy(t,done); return; }
+  const html=mdRender(t);
+  try{
+    if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
+      await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([t],{type:'text/plain'})})]);
+      done();return;
+    }
+  }catch(e){}
+  fallbackCopyHtml(html,done);
 }
+function fallbackCopyHtml(html,cb){const d=document.createElement('div');d.contentEditable=true;d.style.position='fixed';d.style.left='-9999px';d.innerHTML=html;document.body.appendChild(d);const r=document.createRange();r.selectNodeContents(d);const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');cb&&cb();}catch(e){showToast('복사 실패');}s.removeAllRanges();document.body.removeChild(d);}
 function fallbackCopy(t,cb){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb&&cb();}catch(e){showToast('복사 실패');}document.body.removeChild(ta);}
 
 // ===== 네이버 Excel 수동 업로드 (큐2 / naver_manual) =====

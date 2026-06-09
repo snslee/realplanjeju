@@ -1,0 +1,2 @@
+-- sql096 rpc_blog_reeval(네이버+티스토리 1p/2p/미진입/표류) + rpc_promote_winning(순위≤10 자동 명예의전당 등재)
+-- tistory-reeval-weekly EF v2가 호출, pg_cron 월11:30KST→텔레그램. 정본=Supabase 마이그레이션 sql096

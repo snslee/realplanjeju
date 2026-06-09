@@ -544,8 +544,15 @@ async function loadKeywordInsight(){
   document.getElementById('ki-kpi').innerHTML=kpi.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+((k[1]||0).toLocaleString())+'</div></div>').join('');
   const{data:top}=await sb.from('mk_top_posts').select('채널,측정월,순위,제목,조회수').order('측정월',{ascending:false}).order('순위',{ascending:true}).limit(900);
   window._kiTop=top||[]; renderKiTop(window._kiCh||'전체');
-  const{data:facts}=await sb.from('mk_inflow_keywords').select('채널,유입월,키워드,유입비율').order('유입월',{ascending:false}).order('유입비율',{ascending:false}).limit(8000);
-  window._kiFacts=facts||[];
+  let facts=[],fr=0;const PG=1000;
+  while(true){
+    const{data,error}=await sb.from('mk_inflow_keywords').select('채널,유입월,키워드,유입비율').order('유입월',{ascending:false}).order('유입비율',{ascending:false}).range(fr,fr+PG-1);
+    if(error||!data||!data.length)break;
+    facts=facts.concat(data);
+    if(data.length<PG)break;
+    fr+=PG;
+  }
+  window._kiFacts=facts;
   renderKiInflow(window._kiInflowCh||'전체');
 }
 function _kiMonthsFor(ch){

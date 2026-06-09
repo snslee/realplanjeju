@@ -144,7 +144,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <!-- ▼ 네이버 월별 조회수 (C' / naver_manual 월별총계 · 제목 NULL) -->
       <div class="card" style="margin:0 0 16px"><div class="card-hdr"><h3>📊 네이버 채널별 월별 조회수 추세 (최근 12개월) · 조회수↑ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">로그축</span></h3></div>
         <div class="card-body" style="position:relative">
-          <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.72rem;padding:7px 11px;border-radius:8px;margin-bottom:10px">ℹ️ 월별·수동 업로드 기준(최신 2026-05). 상단 자동수집(일별) 차트와 별개입니다.</div>
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.72rem;padding:7px 11px;border-radius:8px;margin-bottom:10px">ℹ️ 월별·수동 업로드 기준. 상단 자동수집(일별) 차트와 별개입니다.</div>
           <div style="height:280px;position:relative"><canvas id="naverMonthlyChart"></canvas><div id="naver-monthly-loading" class="loading">로딩 중...</div></div>
         </div>
       </div>
@@ -544,8 +544,9 @@ async function loadKeywordInsight(){
   document.getElementById('ki-kpi').innerHTML=kpi.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+((k[1]||0).toLocaleString())+'</div></div>').join('');
   const{data:top}=await sb.from('mk_top_posts').select('채널,측정월,순위,제목,조회수').order('측정월',{ascending:false}).order('순위',{ascending:true}).limit(900);
   window._kiTop=top||[]; renderKiTop(window._kiCh||'전체');
-  const{data:inflow}=await sb.from('mk_keyword_pool').select('채널,키워드').eq('출처','naver_유입검색어').limit(3000);
+  const{data:inflow}=await sb.from('mk_keyword_pool').select('채널,키워드,유입월,유입횟수').eq('출처','naver_유입검색어').order('유입월',{ascending:false,nullsFirst:false}).order('유입횟수',{ascending:false}).limit(4000);
   window._kiInflow=inflow||[];
+  window._kiLatestMonth=((window._kiInflow.find(r=>r.유입월))||{}).유입월||null;
   const[cA,cB,cC]=await Promise.all([
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}).eq('출처','naver_유입검색어').eq('채널','블A네이버'),
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}).eq('출처','naver_유입검색어').eq('채널','블B네이버'),
@@ -558,9 +559,30 @@ function renderKiInflow(ch){
   const all=window._kiInflow||[], cnt=window._kiInflowCnt||{};
   const list=(ch==='전체'?all:all.filter(r=>String(r.채널||'').indexOf(ch)===0));
   const total=ch==='전체'?((cnt['블A']||0)+(cnt['블B']||0)+(cnt['블C']||0)):(cnt[ch]||0);
-  const terms=list.slice(0,60);
-  const tags=terms.map(r=>'<span style="display:inline-block;background:#eef2ff;color:#3730a3;padding:3px 9px;border-radius:9px;font-size:.76rem;margin:0 4px 6px 0">'+String(r.키워드||'').replace(/</g,'&lt;')+'</span>').join('');
-  document.getElementById('ki-inflow').innerHTML='<div style="font-size:.74rem;color:#94a3b8;margin-bottom:8px">채널 총 '+total.toLocaleString()+'개 · 표시 '+terms.length+'개 (방문자가 실제 검색해 들어온 키워드)</div>'+(tags||'<span style="color:#94a3b8">유입 검색어 없음</span>');
+  const latest=window._kiLatestMonth;
+  // 유입월별 그룹화 (최신월 우선 · 월 미상은 '이전 누적')
+  const groups={};
+  list.forEach(r=>{const m=r.유입월?String(r.유입월).slice(0,7):'(이전 누적·월미상)';(groups[m]=groups[m]||[]).push(r);});
+  const keys=Object.keys(groups).sort((a,b)=>{const na=a.charAt(0)==='('?'0000-00':a,nb=b.charAt(0)==='('?'0000-00':b;return nb.localeCompare(na);});
+  const PER=80;
+  let html='<div style="font-size:.74rem;color:#94a3b8;margin-bottom:10px">채널 총 '+total.toLocaleString()+'개 · 방문자가 실제 검색해 들어온 키워드 · <b>최신월 우선 · 빈도순</b> 정렬</div>';
+  if(!keys.length){html+='<span style="color:#94a3b8">유입 검색어 없음</span>';}
+  keys.forEach(m=>{
+    const rows=groups[m].slice().sort((a,b)=>(b.유입횟수||0)-(a.유입횟수||0));
+    const isNew=(latest&&m===String(latest).slice(0,7));
+    const shown=rows.slice(0,PER), more=rows.length-shown.length;
+    html+='<div style="margin:0 0 6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+        +'<span style="font-weight:800;font-size:.82rem;color:#1e293b">📅 '+m+'</span>'
+        +'<span style="font-size:.72rem;color:#64748b">'+rows.length+'개</span>'
+        +(isNew?'<span style="background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:9px">🆕 이번 달 신규 유입어</span>':'')
+        +'</div>';
+    html+='<div style="margin:0 0 14px">'+shown.map(r=>{
+      const f=(r.유입횟수||1)>1?('<span style="color:#7c3aed;font-weight:700"> ·'+r.유입횟수+'개월</span>'):'';
+      const bg=isNew?'#ecfdf5':'#eef2ff', cl=isNew?'#166534':'#3730a3';
+      return '<span style="display:inline-block;background:'+bg+';color:'+cl+';padding:3px 9px;border-radius:9px;font-size:.76rem;margin:0 4px 6px 0">'+String(r.키워드||'').replace(/</g,'&lt;')+f+'</span>';
+    }).join('')+(more>0?'<span style="font-size:.72rem;color:#94a3b8">+'+more+'개 더</span>':'')+'</div>';
+  });
+  document.getElementById('ki-inflow').innerHTML=html;
   document.querySelectorAll('#ki-inflow-filter .filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.ch===ch));
 }
 function renderKiTop(ch){
@@ -1080,7 +1102,7 @@ function nvHdr(rows,c){for(let i=0;i<rows.length;i++){if(rows[i]&&String(rows[i]
 function nvParse(rows){
   const dn=(nvMeta(rows,'데이터명')||'').toString().trim();const month=nvMonth(nvMeta(rows,'데이터 기간'));let t=null,out=[];
   if(dn==='조회수 순위'){t='조회수순위';const h=nvHdr(rows,'순위');for(let i=h+1;i<rows.length;i++){const r=rows[i];if(!r||r[1]==null||String(r[1]).trim()==='')continue;out.push({측정_일자:month,제목:String(r[1]).trim(),조회_수:r[2]!=null?String(r[2]).replace(/[, ]/g,''):null,발행_시각:nvDate(r[3])});}}
-  else if(dn==='유입분석'){t='유입분석';const h=nvHdr(rows,'유입경로');const k=[];for(let i=h+1;i<rows.length;i++){const r=rows[i];if(!r)continue;const kw=r[2]!=null?String(r[2]).trim():'';if(!kw||/^https?:\/\//i.test(kw))continue;k.push(kw);}if(k.length)out.push({측정_일자:month,유입_검색어:k.slice(0,30)});}
+  else if(dn==='유입분석'){t='유입분석';const h=nvHdr(rows,'유입경로');const k=[];for(let i=h+1;i<rows.length;i++){const r=rows[i];if(!r)continue;const kw=r[2]!=null?String(r[2]).trim():'';if(!kw||/^https?:\/\//i.test(kw))continue;if(/(naver|daum|google)\.(com|net)|통합검색|블로그검색|이미지검색|동영상검색|쇼핑검색|카페검색|검색_(PC|모바일)$/i.test(kw))continue;if(/^(네이버|Daum|다음|구글|Google)$/i.test(kw))continue;k.push(kw);}if(k.length)out.push({측정_일자:month,유입_검색어:k.slice(0,30)});}
   else if(dn==='조회수'){t='조회수';const h=nvHdr(rows,'기간');for(let i=h+1;i<rows.length;i++){const r=rows[i];if(!r||r[0]==null)continue;const mm=nvMonth(r[0]);if(!mm)continue;out.push({측정_일자:mm,제목:null,조회_수:r[2]!=null?String(r[2]).replace(/[, ]/g,''):null});}}
   return {종류:t,dataName:dn,month,rows:out};
 }

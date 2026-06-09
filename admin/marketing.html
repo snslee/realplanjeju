@@ -450,6 +450,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         </div></div>
         <div class="card-body" id="ki-inflow" style="font-size:.85rem;color:#475569;line-height:1.9">로딩 중...</div>
       </div>
+      <div class="card" style="margin:16px 0 0"><div class="card-hdr"><h3>🎯 티스토리 주제 적합도 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">의도 키워드 vs 실제 유입 검색어(GSC)</span></h3></div>
+        <div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>판정</th><th>의도 키워드</th><th>실제 top 검색어</th><th>노출</th></tr></thead><tbody id="ki-drift"><tr><td colspan="4" class="loading">로딩 중...</td></tr></tbody></table></div>
+      </div>
     </div>
     <div class="tab-panel" id="t9">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
@@ -554,6 +557,15 @@ async function loadKeywordInsight(){
   }
   window._kiFacts=facts;
   renderKiInflow(window._kiInflowCh||'전체');
+  loadTopicDrift();
+}
+async function loadTopicDrift(){
+  const tb=document.getElementById('ki-drift');if(!tb)return;
+  const{data,error}=await sb.rpc('rpc_topic_drift',{'p_채널':null});
+  if(error){tb.innerHTML='<tr><td colspan="4" style="color:#ef4444">로드 실패</td></tr>';return;}
+  const rows=(data||[]).filter(r=>r.실제top검색어).sort((a,b)=>(b.top노출||0)-(a.top노출||0));
+  if(!rows.length){tb.innerHTML='<tr><td colspan="4" style="text-align:center;padding:18px;color:#94a3b8">GSC 검색어 수집 중 (매일 누적)</td></tr>';return;}
+  tb.innerHTML=rows.slice(0,30).map(r=>{const d=String(r.표류여부||'');const isDrift=d.indexOf('표류')>=0;const c=isDrift?'#ef4444':(d.indexOf('정상')>=0?'#16a34a':'#94a3b8');const ic=isDrift?'⚠️ 주제표류':(d.indexOf('정상')>=0?'🟢 일치':'·');return '<tr><td style="font-weight:700;color:'+c+';white-space:nowrap">'+ic+'</td><td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.의도키워드||'-')+'</td><td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.실제top검색어||'-')+'</td><td style="font-weight:700">'+(r.top노출||0)+'</td></tr>';}).join('');
 }
 function _kiMonthsFor(ch){
   const f=window._kiFacts||[];
@@ -564,9 +576,12 @@ function _kiBadges(ch,ym){
   const f=window._kiFacts||[];
   const rows=f.filter(r=>(ch==='전체'||String(r.채널||'').indexOf(ch)===0)&&String(r.유입월).slice(0,7)===ym).slice().sort((a,b)=>(b.유입비율||0)-(a.유입비율||0));
   if(!rows.length)return '<span style="color:#94a3b8">데이터 없음</span>';
-  return '<div style="font-size:.7rem;color:#94a3b8;margin-bottom:6px">'+rows.length+'개</div>'+rows.map(r=>{
+  return '<div style="font-size:.7rem;color:#94a3b8;margin-bottom:6px">'+rows.length+'개 · <span style="color:#16a34a;font-weight:700">네</span>=네이버 <span style="color:#ea580c;font-weight:700">티</span>=티스토리(GSC)</div>'+rows.map(r=>{
+    const isTi=String(r.채널||'').indexOf('티스토리')>=0;
     const pct=(r.유입비율||0)>0?('<span style="color:#7c3aed;font-weight:700"> '+r.유입비율+'%</span>'):'';
-    return '<span style="display:inline-block;background:#eef2ff;color:#3730a3;padding:3px 9px;border-radius:9px;font-size:.76rem;margin:0 4px 6px 0">'+String(r.키워드||'').replace(/</g,'&lt;')+pct+'</span>';
+    const tag='<span style="font-size:.62rem;font-weight:800;color:'+(isTi?'#ea580c':'#16a34a')+'">'+(isTi?'티 ':'네 ')+'</span>';
+    const bg=isTi?'#fff7ed':'#eef2ff', cl=isTi?'#9a3412':'#3730a3';
+    return '<span style="display:inline-block;background:'+bg+';color:'+cl+';padding:3px 9px;border-radius:9px;font-size:.76rem;margin:0 4px 6px 0">'+tag+String(r.키워드||'').replace(/</g,'&lt;')+pct+'</span>';
   }).join('');
 }
 function renderKiInflow(ch){

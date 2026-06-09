@@ -1,0 +1,3 @@
+-- sql095_rpc_tistory_reeval — 티스토리 주간 재평가 RPC (주제표류 노출>=10 / 30일↑미진입 / 2페이지 최적화후보 / 관찰군 / 1페이지글수)
+-- 호출: tistory-reeval-weekly EF, 스케줄: pg_cron tistory-reeval-weekly-mon (30 2 * * 1)
+-- 본 파일은 GitHub 정합용 미러. 정본은 Supabase 마이그레이션 sql095.

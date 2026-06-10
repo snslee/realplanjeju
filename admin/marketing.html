@@ -105,6 +105,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     <div class="nav-item" onclick="switchTab('t2',this)"><span>📝</span>초안 보관소</div>
     <div class="nav-item" onclick="switchTab('t3',this)"><span>🎯</span>콘텐츠 슬롯</div>
     <div class="nav-item" onclick="switchTab('t10',this)"><span>💼</span>포트폴리오</div>
+    <div class="nav-item" onclick="switchTab('t11',this)"><span>📚</span>사실관계DB</div>
     <div class="nav-section">설정</div>
     <div class="nav-item" onclick="switchTab('t6',this)"><span>🎨</span>작성 가이드</div>
     <div class="nav-item" onclick="switchTab('t7',this)"><span>📅</span>스케줄</div>
@@ -117,6 +118,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     <div class="mob-item" onclick="switchTab('t4',null)"><span style="font-size:1.1rem">🔍</span>거인</div>
     <div class="mob-item" onclick="switchTab('t5',null)"><span style="font-size:1.1rem">🏆</span>진입</div>
     <div class="mob-item" onclick="switchTab('t2',null)"><span style="font-size:1.1rem">📝</span>초안</div>
+    <div class="mob-item" onclick="switchTab('t11',null)"><span style="font-size:1.1rem">📚</span>사실DB</div>
     <div class="mob-item" onclick="switchTab('t3',null)"><span style="font-size:1.1rem">🎯</span>슬롯</div>
   </div>
   <main class="main">
@@ -497,6 +499,16 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <div class="card"><div class="card-body" style="padding:0" id="port-board"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div></div>
       <div id="port-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:14px"></div>
     </div>
+    <div class="tab-panel" id="t11">
+      <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><h2 style="font-size:1.2rem;font-weight:700">📚 사실관계DB</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">mk_blog_facts — 입장료·단가·노선·리드타임 등 검증 사실 (초안 허브 rpc_blog_brief 자동 주입)</p></div>
+        <button onclick="loadFacts()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px;margin-bottom:16px" id="fact-kpi"></div>
+      <div class="filter-bar" id="fact-cats" style="align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+      <div class="filter-bar" style="align-items:center"><input id="fact-q" oninput="renderFacts()" placeholder="🔍 항목·내용·출처 검색" style="padding:6px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:.82rem;min-width:240px"></div>
+      <div class="card"><div class="card-body" style="padding:0;overflow-x:auto" id="fact-board"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div></div>
+    </div>
   </main>
 </div>
 <div class="modal-bg" id="reject-modal">
@@ -585,7 +597,7 @@ async function doLogin(){
   if(error){e.textContent='Google 로그인 실패: '+error.message;btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google로 로그인';}
 }
 async function doLogout(){try{localStorage.removeItem(SB_AUTH_KEY);localStorage.removeItem(SB_VERIFIER_KEY);}catch(e){}await sb.auth.signOut().catch(()=>{});showLogin();}
-function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6')loadAlgo();if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();}
+function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6')loadAlgo();if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();}
 async function loadKeywordInsight(){
   const[tot,yk,ui]=await Promise.all([
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}),
@@ -833,6 +845,54 @@ async function loadPortfolio(){
   const{data,error}=await sb.from('mk_portfolio').select('*').order('생성일',{ascending:false}).limit(500);
   if(error){showToast('포트폴리오 로드 실패: '+error.message);return;}
   allPort=data||[];renderPortKpi();renderPort();
+}
+let allFacts=[],_factCat='all';
+async function loadFacts(){
+  const tb=document.getElementById('fact-board');if(tb)tb.innerHTML='<div class="loading" style="padding:30px;text-align:center">로딩 중...</div>';
+  const{data,error}=await sb.from('mk_blog_facts').select('*').order('카테고리',{ascending:true,nullsFirst:false}).order('최종업데이트',{ascending:false,nullsFirst:false}).limit(2000);
+  if(error){showToast('사실관계DB 로드 실패: '+error.message);return;}
+  allFacts=(data||[]).filter(r=>r.활성!==false);renderFactKpi();renderFactCats();renderFacts();
+}
+function renderFactKpi(){
+  const f=allFacts;const cats=new Set(f.map(r=>r.카테고리||'미분류'));
+  const ok=f.filter(r=>String(r.점검상태||'').indexOf('최신')>=0).length;
+  const warn=f.filter(r=>String(r.점검상태||'').indexOf('확인')>=0).length;
+  const kpi=[['총 사실',f.length],['카테고리',cats.size],['✅ 최신',ok],['⚠️ 확인필요',warn]];
+  const el=document.getElementById('fact-kpi');if(el)el.innerHTML=kpi.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+(k[1]||0)+'</div></div>').join('');
+}
+function renderFactCats(){
+  const el=document.getElementById('fact-cats');if(!el)return;
+  const counts={};allFacts.forEach(r=>{const c=r.카테고리||'미분류';counts[c]=(counts[c]||0)+1;});
+  const cats=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
+  let h='<button class="filter-btn '+(_factCat==='all'?'active':'')+'" onclick="factFilter(\'all\',this)">전체 '+allFacts.length+'</button>';
+  h+=cats.map(c=>'<button class="filter-btn '+(_factCat===c?'active':'')+'" onclick="factFilter(\''+c.replace(/'/g,'')+'\',this)">'+c+' '+counts[c]+'</button>').join('');
+  el.innerHTML=h;
+}
+function factFilter(c,el){_factCat=c;document.querySelectorAll('#fact-cats .filter-btn').forEach(b=>b.classList.remove('active'));if(el)el.classList.add('active');renderFacts();}
+function renderFacts(){
+  const tb=document.getElementById('fact-board');if(!tb)return;
+  const q=((document.getElementById('fact-q')||{}).value||'').toLowerCase();
+  let rows=allFacts.slice();
+  if(_factCat!=='all')rows=rows.filter(r=>(r.카테고리||'미분류')===_factCat);
+  if(q)rows=rows.filter(r=>JSON.stringify([r.항목명,r.고정값내용,r.세부유형,r.출처]).toLowerCase().indexOf(q)>=0);
+  if(!rows.length){tb.innerHTML='<div style="padding:30px;text-align:center;color:#94a3b8">데이터 없음</div>';return;}
+  const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  let h='<table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead><tr style="background:#f8fafc;text-align:left">'+
+    ['항목명','고정값내용','카테고리','세부유형','점검상태','적용채널','만료예정일','출처'].map(x=>'<th style="padding:9px 10px;border-bottom:1px solid #e2e8f0;white-space:nowrap">'+x+'</th>').join('')+'</tr></thead><tbody>';
+  h+=rows.map(r=>{
+    const st=String(r.점검상태||'');const stc=st.indexOf('최신')>=0?'#16a34a':(st.indexOf('확인')>=0?'#ea580c':'#94a3b8');
+    const ch=Array.isArray(r.적용채널)?r.적용채널.join(', '):(r.적용채널||'-');
+    return '<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 10px;font-weight:600;white-space:nowrap">'+esc(r.항목명||'-')+'</td>'+
+      '<td style="padding:8px 10px;max-width:340px">'+esc(r.고정값내용||'-')+'</td>'+
+      '<td style="padding:8px 10px;white-space:nowrap"><span style="background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:.74rem">'+esc(r.카테고리||'미분류')+'</span></td>'+
+      '<td style="padding:8px 10px;white-space:nowrap;color:#64748b">'+esc(r.세부유형||'-')+'</td>'+
+      '<td style="padding:8px 10px;white-space:nowrap;color:'+stc+';font-weight:700">'+esc(st||'-')+'</td>'+
+      '<td style="padding:8px 10px;white-space:nowrap;color:#64748b">'+esc(ch)+'</td>'+
+      '<td style="padding:8px 10px;white-space:nowrap;color:#64748b">'+esc(r.만료예정일||'-')+'</td>'+
+      '<td style="padding:8px 10px;max-width:160px;color:#94a3b8;font-size:.76rem">'+esc(r.출처||'-')+'</td></tr>';
+  }).join('');
+  h+='</tbody></table>';
+  tb.innerHTML=h;
 }
 function renderPortKpi(){
   const act=allPort.filter(r=>r.활성!==false);

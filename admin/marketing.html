@@ -838,7 +838,7 @@ function renderPortKpi(){
   const act=allPort.filter(r=>r.활성!==false);
   const noUrl=act.filter(r=>!(r.네이버_url||r.url)&&!r.티스토리_url).length;
   const noTxt=act.filter(r=>!r.사례내용||r.사례내용.trim().length<=20).length;
-  const kpi=[['전체 사례',act.length],['국내여행',act.filter(r=>r.사업부==='국내여행').length],['행사이벤트',act.filter(r=>r.사업부==='행사이벤트').length],['마케팅·교육',act.filter(r=>r.사업부==='온라인마케팅'||r.사업부==='마케팅교육').length],['⚠️ URL 없음',noUrl],['⚠️ 내용 없음',noTxt]];
+  const kpi=[['전체 사례',act.length],['국내여행',act.filter(r=>r.사업부==='국내여행').length],['행사이벤트',act.filter(r=>r.사업부==='행사이벤트').length],['마케팅·교육',act.filter(r=>r.사업부==='온라인마케팅'||r.사업부==='마케팅교육').length],['📝 글 미발행 (URL 없음 정상)',noUrl],['⚠️ 내용 없음',noTxt]];
   document.getElementById('port-kpi').innerHTML=kpi.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+k[1]+'</div></div>').join('');
 }
 function portFilter(f,b){_portFilter=f;_portPage=1;document.querySelectorAll('#port-filters .filter-btn').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');renderPort();}
@@ -860,7 +860,7 @@ function renderPort(){
       <div style="font-size:.68rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.세부유형||'-'}${r.연도?(' · '+r.연도):''}${(r.키워드&&r.키워드.length)?(' · 🔑 '+r.키워드.slice(0,3).join(', ')):''}</div>
       <div style="font-size:.72rem;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(r.사례내용||'').slice(0,70)||'<span style=\'color:#f59e0b\'>내용 입력 필요</span>'}</div></div>
       ${(!r.사례내용||r.사례내용.trim().length<=20)?'<span style="font-size:.65rem;background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:8px;flex-shrink:0">내용없음</span>':''}
-      ${!url?'<span style="font-size:.65rem;background:#fee2e2;color:#b91c1c;padding:2px 6px;border-radius:8px;flex-shrink:0">URL없음</span>':'<span style="font-size:.65rem;background:#d1fae5;color:#065f46;padding:2px 6px;border-radius:8px;flex-shrink:0">URL</span>'}
+      ${!url?'<span title="이 사례를 다룬 자사 블로그 글이 아직 없음 — 발행 시 URL 등록" style="font-size:.65rem;background:#f1f5f9;color:#64748b;padding:2px 6px;border-radius:8px;flex-shrink:0">글 미발행</span>':'<span style="font-size:.65rem;background:#d1fae5;color:#065f46;padding:2px 6px;border-radius:8px;flex-shrink:0">URL</span>'}
     </div>`;}).join('');
 }
 function openPortModal(id){

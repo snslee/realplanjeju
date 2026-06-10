@@ -1270,4 +1270,10 @@ async function loadNaverManual(){
   if(error){vb.innerHTML='<tr><td colspan="5" style="color:#ef4444">로드 실패</td></tr>';return;}
   window._nvViews=(data||[]).filter(r=>r.제목).sort((a,b)=>(b.조회_수||0)-(a.조회_수||0));_nvPage=1;renderNvViews();
   const kws=(data||[]).filter(r=>r.유입_검색어&&r.유입_검색어.length);
-  kb.innerHTML=kws.length?kws.map(r=>'<div style="margin-bottom:10px"><div style="font-weight:700;font-size:.8rem;margin-bottom:4px">'+r.채널+' · '+(r.측정_일자||'').slice(0,7)+'</div><div style="display:flex;flex-wrap:wrap;gap:5px">'+r.유입_검색어.map(k=>'<span style="back
+  kb.innerHTML=kws.length?kws.map(r=>'<div style="margin-bottom:10px"><div style="font-weight:700;font-size:.8rem;margin-bottom:4px">'+r.채널+' · '+(r.측정_일자||'').slice(0,7)+'</div><div style="display:flex;flex-wrap:wrap;gap:5px">'+r.유입_검색어.map(k=>'<span style="background:#eef2ff;color:#3730a3;padding:2px 8px;border-radius:9px;font-size:.74rem">'+k+'</span>').join('')+'</div></div>').join(''):'업로드된 유입 검색어 없음';
+}
+
+initAuth();
+</script>
+</body>
+</html>

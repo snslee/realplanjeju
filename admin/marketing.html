@@ -411,8 +411,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
           <span style="display:flex;align-items:center;gap:4px"><span style="background:#dbeafe;padding:2px 8px;border-radius:10px">블A</span> 여행</span>
           <span style="display:flex;align-items:center;gap:4px"><span style="background:#dcfce7;padding:2px 8px;border-radius:10px">블B</span> 행사</span>
           <span style="display:flex;align-items:center;gap:4px"><span style="background:#f3e8ff;padding:2px 8px;border-radius:10px">블C</span> 마케팅</span>
-          <span style="display:flex;align-items:center;gap:4px"><span style="background:#d1fae5;padding:2px 8px;border-radius:10px;font-size:.7rem">✅완료</span> STAGE 7</span>
-          <span style="display:flex;align-items:center;gap:4px"><span style="background:#fef3c7;padding:2px 8px;border-radius:10px;font-size:.7rem">🆕대기</span> STAGE 0</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="background:#d1fae5;padding:2px 8px;border-radius:10px;font-size:.7rem">✅ 완료</span> 발행됨</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="background:#dbeafe;padding:2px 8px;border-radius:10px;font-size:.7rem">✏️ 작성중</span> 초안 있음</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="background:#fef3c7;padding:2px 8px;border-radius:10px;font-size:.7rem">🆕 대기</span> 초안 없음</span>
         </div>
       </div>
       <div class="card">
@@ -946,7 +947,7 @@ const DAYS=['일','월','화','수','목','금','토'];
 async function initCalendar(){
   const from=new Date(calYear,calMonth-1,1).toISOString().slice(0,10);
   const to=new Date(calYear,calMonth+2,1).toISOString().slice(0,10);
-  const{data,error}=await sb.from('mk_blog_slots').select('id,발행일,채널,핵심키워드,콘텐츠방향,상태,슬롯유형').gte('발행일',from).lt('발행일',to).order('발행일',{ascending:true}).limit(500);
+  const{data,error}=await sb.from('mk_blog_slots').select('id,발행일,채널,핵심키워드,최종제목,콘텐츠방향,상태,슬롯유형').gte('발행일',from).lt('발행일',to).order('발행일',{ascending:true}).limit(500);
   if(error){showToast('슬롯 로드 실패');return;}
   calSlots=data||[];
   renderCalendar();
@@ -968,13 +969,13 @@ function renderCalendar(){
     if(cell%7===0&&d>1)rows+='</tr><tr>';
     const isToday=d===td;
     const slots=slotMap[d]||[];
-    const stageDone=slots.filter(s=>s.상태==='STAGE_7').length;
-    const stageWait=slots.filter(s=>s.상태==='STAGE_0').length;
+    const nDone=slots.filter(s=>s.상태==='completed').length;
+    const nProg=slots.filter(s=>s.상태==='in_progress').length;
     rows+=`<td style="height:90px;border:1px solid #f1f5f9;vertical-align:top;padding:4px;cursor:${slots.length?'pointer':'default'};background:${isToday?'#eff6ff':'#fff'}" ${slots.length?`onclick="showSlotDetail(${d})"`:''}>
       <div style="font-size:.78rem;font-weight:${isToday?700:400};color:${isToday?'#2563eb':'#475569'};margin-bottom:3px">${d}</div>
-      ${slots.slice(0,3).map(s=>{const tt={정보성:'📗',B2B임박:'🔴',B2B선제:'🟡',예고:'🔔'}[s.슬롯유형]||'';return`<div style="font-size:.65rem;padding:1px 5px;border-radius:10px;margin-bottom:2px;background:${CH_CLR[s.채널]||'#f1f5f9'};color:${CH_TXT[s.채널]||'#475569'};overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${s.채널?.replace('티스토리','T').replace('네이버','N')||''} ${tt} ${s.핵심키워드||''}</div>`;}).join('')}
+      ${slots.slice(0,3).map(s=>{const st={completed:'✅',in_progress:'✏️',pending:'🆕',halted:'⏸️'}[s.상태]||'';return`<div title="${((s.최종제목||s.핵심키워드||'')+' ['+(s.상태||'')+']').replace(/"/g,'&quot;')}" style="font-size:.65rem;padding:1px 5px;border-radius:10px;margin-bottom:2px;background:${CH_CLR[s.채널]||'#f1f5f9'};color:${CH_TXT[s.채널]||'#475569'};overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${st} ${s.채널?.replace('티스토리','T').replace('네이버','N')||''} ${s.최종제목||s.핵심키워드||''}</div>`;}).join('')}
       ${slots.length>3?`<div style="font-size:.6rem;color:#94a3b8">+${slots.length-3}개</div>`:''}
-      ${stageDone?`<div style="font-size:.6rem;color:#10b981;font-weight:700">✅${stageDone}</div>`:''}
+      ${(nDone||nProg)?`<div style="font-size:.6rem;font-weight:700">${nDone?`<span style="color:#10b981">✅${nDone}</span> `:''}${nProg?`<span style="color:#2563eb">✏️${nProg}</span>`:''}</div>`:''}
     </td>`;
     cell++;
   }
@@ -991,8 +992,8 @@ function showSlotDetail(day){
   const detail=document.getElementById('slot-detail');
   detail.style.display='block';
   const TB2={정보성:'<span style="background:#d1fae5;color:#065f46;padding:1px 6px;border-radius:8px;font-size:.7rem">📗정보성</span>',B2B임박:'<span style="background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:8px;font-size:.7rem">🔴B2B임박</span>',B2B선제:'<span style="background:#fef9c3;color:#78350f;padding:1px 6px;border-radius:8px;font-size:.7rem">🟡B2B선제</span>',예고:'<span style="background:#ede9fe;color:#5b21b6;padding:1px 6px;border-radius:8px;font-size:.7rem">🔔예고</span>'};
-  const rows3=slots.map(function(s){const tb=TB2[s.슬롯유형]||('<span style="font-size:.75rem;color:#94a3b8">'+(s.슬롯유형||'-')+'</span>');return '<tr><td><span style="background:'+(CH_CLR[s.채널]||'#f1f5f9')+';color:'+(CH_TXT[s.채널]||'#475569')+';padding:2px 8px;border-radius:10px;font-size:.75rem">'+(s.채널||'-')+'</span></td><td>'+tb+'</td><td style="font-weight:600">'+(s.핵심키워드||'-')+'</td><td style="font-size:.82rem;color:#475569;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(s.콘텐츠방향||'-')+'</td><td><span style="font-size:.75rem;background:#f1f5f9;padding:2px 8px;border-radius:10px">'+(stl[s.상태]||s.상태||'-')+'</span></td><td><select onchange="updateSlotStage(\''+s.id+'\',this.value)" style="font-size:.75rem;border:1px solid #e2e8f0;border-radius:4px;padding:2px 4px">'+Object.entries(stl).map(function(e){return'<option value="'+e[0]+'"'+(s.상태===e[0]?' selected':'')+'>'+e[1]+'</option>';}).join('')+'</select></td></tr>';}).join('');
-  detail.innerHTML='<div class="card"><div class="card-hdr"><h3>📋 '+dateStr+' 슬롯 ('+slots.length+'개)</h3></div><div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>채널</th><th>유형</th><th>키워드</th><th>콘텐츠방향</th><th>상태</th><th>변경</th></tr></thead><tbody>'+rows3+'</tbody></table></div></div>';
+  const rows3=slots.map(function(s){const tb=TB2[s.슬롯유형]||('<span style="font-size:.75rem;color:#94a3b8">'+(s.슬롯유형||'-')+'</span>');return '<tr><td><span style="background:'+(CH_CLR[s.채널]||'#f1f5f9')+';color:'+(CH_TXT[s.채널]||'#475569')+';padding:2px 8px;border-radius:10px;font-size:.75rem">'+(s.채널||'-')+'</span></td><td>'+tb+'</td><td style="font-weight:600">'+(s.핵심키워드||'-')+'</td><td style="font-size:.82rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+((s.최종제목||'').replace(/"/g,'&quot;'))+'">'+(s.최종제목||'<span style="color:#cbd5e1">—</span>')+'</td><td style="font-size:.82rem;color:#475569;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(s.콘텐츠방향||'-')+'</td><td><span style="font-size:.75rem;background:#f1f5f9;padding:2px 8px;border-radius:10px">'+(stl[s.상태]||s.상태||'-')+'</span></td><td><select onchange="updateSlotStage(\''+s.id+'\',this.value)" style="font-size:.75rem;border:1px solid #e2e8f0;border-radius:4px;padding:2px 4px">'+Object.entries(stl).map(function(e){return'<option value="'+e[0]+'"'+(s.상태===e[0]?' selected':'')+'>'+e[1]+'</option>';}).join('')+'</select></td></tr>';}).join('');
+  detail.innerHTML='<div class="card"><div class="card-hdr"><h3>📋 '+dateStr+' 슬롯 ('+slots.length+'개)</h3></div><div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>채널</th><th>유형</th><th>키워드</th><th>확정제목</th><th>콘텐츠방향</th><th>상태</th><th>변경</th></tr></thead><tbody>'+rows3+'</tbody></table></div></div>';
 }
 async function updateSlotStage(id,stage){
   const{error}=await sb.from('mk_blog_slots').update({상태:stage,수정일:new Date().toISOString().slice(0,10)}).eq('id',id);

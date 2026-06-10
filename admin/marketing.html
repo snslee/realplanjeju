@@ -104,6 +104,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     <div class="nav-section">콘텐츠</div>
     <div class="nav-item" onclick="switchTab('t2',this)"><span>📝</span>초안 보관소</div>
     <div class="nav-item" onclick="switchTab('t3',this)"><span>🎯</span>콘텐츠 슬롯</div>
+    <div class="nav-item" onclick="switchTab('t10',this)"><span>💼</span>포트폴리오</div>
     <div class="nav-section">설정</div>
     <div class="nav-item" onclick="switchTab('t6',this)"><span>🎨</span>작성 가이드</div>
     <div class="nav-item" onclick="switchTab('t7',this)"><span>📅</span>스케줄</div>
@@ -217,8 +218,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;flex-wrap:wrap"><button class="btn-sm btn-copy" onclick="slotMonthNav(-1)">‹ 이전달</button><button class="btn-sm btn-copy" onclick="slotMonthNav(0)">오늘</button><button class="btn-sm btn-copy" onclick="slotMonthNav(1)">다음달 ›</button><span id="slot-month-label" style="font-weight:700;margin-left:8px;font-size:.9rem"></span></div>
       <div class="card"><div class="card-body" style="padding:0;overflow-x:auto">
-        <table class="tbl"><thead><tr><th>발행일</th><th>채널</th><th>핵심키워드</th><th>콘텐츠방향</th><th>상태</th><th>수정일</th></tr></thead>
-        <tbody id="slots-body"><tr><td colspan="6" class="loading">로딩 중...</td></tr></tbody></table>
+        <table class="tbl"><thead><tr><th>발행일</th><th>채널</th><th>핵심키워드</th><th>확정제목</th><th>콘텐츠방향</th><th>상태</th><th>수정일</th></tr></thead>
+        <tbody id="slots-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
       </div></div>
       <div id="slots-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:14px"></div>
     </div>
@@ -476,6 +477,25 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div id="aj-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;padding:12px"></div>
       </div>
     </div>
+    <div class="tab-panel" id="t10">
+      <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><h2 style="font-size:1.2rem;font-weight:700">💼 실사례 포트폴리오</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">mk_portfolio — 블로그 초안 실사례·내부링크 자산 (초안 허브 자동 매칭)</p></div>
+        <div style="display:flex;gap:8px">
+          <button onclick="openPortModal(null)" class="filter-btn" style="border-radius:8px;background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe">＋ 사례 등록</button>
+          <button onclick="loadPortfolio()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px;margin-bottom:16px" id="port-kpi"></div>
+      <div class="filter-bar" id="port-filters" style="align-items:center">
+        <button class="filter-btn active" onclick="portFilter('all',this)">전체</button>
+        <button class="filter-btn" onclick="portFilter('국내여행',this)">🚌 국내여행</button>
+        <button class="filter-btn" onclick="portFilter('행사이벤트',this)">🎪 행사이벤트</button>
+        <button class="filter-btn" onclick="portFilter('블C',this)">📣 마케팅·교육</button>
+        <input id="port-q" oninput="_portPage=1;renderPort()" placeholder="🔍 사례명·유형·키워드 검색" style="padding:6px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:.82rem;min-width:200px">
+      </div>
+      <div class="card"><div class="card-body" style="padding:0" id="port-board"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div></div>
+      <div id="port-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:14px"></div>
+    </div>
   </main>
 </div>
 <div class="modal-bg" id="reject-modal">
@@ -487,6 +507,34 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
         <button class="filter-btn" onclick="closeModal()">취소</button>
         <button class="btn-sm btn-reject" style="padding:8px 20px" onclick="confirmReject()">반려 확정</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="port-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-hdr"><span id="pm-title">💼 사례 등록</span> <span class="modal-close" onclick="closePortModal()">✕</span></div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:10px;font-size:.85rem">
+      <input id="pm-name" placeholder="사례명 * 예) 노무법인 더보상 체육대회 한림 실내체육관 (2026.05)" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:.85rem">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="pm-dept" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:.85rem">
+          <option value="국내여행">국내여행</option><option value="행사이벤트">행사이벤트</option>
+          <option value="온라인마케팅">온라인마케팅</option><option value="마케팅교육">마케팅교육</option>
+        </select>
+        <input id="pm-type" placeholder="세부유형 예) 체육대회" style="flex:1;min-width:120px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:.85rem">
+        <input id="pm-year" type="number" placeholder="연도" style="width:90px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:.85rem">
+      </div>
+      <input id="pm-nurl" placeholder="네이버 발행 URL (실존 URL만 — 초안 내부링크로 자동 활용)" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:.85rem">
+      <input id="pm-turl" placeholder="티스토리 발행 URL" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:.85rem">
+      <input id="pm-kw" placeholder="키워드 (쉼표 구분) 예) 기업행사대행, 체육대회" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:.85rem">
+      <textarea id="pm-txt" rows="5" placeholder="사례내용 — 고객·규모·인원·진행 내용·특이사항 (초안 본문 사례 문단에 그대로 활용됩니다)" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:.85rem;resize:vertical"></textarea>
+      <div style="display:flex;gap:18px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="pm-noins"> URL 삽입 금지</label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="pm-act" checked> 활성</label>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+        <button class="filter-btn" onclick="closePortModal()">취소</button>
+        <button class="filter-btn" style="background:#2563eb;color:#fff;border-color:#2563eb;padding:8px 20px" onclick="savePort()">저장</button>
       </div>
     </div>
   </div>
@@ -536,7 +584,7 @@ async function doLogin(){
   if(error){e.textContent='Google 로그인 실패: '+error.message;btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google로 로그인';}
 }
 async function doLogout(){try{localStorage.removeItem(SB_AUTH_KEY);localStorage.removeItem(SB_VERIFIER_KEY);}catch(e){}await sb.auth.signOut().catch(()=>{});showLogin();}
-function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6')loadAlgo();if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();}
+function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6')loadAlgo();if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();}
 async function loadKeywordInsight(){
   const[tot,yk,ui]=await Promise.all([
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}),
@@ -754,19 +802,19 @@ function copyTitle(t){navigator.clipboard.writeText(t).then(()=>showToast('📋 
 
 async function loadSlots(){
   document.getElementById('slots-body').innerHTML='<tr><td colspan="6" class="loading">로딩 중...</td></tr>';
-  const{data,error}=await sb.from('mk_blog_slots').select('id,발행일,채널,핵심키워드,콘텐츠방향,상태,수정일').order('발행일',{ascending:false}).limit(1000);
+  const{data,error}=await sb.from('mk_blog_slots').select('id,발행일,채널,핵심키워드,최종제목,콘텐츠방향,상태,수정일').order('발행일',{ascending:false}).limit(1000);
   if(error){showToast('슬롯 로드 실패');return;}allSlots=data||[];_slotMonth=0;applySlotView();
 }
 let _slotList=[],_slotPage=1; const SLOT_PER=30;
 function renderSlots(list){
   const tbody=document.getElementById('slots-body'); _slotList=list||[];
   const pg=document.getElementById('slots-pager');
-  if(!_slotList.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8">슬롯 없음</td></tr>';if(pg)pg.innerHTML='';return;}
+  if(!_slotList.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">슬롯 없음</td></tr>';if(pg)pg.innerHTML='';return;}
   const pages=Math.ceil(_slotList.length/SLOT_PER); if(_slotPage>pages)_slotPage=1;
   const st=(_slotPage-1)*SLOT_PER, slice=_slotList.slice(st,st+SLOT_PER);
   const sc={'pending':'#fef3c7','in_progress':'#dbeafe','completed':'#d1fae5','halted':'#f1f5f9'};
   const sl={'pending':'대기','in_progress':'작성중','completed':'완료','halted':'보류'};
-  tbody.innerHTML=slice.map(r=>`<tr><td style="font-weight:600">${r.발행일||'-'}</td><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:.78rem">${r.채널||'-'}</span></td><td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${r.핵심키워드||'-'}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.82rem;color:#475569">${r.콘텐츠방향||'-'}</td><td><span style="background:${sc[r.상태]||'#f1f5f9'};padding:2px 10px;border-radius:12px;font-size:.75rem;font-weight:600">${sl[r.상태]||r.상태||'-'}</span></td><td style="color:#94a3b8;font-size:.78rem">${r.수정일?r.수정일.slice(0,10):'-'}</td></tr>`).join('');
+  tbody.innerHTML=slice.map(r=>`<tr><td style="font-weight:600">${r.발행일||'-'}</td><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:.78rem">${r.채널||'-'}</span></td><td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${r.핵심키워드||'-'}</td><td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.82rem" title="${(r.최종제목||'').replace(/"/g,'&quot;')}">${r.최종제목||'<span style=\'color:#cbd5e1\'>—</span>'}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.82rem;color:#475569">${r.콘텐츠방향||'-'}</td><td><span style="background:${sc[r.상태]||'#f1f5f9'};padding:2px 10px;border-radius:12px;font-size:.75rem;font-weight:600">${sl[r.상태]||r.상태||'-'}</span></td><td style="color:#94a3b8;font-size:.78rem">${r.수정일?r.수정일.slice(0,10):'-'}</td></tr>`).join('');
   if(pg){
     let h=`<button class="btn-sm btn-copy" onclick="gotoSlotPage(${Math.max(1,_slotPage-1)})">‹</button>`;
     for(let i=1;i<=pages;i++){ if(i===1||i===pages||Math.abs(i-_slotPage)<=2){h+=`<button class="btn-sm btn-copy" style="${i===_slotPage?'background:#2563eb;color:#fff;border-color:#2563eb':''}" onclick="gotoSlotPage(${i})">${i}</button>`;} else if(Math.abs(i-_slotPage)===3){h+='<span style="padding:4px;color:#94a3b8">…</span>';} }
@@ -776,6 +824,68 @@ function renderSlots(list){
 }
 function gotoSlotPage(n){_slotPage=n;renderSlots(_slotList);}
 function filterSlots(s,b){document.querySelectorAll('#slot-filters .filter-btn').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');renderSlots(s==='all'?allSlots:allSlots.filter(r=>r.상태===s));}
+
+// ── 💼 포트폴리오 (t10) — sql097 번들 ─────────────────────────────
+let allPort=[],_portFilter='all',_portPage=1,_portEditId=null;const PORT_PER=12;
+async function loadPortfolio(){
+  document.getElementById('port-board').innerHTML='<div class="loading" style="padding:30px;text-align:center">로딩 중...</div>';
+  const{data,error}=await sb.from('mk_portfolio').select('*').order('생성일',{ascending:false}).limit(500);
+  if(error){showToast('포트폴리오 로드 실패: '+error.message);return;}
+  allPort=data||[];renderPortKpi();renderPort();
+}
+function renderPortKpi(){
+  const act=allPort.filter(r=>r.활성!==false);
+  const noUrl=act.filter(r=>!(r.네이버_url||r.url)&&!r.티스토리_url).length;
+  const noTxt=act.filter(r=>!r.사례내용||r.사례내용.trim().length<=20).length;
+  const kpi=[['전체 사례',act.length],['국내여행',act.filter(r=>r.사업부==='국내여행').length],['행사이벤트',act.filter(r=>r.사업부==='행사이벤트').length],['마케팅·교육',act.filter(r=>r.사업부==='온라인마케팅'||r.사업부==='마케팅교육').length],['⚠️ URL 없음',noUrl],['⚠️ 내용 없음',noTxt]];
+  document.getElementById('port-kpi').innerHTML=kpi.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+k[1]+'</div></div>').join('');
+}
+function portFilter(f,b){_portFilter=f;_portPage=1;document.querySelectorAll('#port-filters .filter-btn').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');renderPort();}
+function gotoPortPage(n){_portPage=n;renderPort();}
+function renderPort(){
+  const box=document.getElementById('port-board');
+  let list=allPort.filter(r=>r.활성!==false);
+  if(_portFilter!=='all')list=list.filter(r=>_portFilter==='블C'?(r.사업부==='온라인마케팅'||r.사업부==='마케팅교육'):r.사업부===_portFilter);
+  const q=(document.getElementById('port-q').value||'').trim();
+  if(q)list=list.filter(r=>(r.사례명||'').includes(q)||(r.세부유형||'').includes(q)||(r.키워드||[]).join(',').includes(q));
+  const pages=Math.max(1,Math.ceil(list.length/PORT_PER));if(_portPage>pages)_portPage=1;
+  const pe=document.getElementById('port-pager');if(pe)pe.innerHTML=pagerHTML(_portPage,pages,list.length,'gotoPortPage');
+  if(!list.length){box.innerHTML='<div style="text-align:center;padding:40px;color:#94a3b8">사례 없음</div>';return;}
+  box.innerHTML=list.slice((_portPage-1)*PORT_PER,_portPage*PORT_PER).map((r,i)=>{
+    const url=r.네이버_url||r.url||r.티스토리_url;
+    return `<div onclick="openPortModal('${r.id}')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;${i?'border-top:0.5px solid #f1f5f9;':''}cursor:pointer">
+      <span style="font-size:.7rem;background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px;flex-shrink:0">${r.사업부||'-'}</span>
+      <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:.9rem;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.사례명||'-'}</div>
+      <div style="font-size:.68rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.세부유형||'-'}${r.연도?(' · '+r.연도):''}${(r.키워드&&r.키워드.length)?(' · 🔑 '+r.키워드.slice(0,3).join(', ')):''}</div></div>
+      ${(!r.사례내용||r.사례내용.trim().length<=20)?'<span style="font-size:.65rem;background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:8px;flex-shrink:0">내용없음</span>':''}
+      ${!url?'<span style="font-size:.65rem;background:#fee2e2;color:#b91c1c;padding:2px 6px;border-radius:8px;flex-shrink:0">URL없음</span>':'<span style="font-size:.65rem;background:#d1fae5;color:#065f46;padding:2px 6px;border-radius:8px;flex-shrink:0">URL</span>'}
+    </div>`;}).join('');
+}
+function openPortModal(id){
+  _portEditId=id||null;const r=(id?allPort.find(x=>x.id===id):null)||{};
+  const g=k=>document.getElementById('pm-'+k);
+  g('name').value=r.사례명||'';g('dept').value=r.사업부||'행사이벤트';g('type').value=r.세부유형||'';
+  g('year').value=r.연도||'';g('nurl').value=r.네이버_url||r.url||'';g('turl').value=r.티스토리_url||'';
+  g('kw').value=(r.키워드||[]).join(', ');g('txt').value=r.사례내용||'';
+  g('noins').checked=!!r.url_삽입금지;g('act').checked=r.활성!==false;
+  document.getElementById('pm-title').textContent=id?'💼 사례 수정':'💼 사례 등록';
+  document.getElementById('port-modal').classList.add('open');
+}
+function closePortModal(){document.getElementById('port-modal').classList.remove('open');_portEditId=null;}
+async function savePort(){
+  const g=k=>document.getElementById('pm-'+k);
+  const name=g('name').value.trim();if(!name){showToast('사례명은 필수입니다');return;}
+  const dept=g('dept').value;
+  const row={'사례명':name,'사업부':dept,'세부유형':g('type').value.trim()||null,
+    '연도':g('year').value?parseInt(g('year').value):null,
+    '네이버_url':g('nurl').value.trim()||null,'티스토리_url':g('turl').value.trim()||null,
+    '키워드':g('kw').value.trim()?g('kw').value.split(',').map(s=>s.trim()).filter(Boolean):null,
+    '사례내용':g('txt').value.trim()||null,'url_삽입금지':g('noins').checked,'활성':g('act').checked};
+  if(!_portEditId){const px=dept==='국내여행'?'블A':dept==='행사이벤트'?'블B':'블C';row['활용블로그']=[px+'네이버',px+'티스토리'];}
+  const r=_portEditId?await sb.from('mk_portfolio').update(row).eq('id',_portEditId):await sb.from('mk_portfolio').insert(row);
+  if(r.error){showToast('저장 실패: '+r.error.message);return;}
+  showToast('✅ 저장 완료');closePortModal();loadPortfolio();
+}
 
 async function loadGiantsNaver(){
   const nb=document.getElementById('giants-naver-body'); if(!nb)return;

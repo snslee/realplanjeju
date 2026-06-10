@@ -856,7 +856,8 @@ function renderPort(){
     return `<div onclick="openPortModal('${r.id}')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;${i?'border-top:0.5px solid #f1f5f9;':''}cursor:pointer">
       <span style="font-size:.7rem;background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px;flex-shrink:0">${r.사업부||'-'}</span>
       <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:.9rem;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.사례명||'-'}</div>
-      <div style="font-size:.68rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.세부유형||'-'}${r.연도?(' · '+r.연도):''}${(r.키워드&&r.키워드.length)?(' · 🔑 '+r.키워드.slice(0,3).join(', ')):''}</div></div>
+      <div style="font-size:.68rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.세부유형||'-'}${r.연도?(' · '+r.연도):''}${(r.키워드&&r.키워드.length)?(' · 🔑 '+r.키워드.slice(0,3).join(', ')):''}</div>
+      <div style="font-size:.72rem;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(r.사례내용||'').slice(0,70)||'<span style=\'color:#f59e0b\'>내용 입력 필요</span>'}</div></div>
       ${(!r.사례내용||r.사례내용.trim().length<=20)?'<span style="font-size:.65rem;background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:8px;flex-shrink:0">내용없음</span>':''}
       ${!url?'<span style="font-size:.65rem;background:#fee2e2;color:#b91c1c;padding:2px 6px;border-radius:8px;flex-shrink:0">URL없음</span>':'<span style="font-size:.65rem;background:#d1fae5;color:#065f46;padding:2px 6px;border-radius:8px;flex-shrink:0">URL</span>'}
     </div>`;}).join('');
@@ -1269,10 +1270,4 @@ async function loadNaverManual(){
   if(error){vb.innerHTML='<tr><td colspan="5" style="color:#ef4444">로드 실패</td></tr>';return;}
   window._nvViews=(data||[]).filter(r=>r.제목).sort((a,b)=>(b.조회_수||0)-(a.조회_수||0));_nvPage=1;renderNvViews();
   const kws=(data||[]).filter(r=>r.유입_검색어&&r.유입_검색어.length);
-  kb.innerHTML=kws.length?kws.map(r=>'<div style="margin-bottom:10px"><div style="font-weight:700;font-size:.8rem;margin-bottom:4px">'+r.채널+' · '+(r.측정_일자||'').slice(0,7)+'</div><div style="display:flex;flex-wrap:wrap;gap:5px">'+r.유입_검색어.map(k=>'<span style="background:#eef2ff;color:#3730a3;padding:2px 8px;border-radius:9px;font-size:.74rem">'+k+'</span>').join('')+'</div></div>').join(''):'업로드된 유입 검색어 없음';
-}
-
-initAuth();
-</script>
-</body>
-</html>
+  kb.innerHTML=kws.length?kws.map(r=>'<div style="margin-bottom:10px"><div style="font-weight:700;font-size:.8rem;margin-bottom:4px">'+r.채널+' · '+(r.측정_일자||'').slice(0,7)+'</div><div style="display:flex;flex-wrap:wrap;gap:5px">'+r.유입_검색어.map(k=>'<span style="back

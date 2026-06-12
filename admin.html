@@ -643,7 +643,19 @@ table.qt-items td.narrow input{text-align:right}
 </section>
 <section id="view-accounting" class="page" hidden>
   <div class="page-header"><div><div class="page-title">회계</div><div class="page-subtitle">통합 손익·매출·매입·세무사 export (1인 전용) — 마스터 #9</div></div></div>
-  <div class="placeholder-box" id="ph-accounting"></div>
+  <div id="acc-root">
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px" id="acc-tabbar">
+  <button type="button" class="acc-tab active" data-acc-tab="dash">📊 대시보드</button>
+  <button type="button" class="acc-tab" data-acc-tab="tx">📒 월별 입출금</button>
+  <button type="button" class="acc-tab" data-acc-tab="fixed">⚙️ 고정비</button>
+  <button type="button" class="acc-tab" data-acc-tab="recv">💳 미수금</button>
+  <button type="button" class="acc-tab" data-acc-tab="tax">🧾 세금</button>
+  <button type="button" class="acc-tab" data-acc-tab="xport">📤 세무사 export</button>
+  <button type="button" class="acc-tab" data-acc-tab="upload">📥 자료 업로드</button>
+  </div>
+  <div id="acc-body"></div>
+  </div>
+  <style>.acc-tab{padding:7px 14px;border:1px solid #d6dce5;background:#fff;border-radius:8px;font-size:13px;cursor:pointer}.acc-tab.active{background:#185fa5;color:#fff;border-color:#185fa5}.acc-table{border-collapse:collapse;width:100%;font-size:12.5px;background:#fff}.acc-table th{border:1px solid #d6dce5;background:#f1f5f9;padding:6px 8px;text-align:left;white-space:nowrap}.acc-table td{border:1px solid #e2e8f0;padding:6px 8px}.acc-kpi{background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:14px 18px;min-width:150px}.acc-btn{padding:6px 12px;border:1px solid #185fa5;background:#185fa5;color:#fff;border-radius:7px;font-size:12.5px;cursor:pointer}.acc-btn.ghost{background:#fff;color:#185fa5}</style>
 </section>
 <section id="view-admin" class="page" hidden>
 <div class="adm-wrap">
@@ -798,6 +810,7 @@ table.qt-items td.narrow input{text-align:right}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1"></script>
 <!-- v2.24 [1] 행 드래그 순서 변경 (대표 요청) — SortableJS 1.15.0 -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 /* admin v0.7 — SDK 우회 수동 token 교환
    핵심: fetch로 /auth/v1/token?grant_type=pkce 직접 호출
@@ -3235,7 +3248,8 @@ function handleRoute(){
       state.activeTab='accounting';
       show('#view-accounting');
       $('.nav-item[data-nav="accounting"]').classList.add('active');
-      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('accounting');
+      if(typeof accInit==='function')accInit();
+      else if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('accounting');
       break;
     /* v2.8.0c — 공문·계약은 고객 상세 sub-tab으로 이동 (고객 종속 데이터) — 직접 URL은 고객 목록으로 redirect */
     case 'notice':
@@ -7613,4 +7627,398 @@ document.addEventListener('DOMContentLoaded',init);
   /* v2.19.2 hotfix: [계약] 탭 클릭 시 ecLoad 자동 호출 hook (28-1 회귀 정정) */
   document.addEventListener('click',function(e){
     var t=e.target.closest('[data-tab="contract"]');
-    if(t){set
+    if(t){setTimeout(function(){try{if(window.ecLoad&&window.ecState&&window.ecState.customerId)window.ecLoad(window.ecState.customerId);}catch(_e){}},80);}
+  });
+})();
+</script>
+<script>
+/*ACCMOD v1.0 — 회계 영역 (회계 통합설계서 v1.0 / D2b+D3 / 2026-06-12) */
+(function(){
+  function sbc(){return window.sb||window.supabase||null;}
+  var S={tab:'dash',month:null,cats:[],accs:[],ready:false,bound:false};
+  function pad(n){return (n<10?'0':'')+n;}
+  function curMonth(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-01';}
+  function fmtW(n){return n==null?'-':Number(n).toLocaleString('ko-KR');}
+  function esc(s){return String(s==null?'':s).replace(/</g,'&lt;');}
+  function el(id){return document.getElementById(id);}
+  function catName(id){for(var i=0;i<S.cats.length;i++)if(S.cats[i].id===id)return S.cats[i].카테고리명;return '';}
+  function accLabel(id){for(var i=0;i<S.accs.length;i++)if(S.accs[i].id===id)return S.accs[i].별칭;return '';}
+  function err(e){var b=el('acc-body');if(b)b.innerHTML='<div style="color:#b91c1c;padding:20px">오류: '+esc(e&&e.message||e)+'</div>';}
+
+  window.accInit=function(){
+    var root=el('acc-root'); if(!root||!sbc()) return;
+    if(!S.bound){
+      S.bound=true; S.month=curMonth();
+      root.querySelectorAll('[data-acc-tab]').forEach(function(b){
+        b.addEventListener('click',function(){accShow(b.dataset.accTab);});
+      });
+    }
+    if(!S.ready){
+      Promise.all([
+        sbc().from('acc_카테고리').select('*').order('정렬'),
+        sbc().from('acc_계좌').select('*').order('은행')
+      ]).then(function(r){
+        if(r[0].error||r[1].error){err(r[0].error||r[1].error);return;}
+        S.cats=r[0].data||[];S.accs=r[1].data||[];S.ready=true;accShow(S.tab);
+      }).catch(err);
+    } else accShow(S.tab);
+  };
+
+  function accShow(tab){
+    S.tab=tab;
+    document.querySelectorAll('[data-acc-tab]').forEach(function(b){b.classList.toggle('active',b.dataset.accTab===tab);});
+    var b=el('acc-body'); if(!b)return;
+    b.innerHTML='<div style="color:#94a3b8;padding:30px;text-align:center">불러오는 중…</div>';
+    var f={dash:rDash,tx:rTx,fixed:rFixed,recv:rRecv,tax:rTax,xport:rXport,upload:rUpload}[tab]||rDash;
+    try{f();}catch(e){err(e);}
+  }
+  window.accShow=accShow;
+
+  /* ---------- t1 대시보드 ---------- */
+  function rDash(){
+    var y=new Date().getFullYear();
+    Promise.all([
+      sbc().from('v_acc_월별손익').select('*').gte('월',y+'-01-01').order('월'),
+      sbc().from('v_acc_연도대사').select('*').order('연도')
+    ]).then(function(r){
+      if(r[0].error||r[1].error){err(r[0].error||r[1].error);return;}
+      var ms=r[0].data||[], ys=r[1].data||[];
+      var ti=0,to=0;
+      ms.forEach(function(m){ti+=Number(m.수입합계||0);to+=Number(m.고정비합계||0)+Number(m.변동지출합계||0);});
+      var h='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">'
+        +kpi(y+'년 수입',ti)+kpi(y+'년 지출',to)+kpi(y+'년 순이익',ti-to)
+        +'</div><div style="font-weight:700;margin:6px 0">월별 손익 ('+y+')</div>'
+        +'<table class="acc-table"><tr><th>월</th><th>수입</th><th>고정비</th><th>변동지출</th><th>순이익</th><th>건수</th></tr>';
+      ms.forEach(function(m){h+='<tr><td>'+String(m.월).slice(0,7)+'</td><td style="text-align:right">'+fmtW(m.수입합계)+'</td><td style="text-align:right">'+fmtW(m.고정비합계)+'</td><td style="text-align:right">'+fmtW(m.변동지출합계)+'</td><td style="text-align:right;font-weight:700;color:'+(Number(m.순이익)<0?'#b91c1c':'#0f6e56')+'">'+fmtW(m.순이익)+'</td><td>'+m.건수+'</td></tr>';});
+      h+='</table><div style="font-weight:700;margin:18px 0 6px">연도 대사 — 공식(재무제표) vs 관리(시스템)</div>'
+        +'<table class="acc-table"><tr><th>연도</th><th>공식 매출액</th><th>공식 당기손익</th><th>관리 매출</th><th>관리 지출</th><th>대사 차이</th></tr>';
+      ys.forEach(function(v){h+='<tr><td>'+v.연도+'</td><td style="text-align:right">'+fmtW(v.공식_매출액)+'</td><td style="text-align:right">'+fmtW(v.공식_당기손익)+'</td><td style="text-align:right">'+fmtW(v.관리_매출)+'</td><td style="text-align:right">'+fmtW(v.관리_지출)+'</td><td style="text-align:right">'+fmtW(v.매출_대사차이)+'</td></tr>';});
+      h+='</table><div style="font-size:11.5px;color:#94a3b8;margin-top:6px">※ 공식=세무사 재무제표 확정치 / 관리=시스템 기록(현금 기준). 차이는 발생주의·VAT 포함 여부에 따른 정상 차이를 포함합니다.</div>';
+      el('acc-body').innerHTML=h;
+    }).catch(err);
+  }
+  function kpi(t,v){return '<div class="acc-kpi"><div style="font-size:11.5px;color:#64748b">'+t+'</div><div style="font-size:19px;font-weight:800;color:'+(v<0?'#b91c1c':'#0f172a')+'">'+fmtW(v)+'<span style="font-size:11px;font-weight:400"> 원</span></div></div>';}
+
+  /* ---------- t2 월별 입출금 ---------- */
+  function monNav(){
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
+      +'<button class="acc-btn ghost" onclick="accMonMove(-1)">◀</button>'
+      +'<b style="font-size:15px">'+S.month.slice(0,7)+'</b>'
+      +'<button class="acc-btn ghost" onclick="accMonMove(1)">▶</button>'
+      +'<button class="acc-btn" onclick="accTxForm()">＋ 거래 입력</button></div>';
+  }
+  window.accMonMove=function(d){
+    var p=S.month.split('-'),y=+p[0],m=+p[1]+d;
+    if(m<1){m=12;y--;}if(m>12){m=1;y++;}
+    S.month=y+'-'+pad(m)+'-01';accShow('tx');
+  };
+  function monEnd(){var p=S.month.split('-'),y=+p[0],m=+p[1];return y+'-'+pad(m)+'-'+pad(new Date(y,m,0).getDate());}
+  function rTx(){
+    sbc().from('acc_거래내역').select('*').gte('거래일',S.month).lte('거래일',monEnd()).order('거래일',{ascending:false}).limit(500)
+    .then(function(r){
+      if(r.error){err(r.error);return;}
+      var rows=r.data||[],ti=0,to=0;
+      rows.forEach(function(t){if(t.상태!=='취소'){if(t.구분==='수입')ti+=Number(t.금액);else to+=Number(t.금액);}});
+      var h=monNav()+'<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">'+kpi('수입',ti)+kpi('지출',to)+kpi('순이익',ti-to)+'</div><div id="acc-tx-form"></div>'
+        +'<table class="acc-table"><tr><th>거래일</th><th>구분</th><th>카테고리</th><th>사업부</th><th>금액</th><th>거래처</th><th>수단</th><th>상태</th><th>적요</th><th></th></tr>';
+      rows.forEach(function(t){
+        h+='<tr style="'+(t.상태==='취소'?'opacity:.45;text-decoration:line-through':'')+'"><td>'+t.거래일+'</td><td>'+t.구분+'</td><td>'+esc(catName(t.카테고리_id))+'</td><td>'+esc(t.사업부||'')+'</td>'
+          +'<td style="text-align:right;font-weight:600;color:'+(t.구분==='수입'?'#0f6e56':'#0f172a')+'">'+fmtW(t.금액)+'</td>'
+          +'<td>'+esc(t.거래처명||'')+'</td><td>'+esc(t.결제수단||'')+'</td>'
+          +'<td>'+(t.상태==='예정'?'<span style="background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:99px;font-size:11px">예정</span>':t.상태)+'</td>'
+          +'<td>'+esc(t.적요||'')+'</td><td style="white-space:nowrap">'
+          +(t.상태==='예정'?'<button class="acc-btn ghost" style="padding:2px 7px;font-size:11px" onclick="accTxSet(\''+t.id+'\',\'확정\')">확정</button> ':'')
+          +(t.상태!=='취소'?'<button class="acc-btn ghost" style="padding:2px 7px;font-size:11px;border-color:#b91c1c;color:#b91c1c" onclick="accTxSet(\''+t.id+'\',\'취소\')">취소</button>':'')
+          +'</td></tr>';
+      });
+      h+='</table>'+(rows.length?'':'<div style="color:#94a3b8;padding:18px;text-align:center">이 달 거래 없음</div>');
+      el('acc-body').innerHTML=h;
+    }).catch(err);
+  }
+  window.accTxSet=function(id,st){
+    if(st==='취소'&&!confirm('이 거래를 취소 처리할까요?'))return;
+    sbc().from('acc_거래내역').update({상태:st,updated_at:new Date().toISOString()}).eq('id',id).then(function(r){
+      if(r.error)alert(r.error.message);else accShow('tx');
+    });
+  };
+  window.accTxForm=function(){
+    var f=el('acc-tx-form'); if(!f)return;
+    var catOpt=S.cats.filter(function(c){return c.활성;}).map(function(c){return '<option value="'+c.id+'">['+c.유형+'] '+esc(c.카테고리명)+'</option>';}).join('');
+    var accOpt='<option value="">계좌 없음</option>'+S.accs.map(function(a){return '<option value="'+a.id+'">'+esc(a.별칭)+'</option>';}).join('');
+    f.innerHTML='<div style="background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:14px;margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:end">'
+      +fld('거래일','<input type="date" id="af-date" value="'+S.month.slice(0,8)+pad(new Date().getDate())+'" style="'+inp()+'">')
+      +fld('구분','<select id="af-gubun" style="'+inp()+'"><option>지출</option><option>수입</option></select>')
+      +fld('카테고리','<select id="af-cat" style="'+inp()+'">'+catOpt+'</select>')
+      +fld('사업부','<select id="af-bu" style="'+inp()+'"><option>본사공통</option><option>국내여행</option><option>행사이벤트</option><option>온라인마케팅</option><option>마케팅교육</option></select>')
+      +fld('금액','<input type="number" id="af-amt" style="'+inp()+';width:120px">')
+      +fld('거래처','<input id="af-pt" style="'+inp()+'">')
+      +fld('결제수단','<select id="af-pay" style="'+inp()+'"><option>계좌이체</option><option>카드</option><option>현금</option><option>기타</option></select>')
+      +fld('계좌','<select id="af-acc" style="'+inp()+'">'+accOpt+'</select>')
+      +fld('적요','<input id="af-memo" style="'+inp()+';width:160px">')
+      +'<button class="acc-btn" onclick="accTxSave()">저장</button>'
+      +'<button class="acc-btn ghost" onclick="document.getElementById(\'acc-tx-form\').innerHTML=\'\'">닫기</button></div>';
+  };
+  function fld(l,c){return '<label style="display:flex;flex-direction:column;font-size:11px;color:#64748b;gap:3px">'+l+c+'</label>';}
+  function inp(){return 'padding:6px 8px;border:1px solid #d6dce5;border-radius:6px;font-size:12.5px';}
+  window.accTxSave=function(){
+    var p={거래일:el('af-date').value,구분:el('af-gubun').value,카테고리_id:el('af-cat').value,사업부:el('af-bu').value,
+      금액:el('af-amt').value,거래처명:el('af-pt').value,거래처_유형:'기타',결제수단:el('af-pay').value,
+      계좌_id:el('af-acc').value||null,적요:el('af-memo').value,출처:'수동',상태:'확정'};
+    if(!p.거래일||!p.금액){alert('거래일·금액은 필수입니다');return;}
+    sbc().rpc('rpc_acc_insert_tx',{p:p}).then(function(r){
+      if(r.error)alert(r.error.message);else accShow('tx');
+    });
+  };
+
+  /* ---------- t3 고정비 ---------- */
+  function rFixed(){
+    sbc().from('acc_고정비').select('*').order('결제일').then(function(r){
+      if(r.error){err(r.error);return;}
+      var rows=r.data||[],sum=0;
+      rows.forEach(function(f){if(f.활성)sum+=Number(f.월금액);});
+      var h='<div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">'+kpi('활성 고정비 월합계',sum)
+        +'<button class="acc-btn" onclick="accFixedGen()">이번 달 예정 생성</button></div>'
+        +'<table class="acc-table"><tr><th>항목</th><th>카테고리</th><th>결제일</th><th>월금액</th><th>변동</th><th>상대계좌</th><th>활성</th><th>비고</th></tr>';
+      rows.forEach(function(f){
+        h+='<tr style="'+(f.활성?'':'opacity:.45')+'"><td>'+esc(f.항목명)+'</td><td>'+esc(catName(f.카테고리_id))+'</td><td>매월 '+f.결제일+'일</td><td style="text-align:right">'+fmtW(f.월금액)+'</td><td>'+(f.변동여부?'변동':'고정')+'</td><td>'+esc(f.상대계좌||'')+'</td>'
+          +'<td><button class="acc-btn ghost" style="padding:2px 8px;font-size:11px" onclick="accFixedToggle(\''+f.id+'\','+(!f.활성)+')">'+(f.활성?'ON':'OFF')+'</button></td><td>'+esc(f.비고||'')+'</td></tr>';
+      });
+      el('acc-body').innerHTML=h+'</table>';
+    }).catch(err);
+  }
+  window.accFixedToggle=function(id,v){sbc().from('acc_고정비').update({활성:v,updated_at:new Date().toISOString()}).eq('id',id).then(function(r){if(r.error)alert(r.error.message);else accShow('fixed');});};
+  window.accFixedGen=function(){
+    sbc().rpc('rpc_acc_fixed_monthly',{}).then(function(r){
+      if(r.error)alert(r.error.message);
+      else alert('이번 달 예정 생성: '+JSON.stringify(r.data));
+    });
+  };
+
+  /* ---------- t4 미수금 ---------- */
+  function rRecv(){
+    sbc().from('acc_미수금').select('*').order('created_at',{ascending:false}).then(function(r){
+      if(r.error){err(r.error);return;}
+      var rows=r.data||[],미수=0;
+      rows.forEach(function(v){if(v.상태==='미수')미수+=Number(v.단계금액);});
+      var h='<div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">'+kpi('미수금 잔액',미수)
+        +'<button class="acc-btn" onclick="accRecvSync()">계약에서 동기화</button></div>'
+        +'<table class="acc-table"><tr><th>거래처</th><th>사업부</th><th>계약금액</th><th>단계</th><th>단계금액</th><th>예정일</th><th>상태</th><th>입금일</th><th></th></tr>';
+      rows.forEach(function(v){
+        h+='<tr><td>'+esc(v.거래처명||'')+'</td><td>'+esc(v.사업부||'')+'</td><td style="text-align:right">'+fmtW(v.계약금액)+'</td><td>'+v.단계+'단계</td><td style="text-align:right;font-weight:600">'+fmtW(v.단계금액)+'</td><td>'+(v.예정일||'')+'</td>'
+          +'<td>'+(v.상태==='미수'?'<span style="background:#fee2e2;color:#b91c1c;padding:1px 7px;border-radius:99px;font-size:11px">미수</span>':v.상태)+'</td><td>'+(v.입금일||'')+'</td>'
+          +'<td>'+(v.상태==='미수'?'<button class="acc-btn ghost" style="padding:2px 8px;font-size:11px" onclick="accRecvPaid(\''+v.id+'\')">입금 처리</button>':'')+'</td></tr>';
+      });
+      el('acc-body').innerHTML=h+'</table>'+(rows.length?'':'<div style="color:#94a3b8;padding:18px;text-align:center">미수금 없음 — [계약에서 동기화]로 생성</div>');
+    }).catch(err);
+  }
+  window.accRecvSync=function(){
+    sbc().from('contracts').select('id,계약금액,체결일').gt('계약금액',0).then(function(r){
+      if(r.error){alert(r.error.message);return;}
+      var cs=(r.data||[]).filter(function(c){return c.체결일;});
+      if(!cs.length){alert('체결일 있는 계약이 없습니다');return;}
+      if(!confirm('체결 계약 '+cs.length+'건에서 미수금 1·2단계를 동기화할까요?'))return;
+      var done=0;
+      (function next(i){
+        if(i>=cs.length){alert('동기화 완료 '+done+'건');accShow('recv');return;}
+        sbc().rpc('rpc_acc_receivable_sync',{p_contract_id:cs[i].id}).then(function(x){if(!x.error)done++;next(i+1);});
+      })(0);
+    });
+  };
+  window.accRecvPaid=function(id){
+    var d=prompt('입금일 (YYYY-MM-DD)',new Date().toISOString().slice(0,10));
+    if(!d)return;
+    sbc().from('acc_미수금').select('*').eq('id',id).single().then(function(r){
+      if(r.error||!r.data){alert(r.error&&r.error.message||'없음');return;}
+      var v=r.data,cat=null;
+      S.cats.forEach(function(c){if(c.카테고리명==='계약입금')cat=c.id;});
+      sbc().rpc('rpc_acc_insert_tx',{p:{거래일:d,구분:'수입',카테고리_id:cat,사업부:v.사업부,금액:v.단계금액,
+        거래처_유형:v.거래처_유형||'고객',거래처_id:v.거래처_id,거래처명:v.거래처명,결제수단:'계좌이체',
+        출처:'계약입금',출처_id:v.contract_id,상태:'확정',적요:(v.거래처명||'')+' '+v.단계+'단계 입금'}})
+      .then(function(x){
+        if(x.error){alert(x.error.message);return;}
+        sbc().from('acc_미수금').update({상태:'완납',입금일:d,입금_거래_id:x.data,updated_at:new Date().toISOString()}).eq('id',id)
+        .then(function(){accShow('recv');});
+      });
+    });
+  };
+
+  /* ---------- t5 세금 ---------- */
+  function rTax(){
+    sbc().from('v_acc_부가세').select('*').order('월',{ascending:false}).limit(24).then(function(r){
+      if(r.error){err(r.error);return;}
+      var h='<div style="font-weight:700;margin-bottom:6px">부가가치세 월별 현황</div><table class="acc-table"><tr><th>월</th><th>매출 VAT</th><th>매입 VAT</th><th>납부예정 VAT</th></tr>';
+      (r.data||[]).forEach(function(v){h+='<tr><td>'+String(v.월).slice(0,7)+'</td><td style="text-align:right">'+fmtW(v.매출_vat)+'</td><td style="text-align:right">'+fmtW(v.매입_vat)+'</td><td style="text-align:right;font-weight:700">'+fmtW(v.납부예정_vat)+'</td></tr>';});
+      h+='</table><div style="font-size:11.5px;color:#94a3b8;margin-top:8px">※ VAT는 세금계산서 업로드분(공급가액·세액 기재 거래) 기준. 신고·납부는 세무사 확정 기준을 따릅니다.<br>납부 캘린더: 부가세 1기 확정 7/25 · 2기 확정 1/25 / 원천세 매월 10일 / 법인세 3/31</div>';
+      el('acc-body').innerHTML=h;
+    }).catch(err);
+  }
+
+  /* ---------- t6 세무사 export ---------- */
+  function rXport(){
+    var y=new Date().getFullYear(),m=new Date().getMonth()+1;
+    el('acc-body').innerHTML='<div style="background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:16px;max-width:560px">'
+      +'<div style="font-weight:700;margin-bottom:10px">세무사 전달 자료 export (8종 분류)</div>'
+      +'<div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">'
+      +fld('시작월','<input type="month" id="ax-from" value="'+y+'-'+pad(m)+'" style="'+inp()+'">')
+      +fld('종료월','<input type="month" id="ax-to" value="'+y+'-'+pad(m)+'" style="'+inp()+'">')
+      +'<button class="acc-btn" onclick="accExport()">xlsx 다운로드</button></div>'
+      +'<div style="font-size:11.5px;color:#94a3b8;margin-top:10px">시트: 매출 · 매입경비 · 세금계산서 · 카드 · 계좌 · 급여4대보험 (확정 거래 + 업로드 원천)</div></div>';
+  }
+  window.accExport=function(){
+    if(typeof XLSX==='undefined'){alert('엑셀 라이브러리 로딩 전입니다. 잠시 후 다시 시도하세요.');return;}
+    var f=el('ax-from').value,t=el('ax-to').value;
+    if(!f||!t){alert('기간을 선택하세요');return;}
+    var p1=f+'-01',pp=t.split('-'),p2=pp[0]+'-'+pp[1]+'-'+pad(new Date(+pp[0],+pp[1],0).getDate());
+    sbc().rpc('rpc_acc_export_tax',{'p_시작':p1,'p_종료':p2}).then(function(r){
+      if(r.error){alert(r.error.message);return;}
+      var d=r.data||{},wb=XLSX.utils.book_new();
+      ['매출','매입경비','세금계산서','카드','계좌','급여4대보험'].forEach(function(k){
+        var arr=d[k]||[];
+        XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(arr.length?arr:[{안내:'해당 기간 데이터 없음'}]),k);
+      });
+      XLSX.writeFile(wb,'리얼플랜제주_세무사자료_'+f.replace('-','')+'_'+t.replace('-','')+'.xlsx');
+    });
+  };
+
+  /* ---------- t7 자료 업로드 ---------- */
+  function rUpload(){
+    var accOpt=S.accs.filter(function(a){return a.은행==='농협';}).map(function(a){return '<option value="'+a.id+'" data-no="'+a.계좌번호+'">'+esc(a.별칭)+' '+a.계좌번호+'</option>';}).join('');
+    el('acc-body').innerHTML='<div style="background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:16px;margin-bottom:14px">'
+      +'<div style="font-weight:700;margin-bottom:10px">원천 자료 업로드 (멱등 — 같은 파일 재업로드 안전)</div>'
+      +'<div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">'
+      +fld('원천 종류','<select id="au-src" style="'+inp()+'" onchange="document.getElementById(\'au-acc-w\').style.display=this.value===\'농협통장\'?\'\':\'none\'"><option>농협통장</option><option>농협카드</option><option>BC카드</option><option>세금계산서매출</option><option>세금계산서매입</option></select>')
+      +'<span id="au-acc-w">'+fld('계좌 (통장만)','<select id="au-acc" style="'+inp()+'">'+accOpt+'</select>')+'</span>'
+      +fld('파일 (.xls/.xlsx 복수 가능)','<input type="file" id="au-file" multiple accept=".xls,.xlsx" style="font-size:12px">')
+      +'<button class="acc-btn" onclick="accUpload()">업로드</button>'
+      +'<button class="acc-btn ghost" onclick="accMatch()">자동 매칭 실행</button></div>'
+      +'<div id="au-result" style="margin-top:10px;font-size:12.5px"></div></div>'
+      +'<div id="au-stage"></div>';
+    stageList();
+  }
+  function stageList(){
+    sbc().from('acc_원천거래').select('id,원천,거래일,금액,상대명,매칭상태,업로드채널').order('created_at',{ascending:false}).limit(2000).then(function(r){
+      if(r.error)return;
+      var rows=r.data||[],agg={};
+      rows.forEach(function(s){var k=s.원천;agg[k]=agg[k]||{n:0,um:0};agg[k].n++;if(s.매칭상태==='미매칭')agg[k].um++;});
+      var h='<div style="font-weight:700;margin-bottom:6px">staging 현황</div><table class="acc-table" style="max-width:480px"><tr><th>원천</th><th>적재</th><th>미매칭</th></tr>';
+      Object.keys(agg).forEach(function(k){h+='<tr><td>'+k+'</td><td>'+agg[k].n+'</td><td>'+agg[k].um+'</td></tr>';});
+      h+='</table><div style="font-weight:700;margin:14px 0 6px">미매칭 최근 50건</div><table class="acc-table"><tr><th>거래일</th><th>원천</th><th>금액</th><th>상대</th><th></th></tr>';
+      rows.filter(function(s){return s.매칭상태==='미매칭';}).slice(0,50).forEach(function(s){
+        h+='<tr><td>'+(s.거래일||'')+'</td><td>'+s.원천+'</td><td style="text-align:right">'+fmtW(s.금액)+'</td><td>'+esc(s.상대명||'')+'</td>'
+          +'<td><button class="acc-btn ghost" style="padding:2px 8px;font-size:11px" onclick="accStageExclude(\''+s.id+'\')">제외</button></td></tr>';
+      });
+      el('au-stage').innerHTML=h+'</table><div style="font-size:11.5px;color:#94a3b8;margin-top:6px">※ 미매칭=원장 예정 기록과 자동 연결 안 된 원천. 결재 모듈 가동 전에는 미매칭이 정상이며, 월별 입출금 탭에서 직접 입력한 거래와 [자동 매칭 실행]으로 연결됩니다.</div>';
+    });
+  }
+  window.accStageExclude=function(id){
+    sbc().rpc('rpc_acc_match',{p_mode:'confirm',p_stage_id:id,p_tx_id:null}).then(function(r){if(r.error)alert(r.error.message);else stageList();});
+  };
+  window.accMatch=function(){
+    sbc().rpc('rpc_acc_match',{p_mode:'auto'}).then(function(r){
+      if(r.error)alert(r.error.message);else{alert('자동 매칭: '+JSON.stringify(r.data));stageList();}
+    });
+  };
+  window.accUpload=function(){
+    if(typeof XLSX==='undefined'){alert('엑셀 라이브러리 로딩 전입니다. 잠시 후 다시 시도하세요.');return;}
+    var src=el('au-src').value,files=el('au-file').files;
+    if(!files.length){alert('파일을 선택하세요');return;}
+    var accSel=el('au-acc'),accId=null,accNo=null;
+    if(src==='농협통장'){
+      if(!accSel.value){alert('계좌를 선택하세요');return;}
+      accId=accSel.value;accNo=accSel.options[accSel.selectedIndex].dataset.no;
+    }
+    var all=[],reads=[];
+    Array.prototype.forEach.call(files,function(file){
+      reads.push(file.arrayBuffer().then(function(buf){
+        var wb=XLSX.read(buf,{type:'array'});
+        var rows=parseSource(src,wb,accId,accNo);
+        all=all.concat(rows);
+      }));
+    });
+    Promise.all(reads).then(function(){
+      if(!all.length){el('au-result').innerHTML='<span style="color:#b91c1c">파싱된 행이 없습니다 — 파일 형식을 확인하세요 (인터넷뱅킹/홈택스 원본 다운로드 파일이어야 합니다)</span>';return;}
+      var ins=0,dup=0;
+      (function send(i){
+        if(i*200>=all.length){
+          el('au-result').innerHTML='✅ 적재 '+ins+'건 · 중복 제외 '+dup+'건 (총 파싱 '+all.length+'건)';
+          stageList();return;
+        }
+        sbc().rpc('rpc_acc_bulk_stage',{p_rows:all.slice(i*200,(i+1)*200)}).then(function(r){
+          if(r.error){el('au-result').innerHTML='<span style="color:#b91c1c">적재 오류: '+esc(r.error.message)+'</span>';return;}
+          ins+=r.data['적재']||0;dup+=r.data['중복제외']||0;send(i+1);
+        });
+      })(0);
+    }).catch(function(e){el('au-result').innerHTML='<span style="color:#b91c1c">파일 읽기 오류: '+esc(e.message||e)+'</span>';});
+  };
+
+  /* ---------- 파서 4종 (회계 통합설계서 §4 / D2a 파이썬 검증 로직과 동일) ---------- */
+  function aoa(wb){return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false,defval:null});}
+  function findHdr(A,label){
+    for(var i=0;i<A.length;i++){
+      var m={};
+      for(var j=0;j<(A[i]||[]).length;j++){var v=A[i][j];if(v!=null&&String(v).trim())m[String(v).trim()]=j;}
+      if(label in m)return{r:i,m:m};
+    }
+    return null;
+  }
+  function num(v){if(v==null)return null;var s=String(v).replace(/[,원\s￦]/g,'');var n=parseFloat(s);return isNaN(n)?null:n;}
+  function sv(v,n){return (v==null?'':String(v).trim()).slice(0,n||60);}
+  function r0(v){return String(Math.round(v||0));}
+  function parseSource(src,wb,accId,accNo){
+    var A=aoa(wb),out=[];
+    if(src==='농협통장'){
+      var h=findHdr(A,'거래일시');if(!h)return out;
+      for(var i=h.r+1;i<A.length;i++){
+        var r=A[i]||[],dt=sv(r[h.m['거래일시']],30);
+        if(!/^20\d\d\/\d\d\/\d\d/.test(dt))continue;
+        var o=num(r[h.m['출금금액']]),inn=num(r[h.m['입금금액']]),bal=num(r[h.m['거래후잔액']]);
+        out.push({'원천':'농협통장','중복키':accNo+'|'+dt+'|'+r0(o)+'|'+r0(inn)+'|'+r0(bal),
+          '거래일':dt.slice(0,10).replace(/\//g,'-'),'금액':(inn||0)-(o||0),
+          '상대명':sv(r[h.m['거래기록사항']])||sv(r[h.m['거래내용']]),'계좌_id':accId,
+          '원본':{'거래일시':dt,'출금':o,'입금':inn,'잔액':bal,'거래내용':sv(r[h.m['거래내용']]),'거래기록사항':sv(r[h.m['거래기록사항']]),'거래점':sv(r[h.m['거래점']]),'이체메모':sv(r[h.m['이체메모']])}});
+      }
+    } else if(src==='농협카드'){
+      var h2=findHdr(A,'이용일시');if(!h2)return out;
+      for(var i2=h2.r+1;i2<A.length;i2++){
+        var r2=A[i2]||[],dt2=sv(r2[h2.m['이용일시']],20);
+        if(!/^20\d\d\.\d\d\.\d\d/.test(dt2))continue;
+        var ap=sv(r2[h2.m['승인번호']],20).split('.')[0];
+        out.push({'원천':'농협카드','중복키':'농협카드|'+ap+'|'+dt2.slice(0,10),
+          '거래일':dt2.slice(0,10).replace(/\./g,'-'),'금액':num(r2[h2.m['이용금액']]),'상대명':sv(r2[h2.m['가맹점명']]),
+          '원본':{'이용일시':dt2,'승인번호':ap,'이용금액':num(r2[h2.m['이용금액']]),'가맹점명':sv(r2[h2.m['가맹점명']]),'취소여부':sv(r2[h2.m['취소여부']],4)}});
+      }
+    } else if(src==='BC카드'){
+      var h3=findHdr(A,'승인일자');if(!h3)return out;
+      for(var i3=h3.r+1;i3<A.length;i3++){
+        var r3=A[i3]||[],dt3=sv(r3[h3.m['승인일자']],20);
+        if(!/^20\d\d\.\d\d\.\d\d/.test(dt3))continue;
+        var ap3=sv(r3[h3.m['승인번호']],20).split('.')[0];
+        out.push({'원천':'BC카드','중복키':'BC|'+ap3+'|'+dt3,
+          '거래일':dt3.replace(/\./g,'-'),'금액':num(r3[h3.m['승인금액']]),'상대명':sv(r3[h3.m['가맹점명/국가명']]),
+          '원본':{'승인일자':dt3,'승인시간':sv(r3[h3.m['승인시간']],10),'승인번호':ap3,'승인금액':num(r3[h3.m['승인금액']]),'가맹점명':sv(r3[h3.m['가맹점명/국가명']]),'매출종류':sv(r3[h3.m['매출종류']],10)}});
+      }
+    } else {
+      var h4=findHdr(A,'작성일자');if(!h4)return out;
+      var hd=A[h4.r],ci={};
+      for(var j4=0;j4<hd.length;j4++){var lab=sv(hd[j4],30);if(lab&&!(lab in ci))ci[lab]=j4;}
+      var supC=ci['공급자사업자등록번호'],rcvC=ci['공급받는자사업자등록번호'];
+      var supN=(sv(hd[supC+1],20)==='종사업장번호')?supC+2:supC+1;
+      var rcvN=(sv(hd[rcvC+1],20)==='종사업장번호')?rcvC+2:rcvC+1;
+      for(var i4=h4.r+1;i4<A.length;i4++){
+        var r4=A[i4]||[],dt4=sv(r4[ci['작성일자']],12);
+        if(!/^20\d\d-\d\d-\d\d/.test(dt4))continue;
+        var ap4=sv(r4[ci['승인번호']],30);
+        var nm,bn;
+        if(src==='세금계산서매출'){nm=sv(r4[rcvN]);bn=sv(r4[rcvC],14);}else{nm=sv(r4[supN]);bn=sv(r4[supC],14);}
+        out.push({'원천':src,'중복키':'세금계산서|'+ap4,
+          '거래일':dt4,'금액':num(r4[ci['합계금액']]),'상대명':nm,'상대사업자번호':bn,
+          '원본':{'작성일자':dt4,'승인번호':ap4,'합계금액':num(r4[ci['합계금액']]),'공급가액':num(r4[ci['공급가액']]),'세액':num(r4[ci['세액']]),'상대상호':nm,'상대사업자번호':bn}});
+      }
+    }
+    return out;
+  }
+})();
+
+</script>
+</body>
+</html>

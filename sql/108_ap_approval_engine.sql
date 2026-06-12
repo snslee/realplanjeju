@@ -1,0 +1,13 @@
+-- =====================================================================
+-- sql/108 결재 엔진 (결재 통합설계서 v1.0 / 2026-06-12 라이브 적용 완료 / migration 108_ap_approval_engine)
+-- ap_결재 1테이블(품의·지출결의·경비정산·인장사용) + RPC 3 + 감사룰 AP_STUCK
+-- 대표 확정: 승인권 owner 단독·셀프결재 허용·김현숙 manager(기안·열람) / 승인=rpc_acc_insert_from_approval→원장 '예정'
+-- 검증: E2E 롤백테스트 PASS (지출결의→원장 예정 생성→원장_거래_id 역참조→무흔적)
+-- 알림: mk_notification_queue(이벤트_코드 AP_SUBMIT/AP_DECIDE) → telegram-queue-flush 기존 EF
+-- 상세 DDL은 supabase migration 108 참조 (list_migrations)
+-- =====================================================================
+-- 핵심 시그니처:
+--   rpc_ap_submit(p jsonb) returns uuid               -- 기안 (지출결의·경비정산 금액 필수 가드, 승인자 자동=owner)
+--   rpc_ap_decide(p_id uuid, p_action text, p_사유 text) -- 승인|반려 (owner 가드 / 승인 시 원장 자동)
+--   rpc_acc_insert_from_approval(p_approval_id uuid)  -- 회계 동결 인터페이스 구현 (출처='결재', 상태='예정')
+-- admin: v2.28 (commit efaf5076) — 결재 탭 3종(인박스/기안/전체현황·인장사용대장 겸용), 메뉴 활성화

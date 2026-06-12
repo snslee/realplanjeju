@@ -495,7 +495,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#customers" class="nav-item" data-nav="customers" title="2. 고객 — 거래·공문·계약 통합 운영 (360° 뷰)"><span class="nav-icon">👥</span><span class="nav-text">고객</span></a>
 <a href="#approval" class="nav-item" data-nav="approval" title="3. 결재 — 품의·지출결의·경비·인장 통합 인박스 (v2.9-B / Day 7~8)"><span class="nav-icon">📝</span><span class="nav-text">결재</span><span class="nav-phase">v2.9-B</span></a>
 <a href="#vendor" class="nav-item" data-nav="vendor" title="4. 거래처·외주 (매입 마스터·발주서·정산서·NDA / Phase 2c-1 ✓ v2.13.4 가동)"><span class="nav-icon">🏢</span><span class="nav-text">거래처·외주</span><span class="nav-phase">2c-1</span></a>
-<a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="5. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
+<a href="#hr" class="nav-item" data-nav="hr" title="5. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 <a href="#admin" class="nav-item" data-nav="admin" title="7. 관리자 관리 (계정·권한 / v2.9-F)"><span class="nav-icon">🛡</span><span class="nav-text">관리자 관리</span><span class="nav-phase">v2.9-F</span></a>
 </nav>
@@ -646,7 +646,13 @@ table.qt-items td.narrow input{text-align:right}
 </div>
 <section id="view-hr" class="page" hidden>
   <div class="page-header"><div><div class="page-title">인사</div><div class="page-subtitle">휴가·출장·근태·급여·근로계약 (본인분 RLS) — 마스터 #8</div></div></div>
-  <div class="placeholder-box" id="ph-hr"></div>
+  <div id="hr-root">
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+  <button type="button" class="acc-tab active" data-hr-tab="staff">👥 직원</button>
+  <button type="button" class="acc-tab" data-hr-tab="leave">🏖 휴가·출장</button>
+  </div>
+  <div id="hr-body"></div>
+  </div>
 </section>
 <section id="view-accounting" class="page" hidden>
   <div class="page-header"><div><div class="page-title">회계</div><div class="page-subtitle">통합 손익·매출·매입·세무사 export (1인 전용) — 마스터 #9</div></div></div>
@@ -3251,7 +3257,8 @@ function handleRoute(){
       state.activeTab='hr';
       show('#view-hr');
       $('.nav-item[data-nav="hr"]').classList.add('active');
-      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('hr');
+      if(typeof hrInit==='function')hrInit();
+      else if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('hr');
       break;
     case 'accounting':
       state.activeTab='accounting';
@@ -8132,7 +8139,7 @@ document.addEventListener('DOMContentLoaded',init);
     el('ap-body').innerHTML='<div style="background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:16px;max-width:760px">'
       +'<div style="font-weight:700;margin-bottom:12px">결재 기안</div>'
       +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">'
-      +fld('유형','<select id="apf-type" style="'+inp()+'" onchange="apTypeChange()"><option>지출결의</option><option>경비정산</option><option>품의</option><option>인장사용</option></select>')
+      +fld('유형','<select id="apf-type" style="'+inp()+'" onchange="apTypeChange()"><option>지출결의</option><option>경비정산</option><option>품의</option><option>인장사용</option><option>휴가</option><option>출장</option></select>')
       +fld('제목','<input id="apf-title" style="'+inp()+';width:240px">')
       +'<span id="apf-money-w">'
       +fld('금액','<input type="number" id="apf-amt" style="'+inp()+';width:120px">')
@@ -8143,6 +8150,7 @@ document.addEventListener('DOMContentLoaded',init);
       +fld('지급기한','<input type="date" id="apf-due" style="'+inp()+'">')
       +'</span>'
       +'<span id="apf-seal-w" style="display:none">'+fld('인장 종류','<select id="apf-seal" style="'+inp()+'"><option>법인인감</option><option>사용인감</option><option>직인</option></select>')+'</span>'
+      +'<span id="apf-leave-w" style="display:none">'+fld('시작일','<input type="date" id="apf-lv1" style="'+inp()+'">')+fld('종료일','<input type="date" id="apf-lv2" style="'+inp()+'">')+'</span>'
       +fld('사업부','<select id="apf-bu" style="'+inp()+'"><option>본사공통</option><option>국내여행</option><option>행사이벤트</option><option>온라인마케팅</option><option>마케팅교육</option></select>')
       +'</div>'
       +'<div style="margin-top:10px">'+fld('내용','<textarea id="apf-body" rows="3" style="'+inp()+';width:100%"></textarea>')+'</div>'
@@ -8153,6 +8161,7 @@ document.addEventListener('DOMContentLoaded',init);
     var t=el('apf-type').value;
     el('apf-money-w').style.display=(t==='지출결의'||t==='경비정산')?'':'none';
     el('apf-seal-w').style.display=(t==='인장사용')?'':'none';
+    el('apf-leave-w').style.display=(t==='휴가'||t==='출장')?'':'none';
   };
   window.apSubmit=function(){
     var t=el('apf-type').value;
@@ -8163,6 +8172,8 @@ document.addEventListener('DOMContentLoaded',init);
       if(!p.금액){alert('금액은 필수입니다');return;}
     }
     if(t==='인장사용')p.인장종류=el('apf-seal').value;
+    if(t==='휴가'||t==='출장'){p.휴가시작일=el('apf-lv1').value;p.휴가종료일=el('apf-lv2').value;
+      if(!p.휴가시작일||!p.휴가종료일){alert('기간은 필수입니다');return;}}
     if(!p.제목){alert('제목은 필수입니다');return;}
     sbc().rpc('rpc_ap_submit',{p:p}).then(function(r){
       if(r.error)alert(r.error.message);
@@ -8180,6 +8191,67 @@ document.addEventListener('DOMContentLoaded',init);
       rows.filter(function(a){return !f||a.상태===f;}).forEach(function(a){h+=rowHtml(a,false);});
       el('ap-body').innerHTML=h+'</table>';
     }).catch(err);
+  }
+})();
+
+</script>
+<script>
+/*HRMOD v1.0 — 인사 슬림 (인사 통합설계서 v1.0) */
+(function(){
+  function sbc(){return window.sb||window.supabase||null;}
+  var H={tab:'staff',bound:false};
+  function el(id){return document.getElementById(id);}
+  function esc(s){return String(s==null?'':s).replace(/</g,'&lt;');}
+  window.hrInit=function(){
+    var root=el('hr-root'); if(!root||!sbc()) return;
+    if(!H.bound){H.bound=true;
+      root.querySelectorAll('[data-hr-tab]').forEach(function(b){b.addEventListener('click',function(){hrShow(b.dataset.hrTab);});});
+    }
+    hrShow(H.tab);
+  };
+  function hrShow(tab){
+    H.tab=tab;
+    document.querySelectorAll('[data-hr-tab]').forEach(function(b){b.classList.toggle('active',b.dataset.hrTab===tab);});
+    var b=el('hr-body'); if(!b)return;
+    b.innerHTML='<div style="color:#94a3b8;padding:30px;text-align:center">불러오는 중…</div>';
+    if(tab==='leave')rLeave();else rStaff();
+  }
+  window.hrShow=hrShow;
+  function rStaff(){
+    sbc().from('hr_직원').select('*').order('입사일').then(function(r){
+      if(r.error){el('hr-body').innerHTML='<div style="color:#b91c1c;padding:20px">'+esc(r.error.message)+'</div>';return;}
+      var h='<div style="display:flex;gap:14px;flex-wrap:wrap">';
+      (r.data||[]).forEach(function(s){
+        h+='<div style="background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:16px;min-width:260px">'
+          +'<div style="font-size:16px;font-weight:800">'+esc(s.이름)+' <span style="font-size:12px;font-weight:400;color:#64748b">'+esc(s.직위||'')+'</span></div>'
+          +'<div style="font-size:12.5px;color:#475569;margin-top:8px;line-height:1.9">입사일 '+(s.입사일||'-')
+          +'<br>연락처 '+esc(s.연락처||'-')+'<br>이메일 '+esc(s.이메일||'-')
+          +'<br>재직상태 <b>'+s.재직상태+'</b></div>'
+          +'<button class="acc-btn ghost" style="margin-top:10px;padding:4px 12px;font-size:11.5px" onclick="hrEdit(\''+s.id+'\',\''+esc(s.연락처||'')+'\')">연락처 수정</button></div>';
+      });
+      el('hr-body').innerHTML=h+'</div><div style="font-size:11.5px;color:#94a3b8;margin-top:10px">※ 급여는 회계 고정비에서 매월 자동 처리 중 (직원 채용 시 급여 모듈 활성화 예정)</div>';
+    });
+  }
+  window.hrEdit=function(id,cur){
+    var v=prompt('연락처', cur||'');
+    if(v===null)return;
+    sbc().from('hr_직원').update({연락처:v,updated_at:new Date().toISOString()}).eq('id',id).then(function(r){
+      if(r.error)alert(r.error.message);else hrShow('staff');
+    });
+  };
+  function rLeave(){
+    sbc().from('ap_결재').select('*').in('유형',['휴가','출장']).order('기안일',{ascending:false}).limit(100).then(function(r){
+      if(r.error){el('hr-body').innerHTML='<div style="color:#b91c1c;padding:20px">'+esc(r.error.message)+'</div>';return;}
+      var rows=r.data||[];
+      var h='<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><b>휴가·출장 내역</b>'
+        +'<button class="acc-btn" style="padding:4px 12px;font-size:12px" onclick="location.hash=\'#approval\';setTimeout(function(){if(window.apShow)window.apShow(\'draft\');},300)">＋ 기안하기</button></div>'
+        +'<table class="acc-table"><tr><th>기안일</th><th>유형</th><th>제목</th><th>기간</th><th>상태</th></tr>';
+      rows.forEach(function(a){
+        h+='<tr><td>'+a.기안일.slice(0,10)+'</td><td>'+a.유형+'</td><td>'+esc(a.제목)+'</td>'
+          +'<td>'+(a.휴가시작일||'')+' ~ '+(a.휴가종료일||'')+'</td><td>'+a.상태+'</td></tr>';
+      });
+      el('hr-body').innerHTML=h+'</table>'+(rows.length?'':'<div style="color:#94a3b8;padding:18px;text-align:center">내역 없음 — 결재에서 휴가/출장 유형으로 기안</div>');
+    });
   }
 })();
 

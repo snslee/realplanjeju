@@ -493,7 +493,7 @@ table.qt-items td.narrow input{text-align:right}
 <nav>
 <a href="#dashboard" class="nav-item" data-nav="dashboard" title="1. 대시보드 (KPI·미응답 알림)"><span class="nav-icon">📊</span><span class="nav-text">대시보드</span></a>
 <a href="#customers" class="nav-item" data-nav="customers" title="2. 고객 — 거래·공문·계약 통합 운영 (360° 뷰)"><span class="nav-icon">👥</span><span class="nav-text">고객</span></a>
-<a href="#approval" class="nav-item nav-disabled" data-nav="approval" title="3. 결재 — 품의·지출결의·경비·인장 통합 인박스 (v2.9-B / Day 7~8)"><span class="nav-icon">📝</span><span class="nav-text">결재</span><span class="nav-phase">v2.9-B</span></a>
+<a href="#approval" class="nav-item" data-nav="approval" title="3. 결재 — 품의·지출결의·경비·인장 통합 인박스 (v2.9-B / Day 7~8)"><span class="nav-icon">📝</span><span class="nav-text">결재</span><span class="nav-phase">v2.9-B</span></a>
 <a href="#vendor" class="nav-item" data-nav="vendor" title="4. 거래처·외주 (매입 마스터·발주서·정산서·NDA / Phase 2c-1 ✓ v2.13.4 가동)"><span class="nav-icon">🏢</span><span class="nav-text">거래처·외주</span><span class="nav-phase">2c-1</span></a>
 <a href="#hr" class="nav-item nav-disabled" data-nav="hr" title="5. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
@@ -554,7 +554,14 @@ table.qt-items td.narrow input{text-align:right}
 <!-- v2.8.0c 사이드바 placeholder 4영역 (결재·거래처·인사·회계) -->
 <section id="view-approval" class="page" hidden>
   <div class="page-header"><div><div class="page-title">결재</div><div class="page-subtitle">품의·지출결의·경비정산·인장 통합 인박스 (전사) — 마스터 #4</div></div></div>
-  <div class="placeholder-box" id="ph-approval"></div>
+  <div id="ap-root">
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+  <button type="button" class="acc-tab active" data-ap-tab="inbox">📥 인박스</button>
+  <button type="button" class="acc-tab" data-ap-tab="draft">✍️ 기안하기</button>
+  <button type="button" class="acc-tab" data-ap-tab="all">📚 전체 현황</button>
+  </div>
+  <div id="ap-body"></div>
+  </div>
 </section>
 <section id="view-vendor" class="page" hidden>
   <div class="page-header"><div><div class="page-title">🏢 거래처·외주</div><div class="page-subtitle">매입 마스터·외주 거래처 (vd_vendors / sql/020 v2 + sql/021b 4사업부)</div></div></div>
@@ -3228,7 +3235,8 @@ function handleRoute(){
       state.activeTab='approval';
       show('#view-approval');
       $('.nav-item[data-nav="approval"]').classList.add('active');
-      if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('approval');
+      if(typeof apInit==='function')apInit();
+      else if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('approval');
       break;
     case 'vendor':
       /* v2.10-A WIP: 거래처 UI 목록 (rpc_list_vendors / 권한 체크) */
@@ -8045,6 +8053,133 @@ document.addEventListener('DOMContentLoaded',init);
       }
     }
     return out;
+  }
+})();
+
+</script>
+<script>
+/*APMOD v1.0 — 결재 영역 (결재 통합설계서 v1.0 D2) */
+(function(){
+  function sbc(){return window.sb||window.supabase||null;}
+  var P={tab:'inbox',cats:[],accs:[],ready:false,bound:false};
+  function el(id){return document.getElementById(id);}
+  function esc(s){return String(s==null?'':s).replace(/</g,'&lt;');}
+  function fmtW(n){return n==null?'-':Number(n).toLocaleString('ko-KR');}
+  function fld(l,c){return '<label style="display:flex;flex-direction:column;font-size:11px;color:#64748b;gap:3px">'+l+c+'</label>';}
+  function inp(){return 'padding:6px 8px;border:1px solid #d6dce5;border-radius:6px;font-size:12.5px';}
+  function err(e){var b=el('ap-body');if(b)b.innerHTML='<div style="color:#b91c1c;padding:20px">오류: '+esc(e&&e.message||e)+'</div>';}
+  function stBadge(s){
+    var m={'기안':'#fef3c7;color:#92400e','승인':'#dcfce7;color:#166534','반려':'#fee2e2;color:#b91c1c','회수':'#e2e8f0;color:#475569'};
+    return '<span style="background:'+(m[s]||'#e2e8f0')+';padding:1px 8px;border-radius:99px;font-size:11px">'+s+'</span>';
+  }
+  window.apInit=function(){
+    var root=el('ap-root'); if(!root||!sbc()) return;
+    if(!P.bound){
+      P.bound=true;
+      root.querySelectorAll('[data-ap-tab]').forEach(function(b){
+        b.addEventListener('click',function(){apShow(b.dataset.apTab);});
+      });
+    }
+    if(!P.ready){
+      Promise.all([
+        sbc().from('acc_카테고리').select('*').eq('활성',true).order('정렬'),
+        sbc().from('acc_계좌').select('*').eq('활성',true).order('은행')
+      ]).then(function(r){
+        P.cats=r[0].data||[];P.accs=r[1].data||[];P.ready=true;apShow(P.tab);
+      }).catch(err);
+    } else apShow(P.tab);
+  };
+  function apShow(tab){
+    P.tab=tab;
+    document.querySelectorAll('[data-ap-tab]').forEach(function(b){b.classList.toggle('active',b.dataset.apTab===tab);});
+    var b=el('ap-body'); if(!b)return;
+    b.innerHTML='<div style="color:#94a3b8;padding:30px;text-align:center">불러오는 중…</div>';
+    try{({inbox:rInbox,draft:rDraft,all:rAll}[tab]||rInbox)();}catch(e){err(e);}
+  }
+  window.apShow=apShow;
+  function rowHtml(a,withBtns){
+    return '<tr><td>'+a.기안일.slice(0,10)+'</td><td>'+a.유형+'</td><td>'+esc(a.제목)+'</td>'
+      +'<td style="text-align:right;font-weight:600">'+(a.금액?fmtW(a.금액):'-')+'</td>'
+      +'<td>'+esc(a.사업부||'')+'</td><td>'+esc(a.거래처명||'')+'</td><td>'+stBadge(a.상태)+'</td>'
+      +'<td>'+(a.원장_거래_id?'<span style="font-size:11px;color:#0f6e56">원장기록 ✓</span>':'')+'</td>'
+      +'<td style="white-space:nowrap">'+(withBtns&&a.상태==='기안'
+        ?'<button class="acc-btn" style="padding:3px 10px;font-size:11.5px" onclick="apDecide(\''+a.id+'\',\'승인\')">승인</button> '
+        +'<button class="acc-btn ghost" style="padding:3px 10px;font-size:11.5px;border-color:#b91c1c;color:#b91c1c" onclick="apDecide(\''+a.id+'\',\'반려\')">반려</button>'
+        :'')+'</td></tr>';
+  }
+  var TH='<tr><th>기안일</th><th>유형</th><th>제목</th><th>금액</th><th>사업부</th><th>거래처</th><th>상태</th><th>회계</th><th></th></tr>';
+  function rInbox(){
+    sbc().from('ap_결재').select('*').eq('상태','기안').order('기안일',{ascending:false}).then(function(r){
+      if(r.error){err(r.error);return;}
+      var rows=r.data||[];
+      var h='<div style="font-weight:700;margin-bottom:8px">결재 대기 '+rows.length+'건</div><table class="acc-table">'+TH;
+      rows.forEach(function(a){h+=rowHtml(a,true);});
+      h+='</table>'+(rows.length?'<div style="font-size:11.5px;color:#94a3b8;margin-top:6px">※ 지출결의·경비정산 승인 시 회계 원장에 \'예정\'으로 자동 기록 → 통장 업로드 시 자동 확정</div>':'<div style="color:#94a3b8;padding:18px;text-align:center">대기 중인 결재 없음</div>');
+      el('ap-body').innerHTML=h;
+    }).catch(err);
+  }
+  window.apDecide=function(id,act){
+    var 사유=null;
+    if(act==='반려'){사유=prompt('반려 사유');if(사유===null)return;}
+    else if(!confirm('승인 처리할까요? (지출결의·경비정산은 회계 원장에 자동 기록됩니다)'))return;
+    sbc().rpc('rpc_ap_decide',{p_id:id,p_action:act,'p_사유':사유}).then(function(r){
+      if(r.error)alert(r.error.message);else apShow(P.tab);
+    });
+  };
+  function rDraft(){
+    var catOpt=P.cats.filter(function(c){return c.유형!=='수입';}).map(function(c){return '<option value="'+c.id+'">['+c.유형+'] '+esc(c.카테고리명)+'</option>';}).join('');
+    var accOpt='<option value="">계좌 미지정</option>'+P.accs.map(function(a){return '<option value="'+a.id+'">'+esc(a.별칭)+'</option>';}).join('');
+    el('ap-body').innerHTML='<div style="background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:16px;max-width:760px">'
+      +'<div style="font-weight:700;margin-bottom:12px">결재 기안</div>'
+      +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">'
+      +fld('유형','<select id="apf-type" style="'+inp()+'" onchange="apTypeChange()"><option>지출결의</option><option>경비정산</option><option>품의</option><option>인장사용</option></select>')
+      +fld('제목','<input id="apf-title" style="'+inp()+';width:240px">')
+      +'<span id="apf-money-w">'
+      +fld('금액','<input type="number" id="apf-amt" style="'+inp()+';width:120px">')
+      +fld('카테고리','<select id="apf-cat" style="'+inp()+'">'+catOpt+'</select>')
+      +fld('거래처','<input id="apf-pt" style="'+inp()+'">')
+      +fld('결제수단','<select id="apf-pay" style="'+inp()+'"><option>계좌이체</option><option>카드</option><option>현금</option><option>기타</option></select>')
+      +fld('출금계좌','<select id="apf-acc" style="'+inp()+'">'+accOpt+'</select>')
+      +fld('지급기한','<input type="date" id="apf-due" style="'+inp()+'">')
+      +'</span>'
+      +'<span id="apf-seal-w" style="display:none">'+fld('인장 종류','<select id="apf-seal" style="'+inp()+'"><option>법인인감</option><option>사용인감</option><option>직인</option></select>')+'</span>'
+      +fld('사업부','<select id="apf-bu" style="'+inp()+'"><option>본사공통</option><option>국내여행</option><option>행사이벤트</option><option>온라인마케팅</option><option>마케팅교육</option></select>')
+      +'</div>'
+      +'<div style="margin-top:10px">'+fld('내용','<textarea id="apf-body" rows="3" style="'+inp()+';width:100%"></textarea>')+'</div>'
+      +'<div style="margin-top:12px"><button class="acc-btn" onclick="apSubmit()">기안 제출</button>'
+      +'<span style="font-size:11.5px;color:#94a3b8;margin-left:10px">제출 즉시 텔레그램 알림 발송</span></div></div>';
+  }
+  window.apTypeChange=function(){
+    var t=el('apf-type').value;
+    el('apf-money-w').style.display=(t==='지출결의'||t==='경비정산')?'':'none';
+    el('apf-seal-w').style.display=(t==='인장사용')?'':'none';
+  };
+  window.apSubmit=function(){
+    var t=el('apf-type').value;
+    var p={유형:t,제목:el('apf-title').value,내용:el('apf-body').value,사업부:el('apf-bu').value};
+    if(t==='지출결의'||t==='경비정산'){
+      p.금액=el('apf-amt').value;p.카테고리_id=el('apf-cat').value;p.거래처명=el('apf-pt').value;
+      p.결제수단=el('apf-pay').value;p.출금계좌_id=el('apf-acc').value||null;p.지급기한=el('apf-due').value||null;
+      if(!p.금액){alert('금액은 필수입니다');return;}
+    }
+    if(t==='인장사용')p.인장종류=el('apf-seal').value;
+    if(!p.제목){alert('제목은 필수입니다');return;}
+    sbc().rpc('rpc_ap_submit',{p:p}).then(function(r){
+      if(r.error)alert(r.error.message);
+      else{alert('기안 완료');apShow('inbox');}
+    });
+  };
+  function rAll(){
+    sbc().from('ap_결재').select('*').order('기안일',{ascending:false}).limit(300).then(function(r){
+      if(r.error){err(r.error);return;}
+      var rows=r.data||[];
+      var h='<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><b>전체 결재</b>'
+        +'<select id="apa-f" style="'+inp()+'" onchange="apShow(\'all\')"><option value="">전체 상태</option><option>기안</option><option>승인</option><option>반려</option><option>회수</option></select>'
+        +'<span style="font-size:11.5px;color:#94a3b8">인장사용 건 = 인장사용대장 겸용</span></div><table class="acc-table">'+TH;
+      var f=el('apa-f')?el('apa-f').value:'';
+      rows.filter(function(a){return !f||a.상태===f;}).forEach(function(a){h+=rowHtml(a,false);});
+      el('ap-body').innerHTML=h+'</table>';
+    }).catch(err);
   }
 })();
 

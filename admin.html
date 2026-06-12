@@ -811,6 +811,7 @@ table.qt-items td.narrow input{text-align:right}
 <!-- v2.24 [1] 행 드래그 순서 변경 (대표 요청) — SortableJS 1.15.0 -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 /* admin v0.7 — SDK 우회 수동 token 교환
    핵심: fetch로 /auth/v1/token?grant_type=pkce 직접 호출
@@ -7694,8 +7695,26 @@ document.addEventListener('DOMContentLoaded',init);
         +'<table class="acc-table"><tr><th>연도</th><th>공식 매출액</th><th>공식 당기손익</th><th>관리 매출</th><th>관리 지출</th><th>대사 차이</th></tr>';
       ys.forEach(function(v){h+='<tr><td>'+v.연도+'</td><td style="text-align:right">'+fmtW(v.공식_매출액)+'</td><td style="text-align:right">'+fmtW(v.공식_당기손익)+'</td><td style="text-align:right">'+fmtW(v.관리_매출)+'</td><td style="text-align:right">'+fmtW(v.관리_지출)+'</td><td style="text-align:right">'+fmtW(v.매출_대사차이)+'</td></tr>';});
       h+='</table><div style="font-size:11.5px;color:#94a3b8;margin-top:6px">※ 공식=세무사 재무제표 확정치 / 관리=시스템 기록(현금 기준). 차이는 발생주의·VAT 포함 여부에 따른 정상 차이를 포함합니다.</div>';
+      h='<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px"><div style="flex:1;min-width:300px;background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:12px"><canvas id="acc-ch-year" height="210"></canvas></div><div style="flex:1;min-width:300px;background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:12px"><canvas id="acc-ch-bu" height="210"></canvas></div></div>'
+       +'<div style="background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:12px;margin-bottom:16px"><canvas id="acc-ch-month" height="120"></canvas></div>'+h;
       el('acc-body').innerHTML=h;
+      drawCharts(ms, ys);
     }).catch(err);
+  }
+  function drawCharts(ms, ys){
+    if(typeof Chart==='undefined')return;
+    try{
+      var Y=ys.filter(function(v){return v.연도;});
+      new Chart(document.getElementById('acc-ch-year'),{type:'bar',data:{labels:Y.map(function(v){return v.연도;}),datasets:[{label:'공식 매출(재무제표)',data:Y.map(function(v){return v.공식_매출액;}),backgroundColor:'#185fa5'},{label:'관리 매출(시스템)',data:Y.map(function(v){return v.관리_매출;}),backgroundColor:'#94c5f0'},{label:'공식 당기손익',data:Y.map(function(v){return v.공식_당기손익;}),type:'line',borderColor:'#b91c1c'}]},options:{plugins:{title:{display:true,text:'연도별 매출·손익 — 공식(재무제표) vs 관리(시스템)'}},scales:{y:{ticks:{callback:function(v){return (v/1000000)+'M';}}}}}});
+      sbc().from('acc_거래내역').select('사업부,구분,금액').gte('거래일',(new Date().getFullYear()-1)+'-01-01').neq('상태','취소').limit(5000).then(function(r){
+        if(r.error||!r.data)return;
+        var agg={};
+        r.data.forEach(function(t){if(t.구분!=='수입'||!t.사업부)return;agg[t.사업부]=(agg[t.사업부]||0)+Number(t.금액);});
+        var ks=Object.keys(agg);
+        new Chart(document.getElementById('acc-ch-bu'),{type:'doughnut',data:{labels:ks,datasets:[{data:ks.map(function(k){return agg[k];}),backgroundColor:['#185fa5','#0f6e56','#b45309','#7c3aed','#64748b']}]},options:{plugins:{title:{display:true,text:'사업부별 매출 ('+(new Date().getFullYear()-1)+'년~현재)'},legend:{position:'right'}}}});
+      });
+      new Chart(document.getElementById('acc-ch-month'),{type:'line',data:{labels:ms.map(function(m){return String(m.월).slice(0,7);}),datasets:[{label:'수입',data:ms.map(function(m){return m.수입합계;}),borderColor:'#0f6e56'},{label:'지출(고정+변동)',data:ms.map(function(m){return Number(m.고정비합계||0)+Number(m.변동지출합계||0);}),borderColor:'#b91c1c'},{label:'순이익',data:ms.map(function(m){return m.순이익;}),borderColor:'#185fa5'}]},options:{plugins:{title:{display:true,text:'월별 손익 추이 (당해)'}},scales:{y:{ticks:{callback:function(v){return (v/1000000)+'M';}}}}}});
+    }catch(e){}
   }
   function kpi(t,v){return '<div class="acc-kpi"><div style="font-size:11.5px;color:#64748b">'+t+'</div><div style="font-size:19px;font-weight:800;color:'+(v<0?'#b91c1c':'#0f172a')+'">'+fmtW(v)+'<span style="font-size:11px;font-weight:400"> 원</span></div></div>';}
 
@@ -7886,7 +7905,7 @@ document.addEventListener('DOMContentLoaded',init);
     el('acc-body').innerHTML='<div style="background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:16px;margin-bottom:14px">'
       +'<div style="font-weight:700;margin-bottom:10px">원천 자료 업로드 (멱등 — 같은 파일 재업로드 안전)</div>'
       +'<div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">'
-      +fld('원천 종류','<select id="au-src" style="'+inp()+'" onchange="document.getElementById(\'au-acc-w\').style.display=this.value===\'농협통장\'?\'\':\'none\'"><option>농협통장</option><option>농협카드</option><option>BC카드</option><option>세금계산서매출</option><option>세금계산서매입</option></select>')
+      +fld('원천 종류','<select id="au-src" style="'+inp()+'" onchange="document.getElementById(\'au-acc-w\').style.display=this.value===\'농협통장\'?\'\':\'none\'"><option>농협통장</option><option>IBK통장</option><option>농협카드</option><option>BC카드</option><option>세금계산서매출</option><option>세금계산서매입</option></select>')
       +'<span id="au-acc-w">'+fld('계좌 (통장만)','<select id="au-acc" style="'+inp()+'">'+accOpt+'</select>')+'</span>'
       +fld('파일 (.xls/.xlsx 복수 가능)','<input type="file" id="au-file" multiple accept=".xls,.xlsx" style="font-size:12px">')
       +'<button class="acc-btn" onclick="accUpload()">업로드</button>'
@@ -7927,6 +7946,7 @@ document.addEventListener('DOMContentLoaded',init);
       if(!accSel.value){alert('계좌를 선택하세요');return;}
       accId=accSel.value;accNo=accSel.options[accSel.selectedIndex].dataset.no;
     }
+    if(src==='IBK통장'){var ib=S.accs.filter(function(a){return a.은행==='IBK기업';})[0];if(ib){accId=ib.id;accNo=ib.계좌번호;}}
     var all=[],reads=[];
     Array.prototype.forEach.call(files,function(file){
       reads.push(file.arrayBuffer().then(function(buf){
@@ -7976,6 +7996,15 @@ document.addEventListener('DOMContentLoaded',init);
           '거래일':dt.slice(0,10).replace(/\//g,'-'),'금액':(inn||0)-(o||0),
           '상대명':sv(r[h.m['거래기록사항']])||sv(r[h.m['거래내용']]),'계좌_id':accId,
           '원본':{'거래일시':dt,'출금':o,'입금':inn,'잔액':bal,'거래내용':sv(r[h.m['거래내용']]),'거래기록사항':sv(r[h.m['거래기록사항']]),'거래점':sv(r[h.m['거래점']]),'이체메모':sv(r[h.m['이체메모']])}});
+      }
+    } else if(src==='IBK통장'){
+      for(var ii=0;ii<A.length;ii++){
+        var ri=A[ii]||[],dti=sv(ri[0],20);
+        if(!/^20\d\d-\d\d-\d\d/.test(dti))continue;
+        var oi=num(ri[1]),inni=num(ri[2]),bali=num(ri[3]);
+        out.push({'원천':'IBK통장','중복키':accNo+'|'+dti+'|'+r0(oi)+'|'+r0(inni)+'|'+r0(bali),
+          '거래일':dti.slice(0,10),'금액':(inni||0)-(oi||0),'상대명':sv(ri[4]),'계좌_id':accId,
+          '원본':{'거래일시':dti,'출금':oi,'입금':inni,'잔액':bali,'거래내용':sv(ri[4]),'상대정보':sv(ri[5]),'채널':sv(ri[6],10)}});
       }
     } else if(src==='농협카드'){
       var h2=findHdr(A,'이용일시');if(!h2)return out;

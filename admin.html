@@ -3261,6 +3261,7 @@ function handleRoute(){
       else if(typeof qtRenderPlaceholder==='function')qtRenderPlaceholder('hr');
       break;
     case 'accounting':
+      if (!canAccess('accounting','read')) { location.hash='#dashboard'; return; }
       state.activeTab='accounting';
       show('#view-accounting');
       $('.nav-item[data-nav="accounting"]').classList.add('active');

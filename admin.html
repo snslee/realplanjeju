@@ -8148,6 +8148,12 @@ document.addEventListener('DOMContentLoaded',init);
     });
   };
 
+  window.apDelete=function(id){
+    if(!confirm('이 결재를 삭제할까요? 되돌릴 수 없습니다.'))return;
+    sbc().rpc('rpc_ap_delete',{p_id:id}).then(function(r){
+      if(r.error)alert(r.error.message);else{apModalClose();apShow(P.tab);}
+    });
+  };
   /* 품목 */
   function itemsTotal(){return P.items.reduce(function(s,it){return s+(Number(it.금액)||0);},0);}
   function vendorOpt(sel){return '<option value="">— 직접입력 —</option>'+(P.master.vendors||[]).map(function(v){return '<option value="'+v.id+'"'+(sel===v.id?' selected':'')+'>'+eq(v.거래처명)+'</option>';}).join('');}
@@ -8288,6 +8294,7 @@ document.addEventListener('DOMContentLoaded',init);
       var canPay=(a.상태==='승인')&&(a.지급상태!=='지급완료')&&(myRole()==='owner');
       var btns='<div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">'
         +(canEdit?'<button class="acc-btn ghost" onclick="apEdit(\''+a.id+'\')">수정</button>':'')
+        +((a.상태==='기안'||a.상태==='반려'||a.상태==='회수')&&!a.원장_거래_id&&(myRole()==='owner'||a.기안자===myUid())?'<button class="acc-btn ghost" style="border-color:#b91c1c;color:#b91c1c" onclick="apDelete(\''+a.id+'\')">삭제</button>':'')
         +(canPay?'<button class="acc-btn" style="background:#0f6e56;border-color:#0f6e56" onclick="apMarkPaid(\''+a.id+'\')">지급완료</button>':'')
         +(canDecide?'<button class="acc-btn" onclick="apDecide(\''+a.id+'\',\'승인\')">승인</button> <button class="acc-btn ghost" style="border-color:#b91c1c;color:#b91c1c" onclick="apDecide(\''+a.id+'\',\'반려\')">반려</button>':'')
         +'<button class="acc-btn ghost" onclick="apModalClose()">닫기</button></div>';

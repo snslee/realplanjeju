@@ -8070,10 +8070,12 @@ document.addEventListener('DOMContentLoaded',init);
 <script>
 /*APMOD v1.0 — 결재 영역 (결재 통합설계서 v1.0 D2) */
 (function(){
+  /*APMODv232 고객·거래처연계·입금계좌·지급완료·미연결정리*/
   function sbc(){return window.sb||window.supabase||null;}
-  var P={tab:'inbox',master:{cats:[],accs:[]},ready:false,bound:false,items:[],editId:null,busy:false};
+  var P={tab:'inbox',master:{cats:[],accs:[],vendors:[],customers:[]},ready:false,bound:false,items:[],editId:null,busy:false};
   function el(id){return document.getElementById(id);}
   function esc(s){return String(s==null?'':s).replace(/</g,'&lt;');}
+  function eq(s){return String(s==null?'':s).replace(/'/g,'&#39;').replace(/</g,'&lt;');}
   function fmtW(n){return n==null?'-':Number(n).toLocaleString('ko-KR');}
   function fld(l,c){return '<label style="display:flex;flex-direction:column;font-size:11px;color:#64748b;gap:3px">'+l+c+'</label>';}
   function inp(){return 'padding:6px 8px;border:1px solid #d6dce5;border-radius:6px;font-size:12.5px';}
@@ -8084,21 +8086,19 @@ document.addEventListener('DOMContentLoaded',init);
     var m={'기안':'#fef3c7;color:#92400e','승인':'#dcfce7;color:#166534','반려':'#fee2e2;color:#b91c1c','회수':'#e2e8f0;color:#475569'};
     return '<span style="background:'+(m[s]||'#e2e8f0')+';padding:1px 8px;border-radius:99px;font-size:11px">'+s+'</span>';
   }
+  function payBadge(s){var paid=s==='지급완료';return '<span style="background:'+(paid?'#dcfce7;color:#166534':'#f1f5f9;color:#64748b')+';padding:1px 8px;border-radius:99px;font-size:11px">'+(paid?'지급완료':'미지급')+'</span>';}
   var DEPT_ACCT={'국내여행':'301-0345-1194-81','행사이벤트':'301-0384-9381-21','온라인마케팅':'301-0312-7698-71','마케팅교육':'301-0312-7698-71','본사공통':'301-0312-7698-71'};
   function acctIdForDept(bu){var no=DEPT_ACCT[bu];if(!no)return'';var a=(P.master.accs||[]).filter(function(x){return x.계좌번호===no;})[0];return a?a.id:'';}
   function itemsTotalOf(items){return items.reduce(function(s,it){return s+(Number(it.금액)||0);},0);}
+  window.apCopy=function(t){try{navigator.clipboard.writeText(t);}catch(e){}if(typeof toast==='function')toast('복사됨: '+t,'success');else alert('복사됨: '+t);};
+
   window.apInit=function(){
     var root=el('ap-root'); if(!root||!sbc()) return;
-    if(!P.bound){
-      P.bound=true;
-      root.querySelectorAll('[data-ap-tab]').forEach(function(b){
-        b.addEventListener('click',function(){P.editId=null;apShow(b.dataset.apTab);});
-      });
-    }
+    if(!P.bound){P.bound=true;root.querySelectorAll('[data-ap-tab]').forEach(function(b){b.addEventListener('click',function(){P.editId=null;apShow(b.dataset.apTab);});});}
     if(!P.ready){
       sbc().rpc('rpc_ap_form_master').then(function(r){
         if(r.error){err(r.error);return;}
-        P.master=r.data||{cats:[],accs:[]};P.ready=true;apShow(P.tab);
+        P.master=r.data||{cats:[],accs:[],vendors:[],customers:[]};P.ready=true;apShow(P.tab);
       }).catch(err);
     } else apShow(P.tab);
   };
@@ -8117,19 +8117,19 @@ document.addEventListener('DOMContentLoaded',init);
       +'<td><span style="color:#0c447c;text-decoration:underline">'+esc(a.제목)+'</span>'+apAttHtml(a)+'</td>'
       +'<td style="text-align:right;font-weight:600">'+(a.금액?fmtW(a.금액):'-')+'</td>'
       +'<td>'+esc(a.사업부||'')+'</td><td>'+esc(a.거래처명||'')+'</td><td>'+stBadge(a.상태)+'</td>'
-      +'<td>'+(a.원장_거래_id?'<span style="font-size:11px;color:#0f6e56">원장기록 ✓</span>':'')+'</td>'
-      +'<td style="white-space:nowrap" onclick="event.stopPropagation()">'+(withBtns&&a.상태==='기안'
-        ?'<button class="acc-btn" style="padding:3px 10px;font-size:11.5px" onclick="apDetail(\''+a.id+'\')">열기</button>'
-        :'')+'</td></tr>';
+      +'<td>'+(a.원장_거래_id?'<span style="font-size:11px;color:#0f6e56">원장 ✓</span>':'')+(a.지급상태==='지급완료'?' <span style="font-size:11px;color:#166534">지급✓</span>':'')+'</td>'
+      +'<td style="white-space:nowrap" onclick="event.stopPropagation()">'+(withBtns&&a.상태==='기안'?'<button class="acc-btn" style="padding:3px 10px;font-size:11.5px" onclick="apDetail(\''+a.id+'\')">열기</button>':'')+'</td></tr>';
   }
   var TH='<tr><th>기안일</th><th>유형</th><th>제목</th><th>금액</th><th>사업부</th><th>거래처</th><th>상태</th><th>회계</th><th></th></tr>';
   function rInbox(){
     sbc().from('ap_결재').select('*').eq('상태','기안').order('기안일',{ascending:false}).then(function(r){
       if(r.error){err(r.error);return;}
       var rows=r.data||[];
-      var h='<div style="font-weight:700;margin-bottom:8px">결재 대기 '+rows.length+'건 <span style="font-size:11.5px;font-weight:400;color:#94a3b8">— 행 클릭 시 상세</span></div><table class="acc-table">'+TH;
+      var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-weight:700">결재 대기 '+rows.length+'건</span>'
+        +'<button class="acc-btn ghost" style="padding:3px 10px;font-size:11.5px" onclick="apUnlinked()">🔗 고객 미연결 정리</button>'
+        +'<span style="font-size:11.5px;color:#94a3b8">행 클릭 시 상세</span></div><table class="acc-table">'+TH;
       rows.forEach(function(a){h+=rowHtml(a,true);});
-      h+='</table>'+(rows.length?'<div style="font-size:11.5px;color:#94a3b8;margin-top:6px">※ 지출결의·경비정산 승인 시 회계 원장에 \'예정\'으로 자동 기록 → 통장 업로드 시 자동 확정</div>':'<div style="color:#94a3b8;padding:18px;text-align:center">대기 중인 결재 없음</div>');
+      h+='</table>'+(rows.length?'<div style="font-size:11.5px;color:#94a3b8;margin-top:6px">※ 승인 시 회계 원장에 \'예정\' 기록 → 이체 후 상세에서 \'지급완료\' → \'확정\'</div>':'<div style="color:#94a3b8;padding:18px;text-align:center">대기 중인 결재 없음</div>');
       el('ap-body').innerHTML=h;
     }).catch(err);
   }
@@ -8141,120 +8141,132 @@ document.addEventListener('DOMContentLoaded',init);
       if(r.error)alert(r.error.message);else{apModalClose();apShow(P.tab);}
     });
   };
+  window.apMarkPaid=function(id){
+    if(!confirm('지급완료 처리할까요? 회계 원장이 \'확정\'으로 넘어갑니다.'))return;
+    sbc().rpc('rpc_ap_mark_paid',{p_id:id}).then(function(r){
+      if(r.error)alert(r.error.message);else{apModalClose();apShow(P.tab);}
+    });
+  };
+
+  /* 품목 */
   function itemsTotal(){return P.items.reduce(function(s,it){return s+(Number(it.금액)||0);},0);}
+  function vendorOpt(sel){return '<option value="">— 직접입력 —</option>'+(P.master.vendors||[]).map(function(v){return '<option value="'+v.id+'"'+(sel===v.id?' selected':'')+'>'+eq(v.거래처명)+'</option>';}).join('');}
   function renderItems(){
     var box=el('apf-items'); if(!box)return;
     var rows=P.items.map(function(it,i){
       return '<tr>'
-        +'<td><input value="'+esc(it.거래처명||'')+'" oninput="apItem('+i+',\'거래처명\',this.value)" style="'+inp()+';width:150px"></td>'
-        +'<td><input type="number" value="'+(it.금액||'')+'" oninput="apItem('+i+',\'금액\',this.value)" style="'+inp()+';width:120px;text-align:right"></td>'
-        +'<td><input value="'+esc(it.내용||'')+'" oninput="apItem('+i+',\'내용\',this.value)" placeholder="받는 계좌·메모" style="'+inp()+';width:230px"></td>'
-        +'<td><button class="acc-btn ghost" style="padding:3px 9px;font-size:11px;border-color:#b91c1c;color:#b91c1c" onclick="apDelItem('+i+')">삭제</button></td></tr>';
+        +'<td><select onchange="apVendorPick('+i+',this.value)" style="'+inp()+';width:120px;margin-bottom:3px">'+vendorOpt(it.거래처_id)+'</select><br><input value="'+eq(it.거래처명||'')+'" oninput="apItem('+i+',\'거래처명\',this.value)" placeholder="거래처명" style="'+inp()+';width:120px"></td>'
+        +'<td><input value="'+eq(it.입금은행||'')+'" oninput="apItem('+i+',\'입금은행\',this.value)" placeholder="은행" style="'+inp()+';width:64px"></td>'
+        +'<td><input value="'+eq(it.입금계좌번호||'')+'" oninput="apItem('+i+',\'입금계좌번호\',this.value)" placeholder="입금계좌번호" style="'+inp()+';width:140px"></td>'
+        +'<td><input value="'+eq(it.예금주||'')+'" oninput="apItem('+i+',\'예금주\',this.value)" placeholder="예금주" style="'+inp()+';width:90px"></td>'
+        +'<td><input type="number" value="'+(it.금액||'')+'" oninput="apItem('+i+',\'금액\',this.value)" style="'+inp()+';width:100px;text-align:right"></td>'
+        +'<td style="text-align:center"><input type="checkbox"'+(it.거래처저장?' checked':'')+' onchange="apItemChk('+i+',this.checked)" title="거래처 DB에 저장"></td>'
+        +'<td><button class="acc-btn ghost" style="padding:3px 8px;font-size:11px;border-color:#b91c1c;color:#b91c1c" onclick="apDelItem('+i+')">삭제</button></td></tr>';
     }).join('');
-    box.innerHTML='<table class="acc-table"><tr><th>거래처</th><th>금액</th><th>받는계좌/내용</th><th></th></tr>'+rows
-      +'<tr><td style="text-align:right;font-weight:700">합계</td><td style="text-align:right;font-weight:700;color:#0c447c">'+fmtW(itemsTotal())+'</td><td colspan="2"><button class="acc-btn ghost" style="padding:4px 12px;font-size:12px" onclick="apAddItem()">＋ 품목 추가</button></td></tr></table>';
+    box.innerHTML='<div style="overflow-x:auto"><table class="acc-table" style="min-width:720px"><tr><th>거래처(선택/직접)</th><th>입금은행</th><th>입금계좌번호</th><th>예금주</th><th>금액</th><th>저장</th><th></th></tr>'+rows
+      +'<tr><td colspan="4" style="text-align:right;font-weight:700">합계</td><td style="text-align:right;font-weight:700;color:#0c447c">'+fmtW(itemsTotal())+'</td><td colspan="2"><button class="acc-btn ghost" style="padding:4px 10px;font-size:12px" onclick="apAddItem()">＋ 품목</button></td></tr></table></div>';
   }
   window.apItem=function(i,f,v){if(P.items[i]){P.items[i][f]=v;if(f==='금액')renderItems();}};
-  window.apAddItem=function(){P.items.push({거래처명:'',금액:'',내용:'',비고:''});renderItems();};
-  window.apDelItem=function(i){P.items.splice(i,1);if(P.items.length===0)P.items.push({거래처명:'',금액:'',내용:'',비고:''});renderItems();};
+  window.apItemChk=function(i,c){if(P.items[i])P.items[i].거래처저장=c;};
+  window.apVendorPick=function(i,id){var it=P.items[i];if(!it)return;if(id){var v=(P.master.vendors||[]).filter(function(x){return x.id===id;})[0];if(v){it.거래처_id=id;it.거래처명=v.거래처명||'';it.입금은행=v.은행||'';it.입금계좌번호=v.계좌번호||'';it.예금주=v.예금주||'';}}else{it.거래처_id='';}renderItems();};
+  window.apAddItem=function(){P.items.push({거래처_id:'',거래처명:'',입금은행:'',입금계좌번호:'',예금주:'',금액:'',비고:'',거래처저장:false});renderItems();};
+  window.apDelItem=function(i){P.items.splice(i,1);if(P.items.length===0)P.items.push({거래처_id:'',거래처명:'',입금은행:'',입금계좌번호:'',예금주:'',금액:'',비고:'',거래처저장:false});renderItems();};
+
+  function custOpt(sel){return '<option value="">— 선택 안 함 —</option>'+(P.master.customers||[]).map(function(c){return '<option value="'+c.id+'"'+(sel===c.id?' selected':'')+'>'+eq(c.회사명)+(c.사업부?' ('+eq(c.사업부)+')':'')+'</option>';}).join('');}
+
   function rDraft(prefill){
     var d=prefill||null;
-    var catOpt='<option value="">(선택)</option>'+P.master.cats.filter(function(c){return c.유형!=='수입';}).map(function(c){return '<option value="'+c.id+'"'+(d&&d.카테고리_id===c.id?' selected':'')+'>['+c.유형+'] '+esc(c.카테고리명)+'</option>';}).join('');
-    var accOpt='<option value="">계좌 미지정</option>'+P.master.accs.map(function(a){return '<option value="'+a.id+'"'+(d&&d.출금계좌_id===a.id?' selected':'')+'>['+esc(a.사업부||'')+'] '+esc(a.별칭)+'</option>';}).join('');
+    var catOpt='<option value="">(선택)</option>'+P.master.cats.filter(function(c){return c.유형!=='수입';}).map(function(c){return '<option value="'+c.id+'"'+(d&&d.카테고리_id===c.id?' selected':'')+'>['+c.유형+'] '+eq(c.카테고리명)+'</option>';}).join('');
+    var accOpt='<option value="">계좌 미지정</option>'+P.master.accs.map(function(a){return '<option value="'+a.id+'"'+(d&&d.출금계좌_id===a.id?' selected':'')+'>['+eq(a.사업부||'')+'] '+eq(a.별칭)+'</option>';}).join('');
     var buOpt=['본사공통','국내여행','행사이벤트','온라인마케팅','마케팅교육'].map(function(b){return '<option'+(d&&d.사업부===b?' selected':'')+'>'+b+'</option>';}).join('');
     var typeOpt=['지출결의','경비정산','품의','인장사용','휴가','출장'].map(function(t){return '<option'+(d&&d.유형===t?' selected':'')+'>'+t+'</option>';}).join('');
     var payOpt=['계좌이체','카드','현금','기타'].map(function(x){return '<option'+(d&&d.결제수단===x?' selected':'')+'>'+x+'</option>';}).join('');
     P.items=(d&&d.__items)?d.__items.slice():[];
-    if(P.items.length===0)P.items.push({거래처명:'',금액:'',내용:'',비고:''});
-    el('ap-body').innerHTML='<div style="background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:16px;max-width:820px">'
+    if(P.items.length===0)P.items.push({거래처_id:'',거래처명:'',입금은행:'',입금계좌번호:'',예금주:'',금액:'',비고:'',거래처저장:false});
+    el('ap-body').innerHTML='<div style="background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:16px;max-width:860px">'
       +'<div style="font-weight:700;margin-bottom:12px">'+(P.editId?'결재 수정':'결재 기안')+'</div>'
       +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">'
       +fld('유형','<select id="apf-type" style="'+inp()+'" onchange="apTypeChange()">'+typeOpt+'</select>')
-      +fld('제목','<input id="apf-title" value="'+(d?esc(d.제목||''):'')+'" style="'+inp()+';width:240px">')
+      +fld('제목','<input id="apf-title" value="'+(d?eq(d.제목||''):'')+'" style="'+inp()+';width:230px">')
       +fld('사업부','<select id="apf-bu" style="'+inp()+'" onchange="apBuChange()">'+buOpt+'</select>')
-      +'<span id="apf-money-w" style="display:contents">'
-      +fld('카테고리','<select id="apf-cat" style="'+inp()+'">'+catOpt+'</select>')
+      +'</div>'
+      +'<div id="apf-money-w" style="margin-top:8px">'
+      +'<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px"><div style="font-size:11px;color:#0c447c;margin-bottom:5px">고객 연결 — 선택 또는 직접 작성</div>'
+      +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">'
+      +fld('고객 선택','<select id="apf-cust" style="'+inp()+';width:230px">'+custOpt(d&&d.고객_id)+'</select>')
+      +fld('직접 작성(신규 고객명)','<input id="apf-custname" style="'+inp()+';width:180px">')
+      +'<label style="display:flex;align-items:center;gap:5px;font-size:12px;padding-bottom:7px"><input type="checkbox" id="apf-custsave"> 고객 DB에 없으면 저장</label>'
+      +'</div></div>'
+      +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">'
+      +fld('출금계좌(부서 자동·변경가능)','<select id="apf-acc" style="'+inp()+';width:250px">'+accOpt+'</select>')
       +fld('결제수단','<select id="apf-pay" style="'+inp()+'">'+payOpt+'</select>')
-      +fld('출금계좌','<select id="apf-acc" style="'+inp()+'">'+accOpt+'</select>')
+      +fld('카테고리','<select id="apf-cat" style="'+inp()+'">'+catOpt+'</select>')
       +fld('지급기한','<input type="date" id="apf-due" value="'+(d&&d.지급기한?d.지급기한:'')+'" style="'+inp()+'">')
-      +'</span>'
+      +'</div>'
+      +'<div style="margin-top:10px;font-size:12px;color:#64748b">지출 품목 — 거래처 선택 시 입금계좌 자동 / 새 거래처는 "저장" 체크</div><div id="apf-items"></div>'
+      +'</div>'
       +'<span id="apf-seal-w" style="display:none">'+fld('인장 종류','<select id="apf-seal" style="'+inp()+'"><option>법인인감</option><option>사용인감</option><option>직인</option></select>')+'</span>'
       +'<span id="apf-leave-w" style="display:none">'+fld('시작일','<input type="date" id="apf-lv1" value="'+(d&&d.휴가시작일?d.휴가시작일:'')+'" style="'+inp()+'">')+fld('종료일','<input type="date" id="apf-lv2" value="'+(d&&d.휴가종료일?d.휴가종료일:'')+'" style="'+inp()+'">')+'</span>'
-      +'</div>'
-      +'<div id="apf-itemwrap" style="margin-top:12px"><div style="font-size:12px;color:#64748b;margin-bottom:4px">지출 품목 (여러 건 추가 가능 — 합계가 금액이 됩니다)</div><div id="apf-items"></div></div>'
-      +'<div style="margin-top:10px">'+fld('내용 / 사유 (전체 메모)','<textarea id="apf-body" rows="3" style="'+inp()+';width:100%">'+(d?esc(d.내용||''):'')+'</textarea>')+'</div>'
+      +'<div style="margin-top:10px">'+fld('내용 / 사유 (전체 메모)','<textarea id="apf-body" rows="2" style="'+inp()+';width:100%">'+(d?esc(d.내용||''):'')+'</textarea>')+'</div>'
       +(P.editId?'':'<div style="margin-top:10px">'+fld('첨부 (이미지·PDF·문서 / 최대 10개·각 20MB)','<input type="file" id="apf-files" multiple style="font-size:12px">')+'</div>')
       +'<div style="margin-top:12px"><button class="acc-btn" onclick="apSubmit()">'+(P.editId?'수정 저장':'기안 제출')+'</button>'
       +(P.editId?' <button class="acc-btn ghost" onclick="apCancelEdit()">취소</button>':'')
       +'<span style="font-size:11.5px;color:#94a3b8;margin-left:10px">'+(P.editId?'기안 상태에서만 수정됩니다':'제출 즉시 텔레그램 알림 발송')+'</span></div></div>';
+    if(d&&d.고객_id){var cs=el('apf-cust');if(cs)cs.value=d.고객_id;}
     renderItems();
     apTypeChange();
     if(!d)apBuChange();
   }
   window.apCancelEdit=function(){P.editId=null;apShow('inbox');};
   window.apTypeChange=function(){
-    var t=el('apf-type').value;
-    var isExp=(t==='지출결의'||t==='경비정산');
-    el('apf-money-w').style.display=isExp?'contents':'none';
-    el('apf-itemwrap').style.display=isExp?'block':'none';
+    var t=el('apf-type').value;var isExp=(t==='지출결의'||t==='경비정산');
+    el('apf-money-w').style.display=isExp?'block':'none';
     el('apf-seal-w').style.display=(t==='인장사용')?'contents':'none';
     el('apf-leave-w').style.display=(t==='휴가'||t==='출장')?'contents':'none';
   };
-  window.apBuChange=function(){
-    var bu=el('apf-bu').value; var id=acctIdForDept(bu);
-    var sel=el('apf-acc'); if(sel&&id)sel.value=id;
-  };
+  window.apBuChange=function(){var bu=el('apf-bu').value;var id=acctIdForDept(bu);var sel=el('apf-acc');if(sel&&id)sel.value=id;};
   window.apSubmit=function(){
     if(P.busy)return;
     var t=el('apf-type').value;
     var p={유형:t,제목:el('apf-title').value,내용:el('apf-body').value,사업부:el('apf-bu').value};
     if(t==='지출결의'||t==='경비정산'){
       var items=P.items.filter(function(it){return (it.거래처명&&String(it.거래처명).trim())||Number(it.금액)>0;})
-        .map(function(it){return {거래처명:it.거래처명||'',금액:Number(it.금액)||0,내용:it.내용||'',비고:it.비고||''};});
+        .map(function(it){return {거래처_id:it.거래처_id||'',거래처명:it.거래처명||'',입금은행:it.입금은행||'',입금계좌번호:it.입금계좌번호||'',예금주:it.예금주||'',금액:Number(it.금액)||0,비고:it.비고||'',거래처저장:it.거래처저장?'true':''};});
       if(items.length===0){alert('지출 품목을 1건 이상 입력하세요');return;}
       if(itemsTotalOf(items)<=0){alert('금액 합계가 0입니다');return;}
       p.품목=items;
       p.카테고리_id=el('apf-cat').value;p.결제수단=el('apf-pay').value;
       p.출금계좌_id=el('apf-acc').value||null;p.지급기한=el('apf-due').value||null;
       p.거래처명=items[0].거래처명;
+      p.고객_id=el('apf-cust').value||'';
+      p.고객명=el('apf-custname').value||'';
+      p.고객저장=el('apf-custsave').checked?'true':'';
     }
     if(t==='인장사용')p.인장종류=el('apf-seal').value;
-    if(t==='휴가'||t==='출장'){p.휴가시작일=el('apf-lv1').value;p.휴가종료일=el('apf-lv2').value;
-      if(!p.휴가시작일||!p.휴가종료일){alert('기간은 필수입니다');return;}}
+    if(t==='휴가'||t==='출장'){p.휴가시작일=el('apf-lv1').value;p.휴가종료일=el('apf-lv2').value;if(!p.휴가시작일||!p.휴가종료일){alert('기간은 필수입니다');return;}}
     if(!p.제목){alert('제목은 필수입니다');return;}
     if(P.editId){
       P.busy=true;
-      sbc().rpc('rpc_ap_update',{p_id:P.editId,p:p}).then(function(r){
-        P.busy=false;
-        if(r.error)alert(r.error.message);
-        else{alert('수정 저장 완료');P.editId=null;apShow('inbox');}
-      }).catch(function(e){P.busy=false;alert(e.message||e);});
+      sbc().rpc('rpc_ap_update',{p_id:P.editId,p:p}).then(function(r){P.busy=false;if(r.error)alert(r.error.message);else{alert('수정 저장 완료');P.editId=null;apShow('inbox');}}).catch(function(e){P.busy=false;alert(e.message||e);});
       return;
     }
     var fl=el('apf-files');var files=(fl&&fl.files)?Array.prototype.slice.call(fl.files):[];
     if(files.length>10){alert('첨부는 최대 10개까지');return;}
     for(var i=0;i<files.length;i++){if(files[i].size>20971520){alert('20MB 초과: '+files[i].name);return;}}
-    P.busy=true;
-    var atts=[];
+    P.busy=true;var atts=[];
     files.reduce(function(pr,f){return pr.then(function(){
       var path='approvals/'+Date.now()+'_'+Math.random().toString(36).slice(2,6)+'_'+f.name.replace(/[^\w.가-힣-]/g,'_');
-      return sbc().storage.from('docs').upload(path,f,{contentType:f.type||'application/octet-stream'}).then(function(r){
-        if(r.error)throw new Error('첨부 업로드 실패('+f.name+'): '+r.error.message);
-        atts.push({path:path,name:f.name,size:f.size});
-      });
-    });},Promise.resolve()).then(function(){
-      if(atts.length)p.첨부=atts;
-      return sbc().rpc('rpc_ap_submit',{p:p});
-    }).then(function(r){
-      P.busy=false;
-      if(r.error)alert(r.error.message);
-      else{alert('기안 완료'+(atts.length?' / 첨부 '+atts.length+'건':''));apShow('inbox');}
+      return sbc().storage.from('docs').upload(path,f,{contentType:f.type||'application/octet-stream'}).then(function(r){if(r.error)throw new Error('첨부 업로드 실패('+f.name+'): '+r.error.message);atts.push({path:path,name:f.name,size:f.size});});
+    });},Promise.resolve()).then(function(){if(atts.length)p.첨부=atts;return sbc().rpc('rpc_ap_submit',{p:p});}).then(function(r){
+      P.busy=false;if(r.error)alert(r.error.message);else{alert('기안 완료'+(atts.length?' / 첨부 '+atts.length+'건':''));apShow('inbox');}
     }).catch(function(e){P.busy=false;alert(e.message||e);});
   };
+
+  /* 모달 */
   function apModal(html){
     var m=el('ap-modal');
     if(!m){m=document.createElement('div');m.id='ap-modal';m.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:flex-start;justify-content:center;z-index:9999;padding:40px 16px;overflow:auto';m.addEventListener('click',function(e){if(e.target===m)apModalClose();});document.body.appendChild(m);}
-    m.innerHTML='<div style="background:#fff;border-radius:12px;max-width:760px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.25)">'+html+'</div>';
+    m.innerHTML='<div style="background:#fff;border-radius:12px;max-width:780px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.25)">'+html+'</div>';
     m.style.display='flex';
   }
   function apModalClose(){var m=el('ap-modal');if(m)m.style.display='none';}
@@ -8264,25 +8276,30 @@ document.addEventListener('DOMContentLoaded',init);
     sbc().rpc('rpc_ap_detail',{p_id:id}).then(function(r){
       if(r.error){alert(r.error.message);return;}
       var d=r.data||{};var a=d['결재']||{};var items=d['품목']||[];
-      var itemRows=items.map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.거래처명||'')+'</td><td style="text-align:right">'+fmtW(it.금액)+'</td><td>'+esc(it.내용||'')+'</td><td>'+esc(it.비고||'')+'</td></tr>';}).join('');
-      var itemTbl=items.length?('<div style="font-weight:700;margin:14px 0 4px">지출 품목 '+items.length+'건</div><table class="acc-table"><tr><th>#</th><th>거래처</th><th>금액</th><th>받는계좌/내용</th><th>비고</th></tr>'+itemRows
-        +'<tr><td colspan="2" style="text-align:right;font-weight:700">합계</td><td style="text-align:right;font-weight:700;color:#0c447c">'+fmtW(itemsTotalOf(items))+'</td><td colspan="2"></td></tr></table>'):'';
+      var itemRows=items.map(function(it,i){
+        var acct=(it.입금은행||it.입금계좌번호)?(esc(it.입금은행||'')+' '+esc(it.입금계좌번호||'')+(it.입금계좌번호?' <button class="acc-btn ghost" style="padding:1px 6px;font-size:10.5px" onclick="apCopy(\''+eq(it.입금계좌번호)+'\')">복사</button>':'')):'-';
+        return '<tr><td>'+(i+1)+'</td><td>'+esc(it.거래처명||'')+'</td><td style="text-align:right">'+fmtW(it.금액)+'</td><td>'+acct+'</td><td>'+esc(it.예금주||'')+'</td></tr>';
+      }).join('');
+      var itemTbl=items.length?('<div style="font-weight:700;margin:14px 0 4px">지출 품목 '+items.length+'건</div><div style="overflow-x:auto"><table class="acc-table" style="min-width:560px"><tr><th>#</th><th>거래처</th><th>금액</th><th>입금계좌</th><th>예금주</th></tr>'+itemRows
+        +'<tr><td colspan="2" style="text-align:right;font-weight:700">합계</td><td style="text-align:right;font-weight:700;color:#0c447c">'+fmtW(itemsTotalOf(items))+'</td><td colspan="2"></td></tr></table></div>'):'';
       var att=(a.첨부||[]).map(function(f){return '<a href="#" onclick="apAtt(\''+f.path+'\');return false" style="color:#2563eb;font-size:12px;margin-right:10px">📎'+esc(f.name)+'</a>';}).join('')||'<span style="color:#94a3b8;font-size:12px">없음</span>';
       var canDecide=(a.상태==='기안')&&(myRole()==='owner');
       var canEdit=(a.상태==='기안')&&(myRole()==='owner'||a.기안자===myUid());
-      var btns='<div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">'
+      var canPay=(a.상태==='승인')&&(a.지급상태!=='지급완료')&&(myRole()==='owner');
+      var btns='<div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">'
         +(canEdit?'<button class="acc-btn ghost" onclick="apEdit(\''+a.id+'\')">수정</button>':'')
+        +(canPay?'<button class="acc-btn" style="background:#0f6e56;border-color:#0f6e56" onclick="apMarkPaid(\''+a.id+'\')">지급완료</button>':'')
         +(canDecide?'<button class="acc-btn" onclick="apDecide(\''+a.id+'\',\'승인\')">승인</button> <button class="acc-btn ghost" style="border-color:#b91c1c;color:#b91c1c" onclick="apDecide(\''+a.id+'\',\'반려\')">반려</button>':'')
         +'<button class="acc-btn ghost" onclick="apModalClose()">닫기</button></div>';
-      var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:16px;font-weight:800">'+esc(a.제목||'')+'</div>'+stBadge(a.상태||'')+'</div>'
+      var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:16px;font-weight:800">'+esc(a.제목||'')+'</div><div>'+stBadge(a.상태||'')+' '+payBadge(a.지급상태)+'</div></div>'
         +kv('유형',esc(a.유형||''))
         +kv('금액','<b>'+fmtW(a.금액)+'</b> 원')
+        +kv('고객',esc(a.고객명||'-'))
         +kv('사업부',esc(a.사업부||'-'))
         +kv('카테고리',esc(a.카테고리명||'-'))
         +kv('결제수단',esc(a.결제수단||'-'))
         +kv('출금계좌',esc(a.출금계좌명||'-'))
         +kv('지급기한',esc(a.지급기한||'-'))
-        +kv('거래처',esc(a.거래처명||'-'))
         +(a.인장종류?kv('인장종류',esc(a.인장종류)):'')
         +((a.휴가시작일||a.휴가종료일)?kv('기간',esc(a.휴가시작일||'')+' ~ '+esc(a.휴가종료일||'')):'')
         +kv('내용',esc(a.내용||'-').replace(/\n/g,'<br>'))
@@ -8297,13 +8314,36 @@ document.addEventListener('DOMContentLoaded',init);
     sbc().rpc('rpc_ap_detail',{p_id:id}).then(function(r){
       if(r.error){alert(r.error.message);return;}
       var d=r.data||{};var a=d['결재']||{};var items=d['품목']||[];
-      a.__items=items.map(function(it){return {거래처명:it.거래처명||'',금액:it.금액||'',내용:it.내용||'',비고:it.비고||''};});
-      P.editId=id;P.tab='draft';
-      apModalClose();
+      a.__items=items.map(function(it){return {거래처_id:it.거래처_id||'',거래처명:it.거래처명||'',입금은행:it.입금은행||'',입금계좌번호:it.입금계좌번호||'',예금주:it.예금주||'',금액:it.금액||'',비고:it.비고||'',거래처저장:false};});
+      P.editId=id;P.tab='draft';apModalClose();
       document.querySelectorAll('[data-ap-tab]').forEach(function(b){b.classList.toggle('active',b.dataset.apTab==='draft');});
       rDraft(a);
     }).catch(function(e){alert(e.message||e);});
   };
+
+  /* 고객 미연결 정리 */
+  window.apUnlinked=function(){
+    sbc().rpc('rpc_ap_unlinked_customers').then(function(r){
+      if(r.error){err(r.error);return;}
+      var rows=r.data||[];
+      var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><b>고객 미연결 지출결의 '+rows.length+'건</b><button class="acc-btn ghost" style="padding:3px 10px;font-size:11.5px" onclick="apShow(\'inbox\')">← 인박스</button></div>';
+      if(!rows.length){h+='<div style="color:#94a3b8;padding:18px;text-align:center">미연결 건 없음</div>';el('ap-body').innerHTML=h;return;}
+      h+='<table class="acc-table"><tr><th>기안일</th><th>제목</th><th>금액</th><th>고객 연결</th></tr>';
+      rows.forEach(function(a){
+        var cand=(a.후보||[]);
+        var btns=cand.length?cand.map(function(c){return '<button class="acc-btn" style="padding:3px 9px;font-size:11px;margin:1px" onclick="apLinkCustomer(\''+a.id+'\',\''+c.고객_id+'\')">'+esc(c.회사명)+' 연결</button>';}).join(''):'<span style="font-size:11px;color:#94a3b8">후보 없음 — 고객 선택</span>';
+        btns+=' <select style="'+inp()+';font-size:11px" onchange="if(this.value)apLinkCustomer(\''+a.id+'\',this.value)"><option value="">고객 선택…</option>'+custOpt('')+'</select>';
+        h+='<tr><td>'+a.기안일.slice(0,10)+'</td><td>'+esc(a.제목)+'</td><td style="text-align:right">'+fmtW(a.금액)+'</td><td>'+btns+'</td></tr>';
+      });
+      el('ap-body').innerHTML=h+'</table>';
+    }).catch(err);
+  };
+  window.apLinkCustomer=function(id,cid){
+    sbc().rpc('rpc_ap_link_customer',{p_id:id,'p_고객_id':cid}).then(function(r){
+      if(r.error)alert(r.error.message);else apUnlinked();
+    });
+  };
+
   function rAll(){
     sbc().from('ap_결재').select('*').order('기안일',{ascending:false}).limit(300).then(function(r){
       if(r.error){err(r.error);return;}

@@ -8212,7 +8212,7 @@ document.addEventListener('DOMContentLoaded',init);
       +'<div style="margin-top:10px;font-size:12px;color:#64748b">지출 품목 — 거래처 선택 시 입금계좌 자동 / 새 거래처는 "저장" 체크</div><div id="apf-items"></div>'
       +'</div>'
       +'<span id="apf-seal-w" style="display:none">'+fld('인장 종류','<select id="apf-seal" style="'+inp()+'"><option>법인인감</option><option>사용인감</option><option>직인</option></select>')+'</span>'
-      +'<span id="apf-leave-w" style="display:none">'+fld('시작일','<input type="date" id="apf-lv1" value="'+(d&&d.휴가시작일?d.휴가시작일:'')+'" style="'+inp()+'">')+fld('종료일','<input type="date" id="apf-lv2" value="'+(d&&d.휴가종료일?d.휴가종료일:'')+'" style="'+inp()+'">')+'</span>'
+      +'<span id="apf-leave-w" style="display:none">'+fld('시작일','<input type="date" id="apf-lv1" value="'+(d&&d.휴가시작일?d.휴가시작일:'')+'" style="'+inp()+'">')+fld('종료일','<input type="date" id="apf-lv2" value="'+(d&&d.휴가종료일?d.휴가종료일:'')+'" style="'+inp()+'">')+fld('일수','<input type="number" step="0.5" min="0" id="apf-lvd" value="'+(d&&d.휴가일수!=null?d.휴가일수:'')+'" style="'+inp()+';width:90px" placeholder="1 / 0.5">')+'</span>'
       +'<div style="margin-top:10px">'+fld('내용 / 사유 (전체 메모)','<textarea id="apf-body" rows="2" style="'+inp()+';width:100%">'+(d?esc(d.내용||''):'')+'</textarea>')+'</div>'
       +(P.editId?'':'<div style="margin-top:10px">'+fld('첨부 (이미지·PDF·문서 / 최대 10개·각 20MB)','<input type="file" id="apf-files" multiple style="font-size:12px">')+'</div>')
       +'<div style="margin-top:12px"><button class="acc-btn" onclick="apSubmit()">'+(P.editId?'수정 저장':'기안 제출')+'</button>'
@@ -8249,7 +8249,7 @@ document.addEventListener('DOMContentLoaded',init);
       p.고객저장=el('apf-custsave').checked?'true':'';
     }
     if(t==='인장사용')p.인장종류=el('apf-seal').value;
-    if(t==='휴가'||t==='출장'){p.휴가시작일=el('apf-lv1').value;p.휴가종료일=el('apf-lv2').value;if(!p.휴가시작일||!p.휴가종료일){alert('기간은 필수입니다');return;}}
+    if(t==='휴가'||t==='출장'){p.휴가시작일=el('apf-lv1').value;p.휴가종료일=el('apf-lv2').value;p.휴가일수=(el('apf-lvd')&&el('apf-lvd').value!=='')?el('apf-lvd').value:null;if(!p.휴가시작일||!p.휴가종료일){alert('기간은 필수입니다');return;}}
     if(!p.제목){alert('제목은 필수입니다');return;}
     if(P.editId){
       P.busy=true;
@@ -8290,11 +8290,13 @@ document.addEventListener('DOMContentLoaded',init);
         +'<tr><td colspan="2" style="text-align:right;font-weight:700">합계</td><td style="text-align:right;font-weight:700;color:#0c447c">'+fmtW(itemsTotalOf(items))+'</td><td colspan="2"></td></tr></table></div>'):'';
       var att=(a.첨부||[]).map(function(f){return '<a href="#" onclick="apAtt(\''+f.path+'\');return false" style="color:#2563eb;font-size:12px;margin-right:10px">📎'+esc(f.name)+'</a>';}).join('')||'<span style="color:#94a3b8;font-size:12px">없음</span>';
       var canDecide=(a.상태==='기안')&&(myRole()==='owner');
-      var canEdit=(a.상태==='기안')&&(myRole()==='owner'||a.기안자===myUid());
+      var isLeave=(a.유형==='휴가'||a.유형==='출장');
+      var canEdit=(a.상태==='기안'||(isLeave&&a.상태==='승인'))&&(myRole()==='owner'||a.기안자===myUid());
+      var canDel=(myRole()==='owner'||a.기안자===myUid())&&!a.원장_거래_id&&(isLeave||['기안','반려','회수'].indexOf(a.상태)>=0);
       var canPay=(a.상태==='승인')&&(a.지급상태!=='지급완료')&&(myRole()==='owner');
       var btns='<div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">'
         +(canEdit?'<button class="acc-btn ghost" onclick="apEdit(\''+a.id+'\')">수정</button>':'')
-        +((a.상태==='기안'||a.상태==='반려'||a.상태==='회수')&&!a.원장_거래_id&&(myRole()==='owner'||a.기안자===myUid())?'<button class="acc-btn ghost" style="border-color:#b91c1c;color:#b91c1c" onclick="apDelete(\''+a.id+'\')">삭제</button>':'')
+        +((a.상태==='기안'||a.상태==='반려'||a.상태==='회수'||a.유형==='휴가'||a.유형==='출장')&&!a.원장_거래_id&&(myRole()==='owner'||a.기안자===myUid())?'<button class="acc-btn ghost" style="border-color:#b91c1c;color:#b91c1c" onclick="apDelete(\''+a.id+'\')">삭제</button>':'')
         +(canPay?'<button class="acc-btn" style="background:#0f6e56;border-color:#0f6e56" onclick="apMarkPaid(\''+a.id+'\')">지급완료</button>':'')
         +(canDecide?'<button class="acc-btn" onclick="apDecide(\''+a.id+'\',\'승인\')">승인</button> <button class="acc-btn ghost" style="border-color:#b91c1c;color:#b91c1c" onclick="apDecide(\''+a.id+'\',\'반려\')">반려</button>':'')
         +'<button class="acc-btn ghost" onclick="apModalClose()">닫기</button></div>';
@@ -8309,6 +8311,7 @@ document.addEventListener('DOMContentLoaded',init);
         +kv('지급기한',esc(a.지급기한||'-'))
         +(a.인장종류?kv('인장종류',esc(a.인장종류)):'')
         +((a.휴가시작일||a.휴가종료일)?kv('기간',esc(a.휴가시작일||'')+' ~ '+esc(a.휴가종료일||'')):'')
+        +((a.휴가일수!=null&&a.휴가일수!=='')?kv('일수',esc(String(a.휴가일수))+'일'):'')
         +kv('내용',esc(a.내용||'-').replace(/\n/g,'<br>'))
         +kv('첨부',att)
         +kv('기안',esc(a.기안자명||'-')+' · '+(a.기안일?String(a.기안일).slice(0,16).replace('T',' '):'')+(a.원장_거래_id?' · <span style="color:#0f6e56">원장기록 ✓</span>':''))
@@ -8416,10 +8419,10 @@ document.addEventListener('DOMContentLoaded',init);
       var rows=r.data||[];
       var h='<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><b>휴가·출장 내역</b>'
         +'<button class="acc-btn" style="padding:4px 12px;font-size:12px" onclick="location.hash=\'#approval\';setTimeout(function(){if(window.apShow)window.apShow(\'draft\');},300)">＋ 기안하기</button></div>'
-        +'<table class="acc-table"><tr><th>기안일</th><th>유형</th><th>제목</th><th>기간</th><th>상태</th></tr>';
+        +'<table class="acc-table"><tr><th>기안일</th><th>유형</th><th>제목</th><th>기간</th><th>일수</th><th>상태</th></tr>';
       rows.forEach(function(a){
-        h+='<tr><td>'+a.기안일.slice(0,10)+'</td><td>'+a.유형+'</td><td>'+esc(a.제목)+'</td>'
-          +'<td>'+(a.휴가시작일||'')+' ~ '+(a.휴가종료일||'')+'</td><td>'+a.상태+'</td></tr>';
+        h+='<tr style="cursor:pointer" onclick="window.apDetail&&window.apDetail(\''+a.id+'\')"><td>'+a.기안일.slice(0,10)+'</td><td>'+a.유형+'</td><td>'+esc(a.제목)+'</td>'
+          +'<td>'+(a.휴가시작일||'')+' ~ '+(a.휴가종료일||'')+'</td><td>'+(a.휴가일수!=null?a.휴가일수:'')+'</td><td>'+a.상태+'</td></tr>';
       });
       el('hr-body').innerHTML=h+'</table>'+(rows.length?'':'<div style="color:#94a3b8;padding:18px;text-align:center">내역 없음 — 결재에서 휴가/출장 유형으로 기안</div>');
     });

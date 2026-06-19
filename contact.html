@@ -374,6 +374,7 @@
             <label><input type="radio" name="구분" value="기업" required>기업</label>
             <label><input type="radio" name="구분" value="단체" required>단체</label>
             <label><input type="radio" name="구분" value="개인" required>개인</label>
+            <label><input type="radio" name="구분" value="학교" required>학교</label>
           </div>
           <div class="error-msg">고객 구분을 선택해 주세요.</div>
         </div>
@@ -596,7 +597,7 @@
       r.addEventListener('change', e => {
         const label = document.getElementById('labelCompany');
         const input = document.getElementById('회사명');
-        const map = { '기업': ['회사명', '예: ○○ 주식회사'], '단체': ['단체명', '예: 제주시청 관광과'], '개인': ['성함', '예: 홍길동'] };
+        const map = { '기업': ['회사명', '예: ○○ 주식회사'], '단체': ['단체명', '예: 제주시청 관광과'], '개인': ['성함', '예: 홍길동'], '학교': ['학교명', '예: ○○초등학교'] };
         const [name, ph] = map[e.target.value] || ['회사/단체명', ''];
         label.innerHTML = name + ' <span class="required">*</span>';
         input.placeholder = ph;

@@ -1322,9 +1322,11 @@ function renderCustomersTable(rows){
     const owner=r['내부담당자']||'-';
     const dot=levelToDot(r.unresponsive_level);
     const elapsed=elapsedDaysSince(r['신청일시']);
+    const src=r['데이터출처']||'';
+    const srcBadge=(src==='수동등록')?'<span class="gubun-badge" style="background:#eef2f7;color:#5a6b82;margin-right:5px;">기존</span>':'';
     return '<tr data-inq="'+escapeHtml(inq)+'" style="cursor:pointer;">'+
       '<td>'+dot+'<b>'+escapeHtml(inq)+'</b></td>'+
-      '<td>'+escapeHtml(co)+'</td>'+
+      '<td>'+srcBadge+escapeHtml(co)+'</td>'+
       '<td>'+escapeHtml(nm)+'</td>'+
       '<td>'+escapeHtml(bu)+'</td>'+
       '<td><span class="status-badge '+stCls+'">'+escapeHtml(st)+'</span></td>'+
@@ -1334,6 +1336,62 @@ function renderCustomersTable(rows){
   }).join('');
   tbody.innerHTML=html;
   setPagination(total,state.listPage);
+}
+
+/* 기존 계약 고객 수동등록 모달 (데이터출처=수동등록 / rpc_create_customer) */
+function openAddCustomerModal(){
+  if(document.getElementById('acm-overlay'))return;
+  function fld(label,id,type,ph){return '<div><label style="display:block;font-size:12.5px;font-weight:600;color:#44546a;margin-bottom:5px;">'+label+'</label><input id="'+id+'" type="'+type+'" placeholder="'+ph+'" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #cfd8e3;border-radius:8px;font-size:13.5px;"></div>';}
+  function sel2(label,id,opts){return '<div><label style="display:block;font-size:12.5px;font-weight:600;color:#44546a;margin-bottom:5px;">'+label+'</label><select id="'+id+'" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #cfd8e3;border-radius:8px;font-size:13.5px;background:#fff;">'+opts.map(o=>'<option value="'+o+'">'+o+'</option>').join('')+'</select></div>';}
+  function row2(a,b){return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">'+a+b+'</div>';}
+  const ov=document.createElement('div');
+  ov.id='acm-overlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(20,30,45,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+  ov.innerHTML=''
+    +'<div style="background:#fff;border-radius:14px;max-width:520px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.25);">'
+    +'<div style="padding:18px 22px;border-bottom:1px solid #e6ebf2;display:flex;justify-content:space-between;align-items:center;">'
+    +'<div style="font-size:16px;font-weight:700;color:#1a2332;">+ 기존 계약 고객 등록</div>'
+    +'<button type="button" id="acm-x" style="border:none;background:none;font-size:20px;cursor:pointer;color:#8a97a8;">×</button></div>'
+    +'<div style="padding:20px 22px;display:grid;gap:13px;">'
+    +fld('회사(단체)명 *','acm-co','text','예: ㈜리얼플랜')
+    +row2(sel2('사업부','acm-bu',['국내여행','행사이벤트','온라인마케팅','마케팅교육']),sel2('구분','acm-gubun',['기업','단체','개인']))
+    +row2(fld('담당자','acm-mgr','text','예: 홍길동'),fld('담당자 연락처','acm-tel','text','010-0000-0000'))
+    +fld('이메일','acm-email','text','contact@company.com')
+    +row2(fld('시작일(행사일)','acm-start','date',''),fld('종료일','acm-end','date',''))
+    +fld('계약금액(원)','acm-amount','number','예: 5000000')
+    +fld('행사 품목','acm-items','text','예: 무대,음향,의전,식음')
+    +fld('비고','acm-note','text','선택 입력')
+    +'<div style="font-size:11.5px;color:#8a97a8;margin-top:-4px;">견적서 첨부파일은 등록 후 고객 상세의 [파일] 탭에서 업로드하세요.</div>'
+    +'</div>'
+    +'<div style="padding:14px 22px;border-top:1px solid #e6ebf2;display:flex;gap:8px;justify-content:flex-end;">'
+    +'<button type="button" id="acm-cancel" style="padding:9px 18px;border:1px solid #cfd8e3;background:#fff;border-radius:8px;cursor:pointer;">취소</button>'
+    +'<button type="button" id="acm-save" style="padding:9px 20px;border:none;background:#185fa5;color:#fff;border-radius:8px;cursor:pointer;font-weight:600;">저장</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.addEventListener('click',e=>{if(e.target===ov)close();});
+  document.getElementById('acm-x').onclick=close;
+  document.getElementById('acm-cancel').onclick=close;
+  document.getElementById('acm-co').focus();
+  document.getElementById('acm-save').onclick=async()=>{
+    const g=id=>(document.getElementById(id).value||'').trim();
+    const co=g('acm-co');
+    if(!co){toast('회사(단체)명을 입력하세요','error');return;}
+    const amtRaw=g('acm-amount');
+    const rpcArgs={'p_구분':g('acm-gubun')||'기업','p_사업부':g('acm-bu')||'국내여행','p_회사명':co,'p_담당자명':g('acm-mgr')||null,'p_연락처':g('acm-tel')||null,'p_이메일':g('acm-email')||null,'p_시작일':g('acm-start')||null,'p_종료일':g('acm-end')||null,'p_계약금액':amtRaw?Number(amtRaw):null,'p_품목요약':g('acm-items')||null,'p_비고':g('acm-note')||null};
+    const btn=document.getElementById('acm-save');btn.disabled=true;btn.textContent='저장 중…';
+    try{
+      const {data,error}=await withTimeout(sb.rpc('rpc_create_customer',rpcArgs),8000,'create_customer');
+      if(error)throw error;
+      toast('등록 완료: '+data,'success');
+      close();
+      state.listPage=1;loadCustomers();
+    }catch(err){
+      console.error('[create_customer]',err);
+      toast('등록 실패: '+(err.message||err),'error');
+      btn.disabled=false;btn.textContent='저장';
+    }
+  };
 }
 
 /* v1.9 — 페이지 번호 + 이전/다음 + ... 줄임표 */
@@ -3367,6 +3425,12 @@ function bindFilters(){
   if(sStatus)sStatus.addEventListener('change',()=>{
     state.filters.status=sStatus.value;state.listPage=1;loadCustomers();
   });
+  const sSource=$('#flt-source');
+  if(sSource)sSource.addEventListener('change',()=>{
+    state.filters.source=sSource.value;state.listPage=1;loadCustomers();
+  });
+  const btnAddCust=$('#btn-add-customer');
+  if(btnAddCust)btnAddCust.addEventListener('click',openAddCustomerModal);
   const sBu=$('#flt-bu');
   if(sBu)sBu.addEventListener('change',()=>{
     state.filters.bu=sBu.value;state.listPage=1;loadCustomers();
@@ -3398,10 +3462,11 @@ function bindFilters(){
   });
   const reset=$('#flt-reset');
   if(reset)reset.addEventListener('click',()=>{
-    state.filters={search:'',status:'',bu:'',owner:'',period:'',from:null,to:null};
+    state.filters={search:'',status:'',bu:'',owner:'',period:'',from:null,to:null,source:''};
     state.listPage=1;
     if(search)search.value='';
     if(sStatus)sStatus.value='';
+    if(sSource)sSource.value='';
     if(sBu)sBu.value='';
     if(sOwner)sOwner.value='';
     if(sPeriod)sPeriod.value='';

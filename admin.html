@@ -2983,7 +2983,7 @@ async function openContactForm(contact_id){
   const isPrimaryChecked = d.r_is_primary ? 'checked' : '';
   wrap.hidden = false;
   wrap.innerHTML = `
-    <div style="font-size:12.5px;font-weight:500;color:#0c447c;margin-bottom:10px">${titleText}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:12.5px;font-weight:500;color:#0c447c">${titleText}</span><button type="button" onclick="window.vdFillRep()" style="padding:4px 10px;background:#FAEEDA;color:#854F0B;border:1px solid #BA7517;border-radius:5px;cursor:pointer;font-size:11.5px;white-space:nowrap">📋 대표자 정보 가져오기</button></div>
     <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px">
       <div>${lab('담당자명 <span style="color:#c0392b">*</span>')}${inp('담당자명', d.r_담당자명)}</div>
       <div>${lab('직급')}${inp('직급', d.r_직급)}</div>

@@ -3007,6 +3007,7 @@ async function openContactForm(contact_id){
   `;
 }
 window.openContactForm = openContactForm;
+window.vdFillRep=async function(){if(!_currentVendorId){toast('거래처를 먼저 선택/저장하세요','warn');return;}try{const r=await sb.rpc('rpc_get_vendor',{_id:_currentVendorId});if(r.error)throw r.error;const v=Array.isArray(r.data)?r.data[0]:r.data;if(!v){toast('거래처 정보 없음','warn');return;}const W=document.getElementById('vd-contact-form-wrap');if(!W)return;const set=(k,val)=>{const e=W.querySelector('[data-cfld="'+k+'"]');if(e&&val)e.value=val;};const rep=v.r_대표자||'';const tel=v.r_전화||'';const em=v.r_이메일||'';set('담당자명',rep);set('전화',tel);set('이메일',em);if(!rep&&!tel&&!em){toast('대표자/연락처 정보가 비어있습니다','warn');}else{toast('대표자 정보를 채웠습니다','success');}}catch(e){toast('가져오기 실패: '+(e.message||e),'error');}};
 
 function cancelContactForm(){
   const wrap = document.getElementById('vd-contact-form-wrap');

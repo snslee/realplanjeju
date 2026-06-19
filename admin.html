@@ -1510,11 +1510,31 @@ function renderCustomerCardLine(r){
   // Day 4-1B v1.7 — 편집 모드 토글 버튼
   const editBtns=state.editMode
     ? '<div class="ccl-edit-actions"><button class="btn-edit-toggle btn-edit-cancel" id="btn-edit-cancel">취소</button><button class="btn-edit-toggle btn-edit-save" id="btn-edit-save">저장</button></div>'
-    : '<div class="ccl-edit-actions"><button class="btn-edit-toggle" id="btn-edit-enter">✏ 편집</button></div>';
+    : '<div class="ccl-edit-actions"><button class="btn-edit-toggle" id="btn-edit-enter">✏ 편집</button><button class="btn-edit-toggle btn-edit-cancel" id="btn-cust-delete" style="color:#c0392b;border-color:#c0392b">🗑 삭제</button></div>';
   el.innerHTML=(parts.length?parts.join('<span class="ccl-divider">·</span>'):'<span class="ccl-empty">정보 없음</span>')+editBtns;
   const eb=$('#btn-edit-enter');if(eb)eb.addEventListener('click',enterCustomerEdit);
   const sb=$('#btn-edit-save');if(sb)sb.addEventListener('click',saveCustomerEdit);
   const cb=$('#btn-edit-cancel');if(cb)cb.addEventListener('click',cancelCustomerEdit);
+  const db=$('#btn-cust-delete');if(db)db.addEventListener('click',deleteCustomer);
+}
+
+/* 고객 삭제 (소프트 삭제 · rpc_delete_customer) */
+async function deleteCustomer(){
+  const r=state.currentRow;if(!r){toast('고객 정보 없음','error');return;}
+  if(!confirm('이 고객을 삭제하시겠습니까?\n['+(r['접수번호']||'')+'] '+(r['회사명']||'')+'\n\n목록에서 숨겨지며, 복구는 관리자가 DB에서 가능합니다.'))return;
+  if(!confirm('한 번 더 확인합니다. 정말 삭제할까요?'))return;
+  try{
+    const {error}=await withTimeout(sb.rpc('rpc_delete_customer',{_customer_id:r.id,_expected_updated_at:state.lastUpdatedAt||r.updated_at||null}),8000,'delete_customer');
+    if(error)throw error;
+    toast('삭제 완료','success');
+    location.hash='#customers';
+    state.listPage=1;loadCustomers();
+  }catch(err){
+    console.error('[deleteCustomer]',err);
+    const msg=String(err.message||err);
+    if(msg.indexOf('concurrent edit')>=0){toast('다른 분이 먼저 수정했습니다. 새로고침 후 다시 시도하세요.','error');}
+    else toast('삭제 실패: '+msg,'error');
+  }
 }
 
 /* ===== Day 4-5 v1.8 · 고객상태 변경 모달 ===== */
@@ -1631,7 +1651,7 @@ function bindStatusModal(){
 }
 
 /* ===== Day 4-1B v1.7 · 편집 모드 ===== */
-const EDITABLE_FIELDS=['구분','사업부','회사명','담당자명','연락처','이메일','시작일','종료일','일정조율가능','희망지역','예산','유입경로','요청사항','동의_콘텐츠','동의_마케팅','내부담당자','태그','비고'];
+const EDITABLE_FIELDS=['구분','사업부','회사명','담당자명','연락처','이메일','시작일','종료일','일정조율가능','희망지역','예산','유입경로','요청사항','동의_콘텐츠','동의_마케팅','내부담당자','태그','비고','계약금액','품목요약'];
 const LOCKED_FIELDS=['접수번호','신청일시','동의_개인정보','고객상태'];
 const BU_OPTIONS=['국내여행','행사이벤트','온라인마케팅','마케팅교육'];
 const GUBUN_OPTIONS=['기업','단체','개인','학교'];
@@ -1803,6 +1823,7 @@ function renderOverview(r){
         '<div class="dg-rows">'+
           '<div class="dg-row"><span class="dg-label">사업부</span><span class="dg-value">'+buBadge+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">구분</span><span class="dg-value">'+gubunBadge+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">데이터출처</span><span class="dg-value">'+v(r['데이터출처'])+'</span></div>'+
         '</div>'+
       '</div>'+
       '<div class="detail-group">'+
@@ -1833,6 +1854,8 @@ function renderOverview(r){
           '<div class="dg-row"><span class="dg-label">희망지역</span><span class="dg-value dg-pre">'+v(r['희망지역'])+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">예산</span><span class="dg-value dg-pre">'+v(r['예산'])+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">유입경로</span><span class="dg-value">'+v(r['유입경로'])+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">계약금액</span><span class="dg-value">'+(r['계약금액']!=null&&r['계약금액']!==''?escapeHtml(Number(r['계약금액']).toLocaleString('ko-KR'))+'원':'<span class="dg-empty">—</span>')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">행사 품목</span><span class="dg-value dg-pre">'+v(r['품목요약'])+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">요청사항</span><span class="dg-value dg-pre">'+v(r['요청사항'])+'</span></div>'+
         '</div>'+
       '</div>'+
@@ -2034,6 +2057,8 @@ function renderOverviewEdit(r){
           '<div class="dg-row"><span class="dg-label">희망지역</span><span class="dg-value">'+inp('희망지역',r['희망지역'])+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">예산</span><span class="dg-value">'+inp('예산',r['예산'])+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">유입경로</span><span class="dg-value">'+sel('유입경로',r['유입경로'],SOURCE_OPTIONS)+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">계약금액(원)</span><span class="dg-value">'+inp('계약금액',r['계약금액'],'number')+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">행사 품목</span><span class="dg-value">'+ta('품목요약',r['품목요약'])+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">요청사항</span><span class="dg-value">'+ta('요청사항',r['요청사항'])+'</span></div>'+
         '</div>'+
       '</div>'+

@@ -668,7 +668,7 @@ table.qt-items td.narrow input{text-align:right}
   </div>
   <div id="acc-body"></div>
   </div>
-  <style>.acc-tab{padding:7px 14px;border:1px solid #d6dce5;background:#fff;border-radius:8px;font-size:13px;cursor:pointer}.acc-tab.active{background:#185fa5;color:#fff;border-color:#185fa5}.acc-table{border-collapse:collapse;width:100%;font-size:12.5px;background:#fff}.acc-table th{border:1px solid #d6dce5;background:#f1f5f9;padding:6px 8px;text-align:left;white-space:nowrap}.acc-table td{border:1px solid #e2e8f0;padding:6px 8px}.acc-kpi{background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:14px 18px;min-width:150px}.acc-btn{padding:6px 12px;border:1px solid #185fa5;background:#185fa5;color:#fff;border-radius:7px;font-size:12.5px;cursor:pointer}.acc-btn.ghost{background:#fff;color:#185fa5}/*RP-MOB-ITEM v1*/@media(max-width:768px){#apf-items table{display:block;width:100%}#apf-items thead{display:none}#apf-items tbody{display:block}#apf-items tr{display:block;border:1px solid #d6dce5;border-radius:8px;padding:10px;margin-bottom:10px;background:#fbfcfe}#apf-items tr:last-child{background:#fff;border-style:dashed}#apf-items td{display:block;width:100%!important;border:none;padding:5px 0;white-space:normal!important}#apf-items td input,#apf-items td select,#apf-items td textarea{width:100%!important;min-width:0;box-sizing:border-box}}
+  <style>.acc-tab{padding:7px 14px;border:1px solid #d6dce5;background:#fff;border-radius:8px;font-size:13px;cursor:pointer}.acc-tab.active{background:#185fa5;color:#fff;border-color:#185fa5}.acc-table{border-collapse:collapse;width:100%;font-size:12.5px;background:#fff}.acc-table th{border:1px solid #d6dce5;background:#f1f5f9;padding:6px 8px;text-align:left;white-space:nowrap}.acc-table td{border:1px solid #e2e8f0;padding:6px 8px}.acc-kpi{background:#fff;border:1px solid #d6dce5;border-radius:10px;padding:14px 18px;min-width:150px}.acc-btn{padding:6px 12px;border:1px solid #185fa5;background:#185fa5;color:#fff;border-radius:7px;font-size:12.5px;cursor:pointer}.acc-btn.ghost{background:#fff;color:#185fa5}/*RP-MOB-ITEM v1*/@media(max-width:768px){#apf-items table{display:block;width:100%}#apf-items thead{display:none}#apf-items tbody{display:block}#apf-items tr{display:block;border:1px solid #d6dce5;border-radius:8px;padding:10px;margin-bottom:10px;background:#fbfcfe}#apf-items tr:last-child{background:#fff;border-style:dashed}#apf-items td{display:block;width:100%!important;border:none;padding:5px 0;white-space:normal!important}#apf-items td input,#apf-items td select,#apf-items td textarea{width:100%!important;min-width:0;box-sizing:border-box}}/*RP-MOB-ALL v1*/@media(max-width:768px){.adm-wrap{padding:12px}.adm-table,.customers-table,.perm-grid{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}.adm-table thead th,.adm-table td,.customers-table thead th,.customers-table td,#vendor-table th,#vendor-table td{white-space:nowrap}}
 .nav-phase{display:none}
 @media (max-width:768px){#acc-body,#ap-body,#hr-body{overflow-x:auto;-webkit-overflow-scrolling:touch}.acc-table th,.acc-table td{white-space:nowrap}}</style>
 </section>
@@ -8209,7 +8209,7 @@ document.addEventListener('DOMContentLoaded',init);
       +fld('카테고리','<select id="apf-cat" style="'+inp()+'">'+catOpt+'</select>')
       +fld('지급기한','<input type="date" id="apf-due" value="'+(d&&d.지급기한?d.지급기한:'')+'" style="'+inp()+'">')
       +'</div>'
-      +'<div style="margin-top:10px;font-size:12px;color:#64748b">지출 품목 — 거래처 선택 시 입금계좌 자동 / 새 거래처는 "저장" 체크</div><div id="apf-items"></div>'
+      +'<div style="margin-top:10px;font-size:12px;color:#64748b">지출 품목 — 거래처 선택 시 입금계좌 자동 / 새 거래처는 "저장" 체크</div><div id="apf-items"></div><div style="margin-top:8px;display:flex;gap:8px;align-items:end;flex-wrap:wrap"><div style="font-size:12px;color:#64748b">총 금액 직접입력<br><input type="number" id="apf-amount" placeholder="품목 미입력 시 사용" style="'+inp()+';width:160px;text-align:right"></div><span style="font-size:11px;color:#94a3b8;padding-bottom:6px">※ 품목 입력 시 합계 자동</span></div>'
       +'</div>'
       +'<span id="apf-seal-w" style="display:none">'+fld('인장 종류','<select id="apf-seal" style="'+inp()+'"><option>법인인감</option><option>사용인감</option><option>직인</option></select>')+'</span>'
       +'<span id="apf-leave-w" style="display:none">'+fld('시작일','<input type="date" id="apf-lv1" value="'+(d&&d.휴가시작일?d.휴가시작일:'')+'" style="'+inp()+'">')+fld('종료일','<input type="date" id="apf-lv2" value="'+(d&&d.휴가종료일?d.휴가종료일:'')+'" style="'+inp()+'">')+fld('일수','<input type="number" step="0.5" min="0" id="apf-lvd" value="'+(d&&d.휴가일수!=null?d.휴가일수:'')+'" style="'+inp()+';width:90px" placeholder="1 / 0.5">')+'</span>'
@@ -8236,11 +8236,11 @@ document.addEventListener('DOMContentLoaded',init);
     var t=el('apf-type').value;
     var p={유형:t,제목:el('apf-title').value,내용:el('apf-body').value,사업부:el('apf-bu').value};
     if(t==='지출결의'||t==='경비정산'){
-      var items=P.items.filter(function(it){return (it.거래처명&&String(it.거래처명).trim())||Number(it.금액)>0;})
+      var manualAmt=Number((el('apf-amount')||{}).value)||0;var items=P.items.filter(function(it){return (it.거래처명&&String(it.거래처명).trim())||Number(it.금액)>0;})
         .map(function(it){return {거래처_id:it.거래처_id||'',거래처명:it.거래처명||'',입금은행:it.입금은행||'',입금계좌번호:it.입금계좌번호||'',예금주:it.예금주||'',금액:Number(it.금액)||0,비고:it.비고||'',거래처저장:it.거래처저장?'true':''};});
-      if(items.length===0){alert('지출 품목을 1건 이상 입력하세요');return;}
-      if(itemsTotalOf(items)<=0){alert('금액 합계가 0입니다');return;}
-      p.품목=items;
+      if(items.length===0&&manualAmt<=0){alert('지출 품목 1건 또는 총 금액을 입력하세요');return;}
+      if(items.length>0&&itemsTotalOf(items)<=0){alert('금액 합계가 0입니다');return;}
+      p.품목=items;if(items.length===0&&manualAmt>0)p.금액=String(manualAmt);
       p.카테고리_id=el('apf-cat').value;p.결제수단=el('apf-pay').value;
       p.출금계좌_id=el('apf-acc').value||null;p.지급기한=el('apf-due').value||null;
       p.거래처명=items[0].거래처명;

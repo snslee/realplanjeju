@@ -1344,6 +1344,25 @@ function openAddCustomerModal(){
   function fld(label,id,type,ph){return '<div><label style="display:block;font-size:12.5px;font-weight:600;color:#44546a;margin-bottom:5px;">'+label+'</label><input id="'+id+'" type="'+type+'" placeholder="'+ph+'" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #cfd8e3;border-radius:8px;font-size:13.5px;"></div>';}
   function sel2(label,id,opts){return '<div><label style="display:block;font-size:12.5px;font-weight:600;color:#44546a;margin-bottom:5px;">'+label+'</label><select id="'+id+'" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #cfd8e3;border-radius:8px;font-size:13.5px;background:#fff;">'+opts.map(o=>'<option value="'+o+'">'+o+'</option>').join('')+'</select></div>';}
   function row2(a,b){return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">'+a+b+'</div>';}
+  async function acmUploadFiles(cid){
+    const maps=[
+      {id:'acm-f-biz',cat:'사업자사본',bucket:'biz_certs',def:{계약:true,공문:true,정산:true,권한:'manager_plus',보존:5}},
+      {id:'acm-f-quote',cat:'견적서_확정본',bucket:'docs',def:{계약:true,공문:true,권한:'manager_plus',보존:5}},
+      {id:'acm-f-sched',cat:'일정표',bucket:'docs',def:{권한:'all'}}
+    ];
+    for(const m of maps){
+      const el=document.getElementById(m.id);
+      const file=el&&el.files&&el.files[0];
+      if(!file)continue;
+      try{
+        const key=cid+'/'+m.cat+'/'+Date.now()+'_'+file.name;
+        const up=await sb.storage.from(m.bucket).upload(key,file,{contentType:file.type,upsert:false});
+        if(up.error){toast('첨부 실패('+m.cat+'): '+up.error.message,'error');continue;}
+        const payload={customer_id:cid,카테고리:m.cat,파일명:file.name,storage_path:m.bucket+'/'+up.data.path,mime_타입:file.type||'application/octet-stream',파일크기:file.size,자동첨부_계약:!!m.def.계약,자동첨부_공문:!!m.def.공문,자동첨부_견적:!!m.def.견적,자동첨부_보고:!!m.def.보고,자동첨부_정산:!!m.def.정산,보존기간_년:m.def.보존||null,권한:m.def.권한||'all',업로더:(window.currentUser&&(window.currentUser.이름||window.currentUser.email))||'unknown'};
+        await sb.rpc('rpc_upsert_file_attachment',{_payload:payload});
+      }catch(e){console.error('[acm upload]',e);toast('첨부 오류('+m.cat+')','error');}
+    }
+  }
   const ov=document.createElement('div');
   ov.id='acm-overlay';
   ov.style.cssText='position:fixed;inset:0;background:rgba(20,30,45,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
@@ -1354,14 +1373,19 @@ function openAddCustomerModal(){
     +'<button type="button" id="acm-x" style="border:none;background:none;font-size:20px;cursor:pointer;color:#8a97a8;">×</button></div>'
     +'<div style="padding:20px 22px;display:grid;gap:13px;">'
     +fld('회사(단체)명 *','acm-co','text','예: ㈜리얼플랜')
-    +row2(sel2('사업부','acm-bu',['국내여행','행사이벤트','온라인마케팅','마케팅교육']),sel2('구분','acm-gubun',['기업','단체','개인']))
+    +row2(sel2('사업부','acm-bu',['국내여행','행사이벤트','온라인마케팅','마케팅교육']),sel2('구분','acm-gubun',['기업','단체','개인','학교']))
     +row2(fld('담당자','acm-mgr','text','예: 홍길동'),fld('담당자 연락처','acm-tel','text','010-0000-0000'))
     +fld('이메일','acm-email','text','contact@company.com')
     +row2(fld('시작일(행사일)','acm-start','date',''),fld('종료일','acm-end','date',''))
     +fld('계약금액(원)','acm-amount','number','예: 5000000')
     +fld('행사 품목','acm-items','text','예: 무대,음향,의전,식음')
     +fld('비고','acm-note','text','선택 입력')
-    +'<div style="font-size:11.5px;color:#8a97a8;margin-top:-4px;">견적서 첨부파일은 등록 후 고객 상세의 [파일] 탭에서 업로드하세요.</div>'
+    +'<div style="border-top:1px dashed #e6ebf2;margin-top:4px;padding-top:12px;"><div style="font-size:12.5px;font-weight:600;color:#44546a;margin-bottom:8px;">첨부파일 (선택 · 등록 후 [파일]탭에서 확인·다운로드)</div>'
+    +'<div style="display:grid;gap:9px;">'
+    +'<label style="font-size:12px;color:#5a6b82;">사업자등록증<input id="acm-f-biz" type="file" accept="image/*,application/pdf" style="display:block;margin-top:4px;font-size:12px;"></label>'
+    +'<label style="font-size:12px;color:#5a6b82;">견적서<input id="acm-f-quote" type="file" accept="image/*,application/pdf" style="display:block;margin-top:4px;font-size:12px;"></label>'
+    +'<label style="font-size:12px;color:#5a6b82;">일정표<input id="acm-f-sched" type="file" accept="image/*,application/pdf" style="display:block;margin-top:4px;font-size:12px;"></label>'
+    +'</div></div>'
     +'</div>'
     +'<div style="padding:14px 22px;border-top:1px solid #e6ebf2;display:flex;gap:8px;justify-content:flex-end;">'
     +'<button type="button" id="acm-cancel" style="padding:9px 18px;border:1px solid #cfd8e3;background:#fff;border-radius:8px;cursor:pointer;">취소</button>'
@@ -1383,6 +1407,7 @@ function openAddCustomerModal(){
     try{
       const {data,error}=await withTimeout(sb.rpc('rpc_create_customer',rpcArgs),8000,'create_customer');
       if(error)throw error;
+      await acmUploadFiles(data);
       toast('등록 완료: '+data,'success');
       close();
       state.listPage=1;loadCustomers();
@@ -1609,7 +1634,7 @@ function bindStatusModal(){
 const EDITABLE_FIELDS=['구분','사업부','회사명','담당자명','연락처','이메일','시작일','종료일','일정조율가능','희망지역','예산','유입경로','요청사항','동의_콘텐츠','동의_마케팅','내부담당자','태그','비고'];
 const LOCKED_FIELDS=['접수번호','신청일시','동의_개인정보','고객상태'];
 const BU_OPTIONS=['국내여행','행사이벤트','온라인마케팅','마케팅교육'];
-const GUBUN_OPTIONS=['기업','단체','개인'];
+const GUBUN_OPTIONS=['기업','단체','개인','학교'];
 const SOURCE_OPTIONS=['블로그','유튜브','인스타그램','틱톡','페이스북','쓰레드','네이버검색','구글검색','지인소개','기타'];
 
 function enterCustomerEdit(){
@@ -6989,7 +7014,8 @@ document.addEventListener('DOMContentLoaded',init);
     {code:'계약서_체결본',    label:'계약서_체결',  icon:'📁', desc:'공문·정산 자동'},
     {code:'공문_발송본',      label:'공문_발송',    icon:'📁', desc:'이력 보존'},
     {code:'견적서_확정본',    label:'견적서_확정',  icon:'📁', desc:'계약·공문 자동'},
-    {code:'세금계산서_증빙',  label:'세금계산서',   icon:'📁', desc:'정산 자동·민감'}
+    {code:'세금계산서_증빙',  label:'세금계산서',   icon:'📁', desc:'정산 자동·민감'},
+    {code:'일정표',           label:'일정표',       icon:'📅', desc:'여행·행사 일정표'}
   ];
 
   function bucketOf(cat){
@@ -7005,7 +7031,8 @@ document.addEventListener('DOMContentLoaded',init);
     '계약서_체결본':    {계약:false,공문:true, 견적:false,보고:true, 정산:true,  권한:'manager_plus',보존:5},
     '공문_발송본':      {계약:false,공문:false,견적:false,보고:false,정산:false, 권한:'manager_plus',보존:5},
     '견적서_확정본':    {계약:true, 공문:true, 견적:false,보고:false,정산:false, 권한:'manager_plus',보존:5},
-    '세금계산서_증빙':  {계약:false,공문:false,견적:false,보고:false,정산:true,  권한:'owner_only',  보존:10}
+    '세금계산서_증빙':  {계약:false,공문:false,견적:false,보고:false,정산:true,  권한:'owner_only',  보존:10},
+    '일정표':           {계약:false,공문:false,견적:false,보고:false,정산:false, 권한:'all',         보존:null}
   };
 
   async function faLoad(customerId){

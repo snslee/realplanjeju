@@ -252,7 +252,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px 16px;margin-bottom:18px">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-          <div><div style="font-weight:800;font-size:1.02rem">🎯 채널 성과 진단</div><div style="font-size:.78rem;color:#166534">우리 글 D+7 실성과 (mk_blog_publish_log · winning_formula) · 매월 자동갱신</div></div>
+          <div><div style="font-weight:800;font-size:1.02rem">🎯 채널 성과 진단</div><div style="font-size:.78rem;color:#166534">우리 글 D+7 실성과 (mk_blog_publish_log 실시간 집계)</div></div>
           <button class="filter-btn" onclick="loadChannelDiagnosis()">🔄</button>
         </div>
         <div style="background:#fff;border:0.5px solid #bbf7d0;border-radius:10px;padding:10px 12px;margin-bottom:12px">
@@ -988,12 +988,12 @@ async function loadAlgo(){const tb=document.getElementById('algo-body');if(!tb)r
 async function loadChannelDiagnosis(){
   const pl=document.getElementById('cd-pipeline');if(!pl)return;
   pl.innerHTML=['슬롯','초안','발행감지','순위추적','학습','진단'].map((s,i)=>`<span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:${i===5?'#2563eb':'#10b981'}"></span>${s}</span>${i<5?'<span style="color:#cbd5e1">›</span>':''}`).join('');
-  const{data}=await sb.from('mk_blog_winning_formula').select('채널,d7_평균순위,d7_10위이내율,샘플수,학습_상태').eq('슬롯유형','우리성과(D7)');
+  const{data}=await sb.rpc('rpc_channel_d7_diag');
   const card=(ch)=>{const r=(data||[]).find(x=>x.채널===ch);if(!r||!r.샘플수)return cdCard(ch,null,null,0);return cdCard(ch,r.d7_평균순위==null?null:Number(r.d7_평균순위),r.d7_10위이내율==null?null:Number(r.d7_10위이내율),r.샘플수);};
   document.getElementById('cd-naver').innerHTML=['블A네이버','블B네이버','블C네이버'].map(card).join('');
   document.getElementById('cd-tistory').innerHTML=['블A티스토리','블B티스토리','블C티스토리'].map(card).join('');
   const weak=(data||[]).filter(x=>x.d7_10위이내율!=null&&Number(x.d7_10위이내율)<30).map(x=>x.채널+'('+Number(x.d7_평균순위).toFixed(0)+'위)');
-  document.getElementById('cd-weak').innerHTML='💡 <b>약세 진단</b> — '+(weak.length?'<b style="color:#dc2626">'+weak.join(', ')+'</b> : 핵심 원인은 키워드 선택입니다. 광범위 일반어는 경쟁 과포화로 하위, 구체 롱테일이 상위. 롱테일 비중↑ 권장. ':'약세 채널 없음. ')+'<span style="color:#94a3b8">(표본 누적 시 정확도↑·매월 자동갱신)</span>';
+  document.getElementById('cd-weak').innerHTML='💡 <b>약세 진단</b> — '+(weak.length?'<b style="color:#dc2626">'+weak.join(', ')+'</b> : 핵심 원인은 키워드 선택입니다. 광범위 일반어는 경쟁 과포화로 하위, 구체 롱테일이 상위. 롱테일 비중↑ 권장. ':'약세 채널 없음. ')+'<span style="color:#94a3b8">(실시간 집계 · 새로고침 시 최신)</span>';
 }
 function cdCard(ch,rank,top10,n){const b=top10==null?{bg:'#f1f5f9',bar:'#94a3b8',tx:'#64748b',l:'데이터없음'}:top10>=70?{bg:'#dcfce7',bar:'#10b981',tx:'#166534',l:'우수'}:top10>=30?{bg:'#fef3c7',bar:'#d97706',tx:'#92400e',l:'보통'}:{bg:'#fee2e2',bar:'#dc2626',tx:'#991b1b',l:'약세'};const rt=rank==null?'—':(Number.isInteger(rank)?rank:rank.toFixed(1))+'위';const tt=top10==null?'—':top10+'%';return `<div style="border:0.5px solid #e2e8f0;border-radius:8px;padding:10px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:.78rem;font-weight:700">${ch}</span><span style="font-size:.68rem;color:${b.tx};background:${b.bg};padding:1px 6px;border-radius:8px">${b.l}</span></div><div style="font-size:1.3rem;font-weight:800">${rt}<span style="font-size:.66rem;color:#94a3b8;font-weight:400"> D+7·표본${n}</span></div><div style="font-size:.68rem;color:#64748b;margin:4px 0 3px;display:flex;justify-content:space-between"><span>top10 진입률</span><span style="color:${b.tx};font-weight:700">${tt}</span></div><div style="height:5px;border-radius:3px;background:#f1f5f9;overflow:hidden"><div style="height:100%;width:${top10==null?0:top10}%;background:${b.bar}"></div></div></div>`;}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}

@@ -1338,6 +1338,18 @@ function renderCustomersTable(rows){
   setPagination(total,state.listPage);
 }
 
+/* P-SEG-FIX: 스토리지 키 경로 세그먼트를 ASCII로(한글 카테고리 폴더명이 Invalid key 유발). DB 카테고리 컬럼은 한글 원본 유지·여기선 경로용 슬러그만 생성 */
+function rpStorageSeg(s){
+  s=(s==null?'':String(s)).trim();
+  var M={'사업자사본':'biz_cert','제안서_업체제공':'proposal','사업_운영사진':'photo','계약서_체결본':'contract','공문_발송본':'official','견적서_확정본':'quote','세금계산서_증빙':'tax','일정표':'schedule'};
+  if(M[s])return M[s];
+  var a=s.normalize('NFC').replace(/[^A-Za-z0-9._-]+/g,'');
+  if(a.length>=2)return a;
+  var h=0;for(var i=0;i<s.length;i++){h=((h<<5)-h+s.charCodeAt(i))|0;}
+  return 'c'+(h>>>0).toString(36);
+}
+window.rpStorageSeg=rpStorageSeg;
+
 /* 기존 계약 고객 수동등록 모달 (데이터출처=수동등록 / rpc_create_customer) */
 function openAddCustomerModal(){
   if(document.getElementById('acm-overlay'))return;
@@ -1356,7 +1368,7 @@ function openAddCustomerModal(){
       if(!file)continue;
       try{
         const safeName=(file.name||'file').normalize('NFC').replace(/[^A-Za-z0-9._-]+/g,'_'); /* P-KEY-FIX: 스토리지 키는 ASCII만(한글·공백→_) / 원본명은 파일명 컬럼 보존 */
-        const key=cid+'/'+m.cat+'/'+Date.now()+'_'+safeName;
+        const key=cid+'/'+rpStorageSeg(m.cat)+'/'+Date.now()+'_'+safeName;
         const up=await sb.storage.from(m.bucket).upload(key,file,{contentType:file.type,upsert:false});
         if(up.error){toast('첨부 실패('+m.cat+'): '+up.error.message,'error');continue;}
         const payload={customer_id:cid,카테고리:m.cat,파일명:file.name,storage_path:m.bucket+'/'+up.data.path,mime_타입:file.type||'application/octet-stream',파일크기:file.size,자동첨부_계약:!!m.def.계약,자동첨부_공문:!!m.def.공문,자동첨부_견적:!!m.def.견적,자동첨부_보고:!!m.def.보고,자동첨부_정산:!!m.def.정산,보존기간_년:m.def.보존||null,권한:m.def.권한||'all',업로더:(window.currentUser&&(window.currentUser.이름||window.currentUser.email))||'unknown'};
@@ -7190,7 +7202,7 @@ document.addEventListener('DOMContentLoaded',init);
     var c=sb();if(!c){alert('Supabase 클라이언트 X');return;}
     var bucket=bucketOf(cat);
     var safeName=(file.name||'file').normalize('NFC').replace(/[^A-Za-z0-9._-]+/g,'_'); /* P-KEY-FIX: 스토리지 키 ASCII만(한글·공백→_)·원본명 보존 */
-    var key=cid+'/'+cat+'/'+Date.now()+'_'+safeName;
+    var key=cid+'/'+rpStorageSeg(cat)+'/'+Date.now()+'_'+safeName;
     var up=await c.storage.from(bucket).upload(key,file,{contentType:file.type,upsert:false});
     if(up.error){alert('Storage 업로드 실패: '+up.error.message);return;}
     var realPath=bucket+'/'+up.data.path;

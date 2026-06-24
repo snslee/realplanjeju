@@ -2392,6 +2392,12 @@ async function acceptSession(session){
   state.user=session.user;
   state.session=session;
   state.adminRole = (dbAdmin && dbAdmin.role) || 'admin'; /* fallback 시 admin 가정 */
+  /* P-STORAGE-FIX v1: SDK에 세션 주입 — 스토리지 업로드(biz_certs/docs RLS)는 authenticated JWT(이메일 클레임)를 요구. 재방문(localStorage 복원)·OAuth 양 경로 공통 통과점. 미주입 시 anon으로 요청→RLS 거부→첨부/파일탭 업로드 실패. */
+  try {
+    if (session.access_token && session.refresh_token) {
+      await withTimeout(sb.auth.setSession({access_token:session.access_token,refresh_token:session.refresh_token}),6000,'setSession');
+    }
+  } catch(e) { console.warn('[P-STORAGE-FIX] setSession 실패(비치명):', e); }
   return {keep};
 }
 

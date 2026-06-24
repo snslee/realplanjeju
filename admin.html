@@ -1355,7 +1355,8 @@ function openAddCustomerModal(){
       const file=el&&el.files&&el.files[0];
       if(!file)continue;
       try{
-        const key=cid+'/'+m.cat+'/'+Date.now()+'_'+file.name;
+        const safeName=(file.name||'file').normalize('NFC').replace(/[^A-Za-z0-9._-]+/g,'_'); /* P-KEY-FIX: 스토리지 키는 ASCII만(한글·공백→_) / 원본명은 파일명 컬럼 보존 */
+        const key=cid+'/'+m.cat+'/'+Date.now()+'_'+safeName;
         const up=await sb.storage.from(m.bucket).upload(key,file,{contentType:file.type,upsert:false});
         if(up.error){toast('첨부 실패('+m.cat+'): '+up.error.message,'error');continue;}
         const payload={customer_id:cid,카테고리:m.cat,파일명:file.name,storage_path:m.bucket+'/'+up.data.path,mime_타입:file.type||'application/octet-stream',파일크기:file.size,자동첨부_계약:!!m.def.계약,자동첨부_공문:!!m.def.공문,자동첨부_견적:!!m.def.견적,자동첨부_보고:!!m.def.보고,자동첨부_정산:!!m.def.정산,보존기간_년:m.def.보존||null,권한:m.def.권한||'all',업로더:(window.currentUser&&(window.currentUser.이름||window.currentUser.email))||'unknown'};
@@ -1407,8 +1408,11 @@ function openAddCustomerModal(){
     try{
       const {data,error}=await withTimeout(sb.rpc('rpc_create_customer',rpcArgs),8000,'create_customer');
       if(error)throw error;
-      await acmUploadFiles(data);
-      toast('등록 완료: '+data,'success');
+      /* P-CID-FIX: rpc_create_customer가 {id(uuid),접수번호} 반환 → 첨부는 uuid로 적재(구버전 text 반환 호환) */
+      const _cid=(data&&data.id)||data;
+      const _no=(data&&data['접수번호'])||data;
+      await acmUploadFiles(_cid);
+      toast('등록 완료: '+_no,'success');
       close();
       state.listPage=1;loadCustomers();
     }catch(err){
@@ -7185,7 +7189,8 @@ document.addEventListener('DOMContentLoaded',init);
     if(!cid){alert('고객을 먼저 선택하세요');return;}
     var c=sb();if(!c){alert('Supabase 클라이언트 X');return;}
     var bucket=bucketOf(cat);
-    var key=cid+'/'+cat+'/'+Date.now()+'_'+file.name;
+    var safeName=(file.name||'file').normalize('NFC').replace(/[^A-Za-z0-9._-]+/g,'_'); /* P-KEY-FIX: 스토리지 키 ASCII만(한글·공백→_)·원본명 보존 */
+    var key=cid+'/'+cat+'/'+Date.now()+'_'+safeName;
     var up=await c.storage.from(bucket).upload(key,file,{contentType:file.type,upsert:false});
     if(up.error){alert('Storage 업로드 실패: '+up.error.message);return;}
     var realPath=bucket+'/'+up.data.path;

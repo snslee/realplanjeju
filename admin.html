@@ -8328,7 +8328,7 @@ document.addEventListener('DOMContentLoaded',init);
     var catOpt='<option value="">(선택)</option>'+P.master.cats.filter(function(c){return c.유형!=='수입';}).map(function(c){return '<option value="'+c.id+'"'+(d&&d.카테고리_id===c.id?' selected':'')+'>['+c.유형+'] '+eq(c.카테고리명)+'</option>';}).join('');
     var accOpt='<option value="">계좌 미지정</option>'+P.master.accs.map(function(a){return '<option value="'+a.id+'"'+(d&&d.출금계좌_id===a.id?' selected':'')+'>['+eq(a.사업부||'')+'] '+eq(a.별칭)+'</option>';}).join('');
     var buOpt=['본사공통','국내여행','행사이벤트','온라인마케팅','마케팅교육'].map(function(b){return '<option'+(d&&d.사업부===b?' selected':'')+'>'+b+'</option>';}).join('');
-    var typeOpt=['지출결의','경비정산','품의','인장사용','휴가','출장'].map(function(t){return '<option'+(d&&d.유형===t?' selected':'')+'>'+t+'</option>';}).join('');
+    var typeOpt=['지출결의','경비정산','품의','인장사용','휴가','출장','세금계산서요청'].map(function(t){return '<option'+(d&&d.유형===t?' selected':'')+'>'+t+'</option>';}).join('');
     var payOpt=['계좌이체','카드','현금','기타'].map(function(x){return '<option'+(d&&d.결제수단===x?' selected':'')+'>'+x+'</option>';}).join('');
     P.items=(d&&d.__items)?d.__items.slice():[];
     if(P.items.length===0)P.items.push({거래처_id:'',거래처명:'',입금은행:'',입금계좌번호:'',예금주:'',금액:'',비고:'',거래처저장:false});
@@ -8355,7 +8355,7 @@ document.addEventListener('DOMContentLoaded',init);
       +'<div style="margin-top:10px;font-size:12px;color:#64748b">지출 품목 — 거래처 선택 시 입금계좌 자동 / 새 거래처는 "저장" 체크</div><div id="apf-items"></div><div style="margin-top:8px;display:flex;gap:8px;align-items:end;flex-wrap:wrap"><div style="font-size:12px;color:#64748b">총 금액 직접입력<br><input type="number" id="apf-amount" placeholder="품목 미입력 시 사용" style="'+inp()+';width:160px;text-align:right"></div><span style="font-size:11px;color:#94a3b8;padding-bottom:6px">※ 품목 입력 시 합계 자동</span></div>'
       +'</div>'
       +'<span id="apf-seal-w" style="display:none">'+fld('인장 종류','<select id="apf-seal" style="'+inp()+'"><option>법인인감</option><option>사용인감</option><option>직인</option></select>')+'</span>'
-      +'<span id="apf-leave-w" style="display:none">'+fld('시작일','<input type="date" id="apf-lv1" value="'+(d&&d.휴가시작일?d.휴가시작일:'')+'" style="'+inp()+'">')+fld('종료일','<input type="date" id="apf-lv2" value="'+(d&&d.휴가종료일?d.휴가종료일:'')+'" style="'+inp()+'">')+fld('일수','<input type="number" step="0.5" min="0" id="apf-lvd" value="'+(d&&d.휴가일수!=null?d.휴가일수:'')+'" style="'+inp()+';width:90px" placeholder="1 / 0.5">')+'</span>'
+      +'<span id="apf-leave-w" style="display:none">'+fld('시작일','<input type="date" id="apf-lv1" value="'+(d&&d.휴가시작일?d.휴가시작일:'')+'" style="'+inp()+'">')+fld('종료일','<input type="date" id="apf-lv2" value="'+(d&&d.휴가종료일?d.휴가종료일:'')+'" style="'+inp()+'">')+fld('일수','<input type="number" step="0.5" min="0" id="apf-lvd" value="'+(d&&d.휴가일수!=null?d.휴가일수:'')+'" style="'+inp()+';width:90px" placeholder="1 / 0.5">')+'</span>'+'<span id="apf-tax-w" style="display:none">'+fld('고객/거래처명','<input id="apf-tax-cust" value="'+(d?esc(d.거래처명||''):'')+'" style="'+inp()+';width:200px" placeholder="공급받는자 상호">')+fld('공급가액','<input type="number" id="apf-supply" value="'+(d&&d.공급가액!=null?d.공급가액:'')+'" style="'+inp()+';width:150px;text-align:right" placeholder="부가세 제외">')+fld('과세유형','<select id="apf-taxtype" style="'+inp()+'"><option>과세</option><option>면세</option><option>영세</option></select>')+fld('작성일자','<input type="date" id="apf-taxdate" value="'+(d&&d.작성일자?d.작성일자:'')+'" style="'+inp()+'">')+fld('대금 입금기한','<input type="date" id="apf-taxdue" value="'+(d&&d.지급기한?d.지급기한:'')+'" style="'+inp()+'">')+'</span>'
       +'<div style="margin-top:10px">'+fld('내용 / 사유 (전체 메모)','<textarea id="apf-body" rows="2" style="'+inp()+';width:100%">'+(d?esc(d.내용||''):'')+'</textarea>')+'</div>'
       +(P.editId?'':'<div style="margin-top:10px">'+fld('첨부 (이미지·PDF·문서 / 최대 10개·각 20MB)','<input type="file" id="apf-files" multiple style="font-size:12px">')+'</div>')
       +'<div style="margin-top:12px"><button class="acc-btn" onclick="apSubmit()">'+(P.editId?'수정 저장':'기안 제출')+'</button>'
@@ -8371,7 +8371,7 @@ document.addEventListener('DOMContentLoaded',init);
     var t=el('apf-type').value;var isExp=(t==='지출결의'||t==='경비정산');
     el('apf-money-w').style.display=isExp?'block':'none';
     el('apf-seal-w').style.display=(t==='인장사용')?'contents':'none';
-    el('apf-leave-w').style.display=(t==='휴가'||t==='출장')?'contents':'none';
+    el('apf-leave-w').style.display=(t==='휴가'||t==='출장')?'contents':'none';var tw=el('apf-tax-w');if(tw)tw.style.display=(t==='세금계산서요청')?'contents':'none';
   };
   window.apBuChange=function(){var bu=el('apf-bu').value;var id=acctIdForDept(bu);var sel=el('apf-acc');if(sel&&id)sel.value=id;};
   window.apSubmit=function(){
@@ -8393,7 +8393,7 @@ document.addEventListener('DOMContentLoaded',init);
     }
     if(t==='인장사용')p.인장종류=el('apf-seal').value;
     if(t==='휴가'||t==='출장'){p.휴가시작일=el('apf-lv1').value;p.휴가종료일=el('apf-lv2').value;p.휴가일수=(el('apf-lvd')&&el('apf-lvd').value!=='')?el('apf-lvd').value:null;if(!p.휴가시작일||!p.휴가종료일){alert('기간은 필수입니다');return;}}
-    if(!p.제목){alert('제목은 필수입니다');return;}
+    if(t==='세금계산서요청'){var sup=Number((el('apf-supply')||{}).value)||0;if(sup<=0){alert('공급가액을 입력하세요');return;}p.공급가액=String(sup);p.과세유형=el('apf-taxtype').value;p.작성일자=el('apf-taxdate').value||null;p.거래처_유형='고객';p.거래처명=el('apf-tax-cust').value||'';p.지급기한=el('apf-taxdue').value||null;}if(!p.제목){alert('제목은 필수입니다');return;}
     if(P.editId){
       P.busy=true;
       sbc().rpc('rpc_ap_update',{p_id:P.editId,p:p}).then(function(r){P.busy=false;if(r.error)alert(r.error.message);else{alert('수정 저장 완료');P.editId=null;apShow('inbox');}}).catch(function(e){P.busy=false;alert(e.message||e);});
@@ -8432,7 +8432,7 @@ document.addEventListener('DOMContentLoaded',init);
       var itemTbl=items.length?('<div style="font-weight:700;margin:14px 0 4px">지출 품목 '+items.length+'건</div><div style="overflow-x:auto"><table class="acc-table" style="min-width:560px"><tr><th>#</th><th>거래처</th><th>금액</th><th>입금계좌</th><th>예금주</th></tr>'+itemRows
         +'<tr><td colspan="2" style="text-align:right;font-weight:700">합계</td><td style="text-align:right;font-weight:700;color:#0c447c">'+fmtW(itemsTotalOf(items))+'</td><td colspan="2"></td></tr></table></div>'):'';
       var att=(a.첨부||[]).map(function(f){return '<a href="#" onclick="apAtt(\''+f.path+'\');return false" style="color:#2563eb;font-size:12px;margin-right:10px">📎'+esc(f.name)+'</a>';}).join('')||'<span style="color:#94a3b8;font-size:12px">없음</span>';
-      var canDecide=(a.상태==='기안')&&(myRole()==='owner');
+      var canDecide=(a.상태==='기안')&&(myRole()==='owner');var canIssue=(a.유형==='세금계산서요청')&&(a.상태==='승인')&&(a.발행상태!=='발행완료')&&(myRole()==='owner');
       var isLeave=(a.유형==='휴가'||a.유형==='출장');
       var canEdit=(a.상태==='기안'||(isLeave&&a.상태==='승인'))&&(myRole()==='owner'||a.기안자===myUid());
       var canDel=(myRole()==='owner'||a.기안자===myUid())&&!a.원장_거래_id&&(isLeave||['기안','반려','회수'].indexOf(a.상태)>=0);
@@ -8442,9 +8442,9 @@ document.addEventListener('DOMContentLoaded',init);
         +((a.상태==='기안'||a.상태==='반려'||a.상태==='회수'||a.유형==='휴가'||a.유형==='출장')&&!a.원장_거래_id&&(myRole()==='owner'||a.기안자===myUid())?'<button class="acc-btn ghost" style="border-color:#b91c1c;color:#b91c1c" onclick="apDelete(\''+a.id+'\')">삭제</button>':'')
         +(canPay?'<button class="acc-btn" style="background:#0f6e56;border-color:#0f6e56" onclick="apMarkPaid(\''+a.id+'\')">지급완료</button>':'')
         +(canDecide?'<button class="acc-btn" onclick="apDecide(\''+a.id+'\',\'승인\')">승인</button> <button class="acc-btn ghost" style="border-color:#b91c1c;color:#b91c1c" onclick="apDecide(\''+a.id+'\',\'반려\')">반려</button>':'')
-        +'<button class="acc-btn ghost" onclick="apModalClose()">닫기</button></div>';
+        +(canIssue?'<button class="acc-btn" style="background:#0f6e56;border-color:#0f6e56" onclick="apTaxIssue(\''+a.id+'\')">발행완료 처리</button> ':'')+'<button class="acc-btn ghost" onclick="apModalClose()">닫기</button></div>';
       var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:16px;font-weight:800">'+esc(a.제목||'')+'</div><div>'+stBadge(a.상태||'')+' '+payBadge(a.지급상태)+'</div></div>'
-        +kv('유형',esc(a.유형||''))
+        +kv('유형',esc(a.유형||''))+(a.유형==='세금계산서요청'?kv('공급가액','<b>'+fmtW(a.공급가액)+'</b> 원')+kv('부가세',fmtW(a.부가세)+' 원')+kv('과세유형',esc(a.과세유형||'-'))+kv('작성일자',esc(a.작성일자||'-'))+kv('발행상태','<b style=\"color:'+(a.발행상태==='발행완료'?'#0f6e56':'#b45309')+'\">'+esc(a.발행상태||'요청')+'</b>'):'')
         +kv('금액','<b>'+fmtW(a.금액)+'</b> 원')
         +kv('고객',esc(a.고객명||'-'))
         +kv('사업부',esc(a.사업부||'-'))
@@ -8463,7 +8463,7 @@ document.addEventListener('DOMContentLoaded',init);
       apModal(h);
     }).catch(function(e){alert(e.message||e);});
   };
-  window.apEdit=function(id){
+  window.apTaxIssue=function(id){if(!confirm('세금계산서 발행완료로 처리할까요?\n→ 회계에 매출(수입)·미수금이 자동 기록됩니다.\n(실제 홈택스/팝빌 발행 후 눌러주세요)'))return;sbc().rpc('rpc_tax_mark_issued',{p_id:id,'p_미수금생성':true}).then(function(r){if(r.error){alert(r.error.message);return;}alert('발행완료 — 매출 '+fmtW((r.data&&r.data.매출액)||0)+'원 회계 기록 / 미수금 등록 완료');apModalClose();if(window.apShow)apShow(P.tab);}).catch(function(e){alert(e.message||e);});};window.apEdit=function(id){
     sbc().rpc('rpc_ap_detail',{p_id:id}).then(function(r){
       if(r.error){alert(r.error.message);return;}
       var d=r.data||{};var a=d['결재']||{};var items=d['품목']||[];

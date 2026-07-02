@@ -8736,6 +8736,7 @@ async function wsOpenEditor(site){
     var s=await window.sb.auth.getSession(); var t=s.data&&s.data.session;
     if(!t){alert('로그인 세션이 없습니다. 다시 로그인해주세요.');return;}
     var url=(site==='A'?'https://realplanjeju.com/':'https://realplanjeju.com/marketing/');/* RP-WEB v5: B=임시 /marketing/ (서브도메인 이전 시 교체) */
+    url+='?rpv='+Date.now();/* RP-WEB v6: 항상 최신 편집기 로드(캐시 우회) */
     window.open(url+'#rpedit&access='+encodeURIComponent(t.access_token)+'&refresh='+encodeURIComponent(t.refresh_token),'_blank');
   }catch(e){alert('편집 창 열기 실패: '+e.message);}
 }

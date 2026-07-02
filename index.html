@@ -508,8 +508,9 @@ var PF=[
  {t:'event',when:'2025',   name:'웨이브제주 호텔&리조트 그랜드오픈',sum:'호텔 그랜드오픈 행사 토탈 대행',url:null,img:null}
 ];
 var g=document.getElementById('pfGrid');
-g.innerHTML='';
-PF.forEach(function(p){
+var gKeep=g.children.length>0;/* v1.4: 편집 저장본 카드 유지 (재초기화 덮어쓰기 방지) */
+if(!gKeep)g.innerHTML='';
+if(!gKeep)PF.forEach(function(p){
   var el=document.createElement(p.url?'a':'div');el.className='pfc show';el.dataset.t=p.t;
   if(p.url){el.href=p.url;el.target='_blank';}
   var col=p.t==='tour'?'linear-gradient(135deg,#4A85F6,#7FB2F0)':'linear-gradient(135deg,#2B62C4,#5B8DEF)';
@@ -735,6 +736,8 @@ function setMode(m){
   document.body.classList.toggle('rp-block',m==='block');
   document.body.classList.toggle('rp-photo',m==='photo');
   photoBadges(m==='photo');
+  if(m==='photo'){if(window.__rpT)clearInterval(window.__rpT);}
+  else{var _d=document.querySelector('#dots .dot.on');if(_d&&_d.onclick)_d.click();}
   ['view','edit','block','photo'].forEach(function(x){var b=$('rp-m-'+x);if(b)b.classList.toggle('on',x===m);});
   editables().forEach(function(el){
     el.classList.add('rp-editable');
@@ -824,6 +827,10 @@ function photoBadges(on){
     var bi=el.style&&el.style.backgroundImage;
     if(bi&&bi.indexOf('url(')>-1)cands.push({el:el,bg:true});
   });
+  ROOT.querySelectorAll('.thumb,.tb').forEach(function(el){
+    var bi=el.style&&el.style.backgroundImage;
+    if(!bi||bi.indexOf('url(')===-1)cands.push({el:el,bg:true,empty:true});
+  });
   var heroDone=false;
   cands.forEach(function(p){
     var el=p.el, isHero=false;
@@ -831,7 +838,7 @@ function photoBadges(on){
     var r=el.getBoundingClientRect();
     if(r.width<60||r.height<60)return;
     var b=document.createElement('div');b.className='rp-photo-badge';
-    b.textContent=isHero?'📷 이 사진 교체 (● 점으로 장 전환)':'📷 사진 교체';
+    b.textContent=isHero?'📷 이 사진 교체 (슬라이드 멈춤 · ● 점으로 장 선택)':(p.empty?'📷 사진 넣기':'📷 사진 교체');
     b.style.left=(r.left+window.scrollX+10)+'px';b.style.top=(r.top+window.scrollY+10)+'px';
     b.onclick=function(ev){
       ev.preventDefault();ev.stopPropagation();
@@ -881,7 +888,7 @@ document.addEventListener('click',function(e){
     status('새 문단이 추가됐습니다. 내용을 입력하세요.');return;
   }
   if(mode==='photo'){
-    if(t.closest&&t.closest('.dots'))return;/* v1.1: 점 클릭=슬라이드 전환 허용 */
+    if(t.closest&&t.closest('.dots')){setTimeout(function(){if(window.__rpT)clearInterval(window.__rpT);},60);return;}/* v1.4: 점 전환 허용·자동재생은 멈춤 유지 */
     e.preventDefault();e.stopPropagation();
     var pt=findPhotoEl(t);
     if(!pt){status('여기는 사진 요소가 아닙니다. 사진을 클릭하세요.');return;}

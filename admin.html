@@ -8124,9 +8124,17 @@ document.addEventListener('DOMContentLoaded',init);
       rows.forEach(function(s){var k=s.원천;agg[k]=agg[k]||{n:0,um:0};agg[k].n++;if(s.매칭상태==='미매칭')agg[k].um++;});
       var h='<div style="font-weight:700;margin-bottom:6px">staging 현황</div><table class="acc-table" style="max-width:480px"><tr><th>원천</th><th>적재</th><th>미매칭</th></tr>';
       Object.keys(agg).forEach(function(k){h+='<tr><td>'+k+'</td><td>'+agg[k].n+'</td><td>'+agg[k].um+'</td></tr>';});
-      h+='</table><div style="font-weight:700;margin:14px 0 6px">미매칭 최근 50건</div><table class="acc-table"><tr><th>거래일</th><th>원천</th><th>금액</th><th>상대</th><th></th></tr>';
+      var _catOpt=S.cats.filter(function(c){return c.활성;}).map(function(c){return '<option value="'+c.id+'">['+c.유형+'] '+esc(c.카테고리명)+'</option>';}).join('');/*RP-ACC-S2T-BAR*/
+      h+='</table><div style="font-weight:700;margin:14px 0 6px">미매칭 최근 50건</div>'
+        +'<div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:8px;background:#f8fafc;border:1px solid #e6ebf2;border-radius:8px;padding:10px">'
+        +'<label style="font-size:11px;color:#64748b;display:flex;flex-direction:column;gap:3px">카테고리<select id="au-bulk-cat" style="padding:5px 8px;border:1px solid #d6dce5;border-radius:6px;font-size:12px">'+_catOpt+'</select></label>'
+        +'<label style="font-size:11px;color:#64748b;display:flex;flex-direction:column;gap:3px">사업부<select id="au-bulk-bu" style="padding:5px 8px;border:1px solid #d6dce5;border-radius:6px;font-size:12px"><option>본사공통</option><option>국내여행</option><option>행사이벤트</option><option>온라인마케팅</option><option>마케팅교육</option></select></label>'
+        +'<button class="acc-btn" onclick="accStageToTx()">☑ 선택 → 원장 일괄 생성</button>'
+        +'<label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" onclick="document.querySelectorAll(\'.au-ck\').forEach(function(c){c.checked=event.target.checked;})">전체선택</label>'
+        +'<span style="font-size:11px;color:#94a3b8">체크한 미매칭을 원장(월별 입출금)에 확정 생성하고 자동 연결합니다</span></div>'
+        +'<table class="acc-table"><tr><th></th><th>거래일</th><th>원천</th><th>금액</th><th>상대</th><th></th></tr>';
       rows.filter(function(s){return s.매칭상태==='미매칭';}).slice(0,50).forEach(function(s){
-        h+='<tr><td>'+(s.거래일||'')+'</td><td>'+s.원천+'</td><td style="text-align:right">'+fmtW(s.금액)+'</td><td>'+esc(s.상대명||'')+'</td>'
+        h+='<tr><td><input type="checkbox" class="au-ck" value="'+s.id+'"></td><td>'+(s.거래일||'')+'</td><td>'+s.원천+'</td><td style="text-align:right">'+fmtW(s.금액)+'</td><td>'+esc(s.상대명||'')+'</td>'/*RP-ACC-S2T-ROW*/
           +'<td><button class="acc-btn ghost" style="padding:2px 8px;font-size:11px" onclick="accStageExclude(\''+s.id+'\')">제외</button></td></tr>';
       });
       el('au-stage').innerHTML=h+'</table><div style="font-size:11.5px;color:#94a3b8;margin-top:6px">※ 미매칭=원장 예정 기록과 자동 연결 안 된 원천. 결재 모듈 가동 전에는 미매칭이 정상이며, 월별 입출금 탭에서 직접 입력한 거래와 [자동 매칭 실행]으로 연결됩니다.</div>';
@@ -8134,6 +8142,16 @@ document.addEventListener('DOMContentLoaded',init);
   }
   window.accStageExclude=function(id){
     sbc().rpc('rpc_acc_match',{p_mode:'confirm',p_stage_id:id,p_tx_id:null}).then(function(r){if(r.error)alert(r.error.message);else stageList();});
+  };
+  /*RP-ACC-S2T-FN 미매칭 → 원장 일괄 생성*/
+  window.accStageToTx=function(){
+    var ids=[];document.querySelectorAll('.au-ck:checked').forEach(function(c){ids.push(c.value);});
+    if(!ids.length){alert('생성할 미매칭 항목을 체크하세요');return;}
+    var catSel=el('au-bulk-cat'),catTxt=catSel&&catSel.selectedIndex>=0?catSel.options[catSel.selectedIndex].text:'';
+    if(!confirm(ids.length+'건을 원장(월별 입출금)에 확정 생성하고 자동 연결할까요?\n카테고리: '+catTxt+' / 사업부: '+el('au-bulk-bu').value))return;
+    sbc().rpc('rpc_acc_stage_to_tx',{p_stage_ids:ids,'p_카테고리_id':catSel?catSel.value:null,'p_사업부':el('au-bulk-bu').value}).then(function(r){
+      if(r.error)alert(r.error.message);else{alert('원장 일괄 생성: '+JSON.stringify(r.data));stageList();}
+    });
   };
   window.accMatch=function(){
     sbc().rpc('rpc_acc_match',{p_mode:'auto'}).then(function(r){

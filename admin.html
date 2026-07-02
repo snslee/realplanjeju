@@ -696,7 +696,7 @@ table.qt-items td.narrow input{text-align:right}
       <button onclick="wsOpenEditor('A')" style="border:0;border-radius:8px;padding:11px 18px;background:#4A85F6;color:#fff;font-weight:800;cursor:pointer">✏️ A 사이트 편집 열기</button>
     </div>
     <div style="background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:20px">
-      <b style="font-size:15px">B — 마케팅·교육 (marketing.realplanjeju.com)</b>
+      <b style="font-size:15px">B — 마케팅·교육 (realplanjeju.com/marketing — 서브도메인 이전 예정)</b>
       <p style="font-size:12.5px;color:#7a869c;margin:6px 0 12px">로그인 없이 바로 편집기로 연결됩니다 (현재 세션 사용)</p>
       <button onclick="wsOpenEditor('B')" style="border:0;border-radius:8px;padding:11px 18px;background:#2B62C4;color:#fff;font-weight:800;cursor:pointer">✏️ B 사이트 편집 열기</button>
     </div>
@@ -8735,7 +8735,7 @@ async function wsOpenEditor(site){
   try{
     var s=await window.sb.auth.getSession(); var t=s.data&&s.data.session;
     if(!t){alert('로그인 세션이 없습니다. 다시 로그인해주세요.');return;}
-    var url=(site==='A'?'https://realplanjeju.com/':'https://marketing.realplanjeju.com/');
+    var url=(site==='A'?'https://realplanjeju.com/':'https://realplanjeju.com/marketing/');/* RP-WEB v5: B=임시 /marketing/ (서브도메인 이전 시 교체) */
     window.open(url+'#rpedit&access='+encodeURIComponent(t.access_token)+'&refresh='+encodeURIComponent(t.refresh_token),'_blank');
   }catch(e){alert('편집 창 열기 실패: '+e.message);}
 }

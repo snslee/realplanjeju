@@ -903,12 +903,13 @@ fileInput.onchange=async function(){
   var tok=ss.data&&ss.data.session&&ss.data.session.access_token;
   if(!tok){alert('편집 세션이 만료되었습니다. 관리자 화면에서 [편집 열기]를 다시 눌러주세요.');status('세션 만료 — admin에서 다시 열어주세요.');return;}
   var ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
-  var path=SITE+'/'+Date.now()+'.'+ext;
-  var res=await fetch(window.__rpSbUrl+'/storage/v1/object/web-assets/'+path,{method:'POST',
-    headers:{'apikey':window.__rpSbKey,'Authorization':'Bearer '+tok,'x-upsert':'true','Content-Type':f.type||'image/jpeg'},body:f});
-  if(!res.ok){var msg='';try{msg=(await res.json()).message||res.status;}catch(e){msg=res.status;}
-    status('업로드 실패('+res.status+'): '+msg);alert('업로드 실패: '+msg);return;}
-  var url=window.__rpSbUrl+'/storage/v1/object/public/web-assets/'+path;
+  /* v1.3: 서버(Edge Function) 경유 업로드 — 브라우저측 권한 변수 제거 */
+  var res=await fetch(window.__rpSbUrl+'/functions/v1/web-upload',{method:'POST',
+    headers:{'Authorization':'Bearer '+tok,'x-site':SITE,'x-ext':ext,'Content-Type':f.type||'image/jpeg'},body:f});
+  var out={};try{out=await res.json();}catch(e){}
+  if(!res.ok||!out.ok){var msg=out.error||('오류 '+res.status);
+    status('업로드 실패: '+msg);alert('업로드 실패: '+msg);return;}
+  var url=out.url;
   snapshot();
   if(photoTarget.bg){photoTarget.el.style.backgroundImage="url('"+url+"')";photoTarget.el.style.backgroundSize='cover';photoTarget.el.style.backgroundPosition='center';var ph=photoTarget.el.querySelector&&photoTarget.el.querySelector('.ph');if(ph)ph.remove();}
   else photoTarget.el.src=url;

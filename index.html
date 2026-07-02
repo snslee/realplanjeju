@@ -690,6 +690,8 @@ body.rp-block .rp-hover{outline:2px dashed #e0a13d;outline-offset:2px;cursor:gra
 #rp-ctrl{position:absolute;z-index:99999;background:#15181e;border-radius:9px;padding:5px 6px;display:flex;gap:4px;box-shadow:0 4px 16px rgba(0,0,0,.4);font-family:'Malgun Gothic',sans-serif}
 #rp-ctrl button{border:0;border-radius:6px;padding:5px 9px;font-size:12px;font-weight:700;cursor:pointer;background:#2b2f38;color:#fff;font-family:inherit}
 #rp-ctrl button.del{background:#c0392b}
+.rp-photo-badge{position:absolute;z-index:99997;background:#E67E22;color:#fff;font:700 12.5px 'Malgun Gothic',sans-serif;padding:7px 11px;border-radius:9px;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.35);user-select:none;white-space:nowrap}
+.rp-photo-badge:hover{background:#cf6d15}
 @media print{#rp-toolbar,#rp-ctrl,#rp-login{display:none!important}}
 </style>
 <script id="rp-editor">
@@ -720,7 +722,7 @@ document.body.appendChild(fileInput);
 var photoTarget=null;
 
 function status(t){$('rp-status').textContent=t;}
-function isRp(el){return el.closest&&(el.closest('#rp-toolbar')||el.closest('#rp-ctrl')||el.closest('#rp-login'));}
+function isRp(el){return el.closest&&(el.closest('#rp-toolbar')||el.closest('#rp-ctrl')||el.closest('#rp-login')||el.closest('.rp-photo-badge'));}
 function editables(){return Array.prototype.slice.call(ROOT.children).filter(function(el){return !/^(SCRIPT|STYLE)$/.test(el.tagName);});}
 function clearSel(){
   if(selected){selected.classList.remove('rp-sel');selected=null;}
@@ -732,6 +734,7 @@ function setMode(m){
   document.body.classList.toggle('rp-edit',m==='edit');
   document.body.classList.toggle('rp-block',m==='block');
   document.body.classList.toggle('rp-photo',m==='photo');
+  photoBadges(m==='photo');
   ['view','edit','block','photo'].forEach(function(x){var b=$('rp-m-'+x);if(b)b.classList.toggle('on',x===m);});
   editables().forEach(function(el){
     el.classList.add('rp-editable');
@@ -741,7 +744,7 @@ function setMode(m){
   if(m==='view')status('보기 모드 — 링크가 원래대로 동작합니다.');
   if(m==='edit')status('글자수정 모드 — 화면 글자를 클릭해 바로 고치세요.');
   if(m==='block')status('이동·삭제 모드 — 클릭=선택(한번 더=더 큰 블록), 드래그=이동, 🗑=삭제, Ctrl+Z=되돌리기.');
-  if(m==='photo')status('사진교체 모드 — 바꿀 사진을 클릭 → 내 컴퓨터에서 파일 선택. 상단 큰 사진은 지금 화면에 보이는 장이 교체됩니다. 교체 후 💾 저장 필수!');
+  if(m==='photo')status('사진교체 모드 — 주황 [📷 사진 교체] 버튼을 누르세요. 상단 큰 사진은 ● 점으로 장을 바꾼 뒤 교체. 교체 후 💾 저장 필수!');
 }
 function snapshot(){undoStack.push(ROOT.innerHTML);if(undoStack.length>40)undoStack.shift();}
 function undo(){
@@ -810,6 +813,34 @@ function findPhotoEl(t){
   }
   return null;
 }
+/* v1.1: 사진교체 배지 — 교체 가능한 사진마다 [📷 사진 교체] 버튼 표시 */
+var badges=[];
+function photoBadges(on){
+  badges.forEach(function(b){b.remove();});badges=[];
+  if(!on)return;
+  var cands=[];
+  ROOT.querySelectorAll('img').forEach(function(i){cands.push({el:i,bg:false});});
+  ROOT.querySelectorAll('*').forEach(function(el){
+    var bi=el.style&&el.style.backgroundImage;
+    if(bi&&bi.indexOf('url(')>-1)cands.push({el:el,bg:true});
+  });
+  var heroDone=false;
+  cands.forEach(function(p){
+    var el=p.el, isHero=false;
+    if(el.closest('.hero')){if(heroDone)return;heroDone=true;isHero=true;el=el.closest('.hero');}
+    var r=el.getBoundingClientRect();
+    if(r.width<60||r.height<60)return;
+    var b=document.createElement('div');b.className='rp-photo-badge';
+    b.textContent=isHero?'📷 이 사진 교체 (● 점으로 장 전환)':'📷 사진 교체';
+    b.style.left=(r.left+window.scrollX+10)+'px';b.style.top=(r.top+window.scrollY+10)+'px';
+    b.onclick=function(ev){
+      ev.preventDefault();ev.stopPropagation();
+      photoTarget=isHero?{el:el.querySelector('.slide.on')||el.querySelector('.slide'),bg:true}:p;
+      fileInput.click();
+    };
+    document.body.appendChild(b);badges.push(b);
+  });
+}
 fileInput.onchange=async function(){
   var f=fileInput.files[0];fileInput.value='';
   if(!f||!photoTarget)return;
@@ -844,6 +875,7 @@ document.addEventListener('click',function(e){
     status('새 문단이 추가됐습니다. 내용을 입력하세요.');return;
   }
   if(mode==='photo'){
+    if(t.closest&&t.closest('.dots'))return;/* v1.1: 점 클릭=슬라이드 전환 허용 */
     e.preventDefault();e.stopPropagation();
     var pt=findPhotoEl(t);
     if(!pt){status('여기는 사진 요소가 아닙니다. 사진을 클릭하세요.');return;}

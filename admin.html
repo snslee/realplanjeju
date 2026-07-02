@@ -515,6 +515,14 @@ table.qt-items td.narrow input{text-align:right}
 <div class="kpi-card" data-kpi="dropout"><div class="kpi-label">이탈률 (3개월)</div><div class="kpi-value">-</div><div class="kpi-sub">최근 90일 기준</div></div>
 <div class="kpi-card" data-kpi="top_bu"><div class="kpi-label">사업부 TOP</div><div class="kpi-value" style="font-size:18px;">-</div><div class="kpi-sub">문의 최다</div></div>
 </div>
+<!-- RP-WEB v3: 대시보드 홈페이지 방문 요약 (상세 = #website) -->
+<div id="ws-dash" style="background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:14px 18px;margin:14px 0;display:flex;gap:22px;align-items:center;flex-wrap:wrap">
+<b style="font-size:13.5px">🌐 홈페이지 방문</b>
+<span style="font-size:12.5px;color:#7a869c">오늘 <b id="wsd-today" style="color:#2B62C4;font-size:16px">-</b></span>
+<span style="font-size:12.5px;color:#7a869c">최근 7일 <b id="wsd-week" style="color:#2B62C4;font-size:16px">-</b></span>
+<span id="wsd-top" style="font-size:12.5px;color:#7a869c">유입 TOP: -</span>
+<a href="#website" style="margin-left:auto;font-size:12.5px;color:#2B62C4;font-weight:700;text-decoration:underline">상세 보기 →</a>
+</div>
 <div class="warn-section">
 <div class="warn-title">미응답 경과 현황</div>
 <div class="warn-badges">
@@ -8748,6 +8756,26 @@ function wsRender(rows,days){
     :'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">블로그 CTA에 UTM을 달면 글별 유입이 여기 잡힙니다.</div>';
 }
 /* RP-WEB v2: mkhubInit 제거 */
+/* RP-WEB v3: 대시보드 방문 요약 위젯 */
+async function wsDashSummary(){
+  try{
+    var el=document.getElementById('wsd-today');if(!el)return;
+    var since=new Date(Date.now()-7*864e5).toISOString();
+    var r=await window.sb.from('web_방문로그').select('방문_시각,유입_출처').gte('방문_시각',since).limit(8000);
+    if(r.error)return;
+    var rows=r.data||[];var today=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'});
+    var t=0,src={};rows.forEach(function(v){if(new Date(v.방문_시각).toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'})===today)t++;var s=v.유입_출처||'etc';src[s]=(src[s]||0)+1;});
+    el.textContent=t;document.getElementById('wsd-week').textContent=rows.length;
+    var SRC={naver_blog:'네이버 블로그',tistory:'티스토리',naver_search:'네이버 검색',google:'구글',direct:'직접',instagram:'인스타',youtube:'유튜브',facebook:'페이스북',kakao:'카카오',naver_etc:'네이버 기타',etc:'기타'};
+    var top=Object.keys(src).sort(function(a,b){return src[b]-src[a];}).slice(0,3).map(function(k){return (SRC[k]||k)+' '+src[k];}).join(' · ');
+    document.getElementById('wsd-top').textContent='유입 TOP: '+(top||'아직 없음');
+  }catch(e){}
+}
+(function(){
+  var _ld=window.loadDashboard;
+  if(typeof _ld==='function'){window.loadDashboard=async function(){var r=await _ld.apply(this,arguments);wsDashSummary();return r;};}
+  if((location.hash||'#dashboard').indexOf('dashboard')>-1)setTimeout(wsDashSummary,900);
+})();
 </script>
 </body>
 </html>

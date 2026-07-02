@@ -570,7 +570,7 @@ var SITE='A';
 var SB_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZGZxbGtlaXd4eXVvandjb3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMzIxOTcsImV4cCI6MjA5MjYwODE5N30.S3VrHMcrrr0m74dsMnb3jMzaxBjoFpOnUts2XINbpq0';
 var sb=null;
-try{sb=window.supabase.createClient(SB_URL,SB_KEY);}catch(e){}
+try{sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:'rp-site-'+SITE}});}catch(e){}/* RP-SITE-AUTHFIX: admin 세션 보호 — 저장·자동갱신 금지 */
 window.__rpSb=sb; window.__rpSite=SITE;
 
 function wantEdit(){return /rpedit/.test(location.hash)||/[?&]edit\b/.test(location.search);}

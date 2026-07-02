@@ -7908,7 +7908,7 @@ document.addEventListener('DOMContentLoaded',init);
           +'<td>'+(t.상태==='예정'?'<span style="background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:99px;font-size:11px">예정</span>':t.상태)+'</td>'
           +'<td>'+esc(t.적요||'')+'</td><td style="white-space:nowrap">'
           +(t.상태==='예정'?'<button class="acc-btn ghost" style="padding:2px 7px;font-size:11px" onclick="accTxSet(\''+t.id+'\',\'확정\')">확정</button> ':'')
-          +(t.상태!=='취소'?'<button class="acc-btn ghost" style="padding:2px 7px;font-size:11px;border-color:#b91c1c;color:#b91c1c" onclick="accTxSet(\''+t.id+'\',\'취소\')">취소</button>':'')
+          +(t.상태!=='취소'?'<button class="acc-btn ghost" style="padding:2px 7px;font-size:11px;border-color:#b91c1c;color:#b91c1c" onclick="accTxSet(\''+t.id+'\',\'취소\')">취소</button> ':'')+(t.증빙_파일_id?'<button class="acc-btn ghost" style="padding:2px 7px;font-size:11px" onclick="accProofView(\''+t.증빙_파일_id+'\')">📎증빙</button>':'<button class="acc-btn ghost" style="padding:2px 7px;font-size:11px;color:#64748b" onclick="accProofUp(\''+t.id+'\')">＋증빙</button>')/*RP-ACC-PROOF-BTN*/
           +'</td></tr>';
       });
       h+='</table>'+(rows.length?'':'<div style="color:#94a3b8;padding:18px;text-align:center">이 달 거래 없음</div>');
@@ -7919,6 +7919,35 @@ document.addEventListener('DOMContentLoaded',init);
     if(st==='취소'&&!confirm('이 거래를 취소 처리할까요?'))return;
     sbc().from('acc_거래내역').update({상태:st,updated_at:new Date().toISOString()}).eq('id',id).then(function(r){
       if(r.error)alert(r.error.message);else accShow('tx');
+    });
+  };
+  /*RP-ACC-PROOF-FN 거래 증빙(이미지·PDF) 첨부 — docs버킷 acc-proof/·acc_증빙 테이블*/
+  window.accProofUp=function(txid){
+    var fi=document.createElement('input');fi.type='file';fi.accept='image/png,image/jpeg,image/webp,application/pdf';
+    fi.onchange=function(){
+      var f=fi.files[0];if(!f)return;
+      if(f.size>52428800){alert('50MB 이하만 가능합니다');return;}
+      var ext=(f.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'bin';
+      var path='acc-proof/'+txid+'/'+Date.now()+'.'+ext;
+      sbc().storage.from('docs').upload(path,f,{contentType:f.type||'application/octet-stream'}).then(function(up){
+        if(up.error){alert('업로드 실패: '+up.error.message);return;}
+        sbc().from('acc_증빙').insert({'거래_id':txid,'storage_path':path,'파일명':f.name,'mime':f.type}).select('id').single().then(function(r){
+          if(r.error){alert('증빙 기록 실패: '+r.error.message);return;}
+          sbc().from('acc_거래내역').update({'증빙_파일_id':r.data.id,updated_at:new Date().toISOString()}).eq('id',txid).then(function(u){
+            if(u.error)alert(u.error.message);else{alert('증빙 첨부 완료');accShow('tx');}
+          });
+        });
+      });
+    };
+    fi.click();
+  };
+  window.accProofView=function(pid){
+    sbc().from('acc_증빙').select('storage_path,파일명').eq('id',pid).single().then(function(r){
+      if(r.error||!r.data){alert('증빙 없음');return;}
+      sbc().storage.from('docs').createSignedUrl(r.data.storage_path,600).then(function(s){
+        if(s.error){alert(s.error.message);return;}
+        window.open(s.data.signedUrl,'_blank');
+      });
     });
   };
   window.accTxForm=function(){
@@ -8160,12 +8189,13 @@ document.addEventListener('DOMContentLoaded',init);
       }
     } else if(src==='IBK통장'){
       for(var ii=0;ii<A.length;ii++){
-        var ri=A[ii]||[],dti=sv(ri[0],20);
-        if(!/^20\d\d-\d\d-\d\d/.test(dti))continue;
-        var oi=num(ri[1]),inni=num(ri[2]),bali=num(ri[3]);
+        var ri=A[ii]||[],_ofs=/^20\d\d-\d\d-\d\d/.test(sv(ri[0],20))?0:(/^20\d\d-\d\d-\d\d/.test(sv(ri[1],20))?1:-1);/*RP-IBK-OFFSET 은행포맷 순번컬럼 대응*/
+        if(_ofs<0)continue;
+        var dti=sv(ri[_ofs],20);
+        var oi=num(ri[_ofs+1]),inni=num(ri[_ofs+2]),bali=num(ri[_ofs+3]);
         out.push({'원천':'IBK통장','중복키':accNo+'|'+dti+'|'+r0(oi)+'|'+r0(inni)+'|'+r0(bali),
-          '거래일':dti.slice(0,10),'금액':(inni||0)-(oi||0),'상대명':sv(ri[4]),'계좌_id':accId,
-          '원본':{'거래일시':dti,'출금':oi,'입금':inni,'잔액':bali,'거래내용':sv(ri[4]),'상대정보':sv(ri[5]),'채널':sv(ri[6],10)}});
+          '거래일':dti.slice(0,10),'금액':(inni||0)-(oi||0),'상대명':sv(ri[_ofs+4]),'계좌_id':accId,
+          '원본':{'거래일시':dti,'출금':oi,'입금':inni,'잔액':bali,'거래내용':sv(ri[_ofs+4]),'상대정보':sv(ri[_ofs+5]),'채널':sv(ri[_ofs+6],10)}});
       }
     } else if(src==='농협카드'){
       var h2=findHdr(A,'이용일시');if(!h2)return out;

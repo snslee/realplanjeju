@@ -883,6 +883,7 @@ fileInput.onchange=async function(){
 /* 전역 클릭 위임 */
 document.addEventListener('click',function(e){
   var t=e.target;
+  if(t===fileInput)return;/* RP-EDIT-FIX2: 파일선택창 클릭 재진입 차단 (자기-간섭으로 파일창 취소되던 버그) */
   if(isRp(t))return;
   if(mode!=='view'){var a=t.closest&&t.closest('a');if(a)e.preventDefault();}
   if(insertArmed){

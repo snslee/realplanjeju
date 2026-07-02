@@ -866,10 +866,33 @@ fileInput.onchange=async function(){
     status('업로드 실패: '+msg);alert('업로드 실패: '+msg);return;}
   var url=out.url;
   snapshot();
-  if(photoTarget.bg){photoTarget.el.style.backgroundImage="url('"+url+"')";photoTarget.el.style.backgroundSize='cover';photoTarget.el.style.backgroundPosition='center';var ph=photoTarget.el.querySelector&&photoTarget.el.querySelector('.ph');if(ph)ph.remove();}
-  else photoTarget.el.src=url;
-  photoTarget=null;
-  status('사진 교체 완료 — 💾 저장을 눌러야 실제 사이트에 반영됩니다.');
+  /* v1.5: 이미지 로드 후 적용 + 교체한 장을 화면에 강제 표시 + 겹친 글자 정리 */
+  var tgt=photoTarget;photoTarget=null;
+  status('사진 적용 중…');
+  var im=new Image();
+  im.onload=function(){
+    if(tgt.bg){
+      var el=tgt.el;
+      el.style.backgroundImage="url('"+url+"')";el.style.backgroundSize='cover';el.style.backgroundPosition='center';
+      var ph=el.querySelector&&el.querySelector('.ph');if(ph)ph.remove();
+      if(el.classList&&el.classList.contains('ph')){el.classList.remove('ph');el.textContent='';}
+      else if(el.classList&&el.classList.contains('tb')&&el.children.length===0&&el.textContent.trim()){
+        var nm=el.textContent.trim();el.textContent='';
+        var bd=el.parentElement?el.parentElement.querySelector('.bd'):null;
+        if(bd&&!bd.querySelector('h4')){var h=document.createElement('h4');h.textContent=nm;var dtx=bd.querySelector('.date');bd.insertBefore(h,dtx?dtx.nextSibling:bd.firstChild);}
+      }
+      if(el.classList&&el.classList.contains('slide')){
+        var sls=Array.prototype.slice.call(document.querySelectorAll('#rp-root .hero .slide'));
+        var di=sls.indexOf(el);
+        sls.forEach(function(s,j){s.classList.toggle('on',j===di);});
+        document.querySelectorAll('#rp-root .dots .dot').forEach(function(d,j){d.classList.toggle('on',j===di);});
+      }
+      el.scrollIntoView({block:'center',behavior:'smooth'});
+    } else {tgt.el.src=url;tgt.el.scrollIntoView({block:'center',behavior:'smooth'});}
+    status('✅ 사진 교체 완료 — 지금 화면에 보이는 그대로입니다. 💾 저장을 눌러야 실제 사이트에 반영됩니다.');
+  };
+  im.onerror=function(){status('업로드는 됐으나 이미지 표시 실패 — 다시 시도해주세요.');};
+  im.src=url;
 };
 
 /* 전역 클릭 위임 */

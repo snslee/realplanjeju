@@ -741,7 +741,7 @@ function setMode(m){
   if(m==='view')status('보기 모드 — 링크가 원래대로 동작합니다.');
   if(m==='edit')status('글자수정 모드 — 화면 글자를 클릭해 바로 고치세요.');
   if(m==='block')status('이동·삭제 모드 — 클릭=선택(한번 더=더 큰 블록), 드래그=이동, 🗑=삭제, Ctrl+Z=되돌리기.');
-  if(m==='photo')status('사진교체 모드 — 바꿀 사진을 클릭하면 내 컴퓨터에서 파일을 골라 바로 교체됩니다.');
+  if(m==='photo')status('사진교체 모드 — 바꿀 사진을 클릭 → 내 컴퓨터에서 파일 선택. 상단 큰 사진은 지금 화면에 보이는 장이 교체됩니다. 교체 후 💾 저장 필수!');
 }
 function snapshot(){undoStack.push(ROOT.innerHTML);if(undoStack.length>40)undoStack.shift();}
 function undo(){
@@ -798,6 +798,9 @@ function clearDropMarks(){document.querySelectorAll('.rp-drop-before,.rp-drop-af
 /* 사진 업로드 교체 */
 function findPhotoEl(t){
   var img=t.closest&&t.closest('img');if(img&&ROOT.contains(img))return {el:img,bg:false};
+  /* RP-EDIT-FIX1: 히어로는 글자 레이어가 덮어 클릭이 슬라이드에 안 닿음 → 현재 보이는 슬라이드 교체 */
+  var hero=t.closest&&t.closest('.hero');
+  if(hero&&ROOT.contains(hero)){var sl=hero.querySelector('.slide.on')||hero.querySelector('.slide');if(sl)return {el:sl,bg:true};}
   var n=t;
   while(n&&n!==ROOT){
     var bi=(n.style&&n.style.backgroundImage)||'';

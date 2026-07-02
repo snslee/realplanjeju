@@ -1,223 +1,952 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#1e3a5f">
-  <title>리얼플랜제주 | real people, real world. with realplan.</title>
-  <meta name="description" content="리얼플랜제주 주식회사 — 국내여행·행사이벤트·온라인마케팅·마케팅교육. 4개 사업부가 맞춤 기획으로 함께합니다.">
-  <meta name="robots" content="index, follow">
-  <meta property="og:title" content="리얼플랜제주 주식회사">
-  <meta property="og:description" content="국내여행·행사이벤트·온라인마케팅·마케팅교육 전문">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://realplanjeju.com">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231e3a5f'/%3E%3Ctext x='50' y='68' font-size='60' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='900'%3ER%3C/text%3E%3C/svg%3E">
-  <style>
-    :root {
-      --primary: #1e3a5f;
-      --primary-dark: #152a46;
-      --primary-light: #2d5a8f;
-      --accent: #4a90c2;
-      --text: #1a2332;
-      --text-light: #5a6478;
-      --border: #d6dce5;
-      --bg: #f5f7fa;
-      --radius: 8px;
-      --shadow: 0 2px 8px rgba(30, 58, 95, 0.08);
-      --shadow-lg: 0 8px 24px rgba(30, 58, 95, 0.12);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-      color: var(--text);
-      background: var(--bg);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
-    .hero {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-      color: #fff;
-      padding: 80px 20px 70px;
-      text-align: center;
-    }
-    .hero h1 {
-      font-size: 42px;
-      font-weight: 900;
-      letter-spacing: -1px;
-      margin-bottom: 12px;
-    }
-    .hero .tagline {
-      font-size: 15px;
-      opacity: 0.9;
-      letter-spacing: 1px;
-    }
-    .hero .sub {
-      max-width: 620px;
-      margin: 24px auto 0;
-      font-size: 16px;
-      line-height: 1.7;
-      opacity: 0.85;
-    }
-    .cta-row {
-      margin-top: 32px;
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .btn {
-      display: inline-block;
-      padding: 14px 28px;
-      background: #fff;
-      color: var(--primary);
-      border-radius: var(--radius);
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 15px;
-      transition: transform 0.15s;
-    }
-    .btn:hover { transform: translateY(-2px); }
-    .btn.outline {
-      background: transparent;
-      color: #fff;
-      border: 2px solid #fff;
-    }
-    main { max-width: 1080px; margin: -40px auto 0; padding: 0 20px 60px; }
-    .services {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 18px;
-      margin-bottom: 40px;
-    }
-    @media (max-width: 740px) {
-      .hero h1 { font-size: 32px; }
-      .services { grid-template-columns: 1fr; }
-    }
-    .service-card {
-      background: #fff;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-lg);
-      padding: 28px 26px;
-      border-top: 4px solid var(--primary);
-      transition: transform 0.2s;
-    }
-    .service-card:hover { transform: translateY(-3px); }
-    .service-card h3 {
-      font-size: 20px;
-      color: var(--primary);
-      margin-bottom: 10px;
-    }
-    .service-card p {
-      color: var(--text-light);
-      font-size: 14.5px;
-      line-height: 1.7;
-    }
-    .service-card .tag {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 4px 10px;
-      background: #eef2f7;
-      color: var(--primary);
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .cta-block {
-      background: #fff;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-lg);
-      padding: 40px 28px;
-      text-align: center;
-    }
-    .cta-block h2 {
-      color: var(--primary);
-      font-size: 24px;
-      font-weight: 800;
-      margin-bottom: 10px;
-    }
-    .cta-block p {
-      color: var(--text-light);
-      margin-bottom: 24px;
-    }
-    .cta-block .btn {
-      background: var(--primary);
-      color: #fff;
-    }
-    footer.site-footer {
-      background: var(--primary-dark);
-      color: rgba(255,255,255,0.75);
-      padding: 32px 20px;
-      font-size: 12.5px;
-      line-height: 1.7;
-    }
-    footer .footer-inner { max-width: 1080px; margin: 0 auto; }
-    footer .company-name { color: #fff; font-weight: 700; font-size: 14px; margin-bottom: 8px; }
-    footer .footer-links { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.15); }
-    footer .footer-links a { color: #9fc0dd; text-decoration: none; margin-right: 14px; }
-    footer .footer-links a:hover { color: #fff; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<title>리얼플랜제주 — 국내여행·행사이벤트 전문 (v1.9)</title>
+<style>
+:root{--blue:#4A85F6;--blue-d:#2B62C4;--navy:#0d1e33;--blue-bg:#F5F8FD;--ink:#222B3A;--mut:#7C8698;--line:#E6ECF5}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:var(--ink);background:#fff}
+.wrap{max-width:1140px;margin:0 auto;padding:0 20px}
+img{max-width:100%} a{text-decoration:none;color:inherit}
+header{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);z-index:1000}
+.nav{display:flex;align-items:center;justify-content:space-between;height:66px}
+.logo{font-weight:900;font-size:21px;letter-spacing:.5px;color:var(--blue)}
+.logo span{color:var(--blue)}
+.logo small{display:block;font-size:10.5px;font-weight:600;color:var(--mut);letter-spacing:2px}
+.menu{display:flex;gap:30px;font-size:15px;font-weight:700}
+.menu a:hover{color:var(--blue)}
+/* 히어로: v0.1 원본 텍스트 배치(좌측·카드 없음) + 5초 슬라이드 · 어둡게 처리 없음 */
+.hero{position:relative;min-height:520px;display:flex;align-items:center;overflow:hidden}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity 1.1s;background-size:cover;background-position:center}
+.slide.on{opacity:1}
+.slide .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;letter-spacing:1px}
+.hero .wrap{position:relative;z-index:5;padding-top:46px;padding-bottom:46px}
+.hero h1{font-size:40px;line-height:1.3;font-weight:800;margin-bottom:14px;color:#fff;text-shadow:0 2px 16px rgba(0,0,0,.6),0 1px 3px rgba(0,0,0,.5)}
+.hero p{font-size:17px;color:#fff;max-width:600px;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.slide-tag{position:absolute;top:20px;left:20px;background:rgba(255,255,255,.92);color:var(--blue-d);font-size:12.5px;font-weight:800;padding:6px 12px;border-radius:20px;z-index:6}
+.dots{position:absolute;right:24px;bottom:24px;display:flex;gap:8px;z-index:6}
+.dot{width:34px;height:6px;border-radius:3px;background:rgba(255,255,255,.65);cursor:pointer;border:1px solid rgba(0,0,0,.08)}
+.dot.on{background:var(--blue)}
+section{padding:74px 0}
+.sec-h{text-align:center;margin-bottom:42px}
+.sec-h .eng{color:var(--blue);font-weight:800;font-size:13px;letter-spacing:3px}
+.sec-h h2{font-size:30px;margin:6px 0 8px}
+.sec-h p{color:var(--mut);font-size:14.5px}
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.cat{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;transition:.25s;box-shadow:0 2px 10px rgba(20,50,110,.05)}
+.cat:hover{transform:translateY(-5px);box-shadow:0 14px 34px rgba(20,50,110,.14)}
+.cat .thumb{height:300px;background-size:cover;background-position:center}
+.cat .thumb.ph{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px}
+.cat .body{padding:20px 22px 24px}
+.cat h3{font-size:21px;margin-bottom:8px;color:var(--blue-d)}
+.cat p{font-size:15px;color:var(--mut);line-height:1.65}
+/* 유튜브 임베드 */
+.vids{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:30px auto 0;max-width:840px}
+.vid{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#000}
+.vid{position:relative;display:block}
+.vid .vthumb{width:100%;aspect-ratio:16/9;background-size:cover;background-position:center;display:block;position:relative}
+.vid .play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:44px;background:#FF0000;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.vid .play:after{content:'';border-style:solid;border-width:10px 0 10px 17px;border-color:transparent transparent transparent #fff}
+
+.vid .cap{background:#fff;padding:9px 11px;font-size:12px;font-weight:700;line-height:1.5}
+.alt-bg{background:var(--blue-bg)}
+/* 포트폴리오 실사례 */
+.pf-tabs{display:flex;gap:10px;justify-content:center;margin-bottom:28px}
+.pf-tab{border:1.5px solid var(--line);background:#fff;border-radius:24px;padding:9px 24px;font-size:14.5px;font-weight:700;cursor:pointer;font-family:inherit}
+.pf-tab.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.pf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.pfc{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;display:none}
+.pfc.show{display:block}
+.pfc:hover{box-shadow:0 10px 26px rgba(20,50,110,.13)}
+.pfc .tb{height:110px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800;text-align:center;padding:0 14px;line-height:1.5}
+.pfc .bd{padding:14px 15px 16px}
+.pfc .date{font-size:11.5px;color:var(--blue);font-weight:700;margin-bottom:5px}
+.pfc h4{font-size:14px;line-height:1.45;margin-bottom:8px}
+.pfc p{font-size:12px;color:var(--mut);line-height:1.55;margin-bottom:8px}
+.pfc .go{font-size:12px;color:var(--blue-d);font-weight:700}
+.pf-note{text-align:center;font-size:12.5px;color:var(--mut);margin-top:22px}
+.live-tag{display:inline-block;background:#E8F5EE;color:#1E7A46;font-size:11px;font-weight:800;padding:2px 8px;border-radius:10px;vertical-align:middle}
+/* 견적문의 — v0.1 원래 색(네이비) 복귀 */
+.contact{background:var(--navy);color:#fff}
+.contact .sec-h h2{color:#fff}
+.contact .sec-h p{color:#b9cce4}
+.form-card{max-width:760px;margin:0 auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:36px 38px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.frow.one{grid-template-columns:1fr}
+.fld label{display:block;font-size:13px;font-weight:800;margin-bottom:6px;color:#cfe0f5}
+.fld input,.fld select,.fld textarea{width:100%;border:1px solid rgba(255,255,255,.25);border-radius:9px;padding:11px 12px;font-size:14px;font-family:inherit;background:rgba(255,255,255,.94);color:var(--ink)}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--blue)}
+.agree{font-size:12.5px;color:#b9cce4;margin:6px 0 18px;line-height:1.7}
+.btn{display:inline-block;background:var(--blue);color:#fff;border:0;border-radius:10px;padding:15px 34px;font-size:15.5px;font-weight:800;cursor:pointer;font-family:inherit;width:100%}
+.btn:hover{background:var(--blue-d)}
+.sys-note{text-align:center;font-size:12px;color:#9db4d4;margin-top:16px;line-height:1.7}
+/* (구) */
+/* 회사소개 — 탭형 */
+.ab-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:40px}
+.ab-head h2{font-size:34px;line-height:1.45;font-weight:900}
+.ab-head h2 em{font-style:normal;color:var(--blue)}
+.ab-tabs{display:flex;gap:10px}
+.ab-tab{border:1.5px solid var(--line);background:#fff;border-radius:28px;padding:12px 26px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--ink)}
+.ab-tab.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.ab-pane{display:none}
+.ab-pane.on{display:block}
+.ci-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:36px;align-items:center}
+.ci-logo{border:1px solid var(--line);border-radius:18px;background:#fff;min-height:340px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.ci-logo .big{font-size:38px;font-weight:900;color:var(--blue);letter-spacing:1px}
+.ci-logo .big span{color:var(--blue)}
+.ci-logo small{font-size:14px;color:var(--mut);letter-spacing:4px;font-weight:700}
+.ci-txt p.lead{font-size:15px;line-height:1.85;color:#3a4356;margin-bottom:26px}
+.ci-row{display:flex;align-items:flex-start;gap:16px;margin-bottom:14px}
+.ci-row .pill{flex:0 0 96px;background:var(--blue-d);color:#fff;border-radius:24px;padding:9px 0;text-align:center;font-size:13.5px;font-weight:800}
+.ci-row .val{font-size:15px;padding-top:9px;font-weight:500}
+.org-wrap{margin-top:6px}
+.org-ceo{width:190px;margin:0 auto 14px;background:#111722;color:#fff;border-radius:12px;padding:15px 0;text-align:center;font-size:16px;font-weight:900}
+.org-line{width:2px;height:22px;background:var(--line);margin:0 auto}
+.org-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:14px}
+.org-col .hd{background:#5A6474;color:#fff;border-radius:9px;padding:12px 0;text-align:center;font-size:14.5px;font-weight:800;margin-bottom:12px}
+.org-col .hd.blue{background:var(--blue)}
+.org-col .it{border:1px solid var(--line);background:#fff;border-radius:8px;padding:11px 0;text-align:center;font-size:13px;color:#4a5468;margin-bottom:8px}
+.org-col .it.first{background:var(--blue-bg);font-weight:800;color:var(--blue-d)}
+.map-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:24px;align-items:stretch}
+.map-box{border:1px solid var(--line);border-radius:16px;overflow:hidden;min-height:380px}
+.map-box iframe{width:100%;height:100%;min-height:380px;border:0}
+.map-info{border:1px solid var(--line);border-radius:16px;background:#fff;padding:28px}
+.map-info h4{font-size:17px;color:var(--blue-d);margin-bottom:16px}
+.map-info .ci-row .pill{flex-basis:88px}
+@media(max-width:900px){.ci-grid,.map-grid{grid-template-columns:1fr}.org-cols{grid-template-columns:1fr 1fr}.ab-head h2{font-size:24px}}
+
+.intro-hero{background:linear-gradient(135deg,var(--blue-d),var(--blue));border-radius:18px;color:#fff;padding:34px 38px;margin-bottom:26px}
+.intro-hero h3{font-size:23px;margin-bottom:8px}
+.intro-hero p{font-size:14.5px;opacity:.92;line-height:1.7}
+.info-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:22px;margin-bottom:22px}
+.card{border:1px solid var(--line);border-radius:16px;background:#fff;padding:26px 28px}
+.card h4{font-size:16.5px;color:var(--blue-d);margin-bottom:14px}
+.kv{width:100%;border-collapse:collapse;font-size:13.5px}
+.kv th{width:88px;text-align:left;color:var(--mut);font-weight:700;padding:7px 0;vertical-align:top}
+.kv td{padding:7px 0;border-bottom:1px dashed var(--line)}
+.svc{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px dashed var(--line)}
+.svc .ic{flex:0 0 40px;height:40px;border-radius:11px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:19px}
+.svc b{display:block;font-size:14.5px;margin-bottom:3px}
+.svc span{font-size:12.5px;color:var(--mut);line-height:1.55}
+.org{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}
+.org div{flex:1;min-width:110px;background:var(--blue-bg);border:1px solid var(--line);border-radius:11px;padding:12px 10px;text-align:center;font-size:12.5px;color:var(--mut)}
+.org b{display:block;font-size:14px;color:var(--blue-d);margin-bottom:3px}
+.deck-btn{display:block;max-width:340px;margin:26px auto 0;text-align:center;background:#fff;border:1.5px solid var(--blue);color:var(--blue-d);border-radius:12px;padding:14px 20px;font-size:14.5px;font-weight:800;cursor:pointer;font-family:inherit}
+.deck-btn:hover{background:var(--blue);color:#fff}
+.rp-modal{position:fixed;inset:0;background:rgba(10,20,40,.55);display:none;align-items:center;justify-content:center;z-index:3100;padding:20px}
+.rp-modal .mbox{background:#fff;max-width:760px;width:100%;max-height:82vh;border-radius:16px;display:flex;flex-direction:column;overflow:hidden}
+.rp-modal .mh{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid var(--line)}
+.rp-modal .mh b{font-size:17px}
+.rp-modal .mh button{border:0;background:#f1f3f7;border-radius:8px;padding:8px 14px;font-weight:800;cursor:pointer;font-family:inherit}
+.rp-modal .mb{padding:22px 26px;overflow-y:auto;font-size:13.5px;line-height:1.85;color:#3a4356}
+.rp-modal .mb h5{font-size:14.5px;color:var(--blue-d);margin:16px 0 6px}
+.rp-modal .mb h5:first-child{margin-top:0}
+.rp-modal .mb table{border-collapse:collapse;width:100%;font-size:12.5px;margin:6px 0}
+.rp-modal .mb th,.rp-modal .mb td{border:1px solid var(--line);padding:6px 9px;text-align:left}
+.rp-modal .mb th{background:var(--blue-bg)}
+#lightbox{position:fixed;inset:0;background:rgba(10,20,40,.92);display:none;align-items:center;justify-content:center;z-index:3000;flex-direction:column;gap:14px}
+#lightbox img{max-height:84vh;max-width:92vw;border-radius:8px}
+#lightbox .lb-nav{display:flex;gap:16px;align-items:center;color:#fff;font-weight:700}
+#lightbox button{border:0;border-radius:8px;padding:10px 20px;font-weight:800;cursor:pointer;font-family:inherit;font-size:14px}
+/* 플로팅 — PC 우하단 코너+펄스+말풍선 / 모바일 하단 고정 바 */
+#side{position:fixed;right:28px;bottom:110px;z-index:2000;display:flex;flex-direction:column;gap:12px}
+#side a{display:flex;flex-direction:column;align-items:center;gap:6px;width:104px;padding:18px 8px;border-radius:16px;font-size:14.5px;font-weight:900;color:#fff;box-shadow:0 8px 26px rgba(20,50,110,.32);text-align:center;line-height:1.3}
+#side .quote{background:var(--blue)}
+#side .kakao{background:#FAE100;color:#3C1E1E}
+#side span{font-size:26px}
+#side .quote{animation:rp-pulse 2.4s infinite}
+@keyframes rp-pulse{0%{box-shadow:0 0 0 0 rgba(74,133,246,.5)}70%{box-shadow:0 0 0 16px rgba(74,133,246,0)}100%{box-shadow:0 0 0 0 rgba(74,133,246,0)}}
+#side-tip{position:fixed;right:146px;bottom:186px;z-index:2001;background:#15294E;color:#fff;font-size:13.5px;font-weight:700;padding:11px 15px;border-radius:12px;box-shadow:0 8px 24px rgba(20,50,110,.35);pointer-events:none;white-space:nowrap}
+#side-tip:after{content:'';position:absolute;right:-7px;top:50%;transform:translateY(-50%);border:7px solid transparent;border-right:0;border-left-color:#15294E}
+#mbar{display:none}
+.hero-cta{display:inline-block;margin-top:24px;background:var(--blue);color:#fff;font-size:16.5px;font-weight:900;padding:15px 34px;border-radius:999px;box-shadow:0 10px 28px rgba(31,80,180,.45)}
+footer{background:#1D2A44;color:#B8C4DC;padding:44px 0 34px;font-size:13px;line-height:1.9}
+footer .cols{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap}
+footer b{color:#fff;font-size:15px}
+footer .admin{font-size:11.5px;color:#7387AB;margin-top:14px}
+footer .admin a{text-decoration:underline}
+@media(max-width:900px){
+ .cat-grid,.vids,.pf-grid{grid-template-columns:1fr 1fr}
+ .info-grid{grid-template-columns:1fr}
+ .hero h1{font-size:30px}
+ .menu{gap:16px;font-size:13.5px}
+ #side,#side-tip{display:none}
+ #mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:2500;box-shadow:0 -4px 18px rgba(20,50,110,.2)}
+ #mbar a{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:16px 0;font-size:15.5px;font-weight:900}
+ #mbar .quote{background:var(--blue);color:#fff}
+ #mbar .kakao{background:#FAE100;color:#3C1E1E}
+ body{padding-bottom:54px}
+}
+</style>
 </head>
 <body>
-  <section class="hero">
-    <h1>리얼플랜제주</h1>
-    <div class="tagline">real people, real world. with realplan.</div>
-    <p class="sub">
-      제주에서 시작해 전국으로 — 여행, 행사, 마케팅, 교육.<br>
-      4개 사업부가 현장의 문제를 현장의 언어로 풀어갑니다.
-    </p>
-    <div class="cta-row">
-      <a href="contact.html" class="btn">문의하기</a>
-      <a href="#services" class="btn outline">서비스 보기</a>
-    </div>
-  </section>
+<div id="rp-root">
 
-  <main>
-    <div class="services" id="services">
-      <div class="service-card">
-        <h3>국내여행</h3>
-        <p>대한민국 각 지역 특성을 살린 맞춤형 여행 상품. 기업·단체·개인 단위 기획부터 운영까지 원스톱으로 진행합니다.</p>
-        <span class="tag">맞춤 기획 · 전국</span>
-      </div>
-      <div class="service-card">
-        <h3>행사·이벤트</h3>
-        <p>기업·단체 행사의 콘셉트부터 현장 운영까지. 제주 현지 네트워크와 정확한 실행력으로 성공시켜 드립니다.</p>
-        <span class="tag">기획 · 진행 · 운영</span>
-      </div>
-      <div class="service-card">
-        <h3>온라인 마케팅</h3>
-        <p>SNS(유튜브·틱톡·인스타·페이스북·쓰레드) · 블로그 · 광고. 최신 알고리즘을 반영한 실전 운영.</p>
-        <span class="tag">SNS · 블로그 · 광고</span>
-      </div>
-      <div class="service-card">
-        <h3>마케팅 교육</h3>
-        <p>소상공인·기업 대상 실전 중심 교육과 컨설팅. 현장에서 바로 쓸 수 있는 전략을 전달합니다.</p>
-        <span class="tag">교육 · 컨설팅</span>
-      </div>
-    </div>
+<header><div class="wrap nav">
+  <a href="#top" class="logo">REALPLAN<span>JEJU</span><small>리얼플랜제주(주)</small></a>
+  <nav class="menu">
+    <a href="#tour">국내여행</a>
+    <a href="#event">행사이벤트</a>
+    <a href="#pf">포트폴리오</a>
+    <a href="#about">회사소개</a>
+  </nav>
+</div></header>
 
-    <div class="cta-block">
-      <h2>3분이면 충분합니다</h2>
-      <p>간단한 정보만 남겨주시면 영업시간 내 담당자가 연락드립니다.</p>
-      <a href="contact.html" class="btn">상담 신청</a>
-    </div>
-  </main>
+<!-- Hero: v0.1 원본 문구·배치 그대로 + 5초 슬라이드(어둡게 처리 없음) -->
+<div class="hero" id="top">
+  <div class="slide on" style="background-image:url('홈페이지_사진/메인1_워크숍.jpg')"></div>
+  <div class="slide" style="background-image:url('홈페이지_사진/메인2_수학여행.jpg')"></div>
+  <div class="slide" style="background-image:url('홈페이지_사진/메인3_기공식.jpg')"></div>
+  <div class="slide" style="background-image:url('홈페이지_사진/메인4_체육대회.jpg')"></div>
+  <div class="slide" id="slide-concert" style="background:linear-gradient(135deg,#3E6ED8,#6C9BEA)"></div>
+  <div class="wrap">
+    <h1>행사 전문 여행사,<br>기획부터 운영까지 리얼플랜제주</h1>
+    <p>워크숍·수학여행·단체여행 · 기공식·체육대회·콘서트 — "고객에게 맞는 맞춤형 계획"을 현장 경험으로 완성합니다.</p>
+    <a class="hero-cta" href="#contact">📝 무료 견적문의</a>
+  </div>
+  <div class="dots" id="dots"></div>
+</div>
 
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <div class="company-name">리얼플랜제주 주식회사 (Real Plan Jeju Co., Ltd.)</div>
-      <div>
-        공동대표 이동환·김현숙 &nbsp;|&nbsp; 사업자등록번호 819-87-02344 &nbsp;|&nbsp; 법인등록번호 220111-0227223<br>
-        본점: 제주특별자치도 제주시 제원1길 5 (연동) &nbsp;|&nbsp; 이메일 realplan01@naver.com<br>
-        개인정보보호책임자: 이동환
+<!-- 국내여행 -->
+<section id="tour"><div class="wrap">
+  <div class="sec-h"><div class="eng">DOMESTIC TRAVEL</div><h2>국내여행</h2><p>대한민국 전 지역 단체여행 대행 — 항공·숙박·식사·관광·교통 ONE-STOP</p></div>
+  <div class="cat-grid">
+    <div class="cat"><div class="thumb" style="background-image:url('홈페이지_사진/여행1_워크숍.jpg')"></div>
+      <div class="body"><h3>워크숍 / 세미나 / 포럼</h3><p>기업/관공서/공기업 단체 워크샵 여행 대행</p></div></div>
+    <div class="cat"><div class="thumb" style="background-image:url('홈페이지_사진/여행2_수학여행.jpg')"></div>
+      <div class="body"><h3>수학여행</h3><p>초/중/고등학교 단체 수학여행 대행</p></div></div>
+    <div class="cat"><div class="thumb" style="background-image:url('홈페이지_사진/여행3_가족여행.jpg')"></div>
+      <div class="body"><h3>동호회 / 가족여행</h3><p>각종 동호회 및 가족 단체여행 대행</p></div></div>
+  </div>
+  <div class="vids">
+    <a class="vid" href="https://youtube.com/shorts/fN7pTm30TRA" target="_blank"><span class="vthumb" style="background-image:url('https://i.ytimg.com/vi/fN7pTm30TRA/hqdefault.jpg')"><span class="play"></span></span><div class="cap">오니츠카타이거 워크샵 단체 여행 대행</div></a>
+    <a class="vid" href="https://youtube.com/shorts/fwi3OzjOJvk" target="_blank"><span class="vthumb" style="background-image:url('https://i.ytimg.com/vi/fwi3OzjOJvk/hqdefault.jpg')"><span class="play"></span></span><div class="cap">대부초등학교 단체 수학여행 대행</div></a>
+    <a class="vid" href="https://youtube.com/shorts/WE5uB2EpBRk" target="_blank"><span class="vthumb" style="background-image:url('https://i.ytimg.com/vi/WE5uB2EpBRk/hqdefault.jpg')"><span class="play"></span></span><div class="cap">창녕군 농업기술센터 워크샵 단체 여행 대행</div></a>
+  </div>
+</div></section>
+
+<!-- 행사이벤트 -->
+<section id="event" class="alt-bg"><div class="wrap">
+  <div class="sec-h"><div class="eng">EVENT</div><h2>행사이벤트</h2><p>19년 행사 운영 노하우 — 기획·홍보·공연·시스템·인력 ONE-STOP 토탈 서비스</p></div>
+  <div class="cat-grid">
+    <div class="cat"><div class="thumb" style="background-image:url('홈페이지_사진/행사1_기업행사.jpg')"></div>
+      <div class="body"><h3>기업행사</h3><p>기공식/착공식/준공식/기념식 각종 기업행사 이벤트대행</p></div></div>
+    <div class="cat"><div class="thumb" style="background-image:url('홈페이지_사진/행사2_체육대회.jpg')"></div>
+      <div class="body"><h3>체육대회</h3><p>소/대규모 체육대회 행사이벤트대행</p></div></div>
+    <div class="cat"><div class="thumb ph" id="thumb-concert" style="background:linear-gradient(135deg,#3E6ED8,#6C9BEA)">콘서트 · 축제</div>
+      <div class="body"><h3>콘서트 / 축제</h3><p>행사 기획부터 운영까지 행사이벤트 대행</p></div></div>
+  </div>
+  <div class="vids">
+    <a class="vid" href="https://youtube.com/shorts/N5Y4BuxlNSk" target="_blank"><span class="vthumb" style="background-image:url('https://i.ytimg.com/vi/N5Y4BuxlNSk/hqdefault.jpg')"><span class="play"></span></span><div class="cap">전기공사공제조합 제주지점 신사옥 건립 기공식 대행</div></a>
+    <a class="vid" href="https://youtube.com/shorts/kZZ9gtHZr28" target="_blank"><span class="vthumb" style="background-image:url('https://i.ytimg.com/vi/kZZ9gtHZr28/hqdefault.jpg')"><span class="play"></span></span><div class="cap">인공위성 모형 기증식! 한림공업고등학교 행사 대행</div></a>
+    <a class="vid" href="https://youtube.com/shorts/KE94Ouitip8" target="_blank"><span class="vthumb" style="background-image:url('https://i.ytimg.com/vi/KE94Ouitip8/hqdefault.jpg')"><span class="play"></span></span><div class="cap">하추자도 여름 음악회 행사이벤트 대행</div></a>
+  </div>
+</div></section>
+
+<!-- 포트폴리오 — 실사례만 · 최신순 · 블로그 연동 -->
+<section id="pf"><div class="wrap">
+  <div class="sec-h"><div class="eng">PORTFOLIO</div><h2>포트폴리오</h2>
+  <p>실제 진행한 여행과 행사입니다 — 카드를 누르면 자세한 내용을 볼 수 있습니다</p></div>
+  <div class="pf-tabs">
+    <button class="pf-tab on" data-t="all">전체</button>
+    <button class="pf-tab" data-t="tour">국내여행</button>
+    <button class="pf-tab" data-t="event">행사이벤트</button>
+  </div>
+  <div class="pf-grid" id="pfGrid"></div>
+</div></section>
+
+<!-- 견적문의 — v0.1 원래 색상(네이비) 복귀 -->
+<section id="contact" class="contact"><div class="wrap">
+  <div class="sec-h"><div class="eng" style="color:#8fb4e8">CONTACT</div><h2>견적 문의</h2><p>제출 즉시 담당자 확인 — 영업일 기준 24시간 내 회신</p></div>
+  <div class="form-card">
+    <div class="frow" style="grid-template-columns:.6fr .8fr 1.2fr">
+      <div class="fld"><label>구분 *</label><select id="rpf-type"><option>학교</option><option>기업</option><option>단체</option><option>개인</option></select></div>
+      <div class="fld"><label>사업부 *</label><select id="rpf-dept"><option>국내여행</option><option>행사이벤트</option></select></div>
+      <div class="fld"><label>회사/단체명 *</label><input id="rpf-org" placeholder="예: ○○초등학교 / ○○주식회사"></div>
+    </div>
+    <div class="frow">
+      <div class="fld"><label>담당자명 *</label><input id="rpf-name"></div>
+      <div class="fld"><label>연락처 *</label><input id="rpf-tel" placeholder="010-0000-0000"></div>
+    </div>
+    <div class="frow">
+      <div class="fld"><label>이메일</label><input id="rpf-email"></div>
+      <div class="fld"><label>행사·여행 예정일 / 인원</label><input id="rpf-when" placeholder="예: 9월 중순, 120명 (일정 조율 가능)"></div>
+    </div>
+    <div class="frow">
+      <div class="fld"><label>희망 지역</label><input id="rpf-area" placeholder="예: 제주 / 부산 / 강원"></div>
+      <div class="fld"><label>예산 (선택)</label><input id="rpf-budget" placeholder="예: 1인 15만원 내외"></div>
+    </div>
+    <div class="frow one">
+      <div class="fld"><label>요청 내용</label><textarea id="rpf-msg" rows="4" placeholder="목적·구성·특이사항을 적어주시면 딱 맞는 플랜으로 답하겠습니다."></textarea></div>
+    </div>
+    <div class="agree">
+      <label><input type="checkbox" id="rpf-ag1"> (필수) 개인정보 수집·이용 동의 — 견적 상담 목적</label><br>
+      <label><input type="checkbox" id="rpf-ag2"> (선택) 행사·여행 소식 등 마케팅 정보 수신 동의</label>
+    </div>
+    <button class="btn" id="rpf-btn" onclick="rpSubmitInquiry()">견적 문의 제출</button>
+  </div>
+</div></section>
+
+<!-- 회사소개 — 탭형(회사정보·조직도·오시는 길) · 회사소개서(2025.10) 원문 기준 -->
+<section id="about" class="alt-bg"><div class="wrap">
+  <div class="ab-head">
+    <h2>리얼플랜제주의<br>기업 정보와 <em>주요 사업</em>을 확인해보세요.</h2>
+    <div class="ab-tabs">
+      <button class="ab-tab on" data-p="p-info">회사정보</button>
+      <button class="ab-tab" data-p="p-org">조직도</button>
+      <button class="ab-tab" data-p="p-map">오시는 길</button>
+    </div>
+  </div>
+
+  <div class="ab-pane on" id="p-info">
+    <div class="ci-grid">
+      <div class="ci-logo">
+        <div class="big">REALPLAN<span>JEJU</span></div>
+        <small>리얼플랜제주 주식회사</small>
       </div>
-      <div class="footer-links">
-        <a href="contact.html">문의</a>
-        <a href="privacy.html">개인정보처리방침</a>
-      </div>
-      <div style="margin-top:10px; opacity:0.55; font-size:11.5px;">
-        © 2026 Real Plan Jeju Co., Ltd. All rights reserved.
+      <div class="ci-txt">
+        <p class="lead">단체·기업을 위한 관광+MICE — 항공·숙박·식사·관광·교통·워크샵·세미나·행사를 ONE-STOP으로 운영합니다.
+        19년 행사 운영 노하우로 기획·홍보·공연·시스템·인력까지, 도내 소상공인·관공서·공기업과의 협업 경험을 바탕으로
+        고객에게 딱 맞는 맞춤형 계획을 실행하는 여행·행사 전문 기업입니다.</p>
+        <div class="ci-row"><div class="pill">회사명</div><div class="val">리얼플랜제주 주식회사</div></div>
+        <div class="ci-row"><div class="pill">설립일</div><div class="val">2021년 09월 15일</div></div>
+        <div class="ci-row"><div class="pill">대표자</div><div class="val">이동환 · 김현숙 (공동대표)</div></div>
+        <div class="ci-row"><div class="pill">자본금</div><div class="val">금 100,000,000원 (일억 원)</div></div>
+        <div class="ci-row"><div class="pill">주요사업</div><div class="val">국내여행 / 행사 기획 및 대행 / 마케팅 대행 / 콘텐츠 기획 및 디자인</div></div>
+        <button class="deck-btn" style="margin:18px 0 0" onclick="lb=1;lbShow()">📕 회사소개서 원문 보기 (27p)</button>
       </div>
     </div>
-  </footer>
+  </div>
+
+  <div class="ab-pane" id="p-org">
+    <div class="org-wrap">
+      <div class="org-ceo">공동대표</div>
+      <div class="org-line"></div>
+      <div class="org-cols">
+        <div class="org-col">
+          <div class="hd blue">여행사업부</div>
+          <div class="it first">국내여행 총괄</div>
+          <div class="it">수학여행 · 체험학습</div>
+          <div class="it">기업 워크숍 · 연수</div>
+          <div class="it">동호회 · 가족여행</div>
+        </div>
+        <div class="org-col">
+          <div class="hd blue">기획사업부</div>
+          <div class="it first">행사 · 이벤트 총괄</div>
+          <div class="it">기공식 · 준공식 · 기념식</div>
+          <div class="it">체육대회 · 콘서트 · 축제</div>
+          <div class="it">콘텐츠 기획</div>
+        </div>
+        <div class="org-col">
+          <div class="hd">마케팅사업부</div>
+          <div class="it first">온라인 마케팅</div>
+          <div class="it">블로그 · SNS 운영</div>
+          <div class="it">오프라인 홍보</div>
+          <div class="it">콘텐츠 제작</div>
+        </div>
+        <div class="org-col">
+          <div class="hd">경영지원</div>
+          <div class="it first">경영 지원 총괄</div>
+          <div class="it">법률 · 계약</div>
+          <div class="it">회계 · 정산</div>
+          <div class="it">총무</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ab-pane" id="p-map">
+    <div class="map-grid">
+      <div class="map-box" style="position:relative">
+        <iframe src="https://www.openstreetmap.org/export/embed.html?bbox=126.48387%2C33.48620%2C126.49387%2C33.49220&layer=mapnik&marker=33.4892022%2C126.4888743" loading="lazy" title="오시는 길 지도"></iframe>
+        <a href="https://map.naver.com/p/search/%EB%A6%AC%EC%96%BC%ED%94%8C%EB%9E%9C%EC%A0%9C%EC%A3%BC" target="_blank" style="position:absolute;left:14px;bottom:14px;background:#03C75A;color:#fff;border-radius:10px;padding:12px 20px;font-size:14px;font-weight:900;box-shadow:0 4px 14px rgba(0,0,0,.25)">N 네이버 지도에서 길찾기 →</a>
+      </div>
+      <div class="map-info">
+        <h4>직접 방문하거나 온라인 미팅으로 안내받으세요</h4>
+        <div class="ci-row"><div class="pill">주소</div><div class="val">제주특별자치도 제주시 제원1길 5 블루아일랜드</div></div>
+        <div class="ci-row"><div class="pill">대표번호</div><div class="val">1577-2296</div></div>
+        <div class="ci-row"><div class="pill">이메일</div><div class="val">realplan01@naver.com</div></div>
+        <div class="ci-row"><div class="pill">카카오톡</div><div class="val">@리얼플랜제주 (pf.kakao.com/_ghjYK)</div></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+
+<div class="rp-modal" id="m-privacy"><div class="mbox">
+  <div class="mh"><b>개인정보처리방침</b><button onclick="closeModal('m-privacy')">닫기 ✕</button></div>
+  <div class="mb">
+    <p>리얼플랜제주 주식회사(이하 "회사")는 「개인정보 보호법」 제30조에 따라 이용자의 개인정보를 보호하고 관련 고충을 신속히 처리하기 위하여 다음과 같이 개인정보처리방침을 수립·공개합니다.</p>
+    <h5>1. 수집하는 개인정보 항목 및 수집 목적</h5>
+    <table>
+      <tr><th>구분</th><th>수집 항목</th><th>목적</th></tr>
+      <tr><td>견적 문의(필수)</td><td>회사/단체명, 담당자명, 연락처, 이메일, 행사·여행 예정일, 희망 지역, 예산, 요청 내용</td><td>여행·행사 견적 상담 및 회신</td></tr>
+      <tr><td>마케팅(선택)</td><td>연락처, 이메일</td><td>행사·여행 소식 등 마케팅 정보 발송 (동의 시)</td></tr>
+    </table>
+    <h5>2. 보유 및 이용 기간</h5>
+    <p>문의 처리 완료 후 <b>3년</b>간 보관 후 지체 없이 파기합니다. 단, 관계 법령에 따라 보존할 필요가 있는 경우 해당 법령에서 정한 기간 동안 보관합니다. 마케팅 정보 수신 동의는 동의 철회 시 즉시 발송을 중단합니다.</p>
+    <h5>3. 개인정보의 제3자 제공</h5>
+    <p>회사는 이용자의 개인정보를 원칙적으로 제3자에게 제공하지 않습니다. 다만 여행·행사 계약 진행 시 예약 이행을 위해 필요한 최소한의 정보(성명, 연락처 등)를 항공사·숙박시설·차량업체 등에 제공할 수 있으며, 이 경우 사전에 고지하고 동의를 받습니다.</p>
+    <h5>4. 개인정보 처리의 위탁</h5>
+    <p>회사는 서비스 운영을 위해 데이터 보관·관리 업무를 클라우드 서비스(Supabase Inc.)에 위탁하고 있으며, 위탁계약 시 개인정보 보호 관련 법규 준수를 명시하고 있습니다.</p>
+    <h5>5. 정보주체의 권리</h5>
+    <p>이용자는 언제든지 본인의 개인정보에 대한 열람·정정·삭제·처리정지를 요구할 수 있습니다. 요청은 대표번호(1577-2296) 또는 이메일(realplan01@naver.com)로 가능하며, 회사는 지체 없이 조치합니다.</p>
+    <h5>6. 개인정보의 파기</h5>
+    <p>보유 기간이 경과하거나 처리 목적이 달성된 개인정보는 전자적 파일은 복구 불가능한 방법으로 삭제하고, 종이 문서는 분쇄 또는 소각하여 파기합니다.</p>
+    <h5>7. 개인정보 보호책임자</h5>
+    <table>
+      <tr><th>보호책임자</th><td>이동환 (공동대표)</td></tr>
+      <tr><th>연락처</th><td>1577-2296 / realplan01@naver.com</td></tr>
+    </table>
+    <h5>8. 안전성 확보 조치</h5>
+    <p>회사는 개인정보의 안전한 처리를 위하여 접근 권한 관리, 접속기록 보관, 데이터 암호화 등 필요한 기술적·관리적 조치를 시행합니다.</p>
+    <h5>9. 시행일</h5>
+    <p>본 방침은 2026년 7월 2일부터 시행합니다.</p>
+  </div>
+</div></div>
+
+<div class="rp-modal" id="m-terms"><div class="mbox">
+  <div class="mh"><b>이용약관</b><button onclick="closeModal('m-terms')">닫기 ✕</button></div>
+  <div class="mb">
+    <h5>제1조 (목적)</h5>
+    <p>본 약관은 리얼플랜제주 주식회사(이하 "회사")가 운영하는 홈페이지에서 제공하는 서비스의 이용 조건 및 절차, 회사와 이용자의 권리·의무를 규정함을 목적으로 합니다.</p>
+    <h5>제2조 (서비스의 내용)</h5>
+    <p>회사는 홈페이지를 통해 다음 서비스를 제공합니다: ① 국내여행·행사이벤트 서비스 소개 ② 포트폴리오(진행 사례) 열람 ③ 견적 문의 접수 및 상담 연결. 홈페이지에서는 결제가 이루어지지 않으며, 여행·행사 계약은 상담 후 개별 계약으로 체결됩니다.</p>
+    <h5>제3조 (여행계약 및 표준약관)</h5>
+    <p>여행상품 계약 체결 시에는 문화체육관광부 고시 <b>국내여행 표준약관</b> 및 개별 여행계약서를 적용하며, 회사는 계약 체결 전 계약 내용과 약관을 설명하고 교부합니다.</p>
+    <h5>제4조 (지식재산권)</h5>
+    <p>홈페이지에 게시된 사진, 글, 디자인 등 모든 콘텐츠의 저작권은 회사에 있으며, 사전 동의 없는 무단 복제·배포·전송을 금지합니다.</p>
+    <h5>제5조 (개인정보 보호)</h5>
+    <p>회사는 이용자의 개인정보를 개인정보처리방침에 따라 보호합니다.</p>
+    <h5>제6조 (면책)</h5>
+    <p>회사는 천재지변, 통신 장애 등 불가항력으로 인한 서비스 중단에 대해 책임을 지지 않습니다. 홈페이지에 게시된 정보는 참고용이며, 확정 조건은 개별 견적·계약서를 기준으로 합니다.</p>
+    <h5>제7조 (분쟁 해결)</h5>
+    <p>서비스 이용과 관련한 분쟁은 상호 협의로 해결하며, 협의가 이루어지지 않을 경우 회사 소재지를 관할하는 법원을 관할 법원으로 합니다.</p>
+    <h5>부칙</h5>
+    <p>본 약관은 2026년 7월 2일부터 시행합니다.</p>
+  </div>
+</div></div>
+
+<div id="lightbox">
+  <img id="lbImg" src="" alt="회사소개서">
+  <div class="lb-nav">
+    <button onclick="lbMove(-1)">◀ 이전</button>
+    <span id="lbNum"></span>
+    <button onclick="document.getElementById('lightbox').style.display='none'">닫기 ✕</button>
+    <button onclick="lbMove(1)">다음 ▶</button>
+  </div>
+</div>
+
+<!-- 플로팅 사이드바 — 크게 -->
+<div id="side">
+  <a class="quote" href="#contact"><span>📝</span>무료<br>견적문의</a>
+  <a class="kakao" href="http://pf.kakao.com/_ghjYK" target="_blank"><span>💬</span>카카오톡<br>상담</a>
+</div>
+<div id="side-tip">1분이면 견적 문의 완료!</div>
+<div id="mbar"><a class="quote" href="#contact">📝 무료 견적문의</a><a class="kakao" href="http://pf.kakao.com/_ghjYK" target="_blank">💬 카카오톡 상담</a></div>
+
+<footer><div class="wrap">
+  <div class="cols">
+    <div>
+      <b>리얼플랜제주 주식회사</b><br>
+      공동대표 이동환 · 김현숙<br>
+      사업자등록번호 819-87-02344<br>
+      통신판매업신고 제2021-제주연동-0235호<br>
+      관광사업등록(국내여행업) 제2023-05호<br>
+      제주특별자치도 제주시 제원1길 5 블루아일랜드
+    </div>
+    <div>
+      <b>고객센터</b><br>
+      대표번호 1577-2296<br>
+      이메일 realplan01@naver.com<br>
+      카카오톡 채널 @리얼플랜제주
+    </div>
+    <div>
+      <b>바로가기</b><br>
+      <a href="#tour">국내여행</a><br>
+      <a href="#event">행사이벤트</a><br>
+      <a href="#pf">포트폴리오</a><br>
+      <a href="#about">회사소개</a>
+    </div>
+    <div>
+      <b>약관</b><br>
+      <a href="#" onclick="openModal('m-privacy');return false">개인정보처리방침</a><br>
+      <a href="#" onclick="openModal('m-terms');return false">이용약관</a>
+    </div>
+  </div>
+  <div class="admin">ⓒ 2026 REALPLANJEJU Co., Ltd. All rights reserved. · <a href="https://realplanjeju.com/admin/marketing.html" target="_blank">관리자</a></div>
+</div></footer>
+
+</div><!-- /rp-root -->
+
+<script>
+function rpInitSite(){
+
+/* Hero 슬라이더 — 5초 */
+var slides=document.querySelectorAll('.slide'),dots=document.getElementById('dots'),cur=0,timer;
+if(window.__rpT){clearInterval(window.__rpT);}
+dots.innerHTML='';
+slides.forEach(function(_,i){var d=document.createElement('div');d.className='dot'+(i===0?' on':'');d.onclick=function(){go(i);reset();};dots.appendChild(d);});
+function go(i){slides[cur].classList.remove('on');dots.children[cur].classList.remove('on');cur=i;slides[cur].classList.add('on');dots.children[cur].classList.add('on');}
+function next(){go((cur+1)%slides.length);}
+function reset(){clearInterval(timer);clearInterval(window.__rpT);timer=window.__rpT=setInterval(next,5000);}
+reset();
+
+/* 포트폴리오 — mk_portfolio 실사례 · 최신순 (2026-07-02 DB 실측) */
+var PF=[
+ {t:'event',when:'2026.05',name:'노무법인 더보상 기업 체육대회 (한림 실내체육관)',sum:'임직원 200명+ 실내 체육대회 — 종목·MC·음향·안전관리 토탈 운영',url:'https://blog.naver.com/realplan_event/224295937310',img:'홈페이지_사진/포트폴리오_더보상.jpg'},
+ {t:'tour', when:'2026.05',name:'안성중학교 제주 수학여행 3박4일',sum:'43명(학생 36+교사 7) — 청주↔제주 항공, 교육 코스 구성',url:'https://blog.naver.com/realplan_travel/224297556399',img:'홈페이지_사진/포트폴리오_안성중.jpg'},
+ {t:'tour', when:'2026.04',name:'봉래초등학교 제주 수학여행 3박4일',sum:'진주 봉래초 6학년 37명 — 항공·숙박·일정·정산까지 직접계약 진행',url:'https://blog.naver.com/realplan_travel/224253087905',img:'홈페이지_사진/포트폴리오_봉래초.jpg'},
+ {t:'event',when:'2026.03',name:'초록우산 제주후원회 회장 취임식',sum:'메종글래드 제주 컨벤션홀 — 의전·식순·무대 운영',url:'https://blog.naver.com/realplan_event/224250053353',img:'홈페이지_사진/포트폴리오_초록우산.jpg'},
+ {t:'tour', when:'2026',   name:'지천초등학교 제주 수학여행',sum:'제주 수학여행 실제 진행 사례 — 일정·안전·식사 토탈',url:'https://blog.naver.com/realplan_travel/224273729704',img:'홈페이지_사진/포트폴리오_지천초.jpg'},
+ {t:'event',when:'2025',   name:'한국국제교류재단 워크숍+체육대회',sum:'전문 인력·음향·스텝·기획 종합 수행',url:null,img:'홈페이지_사진/포트폴리오_한국국제교류재단.jpg'},
+ {t:'tour', when:'2025',   name:'더 베스트 금융서비스 부산사업단 워크샵',sum:'10주년 제주 연수 — 기획·팀빌딩·음향조명·영상기록·결과보고',url:'https://blog.naver.com/realplan_travel/224101912566',img:'홈페이지_사진/포트폴리오_부산사업단.jpg'},
+ {t:'event',when:'2025',   name:'웨이브제주 호텔&리조트 그랜드오픈',sum:'호텔 그랜드오픈 행사 토탈 대행',url:null,img:null}
+];
+var g=document.getElementById('pfGrid');
+g.innerHTML='';
+PF.forEach(function(p){
+  var el=document.createElement(p.url?'a':'div');el.className='pfc show';el.dataset.t=p.t;
+  if(p.url){el.href=p.url;el.target='_blank';}
+  var col=p.t==='tour'?'linear-gradient(135deg,#4A85F6,#7FB2F0)':'linear-gradient(135deg,#2B62C4,#5B8DEF)';
+  var head=p.img?'<div class="tb" style="background-image:url(\''+p.img.replace(/'/g,"\\'")+'\');background-size:cover;background-position:center;height:150px"></div>'
+               :'<div class="tb" style="background:'+col+'">'+p.name+'</div>';
+  el.innerHTML=head
+    +'<div class="bd"><div class="date">'+p.when+' · '+(p.t==='tour'?'국내여행':'행사이벤트')
+    +(p.url?' <span style="background:#03C75A;color:#fff;border-radius:4px;padding:1px 5px;font-size:10px;font-weight:900">N 블로그</span>':'')+'</div>'
+    +(p.img?'<h4>'+p.name+'</h4>':'')
+    +'<p>'+p.sum+'</p>'
+    +'<div class="go">'+(p.url?'네이버 블로그 사례 글 보기 →':'상담 시 상세 자료 제공')+'</div></div>';
+  g.appendChild(el);
+});
+document.querySelectorAll('.pf-tab').forEach(function(b){
+  b.onclick=function(){
+    document.querySelectorAll('.pf-tab').forEach(function(x){x.classList.remove('on');});b.classList.add('on');
+    document.querySelectorAll('.pfc').forEach(function(c){c.classList.toggle('show', b.dataset.t==='all'||c.dataset.t===b.dataset.t);});
+  };
+});
+
+/* 콘서트 사진 자동 적용 */
+(function(){var im=new Image();im.onload=function(){
+  var sl=document.getElementById('slide-concert');if(sl){sl.style.background='';sl.style.backgroundImage="url('홈페이지_사진/메인5_콘서트.jpg')";sl.style.backgroundSize='cover';sl.style.backgroundPosition='center';var p=sl.querySelector('.ph');if(p)p.remove();}
+};im.src='홈페이지_사진/메인5_콘서트.jpg';
+var im2=new Image();im2.onload=function(){
+  var t=document.getElementById('thumb-concert');if(t){t.classList.remove('ph');t.textContent='';t.style.background='';t.style.backgroundImage="url('홈페이지_사진/행사3_콘서트축제.jpg')";t.style.backgroundSize='cover';t.style.backgroundPosition='center';}
+};im2.src='홈페이지_사진/행사3_콘서트축제.jpg';})();
+
+/* 약관 모달 */
+function openModal(id){document.getElementById(id).style.display='flex';}
+function closeModal(id){document.getElementById(id).style.display='none';}
+document.querySelectorAll('.rp-modal').forEach(function(m){m.onclick=function(e){if(e.target===m)m.style.display='none';};});
+
+/* 회사소개 탭 */
+document.querySelectorAll('.ab-tab').forEach(function(b){
+  b.onclick=function(){
+    document.querySelectorAll('.ab-tab').forEach(function(x){x.classList.remove('on');});b.classList.add('on');
+    document.querySelectorAll('.ab-pane').forEach(function(p){p.classList.toggle('on',p.id===b.dataset.p);});
+  };
+});
+
+/* 회사소개서 원문 뷰어 */
+window.N=27;window.lb=1;
+window.lbShow=function(){document.getElementById('lbImg').src='소개서_미리보기/소개서-'+String(lb).padStart(2,'0')+'.jpg';document.getElementById('lbNum').textContent=lb+' / '+N;document.getElementById('lightbox').style.display='flex';}
+window.lbMove=function(d){lb=((lb-1+d+N)%N)+1;lbShow();};
+
+window.openModal=openModal;window.closeModal=closeModal;
+}
+window.rpInitSite=rpInitSite;
+rpInitSite();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script id="rp-site-core">
+/* ===== RP 사이트 코어 v1.0 (2026-07-03) — 라이브 콘텐츠·방문로그·편집 게이트 ===== */
+(function(){
+var SITE='A';
+var SB_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZGZxbGtlaXd4eXVvandjb3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMzIxOTcsImV4cCI6MjA5MjYwODE5N30.S3VrHMcrrr0m74dsMnb3jMzaxBjoFpOnUts2XINbpq0';
+var sb=null;
+try{sb=window.supabase.createClient(SB_URL,SB_KEY);}catch(e){}
+window.__rpSb=sb; window.__rpSite=SITE;
+
+function wantEdit(){return /rpedit/.test(location.hash)||/[?&]edit\b/.test(location.search);}
+
+/* 1) 저장된 라이브 콘텐츠 주입 (편집 저장분이 있으면 원본 대신 표시) */
+async function loadContent(){
+  if(!sb)return;
+  try{
+    var r=await sb.rpc('rpc_web_get_content',{p_사이트:SITE});
+    if(r.data){document.getElementById('rp-root').innerHTML=r.data;if(window.rpInitSite)window.rpInitSite();}
+  }catch(e){}
+}
+/* 2) 방문 로그 — IP 미저장·실도메인에서만·편집 모드 제외 */
+function logVisit(){
+  try{
+    if(!sb||wantEdit())return;
+    if(!/realplanjeju\.com$/.test(location.hostname))return;
+    var sid=null;
+    try{sid=sessionStorage.getItem('rp_sid');if(!sid){sid=Math.random().toString(36).slice(2)+Date.now().toString(36);sessionStorage.setItem('rp_sid',sid);}}catch(e){}
+    var q=new URLSearchParams(location.search),utm={};
+    ['utm_source','utm_medium','utm_campaign','utm_content'].forEach(function(k){var v=q.get(k);if(v)utm[k]=v;});
+    sb.rpc('rpc_web_log_visit',{p_사이트:SITE,p_페이지:location.pathname,p_referrer:(document.referrer||'').split('?')[0],p_utm:utm,p_디바이스:matchMedia('(max-width:900px)').matches?'mobile':'pc',p_세션:sid});
+  }catch(e){}
+}
+/* 3) 편집 모드 게이트 — owner/manager만 */
+async function bootEditor(){
+  if(!sb||!wantEdit())return;
+  if(matchMedia('(max-width:900px)').matches){alert('사이트 편집은 PC에서 이용해주세요.');return;}
+  var m=location.hash.match(/access=([^&]+)&refresh=([^&]+)/);
+  if(m){
+    try{await sb.auth.setSession({access_token:decodeURIComponent(m[1]),refresh_token:decodeURIComponent(m[2])});history.replaceState(null,'','#rpedit');}catch(e){}
+  }
+  var s=await sb.auth.getSession();
+  if(!s.data.session){rpShowLogin();return;}
+  var role=await sb.rpc('rpc_web_my_role');
+  if(role.data==='owner'||role.data==='manager'){window.__rpStartEditor();}
+  else alert('편집 권한이 없습니다. 관리자에게 문의하세요.');
+}
+window.__rpBootEditor=bootEditor;
+/* 로그인 모달 */
+function rpShowLogin(){
+  if(document.getElementById('rp-login'))return;
+  var d=document.createElement('div');d.id='rp-login';
+  d.innerHTML='<div class="bx"><b>사이트 편집 로그인</b>'
+    +'<input id="rpl-email" type="email" placeholder="이메일" autocomplete="username">'
+    +'<input id="rpl-pw" type="password" placeholder="비밀번호" autocomplete="current-password">'
+    +'<button id="rpl-go">로그인</button><div id="rpl-msg"></div></div>';
+  document.body.appendChild(d);
+  document.getElementById('rpl-go').onclick=async function(){
+    var msg=document.getElementById('rpl-msg');msg.textContent='확인 중…';
+    var r=await sb.auth.signInWithPassword({email:document.getElementById('rpl-email').value.trim(),password:document.getElementById('rpl-pw').value});
+    if(r.error){msg.textContent='로그인 실패: 이메일·비밀번호를 확인해주세요.';return;}
+    d.remove();bootEditor();
+  };
+}
+
+/* 4) 견적문의 → 고객DB (submit_inquiry) — 유입경로 자동 연계 */
+try{
+  if(!sessionStorage.getItem('rp_src0')){
+    var q0=new URLSearchParams(location.search);
+    var ref0=(document.referrer||'');
+    var s0=q0.get('utm_source')||'';
+    if(!s0){s0=ref0.indexOf('blog.naver.com')>-1?'naver_blog':ref0.indexOf('tistory.com')>-1?'tistory':ref0.indexOf('search.naver.com')>-1?'naver_search':ref0.indexOf('google.')>-1?'google':ref0.indexOf('instagram.com')>-1?'instagram':ref0.indexOf('youtube')>-1?'youtube':ref0?'etc':'direct';}
+    sessionStorage.setItem('rp_src0',JSON.stringify({src:s0,content:q0.get('utm_content')||''}));
+  }
+}catch(e){}
+window.rpSubmitInquiry=async function(){
+  var $=function(id){return document.getElementById(id);};
+  var btn=$('rpf-btn');
+  var dept=$('rpf-dept').value,org=$('rpf-org').value.trim(),name=$('rpf-name').value.trim(),tel=$('rpf-tel').value.trim();
+  if(!dept||!org||!name||!tel){alert('사업부·회사/단체명·담당자명·연락처는 필수입니다.');return;}
+  if(!$('rpf-ag1').checked){alert('(필수) 개인정보 수집·이용 동의에 체크해주세요.');return;}
+  if(!sb){alert('일시적인 오류입니다. 카카오톡 상담으로 문의 부탁드립니다.');return;}
+  var extra=($('rpf-when')?$('rpf-when').value.trim():'');
+  var msg=($('rpf-msg')?$('rpf-msg').value.trim():'');
+  var req=(extra?'[예정일·인원] '+extra+'\n':'')+msg;
+  var src='direct';
+  try{var t0=JSON.parse(sessionStorage.getItem('rp_src0')||'{}');src=(t0.src||'direct')+(t0.content?' · '+t0.content:'');}catch(e){}
+  btn.disabled=true;btn.textContent='접수 중…';
+  var r=await sb.rpc('submit_inquiry',{p_구분:document.getElementById('rpf-type').value,p_사업부:dept,p_회사명:org,p_담당자명:name,p_연락처:tel,
+    p_이메일:($('rpf-email')?$('rpf-email').value.trim():'')||null,p_시작일:null,p_종료일:null,p_일정조율가능:null,
+    p_희망지역:($('rpf-area')?$('rpf-area').value.trim():'')||null,p_예산:($('rpf-budget')?$('rpf-budget').value.trim():'')||null,
+    p_유입경로:'홈페이지'+SITE+'('+src+')',p_요청사항:req||null,
+    p_동의_콘텐츠:$('rpf-ag1').checked,p_동의_마케팅:$('rpf-ag2').checked});
+  btn.disabled=false;btn.textContent='견적 문의 제출';
+  if(r.error){alert('접수 중 오류가 발생했습니다. 카카오톡 상담으로 문의 부탁드립니다.');return;}
+  alert('문의가 접수되었습니다. 접수번호: '+r.data+'\n영업일 기준 24시간 내 회신드리겠습니다.');
+  ['rpf-org','rpf-name','rpf-tel','rpf-email','rpf-when','rpf-area','rpf-budget','rpf-msg'].forEach(function(i){var el=$(i);if(el)el.value='';});
+  $('rpf-ag1').checked=false;$('rpf-ag2').checked=false;
+};
+loadContent().then(function(){logVisit();bootEditor();});
+})();
+</script>
+<style id="rp-editor-css">
+#rp-login{position:fixed;inset:0;background:rgba(10,20,40,.6);z-index:99990;display:flex;align-items:center;justify-content:center}
+#rp-login .bx{background:#fff;border-radius:14px;padding:26px;width:320px;display:flex;flex-direction:column;gap:10px;font-family:'Noto Sans KR',sans-serif}
+#rp-login b{font-size:16px}
+#rp-login input{border:1px solid #ccd6e8;border-radius:8px;padding:11px 12px;font-size:14px}
+#rp-login button{border:0;border-radius:8px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;background:#4A85F6;color:#fff}
+#rp-login #rpl-msg{font-size:12.5px;color:#c0392b;min-height:16px}
+#rp-toolbar{position:fixed;top:12px;right:12px;z-index:99999;background:#15181e;color:#fff;border-radius:14px;padding:10px 12px;font-family:'Malgun Gothic',sans-serif;font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,.4);display:none;gap:6px;align-items:center;flex-wrap:wrap;max-width:400px}
+#rp-toolbar.on{display:flex}
+#rp-toolbar b{width:100%;font-size:12px;letter-spacing:.5px;opacity:.85}
+#rp-toolbar button{border:0;border-radius:8px;padding:8px 10px;font-size:12.5px;font-weight:700;cursor:pointer;background:#2b2f38;color:#fff;font-family:inherit}
+#rp-toolbar button.on{background:#0E7BD1}
+#rp-toolbar button.save{background:#1E6E5C}
+#rp-toolbar button.warn{background:#7a2d2d}
+#rp-status{width:100%;font-size:11.5px;line-height:1.5;color:#9fd1ff;min-height:16px}
+.rp-added{outline:2px dashed #0E7BD1;padding:10px;margin:10px 0;min-height:1.2em;font-size:16px}
+body.rp-edit .rp-editable:hover{outline:2px dashed #2FA3E8;outline-offset:2px}
+body.rp-photo #rp-root img:hover,body.rp-photo #rp-root [style*="background-image"]:hover,body.rp-photo #rp-root .slide:hover,body.rp-photo #rp-root .thumb:hover,body.rp-photo #rp-root .vthumb:hover,body.rp-photo #rp-root .tb:hover{outline:3px solid #E67E22;outline-offset:2px;cursor:copy}
+body.rp-block .rp-hover{outline:2px dashed #e0a13d;outline-offset:2px;cursor:grab}
+.rp-sel{outline:3px solid #F1573D!important;outline-offset:2px;cursor:grab!important}
+.rp-dragging{opacity:.45}
+.rp-drop-before{box-shadow:0 -4px 0 0 #0E7BD1!important}
+.rp-drop-after{box-shadow:0 4px 0 0 #0E7BD1!important}
+#rp-ctrl{position:absolute;z-index:99999;background:#15181e;border-radius:9px;padding:5px 6px;display:flex;gap:4px;box-shadow:0 4px 16px rgba(0,0,0,.4);font-family:'Malgun Gothic',sans-serif}
+#rp-ctrl button{border:0;border-radius:6px;padding:5px 9px;font-size:12px;font-weight:700;cursor:pointer;background:#2b2f38;color:#fff;font-family:inherit}
+#rp-ctrl button.del{background:#c0392b}
+@media print{#rp-toolbar,#rp-ctrl,#rp-login{display:none!important}}
+</style>
+<script id="rp-editor">
+/* ===== RP 사이트 편집기 v1.0 — 검수도구 개조: 글자수정·블록 이동삭제·사진 업로드·저장/복구 ===== */
+window.__rpStartEditor=function(){
+if(document.getElementById('rp-toolbar')){document.getElementById('rp-toolbar').classList.add('on');return;}
+var sb=window.__rpSb, SITE=window.__rpSite;
+var ROOT=document.getElementById('rp-root');
+var mode='view', insertArmed=false, selected=null, undoStack=[];
+var dragSrc=null, dragTarget=null, dragAfter=false, dragStart=null, dragging=false;
+function $(id){return document.getElementById(id);}
+
+var tb=document.createElement('div');tb.id='rp-toolbar';tb.className='on';
+tb.innerHTML='<b>✏️ 리얼플랜 사이트 편집기 — '+(SITE==='A'?'여행·행사':'마케팅·교육')+'</b>'
+ +'<button id="rp-m-view" class="on">👁 보기</button>'
+ +'<button id="rp-m-edit">✏️ 글자수정</button>'
+ +'<button id="rp-m-block">🧱 이동·삭제</button>'
+ +'<button id="rp-m-photo">🖼 사진교체</button>'
+ +'<button id="rp-add">➕ 문단</button>'
+ +'<button id="rp-undo">↩ 되돌리기</button>'
+ +'<button id="rp-save" class="save">💾 저장(라이브 반영)</button>'
+ +'<button id="rp-restore" class="warn">⏪ 이전판 복구</button>'
+ +'<button id="rp-exit">✕ 종료</button>'
+ +'<div id="rp-status">모드를 선택하세요. 저장을 눌러야 실제 사이트에 반영됩니다.</div>';
+document.body.appendChild(tb);
+var fileInput=document.createElement('input');fileInput.type='file';fileInput.accept='image/png,image/jpeg,image/webp,image/gif';fileInput.style.display='none';
+document.body.appendChild(fileInput);
+var photoTarget=null;
+
+function status(t){$('rp-status').textContent=t;}
+function isRp(el){return el.closest&&(el.closest('#rp-toolbar')||el.closest('#rp-ctrl')||el.closest('#rp-login'));}
+function editables(){return Array.prototype.slice.call(ROOT.children).filter(function(el){return !/^(SCRIPT|STYLE)$/.test(el.tagName);});}
+function clearSel(){
+  if(selected){selected.classList.remove('rp-sel');selected=null;}
+  var c=$('rp-ctrl');if(c)c.remove();
+  document.querySelectorAll('.rp-hover').forEach(function(x){x.classList.remove('rp-hover');});
+}
+function setMode(m){
+  mode=m;insertArmed=false;clearSel();
+  document.body.classList.toggle('rp-edit',m==='edit');
+  document.body.classList.toggle('rp-block',m==='block');
+  document.body.classList.toggle('rp-photo',m==='photo');
+  ['view','edit','block','photo'].forEach(function(x){var b=$('rp-m-'+x);if(b)b.classList.toggle('on',x===m);});
+  editables().forEach(function(el){
+    el.classList.add('rp-editable');
+    el.setAttribute('contenteditable', m==='edit'?'true':'false');
+    el.setAttribute('spellcheck','false');
+  });
+  if(m==='view')status('보기 모드 — 링크가 원래대로 동작합니다.');
+  if(m==='edit')status('글자수정 모드 — 화면 글자를 클릭해 바로 고치세요.');
+  if(m==='block')status('이동·삭제 모드 — 클릭=선택(한번 더=더 큰 블록), 드래그=이동, 🗑=삭제, Ctrl+Z=되돌리기.');
+  if(m==='photo')status('사진교체 모드 — 바꿀 사진을 클릭하면 내 컴퓨터에서 파일을 골라 바로 교체됩니다.');
+}
+function snapshot(){undoStack.push(ROOT.innerHTML);if(undoStack.length>40)undoStack.shift();}
+function undo(){
+  if(!undoStack.length){status('되돌릴 작업이 없습니다.');return;}
+  ROOT.innerHTML=undoStack.pop();
+  if(window.rpInitSite)window.rpInitSite();
+  selected=null;setMode(mode==='view'?'view':mode);
+  status('되돌렸습니다.');
+}
+var BLK='img,figure,li,tr,p,h1,h2,h3,h4,blockquote,table,button,article,header,footer,section,div';
+function blockOf(t){
+  if(!t.closest||isRp(t)||!ROOT.contains(t))return null;
+  var el=t.closest(BLK);
+  if(!el||el===ROOT||!ROOT.contains(el))return null;
+  return el;
+}
+function parentBlock(el){
+  var p=el.parentElement;
+  if(!p||p===ROOT)return null;
+  var pb=p.closest(BLK);
+  if(!pb||pb===ROOT)return null;
+  return pb;
+}
+function showCtrl(){
+  var c=$('rp-ctrl');if(c)c.remove();
+  if(!selected)return;
+  c=document.createElement('div');c.id='rp-ctrl';
+  c.innerHTML='<button data-rp="up">▲ 위로</button><button data-rp="down">▼ 아래로</button><button data-rp="parent">⬔ 더 크게</button><button data-rp="del" class="del">🗑 삭제</button><button data-rp="off">✕</button>';
+  document.body.appendChild(c);
+  var r=selected.getBoundingClientRect();
+  var top=r.top+window.scrollY-40;if(top<70)top=r.bottom+window.scrollY+8;
+  c.style.top=top+'px';c.style.left=Math.max(8,r.left+window.scrollX)+'px';
+  c.addEventListener('click',function(ev){
+    ev.stopPropagation();
+    var b=ev.target.getAttribute&&ev.target.getAttribute('data-rp');if(!b)return;
+    if(b==='off'){clearSel();return;}
+    if(!selected)return;
+    if(b==='del'){snapshot();var n=selected;clearSel();n.remove();status('블록 삭제됨 — ↩ 되돌리기 가능.');return;}
+    if(b==='parent'){var pb=parentBlock(selected);if(pb){selected.classList.remove('rp-sel');selected=pb;selected.classList.add('rp-sel');showCtrl();status('상위 블록 선택: <'+selected.tagName.toLowerCase()+'>');}else{status('더 큰 블록이 없습니다.');}return;}
+    if(b==='up'||b==='down'){
+      var sib=b==='up'?selected.previousElementSibling:selected.nextElementSibling;
+      while(sib&&/^(SCRIPT|STYLE)$/.test(sib.tagName))sib=b==='up'?sib.previousElementSibling:sib.nextElementSibling;
+      if(!sib){status(b==='up'?'맨 위입니다.':'맨 아래입니다.');return;}
+      snapshot();
+      if(b==='up')sib.parentNode.insertBefore(selected,sib);
+      else sib.parentNode.insertBefore(selected,sib.nextSibling);
+      showCtrl();selected.scrollIntoView({block:'center',behavior:'smooth'});
+      status('이동 완료 — ↩ 되돌리기 가능.');
+    }
+  });
+}
+function clearDropMarks(){document.querySelectorAll('.rp-drop-before,.rp-drop-after').forEach(function(x){x.classList.remove('rp-drop-before','rp-drop-after');});}
+
+/* 사진 업로드 교체 */
+function findPhotoEl(t){
+  var img=t.closest&&t.closest('img');if(img&&ROOT.contains(img))return {el:img,bg:false};
+  var n=t;
+  while(n&&n!==ROOT){
+    var bi=(n.style&&n.style.backgroundImage)||'';
+    if(!bi&&n instanceof Element)bi=getComputedStyle(n).backgroundImage;
+    if(bi&&bi!=='none'&&bi.indexOf('url(')>-1)return {el:n,bg:true};
+    n=n.parentElement;
+  }
+  return null;
+}
+fileInput.onchange=async function(){
+  var f=fileInput.files[0];fileInput.value='';
+  if(!f||!photoTarget)return;
+  if(f.size>10*1024*1024){alert('10MB 이하 이미지만 가능합니다.');return;}
+  status('사진 업로드 중…');
+  var ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+  var path=SITE+'/'+Date.now()+'.'+ext;
+  var up=await sb.storage.from('web-assets').upload(path,f,{contentType:f.type,upsert:true});
+  if(up.error){status('업로드 실패: '+up.error.message);alert('업로드 실패: '+up.error.message);return;}
+  var pub=sb.storage.from('web-assets').getPublicUrl(path);
+  var url=pub.data.publicUrl;
+  snapshot();
+  if(photoTarget.bg){photoTarget.el.style.backgroundImage="url('"+url+"')";photoTarget.el.style.backgroundSize='cover';photoTarget.el.style.backgroundPosition='center';var ph=photoTarget.el.querySelector&&photoTarget.el.querySelector('.ph');if(ph)ph.remove();}
+  else photoTarget.el.src=url;
+  photoTarget=null;
+  status('사진 교체 완료 — 💾 저장을 눌러야 실제 사이트에 반영됩니다.');
+};
+
+/* 전역 클릭 위임 */
+document.addEventListener('click',function(e){
+  var t=e.target;
+  if(isRp(t))return;
+  if(mode!=='view'){var a=t.closest&&t.closest('a');if(a)e.preventDefault();}
+  if(insertArmed){
+    e.preventDefault();e.stopPropagation();
+    var blk=t.closest&&t.closest('section,header,footer,div,p,h1,h2,h3,h4,li,td');
+    var np=document.createElement('p');np.className='rp-added';
+    np.setAttribute('contenteditable','true');np.textContent='여기에 새 문구를 입력하세요';
+    if(blk&&ROOT.contains(blk)&&blk.parentNode){blk.parentNode.insertBefore(np,blk.nextSibling);}else{ROOT.appendChild(np);}
+    insertArmed=false;setMode('edit');np.focus();
+    status('새 문단이 추가됐습니다. 내용을 입력하세요.');return;
+  }
+  if(mode==='photo'){
+    e.preventDefault();e.stopPropagation();
+    var pt=findPhotoEl(t);
+    if(!pt){status('여기는 사진 요소가 아닙니다. 사진을 클릭하세요.');return;}
+    photoTarget=pt;fileInput.click();return;
+  }
+  if(mode==='block'&&!dragging){
+    e.preventDefault();e.stopPropagation();
+    var bl=blockOf(t);if(!bl)return;
+    if(selected===bl){var pb=parentBlock(bl);if(pb){selected.classList.remove('rp-sel');selected=pb;selected.classList.add('rp-sel');}}
+    else{if(selected)selected.classList.remove('rp-sel');selected=bl;selected.classList.add('rp-sel');}
+    showCtrl();status('선택: <'+selected.tagName.toLowerCase()+'> — 드래그 이동 또는 버튼. 같은 곳 재클릭=더 큰 블록.');
+  }
+},true);
+
+/* 블록 드래그 */
+document.addEventListener('mouseover',function(e){
+  if(mode!=='block'||dragging)return;
+  document.querySelectorAll('.rp-hover').forEach(function(x){x.classList.remove('rp-hover');});
+  var bl=blockOf(e.target);if(bl&&bl!==selected)bl.classList.add('rp-hover');
+});
+document.addEventListener('mousedown',function(e){
+  if(mode!=='block'||!selected)return;
+  if(!(e.target===selected||selected.contains(e.target)))return;
+  if(isRp(e.target))return;
+  dragStart={x:e.pageX,y:e.pageY};dragSrc=selected;
+});
+document.addEventListener('mousemove',function(e){
+  if(!dragStart||!dragSrc)return;
+  if(!dragging){
+    if(Math.abs(e.pageX-dragStart.x)+Math.abs(e.pageY-dragStart.y)<8)return;
+    dragging=true;dragSrc.classList.add('rp-dragging');
+    var c=$('rp-ctrl');if(c)c.remove();
+    document.body.style.userSelect='none';
+  }
+  clearDropMarks();dragTarget=null;
+  var hit=document.elementFromPoint(e.clientX,e.clientY);
+  if(!hit||isRp(hit))return;
+  var n=hit;
+  while(n&&n!==document.body){
+    if(n.parentNode===dragSrc.parentNode&&n!==dragSrc){dragTarget=n;break;}
+    n=n.parentElement;
+  }
+  if(dragTarget){
+    var r=dragTarget.getBoundingClientRect();
+    dragAfter=(e.clientY>r.top+r.height/2);
+    dragTarget.classList.add(dragAfter?'rp-drop-after':'rp-drop-before');
+  }
+});
+document.addEventListener('mouseup',function(){
+  if(dragging&&dragSrc&&dragTarget){
+    snapshot();
+    dragTarget.parentNode.insertBefore(dragSrc,dragAfter?dragTarget.nextSibling:dragTarget);
+    status('드래그 이동 완료 — ↩ 되돌리기 가능.');
+  }
+  if(dragSrc)dragSrc.classList.remove('rp-dragging');
+  clearDropMarks();document.body.style.userSelect='';
+  if(dragging&&selected)showCtrl();
+  setTimeout(function(){dragging=false;},50);
+  dragStart=null;dragSrc=null;dragTarget=null;
+});
+document.addEventListener('keydown',function(e){
+  if(mode!=='block')return;
+  if(e.key==='Delete'&&selected){snapshot();var n=selected;clearSel();n.remove();status('블록 삭제됨 — ↩ 되돌리기 가능.');}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();}
+  if(e.key==='Escape')clearSel();
+});
+
+/* 저장·복구·종료 */
+function cleanHtml(){
+  var c=ROOT.cloneNode(true);
+  c.querySelectorAll('[contenteditable]').forEach(function(x){x.removeAttribute('contenteditable');x.removeAttribute('spellcheck');});
+  c.querySelectorAll('.rp-sel,.rp-hover,.rp-dragging,.rp-drop-before,.rp-drop-after,.rp-editable,.rp-added').forEach(function(x){
+    x.classList.remove('rp-sel','rp-hover','rp-dragging','rp-drop-before','rp-drop-after','rp-editable','rp-added');
+    if(x.getAttribute('class')==='')x.removeAttribute('class');
+  });
+  return c.innerHTML;
+}
+$('rp-m-view').onclick=function(){setMode('view');};
+$('rp-m-edit').onclick=function(){setMode('edit');};
+$('rp-m-block').onclick=function(){setMode('block');};
+$('rp-m-photo').onclick=function(){setMode('photo');};
+$('rp-add').onclick=function(){insertArmed=true;status('➕ 새 문단을 넣을 위치(기준 문장/제목)를 클릭하세요 — 그 아래에 추가됩니다.');};
+$('rp-undo').onclick=undo;
+$('rp-save').onclick=async function(){
+  clearSel();
+  if(!confirm('현재 화면 그대로 실제 사이트에 반영할까요?'))return;
+  status('저장 중…');
+  var r=await sb.rpc('rpc_web_save_content',{p_사이트:SITE,p_html:cleanHtml(),p_메모:'사이트 편집기 v1.0'});
+  if(r.error){status('저장 실패: '+r.error.message);alert('저장 실패: '+r.error.message);return;}
+  status('✅ 저장 완료 — 방문자에게 즉시 반영됩니다. (이력 20판 보관·⏪ 복구 가능)');
+};
+$('rp-restore').onclick=async function(){
+  if(!confirm('마지막 저장을 취소하고 이전 판으로 되돌릴까요?'))return;
+  status('복구 중…');
+  var r=await sb.rpc('rpc_web_rollback_content',{p_사이트:SITE});
+  if(r.error){status('복구 실패: '+r.error.message);alert(r.error.message);return;}
+  var g=await sb.rpc('rpc_web_get_content',{p_사이트:SITE});
+  if(g.data){ROOT.innerHTML=g.data;if(window.rpInitSite)window.rpInitSite();}
+  status('⏪ 이전 판으로 복구했습니다.');
+};
+$('rp-exit').onclick=function(){
+  if(!confirm('편집기를 종료할까요? (저장하지 않은 변경은 사라집니다)'))return;
+  location.href=location.pathname;
+};
+setMode('view');
+};
+</script>
+
 </body>
 </html>

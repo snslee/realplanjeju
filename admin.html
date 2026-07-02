@@ -499,6 +499,8 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#hr" class="nav-item" data-nav="hr" title="5. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
 <a href="admin/marketing.html" target="_blank" class="nav-item" title="마케팅 대시보드 — 새 창으로 열림 (블로그·SNS·상위노출)"><span class="nav-icon">📈</span><span class="nav-text">마케팅 ↗</span></a>
+<a href="#air" class="nav-item" data-nav="air" title="항공 조회 — 국내선 스케줄·가격 (P3 준비)"><span class="nav-icon">✈️</span><span class="nav-text">항공조회</span><span class="nav-phase">P3</span></a>
+<a href="#bid" class="nav-item" data-nav="bid" title="입찰 — 나라장터 공고·알림·이력 (P4 준비)"><span class="nav-icon">📑</span><span class="nav-text">입찰</span><span class="nav-phase">P4</span></a>
 <a href="#vendor" class="nav-item" data-nav="vendor" title="4. 거래처·외주 (매입 마스터·발주서·정산서·NDA / Phase 2c-1 ✓ v2.13.4 가동)"><span class="nav-icon">🏢</span><span class="nav-text">거래처·외주</span><span class="nav-phase">2c-1</span></a>
 <a href="#admin" class="nav-item" data-nav="admin" title="7. 관리자 관리 (계정·권한 / v2.9-F)"><span class="nav-icon">🛡</span><span class="nav-text">관리자 관리</span><span class="nav-phase">v2.9-F</span></a>
 </nav>
@@ -716,6 +718,23 @@ table.qt-items td.narrow input{text-align:right}
   </div>
 </section>
 <!-- RP-WEB v2: mkhub iframe 제거 (마케팅=직접 링크) -->
+<!-- RP-WEB v4: 항공조회·입찰 준비 화면 -->
+<section id="view-air" class="page" hidden>
+  <div class="page-title">✈️ 항공 조회 <span style="font-size:12px;color:#b45309;background:#fff7e6;border-radius:8px;padding:2px 8px;vertical-align:middle">P3 준비</span></div>
+  <div style="background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:22px;margin-top:14px;max-width:760px">
+    <b style="font-size:14.5px">진행 예정 — 설계 확정본 보유</b>
+    <p style="font-size:13px;color:#5a6478;line-height:1.9;margin-top:8px">국내선 <b>스케줄 조회</b>(한국공항공사·국토부 공공데이터 무료 API) + <b>가격</b>은 단기 노선 평균가 → 장기 TOPAS 연동 검토.<br>설계서: 항공조회_설계서_v1.0 (2026-06-19) — 신규 테이블 td_ · EF air-search · 키 Vault 보관.</p>
+    <div style="font-size:12px;color:#98a3b8;margin-top:10px">우선순위: P2 홈페이지 배포 완료 → P3 여행 모듈에서 구현</div>
+  </div>
+</section>
+<section id="view-bid" class="page" hidden>
+  <div class="page-title">📑 입찰 <span style="font-size:12px;color:#b45309;background:#fff7e6;border-radius:8px;padding:2px 8px;vertical-align:middle">P4 준비</span></div>
+  <div style="background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:22px;margin-top:14px;max-width:760px">
+    <b style="font-size:14.5px">진행 예정</b>
+    <p style="font-size:13px;color:#5a6478;line-height:1.9;margin-top:8px">나라장터(G2B) 여행·행사·마케팅 <b>용역 공고 자동 수집</b> → 키워드 매칭 → 텔레그램 알림 → 참여 이력·결과 관리.<br>통합 설계서 v1.2 P4 범위 (2~3주) — 고객DB·결재와 연동 예정.</p>
+    <div style="font-size:12px;color:#98a3b8;margin-top:10px">우선순위: P3 여행 모듈 다음</div>
+  </div>
+</section>
 <section id="view-admin" class="page" hidden>
 <div class="adm-wrap">
 <div class="page-header"><div><div class="page-title">🛡 관리자 관리</div><div class="page-subtitle">계정·영역별 권한 매트릭스·감사 로그 (sql/021 / owner 단독)</div></div></div>
@@ -3457,6 +3476,12 @@ function handleRoute(){
       $('.nav-item[data-nav="website"]').classList.add('active');
       if(typeof wsInit==='function')wsInit();
       break;
+    case 'air':/* RP-WEB v4 */
+      state.activeTab='air';show('#view-air');
+      $('.nav-item[data-nav="air"]').classList.add('active');break;
+    case 'bid':/* RP-WEB v4 */
+      state.activeTab='bid';show('#view-bid');
+      $('.nav-item[data-nav="bid"]').classList.add('active');break;
     /* RP-WEB v2: mkhub 라우트 제거 — 마케팅은 사이드바 직접 링크 */
     case 'admin':
       if (!canAccess('admin_management','read')) { location.hash='#dashboard'; return; }

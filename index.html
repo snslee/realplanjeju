@@ -571,7 +571,7 @@ var SB_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZGZxbGtlaXd4eXVvandjb3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMzIxOTcsImV4cCI6MjA5MjYwODE5N30.S3VrHMcrrr0m74dsMnb3jMzaxBjoFpOnUts2XINbpq0';
 var sb=null;
 try{sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:'rp-site-'+SITE}});}catch(e){}/* RP-SITE-AUTHFIX: admin 세션 보호 — 저장·자동갱신 금지 */
-window.__rpSb=sb; window.__rpSite=SITE;
+window.__rpSb=sb; window.__rpSite=SITE; window.__rpSbUrl=SB_URL; window.__rpSbKey=SB_KEY;
 
 function wantEdit(){return /rpedit/.test(location.hash)||/[?&]edit\b/.test(location.search);}
 
@@ -846,12 +846,17 @@ fileInput.onchange=async function(){
   if(!f||!photoTarget)return;
   if(f.size>10*1024*1024){alert('10MB 이하 이미지만 가능합니다.');return;}
   status('사진 업로드 중…');
+  /* v1.2: 라이브러리 대신 직접 업로드 — 로그인 토큰을 요청에 확실히 부착 */
+  var ss=await sb.auth.getSession();
+  var tok=ss.data&&ss.data.session&&ss.data.session.access_token;
+  if(!tok){alert('편집 세션이 만료되었습니다. 관리자 화면에서 [편집 열기]를 다시 눌러주세요.');status('세션 만료 — admin에서 다시 열어주세요.');return;}
   var ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
   var path=SITE+'/'+Date.now()+'.'+ext;
-  var up=await sb.storage.from('web-assets').upload(path,f,{contentType:f.type,upsert:true});
-  if(up.error){status('업로드 실패: '+up.error.message);alert('업로드 실패: '+up.error.message);return;}
-  var pub=sb.storage.from('web-assets').getPublicUrl(path);
-  var url=pub.data.publicUrl;
+  var res=await fetch(window.__rpSbUrl+'/storage/v1/object/web-assets/'+path,{method:'POST',
+    headers:{'apikey':window.__rpSbKey,'Authorization':'Bearer '+tok,'x-upsert':'true','Content-Type':f.type||'image/jpeg'},body:f});
+  if(!res.ok){var msg='';try{msg=(await res.json()).message||res.status;}catch(e){msg=res.status;}
+    status('업로드 실패('+res.status+'): '+msg);alert('업로드 실패: '+msg);return;}
+  var url=window.__rpSbUrl+'/storage/v1/object/public/web-assets/'+path;
   snapshot();
   if(photoTarget.bg){photoTarget.el.style.backgroundImage="url('"+url+"')";photoTarget.el.style.backgroundSize='cover';photoTarget.el.style.backgroundPosition='center';var ph=photoTarget.el.querySelector&&photoTarget.el.querySelector('.ph');if(ph)ph.remove();}
   else photoTarget.el.src=url;

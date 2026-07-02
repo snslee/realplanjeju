@@ -8097,13 +8097,26 @@ document.addEventListener('DOMContentLoaded',init);
       +'<div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">'
       +fld('원천 종류','<select id="au-src" style="'+inp()+'" onchange="document.getElementById(\'au-acc-w\').style.display=this.value===\'농협통장\'?\'\':\'none\'"><option>농협통장</option><option>IBK통장</option><option>농협카드</option><option>BC카드</option><option>세금계산서매출</option><option>세금계산서매입</option></select>')
       +'<span id="au-acc-w">'+fld('계좌 (통장만)','<select id="au-acc" style="'+inp()+'">'+accOpt+'</select>')+'</span>'
-      +fld('파일 (.xls/.xlsx 복수 가능)','<input type="file" id="au-file" multiple accept=".xls,.xlsx" style="font-size:12px">')
+      +fld('파일 (.xls/.xlsx 복수 가능)','<input type="file" id="au-file" multiple accept=".xls,.xlsx,image/png,image/jpeg,image/webp,application/pdf" style="font-size:12px"><!--RP-ACC-IMG-ACCEPT-->')
       +'<button class="acc-btn" onclick="accUpload()">업로드</button>'
       +'<button class="acc-btn ghost" onclick="accMatch()">자동 매칭 실행</button></div>'
       +'<div id="au-result" style="margin-top:10px;font-size:12.5px"></div></div>'
-      +'<div id="au-stage"></div>';
-    stageList();
+      +'<div id="au-stage"></div><div id="au-stmts" style="margin-top:14px"></div>';
+    stageList();stmtList();
   }
+  /*RP-ACC-STMT-LIST 명세서·증빙 보관함*/
+  function stmtList(){
+    sbc().from('acc_증빙').select('id,storage_path,파일명,created_at').is('거래_id',null).order('created_at',{ascending:false}).limit(20).then(function(r){
+      var b=el('au-stmts');if(!b)return;
+      if(r.error||!r.data||!r.data.length){b.innerHTML='';return;}
+      b.innerHTML='<div style="font-weight:700;margin-bottom:6px">🖼 명세서·증빙 보관함 (최근 20)</div>'+r.data.map(function(x){
+        return '<div style="font-size:12px;padding:3px 0"><a href="#" onclick="accStmtOpen(\''+x.storage_path+'\');return false">'+esc(x.파일명||x.storage_path)+'</a> <span style="color:#94a3b8">'+String(x.created_at).slice(0,10)+'</span></div>';
+      }).join('');
+    });
+  }
+  window.accStmtOpen=function(p){
+    sbc().storage.from('docs').createSignedUrl(p,600).then(function(s){if(s.error){alert(s.error.message);return;}window.open(s.data.signedUrl,'_blank');});
+  };
   function stageList(){
     sbc().from('acc_원천거래').select('id,원천,거래일,금액,상대명,매칭상태,업로드채널').order('created_at',{ascending:false}).limit(2000).then(function(r){
       if(r.error)return;
@@ -8131,6 +8144,26 @@ document.addEventListener('DOMContentLoaded',init);
     if(typeof XLSX==='undefined'){alert('엑셀 라이브러리 로딩 전입니다. 잠시 후 다시 시도하세요.');return;}
     var src=el('au-src').value,files=el('au-file').files;
     if(!files.length){alert('파일을 선택하세요');return;}
+    /*RP-ACC-IMG-UP 이미지·PDF=증빙 보관함 저장 (거래 적재는 엑셀 원본 필요)*/
+    var imgs=[],xls=[];
+    Array.prototype.forEach.call(files,function(f){(/\.(png|jpe?g|webp|pdf)$/i.test(f.name)||/^image\//.test(f.type)||f.type==='application/pdf')?imgs.push(f):xls.push(f);});
+    if(imgs.length){
+      var ym=new Date().toISOString().slice(0,7),done=0;
+      imgs.forEach(function(f){
+        var ext=(f.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'bin';
+        var path='acc-proof/statements/'+ym+'/'+Date.now()+'_'+Math.random().toString(36).slice(2,6)+'.'+ext;
+        sbc().storage.from('docs').upload(path,f,{contentType:f.type||'application/octet-stream'}).then(function(up){
+          if(up.error){alert('이미지 보관 실패: '+up.error.message);return;}
+          sbc().from('acc_증빙').insert({'storage_path':path,'파일명':'['+src+'] '+f.name,'mime':f.type}).then(function(r){
+            if(r.error){alert('증빙 기록 실패: '+r.error.message);return;}
+            done++;el('au-result').innerHTML='🖼 이미지·PDF '+done+'건 증빙 보관함 저장 완료 — 거래 데이터 적재는 은행·카드사 <b>엑셀 원본</b>이 필요합니다';
+            if(typeof stmtList==='function')stmtList();
+          });
+        });
+      });
+    }
+    if(!xls.length)return;
+    files=xls;
     var accSel=el('au-acc'),accId=null,accNo=null;
     if(src==='농협통장'){
       if(!accSel.value){alert('계좌를 선택하세요');return;}

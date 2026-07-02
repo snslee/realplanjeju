@@ -8801,6 +8801,17 @@ async function wsDashSummary(){
   if(typeof _ld==='function'){window.loadDashboard=async function(){var r=await _ld.apply(this,arguments);wsDashSummary();return r;};}
   if((location.hash||'#dashboard').indexOf('dashboard')>-1)setTimeout(wsDashSummary,900);
 })();
+/* RP-SESSION-GUARD: UI는 로그인인데 실제 세션이 죽은 상태 자동 감지 → 재로그인 유도 */
+setTimeout(async function(){
+  try{
+    if(!window.sb||!window.state||!state.user)return;
+    var s=await sb.auth.getSession();
+    if(!s.data.session){
+      if(typeof toast==='function')toast('로그인 세션이 만료되었습니다. 다시 로그인해주세요.','error');
+      setTimeout(function(){if(typeof logout==='function')logout();},1500);
+    }
+  }catch(e){}
+},2500);
 </script>
 </body>
 </html>

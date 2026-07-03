@@ -744,6 +744,12 @@ body.rp-block .rp-hover{outline:2px dashed #e0a13d;outline-offset:2px;cursor:gra
 #rp-ctrl button.del{background:#c0392b}
 .rp-photo-badge{position:absolute;z-index:99997;background:#E67E22;color:#fff;font:700 12.5px 'Malgun Gothic',sans-serif;padding:7px 11px;border-radius:9px;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.35);user-select:none;white-space:nowrap}
 .rp-photo-badge:hover{background:#cf6d15}
+.rp-pos-badge{background:#2B62C4}
+.rp-pos-badge:hover{background:#1d4a9b}
+#rp-repo{position:absolute;z-index:99996;outline:3px dashed #2B62C4;cursor:grab;background:rgba(43,98,196,.05)}
+#rp-repo.drag{cursor:grabbing}
+#rp-repo-bar{position:absolute;z-index:99999;background:#15294E;color:#fff;font:700 12.5px 'Malgun Gothic',sans-serif;padding:8px 12px;border-radius:9px;display:flex;gap:10px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.35)}
+#rp-repo-bar button{border:0;border-radius:6px;padding:5px 12px;font-weight:800;cursor:pointer;background:#1E6E5C;color:#fff;font-family:inherit}
 @media print{#rp-toolbar,#rp-ctrl,#rp-login{display:none!important}}
 </style>
 <script id="rp-editor">
@@ -774,7 +780,7 @@ document.body.appendChild(fileInput);
 var photoTarget=null;
 
 function status(t){$('rp-status').textContent=t;}
-function isRp(el){return el.closest&&(el.closest('#rp-toolbar')||el.closest('#rp-ctrl')||el.closest('#rp-login')||el.closest('.rp-photo-badge'));}
+function isRp(el){return el.closest&&(el.closest('#rp-toolbar')||el.closest('#rp-ctrl')||el.closest('#rp-login')||el.closest('.rp-photo-badge')||el.closest('#rp-repo')||el.closest('#rp-repo-bar'));}
 function editables(){return Array.prototype.slice.call(ROOT.children).filter(function(el){return !/^(SCRIPT|STYLE)$/.test(el.tagName);});}
 function clearSel(){
   if(selected){selected.classList.remove('rp-sel');selected=null;}
@@ -786,6 +792,7 @@ function setMode(m){
   document.body.classList.toggle('rp-edit',m==='edit');
   document.body.classList.toggle('rp-block',m==='block');
   document.body.classList.toggle('rp-photo',m==='photo');
+  repoEnd(false);
   photoBadges(m==='photo');
   if(m==='photo'){if(window.__rpT)clearInterval(window.__rpT);}
   else{var _d=document.querySelector('#dots .dot.on');if(_d&&_d.onclick)_d.click();}
@@ -867,6 +874,41 @@ function findPhotoEl(t){
   }
   return null;
 }
+/* v1.6: 드래그 위치 조정 — 사진 구도(background/object-position) 조정 */
+var repo=null;
+function repoStart(el,isBg){
+  repoEnd(false);snapshot();photoBadges(false);
+  var r=el.getBoundingClientRect();
+  var ov=document.createElement('div');ov.id='rp-repo';
+  ov.style.left=(r.left+window.scrollX)+'px';ov.style.top=(r.top+window.scrollY)+'px';
+  ov.style.width=r.width+'px';ov.style.height=r.height+'px';
+  var bar=document.createElement('div');bar.id='rp-repo-bar';
+  bar.innerHTML='↕ 사진을 드래그해서 위치를 맞추세요 <button id="rp-repo-done">✔ 완료</button>';
+  bar.style.left=(r.left+window.scrollX+10)+'px';bar.style.top=(r.top+window.scrollY+10)+'px';
+  document.body.appendChild(ov);document.body.appendChild(bar);
+  var cur=(isBg?getComputedStyle(el).backgroundPosition:getComputedStyle(el).objectPosition)||'50% 50%';
+  var m=String(cur).match(/([\d.]+)%\s+([\d.]+)%/);
+  var px=m?parseFloat(m[1]):50, py=m?parseFloat(m[2]):50;
+  var sx=0,sy=0,ox=px,oy=py,drag=false;
+  ov.addEventListener('mousedown',function(e){e.preventDefault();e.stopPropagation();drag=true;sx=e.clientX;sy=e.clientY;ox=px;oy=py;ov.classList.add('drag');});
+  var mv=function(e){if(!drag)return;
+    px=Math.max(0,Math.min(100,ox-(e.clientX-sx)/r.width*120));
+    py=Math.max(0,Math.min(100,oy-(e.clientY-sy)/r.height*120));
+    var v=px.toFixed(1)+'% '+py.toFixed(1)+'%';
+    if(isBg){el.style.backgroundPosition=v;}else{el.style.objectPosition=v;}
+  };
+  var up=function(){drag=false;ov.classList.remove('drag');};
+  document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  repo={ov:ov,bar:bar,mv:mv,up:up};
+  document.getElementById('rp-repo-done').onclick=function(ev){ev.stopPropagation();repoEnd(true);};
+  status('↕ 위치 조정 — 사진을 잡고 드래그하세요. 끝나면 [✔ 완료].');
+}
+function repoEnd(done){
+  if(!repo)return;
+  document.removeEventListener('mousemove',repo.mv);document.removeEventListener('mouseup',repo.up);
+  repo.ov.remove();repo.bar.remove();repo=null;
+  if(done){photoBadges(mode==='photo');status('위치 조정 완료 — 💾 저장을 눌러야 실제 사이트에 반영됩니다.');}
+}
 /* v1.1: 사진교체 배지 — 교체 가능한 사진마다 [📷 사진 교체] 버튼 표시 */
 var badges=[];
 function photoBadges(on){
@@ -897,6 +939,17 @@ function photoBadges(on){
       fileInput.click();
     };
     document.body.appendChild(b);badges.push(b);
+    if(!p.empty){/* v1.6: 위치 조정 배지 */
+      var b2=document.createElement('div');b2.className='rp-photo-badge rp-pos-badge';
+      b2.textContent='↕ 위치';
+      b2.style.left=(r.left+window.scrollX+10)+'px';b2.style.top=(r.top+window.scrollY+48)+'px';
+      b2.onclick=function(ev){
+        ev.preventDefault();ev.stopPropagation();
+        var target=isHero?(el.querySelector('.slide.on')||el.querySelector('.slide')):p.el;
+        repoStart(target, isHero?true:p.bg);
+      };
+      document.body.appendChild(b2);badges.push(b2);
+    }
   });
 }
 fileInput.onchange=async function(){

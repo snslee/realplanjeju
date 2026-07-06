@@ -1741,6 +1741,7 @@ function enterCustomerEdit(){
   document.body.classList.add('edit-mode');
   renderCustomerCardLine(state.currentRow);
   renderOverview(state.currentRow);
+  loadNotes();  // 2026-07-06: 편집 모드에서도 상담 메모 로드 (미로드 멈춤 해결)
   toast('편집 모드 진입 — 변경 후 [저장] 또는 [취소]','info');
 }
 
@@ -1749,6 +1750,7 @@ function cancelCustomerEdit(){
   document.body.classList.remove('edit-mode');
   renderCustomerCardLine(state.currentRow);
   renderOverview(state.currentRow);
+  loadNotes();  // 2026-07-06: 조회 복귀 시 메모 재로드
   toast('편집 취소','info');
 }
 
@@ -1828,6 +1830,7 @@ async function saveCustomerEdit(){
     state.lastUpdatedAt=newRow.updated_at;
     renderCustomerCardLine(newRow);
     renderOverview(newRow);
+    loadNotes();  // 2026-07-06: 저장 후 조회 복귀 시 메모 재로드
     // 타임라인이 활성 탭이면 reload (변경 이력 합류)
     const tlActive=$('.tab[data-tab="timeline"]')?.classList?.contains('active');
     if(tlActive)loadTimeline(true);
@@ -2168,6 +2171,11 @@ function renderOverviewEdit(r){
           '<div class="dg-row"><span class="dg-label">회사주소</span><span class="dg-value">'+inp('회사주소',r['회사주소'])+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">대표자명 <span style="font-size:11px;color:#0c447c">(계약서 갑 측 서명란)</span></span><span class="dg-value">'+inp('대표자명',r['대표자명'])+'</span></div>'+
         '</div>'+
+      '</div>'+
+      // ⑨ 상담 메모 (편집 모드에서도 조회와 동일하게 입력·수정 가능 · 2026-07-06 복구)
+      '<div class="detail-group dg-notes-section" id="overview-notes-section" style="grid-column:1 / -1;">'+
+        '<div class="dg-title">⑨ 상담 메모 <span class="dg-title-sub">— 통화 중 항목별 입력 (체크리스트 자동 삽입 가능)</span></div>'+
+        '<div id="notes-mount"><div class="empty-state"><div class="es-icon">⏳</div><div>메모 로드 대기 중…</div></div></div>'+
       '</div>'+
     '</div>';
 }
@@ -8797,22 +8805,4 @@ async function wsDashSummary(){
     document.getElementById('wsd-top').textContent='유입 TOP: '+(top||'아직 없음');
   }catch(e){}
 }
-(function(){
-  var _ld=window.loadDashboard;
-  if(typeof _ld==='function'){window.loadDashboard=async function(){var r=await _ld.apply(this,arguments);wsDashSummary();return r;};}
-  if((location.hash||'#dashboard').indexOf('dashboard')>-1)setTimeout(wsDashSummary,900);
-})();
-/* RP-SESSION-GUARD: UI는 로그인인데 실제 세션이 죽은 상태 자동 감지 → 재로그인 유도 */
-setTimeout(async function(){
-  try{
-    if(!window.sb||!window.state||!state.user)return;
-    var s=await sb.auth.getSession();
-    if(!s.data.session){
-      if(typeof toast==='function')toast('로그인 세션이 만료되었습니다. 다시 로그인해주세요.','error');
-      setTimeout(function(){if(typeof logout==='function')logout();},1500);
-    }
-  }catch(e){}
-},2500);
-</script>
-</body>
-</html>
+(function()

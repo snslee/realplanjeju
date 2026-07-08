@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>입찰 조회 | 리얼플랜제주 관리자</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',-apple-system,'Malgun Gothic',sans-serif;background:#f4f6fb;color:#1e293b;font-size:14px}
+.top{background:#1e3a5f;color:#fff;padding:12px 22px;display:flex;align-items:center;gap:12px}
+.top b{font-size:15px}.top .sp{flex:1}
+.top a{color:#cfe0ff;text-decoration:none;font-size:13px}
+.wrap{max-width:1180px;margin:22px auto;padding:0 18px}
+.title{font-size:19px;font-weight:700;margin-bottom:4px}
+.sub{font-size:12.5px;color:#64748b;margin-bottom:16px}
+.card{background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:18px;margin-bottom:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+label{font-size:12px;color:#5a6478;display:block}
+select,input{margin-top:4px;padding:8px;border:1px solid #cfd8e6;border-radius:8px;font-size:13px}
+button{padding:9px 18px;background:#2563eb;color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px}
+button.g{background:#eef2fb;color:#334155}
+.tabs{display:flex;gap:8px;margin:4px 0 12px}
+.tabs button{background:#eef2fb;color:#475569;padding:7px 16px}
+.tabs button.on{background:#2563eb;color:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 10px;border-bottom:2px solid #e3e9f4;color:#64748b;white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #f0f3f8;vertical-align:top}
+tr:hover td{background:#f8fafc}
+.tag{display:inline-block;background:#eff6ff;color:#2563eb;border-radius:20px;padding:1px 9px;font-size:11.5px}
+.mark{background:#fff7e6;color:#b45309;border:1px solid #fde3b3;padding:4px 10px;border-radius:7px;cursor:pointer;font-size:12px}
+.mark.on{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
+.status{font-size:12.5px;color:#7a8598;margin:8px 0}
+.note{font-size:11.5px;color:#98a3b8;margin-top:10px;line-height:1.7}
+a.link{color:#2563eb;text-decoration:none}a.link:hover{text-decoration:underline}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="top">
+  <b>✈ 리얼플랜제주 · 입찰 조회</b>
+  <span class="sp"></span>
+  <span id="who" style="font-size:12px;color:#cfe0ff"></span>
+  <a href="../admin.html">← 관리자 홈</a>
+</div>
+<div class="wrap">
+  <div class="title">📑 입찰 공고 조회 <span class="tag">나라장터 · 국내여행·행사·마케팅·심사위원</span></div>
+  <div class="sub">조달청 나라장터(G2B) 용역 공고를 키워드로 조회하고 관심공고로 저장합니다. 제주도청·시청·서귀포시청 등 관공서 공고는 발주기관 필터로 함께 잡힙니다.</div>
+
+  <div id="gate" class="card hide" style="color:#b45309">로그인 또는 입찰 권한이 필요합니다. <a class="link" href="../admin.html">관리자 홈에서 로그인</a> 후 다시 열어주세요.</div>
+
+  <div id="app" class="hide">
+    <div class="card">
+      <div class="row">
+        <div><label>사업부(키워드 묶음)<br><select id="bu"><option value="">전체 키워드</option></select></label></div>
+        <div><label>직접 키워드(선택)<br><input id="kw" type="text" placeholder="예: 축제" style="min-width:150px"></label></div>
+        <div><label>발주기관(선택)<br><input id="org" type="text" placeholder="예: 제주" style="min-width:150px"></label></div>
+        <div><label>시작일<br><input id="sd" type="date"></label></div>
+        <div><label>종료일<br><input id="ed" type="date"></label></div>
+        <button onclick="doSearch()">조회</button>
+      </div>
+      <div class="note">기본 조회기간=최근 7일. 발주기관에 "제주" 입력 시 제주 관공서 공고만 필터. 나라장터 API 활용신청 직후 최대 1일간 결과가 비어 있을 수 있습니다.</div>
+    </div>
+
+    <div class="tabs">
+      <button id="tabAll" class="on" onclick="setTab('all')">조회 결과</button>
+      <button id="tabFav" onclick="setTab('fav')">⭐ 관심공고</button>
+    </div>
+    <div id="status" class="status"></div>
+    <div class="card" style="overflow:auto"><table id="tbl"></table></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
+const SUPABASE_KEY='sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce'}});
+let TAB='all', lastRows=[];
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function fdt(s){if(!s)return '-';return String(s).replace('T',' ').slice(0,16);}
+async function boot(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){document.getElementById('gate').classList.remove('hide');return;}
+  document.getElementById('who').textContent=session.user.email||'';
+  // 권한 확인 + 키워드 로드
+  let kws=null;
+  try{ const r=await sb.rpc('rpc_bid_keywords'); if(r.error)throw r.error; kws=r.data; }
+  catch(e){ document.getElementById('gate').classList.remove('hide'); document.getElementById('gate').textContent='입찰 권한이 없습니다. (관리자에게 문의)'; return; }
+  document.getElementById('app').classList.remove('hide');
+  const bus=[...new Set((kws||[]).map(k=>k['사업부']))];
+  const sel=document.getElementById('bu');
+  bus.forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;sel.appendChild(o);});
+  const t=new Date(), a=new Date(t.getTime()-7*86400000);
+  document.getElementById('ed').value=t.toISOString().slice(0,10);
+  document.getElementById('sd').value=a.toISOString().slice(0,10);
+}
+function setTab(x){TAB=x;document.getElementById('tabAll').classList.toggle('on',x==='all');document.getElementById('tabFav').classList.toggle('on',x==='fav');if(x==='fav')loadFav();else render(lastRows);}
+async function doSearch(){
+  const st=document.getElementById('status');
+  const kw=document.getElementById('kw').value.trim();
+  const org=document.getElementById('org').value.trim();
+  const sd=document.getElementById('sd').value, ed=document.getElementById('ed').value;
+  st.textContent='조회 중…';
+  try{
+    const r=await sb.functions.invoke('bid-search',{body:{'키워드':kw,'기관':org,'시작일':sd,'종료일':ed}});
+    if(r.error){st.textContent='오류: '+r.error.message;return;}
+    const d=r.data||{};
+    if(d.error){st.textContent='오류: '+d.error;return;}
+    lastRows=d['결과']||[];
+    TAB='all';document.getElementById('tabAll').classList.add('on');document.getElementById('tabFav').classList.remove('on');
+    st.textContent='매칭 '+lastRows.length+'건 (전체 수신 '+(d['전체수신']||0)+'건 중) · '+sd+'~'+ed;
+    // 관심상태 병합
+    const fav=await favMap();
+    lastRows.forEach(x=>x.관심상태=fav[x['공고번호']]||null);
+    render(lastRows);
+  }catch(e){st.textContent='조회 실패: '+e;}
+}
+async function favMap(){
+  try{const r=await sb.rpc('rpc_bid_list',{'_상태':'관심'});if(r.error)return {};const m={};(r.data||[]).forEach(x=>m[x['공고번호']]=x['관심상태']||'검토');return m;}catch(e){return {};}
+}
+async function loadFav(){
+  const st=document.getElementById('status');st.textContent='관심공고 불러오는 중…';
+  try{const r=await sb.rpc('rpc_bid_list',{'_상태':'관심'});if(r.error){st.textContent='오류: '+r.error.message;return;}
+    const rows=(r.data||[]);st.textContent='관심공고 '+rows.length+'건';render(rows,true);}
+  catch(e){st.textContent='실패: '+e;}
+}
+function render(rows,fav){
+  const tb=document.getElementById('tbl');
+  if(!rows||!rows.length){tb.innerHTML='<tbody><tr><td style="color:#98a3b8;padding:16px">결과 없음 — 조건에 맞는 공고가 없거나 API 활성화 지연.</td></tr></tbody>';return;}
+  let h='<thead><tr><th>공고명</th><th>발주/수요기관</th><th>지역</th><th>마감</th><th>키워드</th><th></th></tr></thead><tbody>';
+  h+=rows.map(x=>{
+    const no=x['공고번호'], on=x['관심상태']?'on':'';
+    const url=x['공고url'];
+    const nm=url?('<a class="link" href="'+esc(url)+'" target="_blank">'+esc(x['공고명'])+'</a>'):esc(x['공고명']);
+    return '<tr><td style="max-width:420px">'+nm+'</td><td>'+esc(x['공고기관']||'')+(x['수요기관']?'<br><span style="color:#94a3b8">'+esc(x['수요기관'])+'</span>':'')+'</td><td>'+esc(x['지역']||'-')+'</td><td>'+fdt(x['마감일시'])+'</td><td><span class="tag">'+esc(x['매칭키워드']||'')+'</span></td>'
+      +'<td><span class="mark '+on+'" onclick="mark(this,\''+esc(no)+'\')">'+(x['관심상태']?'⭐ '+esc(x['관심상태']):'관심')+'</span></td></tr>';
+  }).join('');
+  tb.innerHTML=h+'</tbody>';
+}
+async function mark(el,no){
+  try{const r=await sb.rpc('rpc_bid_mark',{'_공고번호':no,'_상태':'검토'});if(r.error){alert('저장 실패: '+r.error.message);return;}
+    el.classList.add('on');el.textContent='⭐ 검토';}
+  catch(e){alert('저장 실패: '+e);}
+}
+boot();
+</script>
+</body>
+</html>

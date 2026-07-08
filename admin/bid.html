@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex, nofollow">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex, nofollow">
 <title>입찰 조회 | 리얼플랜제주 관리자</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -11,48 +9,51 @@
 body{font-family:'Pretendard',-apple-system,'Malgun Gothic',sans-serif;background:#f4f6fb;color:#1e293b;font-size:14px}
 .top{background:#1e3a5f;color:#fff;padding:12px 22px;display:flex;align-items:center;gap:12px}
 .top b{font-size:15px}.top .sp{flex:1}.top a{color:#cfe0ff;text-decoration:none;font-size:13px}
-.wrap{max-width:1240px;margin:22px auto;padding:0 18px}
-.title{font-size:19px;font-weight:700;margin-bottom:4px}
-.sub{font-size:12.5px;color:#64748b;margin-bottom:16px}
+.wrap{max-width:1280px;margin:22px auto;padding:0 18px}
+.title{font-size:19px;font-weight:700;margin-bottom:4px}.sub{font-size:12.5px;color:#64748b;margin-bottom:16px}
 .card{background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:18px;margin-bottom:16px}
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 label{font-size:12px;color:#5a6478;display:block}
 select,input{margin-top:4px;padding:8px;border:1px solid #cfd8e6;border-radius:8px;font-size:13px}
-button{padding:9px 18px;background:#2563eb;color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px}
+button{padding:9px 16px;background:#2563eb;color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px}
+button.g{background:#eef2fb;color:#334155}
 .tabs{display:flex;gap:8px;margin:4px 0 12px}
-.tabs button{background:#eef2fb;color:#475569;padding:7px 16px}
-.tabs button.on{background:#2563eb;color:#fff}
+.tabs button{background:#eef2fb;color:#475569;padding:7px 16px}.tabs button.on{background:#2563eb;color:#fff}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;padding:9px 10px;border-bottom:2px solid #e3e9f4;color:#64748b;white-space:nowrap}
-td{padding:9px 10px;border-bottom:1px solid #f0f3f8;vertical-align:top}
-tr:hover td{background:#f8fafc}
+td{padding:9px 10px;border-bottom:1px solid #f0f3f8;vertical-align:top}tr:hover td{background:#f8fafc}
 .tag{display:inline-block;background:#eff6ff;color:#2563eb;border-radius:20px;padding:1px 9px;font-size:11.5px}
 .score{display:inline-block;font-weight:700;border-radius:8px;padding:3px 9px;font-size:13px;min-width:38px;text-align:center}
 .s-hi{background:#d1fae5;color:#065f46}.s-mid{background:#fef3c7;color:#92400e}.s-lo{background:#fee2e2;color:#991b1b}.s-na{background:#eef2f7;color:#94a3b8}
 .verd{font-size:11.5px;color:#475569;display:block;margin-top:3px}
-.mark{background:#fff7e6;color:#b45309;border:1px solid #fde3b3;padding:4px 10px;border-radius:7px;cursor:pointer;font-size:12px}
+.mark{background:#fff7e6;color:#b45309;border:1px solid #fde3b3;padding:4px 9px;border-radius:7px;cursor:pointer;font-size:12px}
 .mark.on{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
+.pbtn{background:#eef2fb;color:#2563eb;border:1px solid #dbe4f5;padding:4px 9px;border-radius:7px;cursor:pointer;font-size:12px;margin-left:4px}
 .status{font-size:12.5px;color:#7a8598;margin:8px 0}
 .note{font-size:11.5px;color:#98a3b8;margin-top:10px;line-height:1.7}
 a.link{color:#2563eb;text-decoration:none}a.link:hover{text-decoration:underline}
 .hide{display:none}
+.ov{position:fixed;inset:0;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+.modal{background:#fff;border-radius:14px;max-width:900px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.mhd{padding:14px 18px;border-bottom:1px solid #eef2f7;display:flex;align-items:center;gap:10px}
+.mhd b{font-size:14.5px;flex:1}
+.mbd{padding:16px 18px;overflow:auto}
+.mft{padding:12px 18px;border-top:1px solid #eef2f7;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#ptext{width:100%;min-height:360px;border:1px solid #cfd8e6;border-radius:8px;padding:12px;font-size:13px;line-height:1.7;font-family:inherit}
 </style>
 </head>
 <body>
 <div class="top"><b>📑 리얼플랜제주 · 입찰 조회</b><span class="sp"></span><span id="who" style="font-size:12px;color:#cfe0ff"></span><a href="../admin.html">← 관리자 홈</a></div>
 <div class="wrap">
-  <div class="title">📑 입찰 공고 · AI 적합도 분석 <span class="tag">나라장터 · 자동수집</span></div>
-  <div class="sub">매일 자동 수집된 공고를 AI가 우리 역량·2천만원 수의계약 기준으로 분석합니다. 적합도 60↑는 텔레그램으로도 알립니다. 제주 관공서는 발주기관 "제주" 필터.</div>
-
+  <div class="title">📑 입찰 공고 · AI 적합도 분석 · 제안서 <span class="tag">나라장터 · 자동수집</span></div>
+  <div class="sub">자동 수집 공고를 AI가 우리 역량·2천만원 기준으로 분석하고, 적합 공고는 제안서 초안까지 자동 작성합니다. 적합도 60↑는 텔레그램 알림.</div>
   <div id="gate" class="card hide" style="color:#b45309">로그인 또는 입찰 권한이 필요합니다. <a class="link" href="../admin.html">관리자 홈에서 로그인</a> 후 다시 열어주세요.</div>
-
   <div id="app" class="hide">
     <div class="tabs">
       <button id="tabList" class="on" onclick="setTab('list')">🤖 AI 분석 목록</button>
       <button id="tabFav" onclick="setTab('fav')">⭐ 관심공고</button>
       <button id="tabSearch" onclick="setTab('search')">🔎 직접 조회</button>
     </div>
-
     <div id="searchbar" class="card hide">
       <div class="row">
         <div><label>직접 키워드<br><input id="kw" type="text" placeholder="예: 축제" style="min-width:150px"></label></div>
@@ -61,59 +62,89 @@ a.link{color:#2563eb;text-decoration:none}a.link:hover{text-decoration:underline
         <div><label>종료일<br><input id="ed" type="date"></label></div>
         <button onclick="doSearch()">조회</button>
       </div>
-      <div class="note">직접 조회는 원본 공고만 표시(적합도 미분석). 분석은 자동수집·AI목록에서 확인.</div>
+      <div class="note">직접 조회는 원본 공고만(적합도 미분석). 분석·제안서는 AI목록에서.</div>
     </div>
-
     <div id="status" class="status"></div>
     <div class="card" style="overflow:auto"><table id="tbl"></table></div>
   </div>
 </div>
+
+<div id="ov" class="ov hide"><div class="modal">
+  <div class="mhd"><b id="mtitle">제안서</b><button class="g" onclick="closeM()">닫기</button></div>
+  <div class="mbd">
+    <div class="row" style="margin-bottom:10px">
+      <div><label>규격서(과업지시서) PDF 첨부 — 선택 (hwp는 PDF로 저장 후 첨부)<br><input id="pfile" type="file" accept="application/pdf"></label></div>
+      <button onclick="genProposal()">🤖 초안 생성</button>
+    </div>
+    <div id="pstat" class="note"></div>
+    <textarea id="ptext" placeholder="아직 제안서가 없습니다. 규격서를 첨부(선택)하고 [초안 생성]을 누르세요."></textarea>
+  </div>
+  <div class="mft">
+    <button onclick="saveProposal()">💾 저장</button>
+    <button class="g" onclick="downloadDoc()">⬇ docx 다운로드</button>
+    <span id="pinfo" class="note" style="margin:0"></span>
+  </div>
+</div></div>
+
 <script>
 const SUPABASE_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
 const SUPABASE_KEY='sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce'}});
-let TAB='list';
+let TAB='list',curNo=null,curName=null;
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function fdt(s){if(!s)return '-';return String(s).replace('T',' ').slice(0,16);}
+function won(v){if(v==null)return '';return Math.round(v/10000).toLocaleString()+'만';}
 function scoreCell(x){var s=x['적합도'];if(s==null)return '<span class="score s-na">-</span>';var c=s>=70?'s-hi':(s>=50?'s-mid':'s-lo');return '<span class="score '+c+'">'+s+'</span><span class="verd">'+esc(x['참여판정']||'')+(x['승산등급']?' · 승산'+esc(x['승산등급']):'')+'</span>';}
 async function boot(){
   const {data:{session}}=await sb.auth.getSession();
   if(!session){document.getElementById('gate').classList.remove('hide');return;}
   document.getElementById('who').textContent=session.user.email||'';
-  try{const r=await sb.rpc('rpc_bid_keywords');if(r.error)throw r.error;}
-  catch(e){document.getElementById('gate').classList.remove('hide');document.getElementById('gate').textContent='입찰 권한이 없습니다.';return;}
+  try{const r=await sb.rpc('rpc_bid_keywords');if(r.error)throw r.error;}catch(e){document.getElementById('gate').classList.remove('hide');document.getElementById('gate').textContent='입찰 권한이 없습니다.';return;}
   document.getElementById('app').classList.remove('hide');
-  const t=new Date(),a=new Date(t.getTime()-7*86400000);
-  document.getElementById('ed').value=t.toISOString().slice(0,10);document.getElementById('sd').value=a.toISOString().slice(0,10);
+  const t=new Date(),a=new Date(t.getTime()-7*86400000);document.getElementById('ed').value=t.toISOString().slice(0,10);document.getElementById('sd').value=a.toISOString().slice(0,10);
   loadList();
 }
-function setTab(x){TAB=x;
-  document.getElementById('tabList').classList.toggle('on',x==='list');
-  document.getElementById('tabFav').classList.toggle('on',x==='fav');
-  document.getElementById('tabSearch').classList.toggle('on',x==='search');
-  document.getElementById('searchbar').classList.toggle('hide',x!=='search');
-  if(x==='list')loadList();else if(x==='fav')loadFav();else document.getElementById('tbl').innerHTML='';
-}
-async function loadList(){const st=document.getElementById('status');st.textContent='불러오는 중…';
-  try{const r=await sb.rpc('rpc_bid_list',{});if(r.error){st.textContent='오류: '+r.error.message;return;}
-    const rows=r.data||[];st.textContent='수집·분석 공고 '+rows.length+'건 (적합도순)';render(rows,true);}catch(e){st.textContent='실패: '+e;}}
-async function loadFav(){const st=document.getElementById('status');st.textContent='관심공고…';
-  try{const r=await sb.rpc('rpc_bid_list',{'_상태':'관심'});if(r.error){st.textContent='오류: '+r.error.message;return;}
-    const rows=r.data||[];st.textContent='관심공고 '+rows.length+'건';render(rows,true);}catch(e){st.textContent='실패: '+e;}}
-async function doSearch(){const st=document.getElementById('status');
-  const kw=document.getElementById('kw').value.trim(),org=document.getElementById('org').value.trim(),sd=document.getElementById('sd').value,ed=document.getElementById('ed').value;
-  st.textContent='조회 중…';document.getElementById('tbl').innerHTML='';
-  try{const r=await sb.functions.invoke('bid-search',{body:{'키워드':kw,'기관':org,'시작일':sd,'종료일':ed}});
-    if(r.error){st.textContent='오류: '+r.error.message;return;}const d=r.data||{};if(d.error){st.textContent='오류: '+d.error;return;}
-    const rows=d['결과']||[];st.textContent='매칭 '+rows.length+'건 (원본)';render(rows,false);}catch(e){st.textContent='조회 실패: '+e;}}
+function setTab(x){TAB=x;document.getElementById('tabList').classList.toggle('on',x==='list');document.getElementById('tabFav').classList.toggle('on',x==='fav');document.getElementById('tabSearch').classList.toggle('on',x==='search');document.getElementById('searchbar').classList.toggle('hide',x!=='search');if(x==='list')loadList();else if(x==='fav')loadFav();else document.getElementById('tbl').innerHTML='';}
+async function loadList(){const st=document.getElementById('status');st.textContent='불러오는 중…';try{const r=await sb.rpc('rpc_bid_list',{});if(r.error){st.textContent='오류: '+r.error.message;return;}const rows=r.data||[];st.textContent='수집·분석 공고 '+rows.length+'건 (적합도순)';render(rows,true);}catch(e){st.textContent='실패: '+e;}}
+async function loadFav(){const st=document.getElementById('status');st.textContent='관심공고…';try{const r=await sb.rpc('rpc_bid_list',{'_상태':'관심'});if(r.error){st.textContent='오류: '+r.error.message;return;}const rows=r.data||[];st.textContent='관심공고 '+rows.length+'건';render(rows,true);}catch(e){st.textContent='실패: '+e;}}
+async function doSearch(){const st=document.getElementById('status');const kw=document.getElementById('kw').value.trim(),org=document.getElementById('org').value.trim(),sd=document.getElementById('sd').value,ed=document.getElementById('ed').value;st.textContent='조회 중…';document.getElementById('tbl').innerHTML='';try{const r=await sb.functions.invoke('bid-search',{body:{'키워드':kw,'기관':org,'시작일':sd,'종료일':ed}});if(r.error){st.textContent='오류: '+r.error.message;return;}const d=r.data||{};if(d.error){st.textContent='오류: '+d.error;return;}const rows=d['결과']||[];st.textContent='매칭 '+rows.length+'건 (원본)';render(rows,false);}catch(e){st.textContent='조회 실패: '+e;}}
 function render(rows,ana){const tb=document.getElementById('tbl');
   if(!rows||!rows.length){tb.innerHTML='<tbody><tr><td style="color:#98a3b8;padding:16px">결과 없음 — 자동수집 전이거나(API 활성화 대기) 조건에 맞는 공고가 없습니다.</td></tr></tbody>';return;}
-  let h='<thead><tr>'+(ana?'<th>적합도</th>':'')+'<th>공고명</th><th>발주/수요기관</th><th>지역</th><th>마감</th><th>키워드</th><th></th></tr></thead><tbody>';
+  let h='<thead><tr>'+(ana?'<th>적합도</th>':'')+'<th>공고명</th><th>발주기관</th><th>추정가</th><th>마감</th><th></th></tr></thead><tbody>';
   h+=rows.map(function(x){var no=x['공고번호'],on=x['관심상태']?'on':'',url=x['공고url'];
     var nm=url?('<a class="link" href="'+esc(url)+'" target="_blank">'+esc(x['공고명'])+'</a>'):esc(x['공고명']);
-    return '<tr>'+(ana?'<td>'+scoreCell(x)+'</td>':'')+'<td style="max-width:380px">'+nm+'</td><td>'+esc(x['공고기관']||'')+(x['수요기관']?'<br><span style="color:#94a3b8">'+esc(x['수요기관'])+'</span>':'')+'</td><td>'+esc(x['지역']||'-')+'</td><td>'+fdt(x['마감일시'])+'</td><td><span class="tag">'+esc(x['매칭키워드']||'')+'</span></td><td><span class="mark '+on+'" onclick="mark(this,\''+esc(no)+'\')">'+(x['관심상태']?'⭐ '+esc(x['관심상태']):'관심')+'</span></td></tr>';
+    var pb=ana?'<span class="pbtn" onclick="openM(\''+esc(no)+'\',\''+esc((x['공고명']||'').replace(/\x27/g,\" \"))+'\')">📝 제안서</span>':'';
+    return '<tr>'+(ana?'<td>'+scoreCell(x)+'</td>':'')+'<td style="max-width:360px">'+nm+'<br><span class="tag">'+esc(x['매칭키워드']||'')+'</span></td><td>'+esc(x['공고기관']||'')+'</td><td>'+won(x['추정가격'])+'</td><td>'+fdt(x['마감일시'])+'</td><td style="white-space:nowrap"><span class="mark '+on+'" onclick="mark(this,\''+esc(no)+'\')">'+(x['관심상태']?'⭐':'관심')+'</span>'+pb+'</td></tr>';
   }).join('');tb.innerHTML=h+'</tbody>';}
-async function mark(el,no){try{const r=await sb.rpc('rpc_bid_mark',{'_공고번호':no,'_상태':'검토'});if(r.error){alert('저장 실패: '+r.error.message);return;}el.classList.add('on');el.textContent='⭐ 검토';}catch(e){alert('저장 실패: '+e);}}
+async function mark(el,no){try{const r=await sb.rpc('rpc_bid_mark',{'_공고번호':no,'_상태':'검토'});if(r.error){alert('저장 실패: '+r.error.message);return;}el.classList.add('on');el.textContent='⭐';}catch(e){alert('실패: '+e);}}
+// ===== 제안서 모달 =====
+async function openM(no,name){curNo=no;curName=name;document.getElementById('mtitle').textContent='제안서 — '+name;document.getElementById('ptext').value='';document.getElementById('pstat').textContent='';document.getElementById('pinfo').textContent='';document.getElementById('pfile').value='';document.getElementById('ov').classList.remove('hide');
+  try{const r=await sb.rpc('rpc_bid_proposal_get',{'_공고번호':no});if(!r.error&&r.data&&r.data['본문']){document.getElementById('ptext').value=r.data['본문'];document.getElementById('pinfo').textContent='기존 초안('+(r.data['상태']||'')+') · '+fdt(r.data['수정일시']);}}catch(e){}}
+function closeM(){document.getElementById('ov').classList.add('hide');}
+function readFileB64(f){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result).split(',')[1]);};r.onerror=rej;r.readAsDataURL(f);});}
+async function genProposal(){const st=document.getElementById('pstat');st.textContent='AI가 제안서 초안을 작성 중입니다… (30초~1분)';
+  var body={'공고번호':curNo};const f=document.getElementById('pfile').files[0];
+  try{ if(f){ st.textContent='규격서 첨부 읽는 중…'; body['규격서_pdf']=await readFileB64(f); st.textContent='AI 작성 중…(규격서 반영)'; }
+    const r=await sb.functions.invoke('bid-proposal',{body:body});
+    if(r.error){st.textContent='오류: '+r.error.message;return;}const d=r.data||{};if(d.error){st.textContent='오류: '+d.error;return;}
+    document.getElementById('ptext').value=d['본문']||'';st.textContent='초안 생성 완료 — 검토·수정 후 저장/다운로드하세요.';
+  }catch(e){st.textContent='실패: '+e;}}
+async function saveProposal(){const t=document.getElementById('ptext').value;try{const r=await sb.rpc('rpc_bid_proposal_save',{'_공고번호':curNo,'_제목':curName+' 제안서','_본문':t,'_상태':'수정'});if(r.error){alert('저장 실패: '+r.error.message);return;}document.getElementById('pstat').textContent='저장됨.';}catch(e){alert('실패: '+e);}}
+function mdToHtml(md){var lines=md.split('\n'),out=[],intbl=false;
+  function inl(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');}
+  for(var i=0;i<lines.length;i++){var l=lines[i];
+    if(/^\s*\|/.test(l)){ if(/^\s*\|[\s:|-]+\|?\s*$/.test(l))continue; var cells=l.split('|').slice(1,-1).map(function(c){return inl(c.trim());}); if(!intbl){out.push('<table border="1" cellspacing="0" cellpadding="5" style="border-collapse:collapse;width:100%">');intbl=true;} out.push('<tr>'+cells.map(function(c){return '<td>'+c+'</td>';}).join('')+'</tr>'); continue;}
+    if(intbl){out.push('</table>');intbl=false;}
+    if(/^#\s/.test(l))out.push('<h1>'+inl(l.replace(/^#\s/,''))+'</h1>');
+    else if(/^##\s/.test(l))out.push('<h2>'+inl(l.replace(/^##\s/,''))+'</h2>');
+    else if(/^###\s/.test(l))out.push('<h3>'+inl(l.replace(/^###\s/,''))+'</h3>');
+    else if(/^\s*[-*]\s/.test(l))out.push('<p style="margin-left:14px">• '+inl(l.replace(/^\s*[-*]\s/,''))+'</p>');
+    else if(l.trim()==='')out.push('<br>');
+    else out.push('<p>'+inl(l)+'</p>');}
+  if(intbl)out.push('</table>');return out.join('\n');}
+function downloadDoc(){var md=document.getElementById('ptext').value;if(!md){alert('내용이 없습니다.');return;}
+  var html='<html xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>body{font-family:맑은 고딕,Malgun Gothic;font-size:11pt;line-height:1.6}h1{font-size:18pt}h2{font-size:14pt;margin-top:14pt}h3{font-size:12pt}td{font-size:10.5pt}</style></head><body>'+mdToHtml(md)+'</body></html>';
+  var blob=new Blob(['﻿'+html],{type:'application/msword'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(curName||'제안서').slice(0,40)+'_제안서.doc';a.click();}
 boot();
 </script>
 </body>

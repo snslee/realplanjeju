@@ -720,12 +720,49 @@ table.qt-items td.narrow input{text-align:right}
 <!-- RP-WEB v2: mkhub iframe 제거 (마케팅=직접 링크) -->
 <!-- RP-WEB v4: 항공조회·입찰 준비 화면 -->
 <section id="view-air" class="page" hidden>
-  <div class="page-title">✈️ 항공 조회 <span style="font-size:12px;color:#b45309;background:#fff7e6;border-radius:8px;padding:2px 8px;vertical-align:middle">P3 준비</span></div>
-  <div style="background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:22px;margin-top:14px;max-width:760px">
-    <b style="font-size:14.5px">진행 예정 — 설계 확정본 보유</b>
-    <p style="font-size:13px;color:#5a6478;line-height:1.9;margin-top:8px">국내선 <b>스케줄 조회</b>(한국공항공사·국토부 공공데이터 무료 API) + <b>가격</b>은 단기 노선 평균가 → 장기 TOPAS 연동 검토.<br>설계서: 항공조회_설계서_v1.0 (2026-06-19) — 신규 테이블 td_ · EF air-search · 키 Vault 보관.</p>
-    <div style="font-size:12px;color:#98a3b8;margin-top:10px">우선순위: P2 홈페이지 배포 완료 → P3 여행 모듈에서 구현</div>
+  <div class="page-title">✈️ 항공 조회 <span style="font-size:12px;color:#2563eb;background:#eff6ff;border-radius:8px;padding:2px 8px;vertical-align:middle">국내선</span></div>
+  <div style="background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:18px;margin-top:14px;max-width:920px">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+      <label style="font-size:12px;color:#5a6478">출발<br><select id="air-dep" style="margin-top:4px;padding:8px;border:1px solid #cfd8e6;border-radius:8px;min-width:140px"></select></label>
+      <label style="font-size:12px;color:#5a6478">도착<br><select id="air-arr" style="margin-top:4px;padding:8px;border:1px solid #cfd8e6;border-radius:8px;min-width:140px"></select></label>
+      <label style="font-size:12px;color:#5a6478">날짜<br><input type="date" id="air-date" style="margin-top:4px;padding:8px;border:1px solid #cfd8e6;border-radius:8px"></label>
+      <button onclick="window.airSearch()" style="padding:9px 22px;background:#2563eb;color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer">조회</button>
+    </div>
+    <div id="air-status" style="font-size:12.5px;color:#7a8598;margin-top:14px"></div>
+    <div style="overflow:auto;margin-top:8px"><table id="air-tbl" style="width:100%;border-collapse:collapse;font-size:13px"></table></div>
+    <div style="font-size:11.5px;color:#98a3b8;margin-top:12px">데이터: 한국공항공사 공공데이터(국내선 운항정보). 요금 미포함·실시간 운항 기준. 신청 직후 최대 1일간 결과가 비어 있을 수 있습니다.</div>
   </div>
+  <script>
+  (function(){
+    var A=[["GMP","김포"],["CJU","제주"],["PUS","김해(부산)"],["TAE","대구"],["CJJ","청주"],["KWJ","광주"],["RSU","여수"],["USN","울산"],["KUV","군산"],["WJU","원주"],["HIN","사천"],["KPO","포항경주"],["MWX","무안"],["YNY","양양"]];
+    function opt(s){return A.map(function(a){return "<option value=\""+a[0]+"\""+(a[0]===s?" selected":"")+">"+a[1]+" ("+a[0]+")</option>";}).join("");}
+    function hhmm(s){s=(s||"").replace(/[^0-9]/g,"");return s.length>=4?s.slice(0,2)+":"+s.slice(2,4):(s||"-");}
+    window.airInit=function(){
+      var d=document.getElementById("air-dep"),r=document.getElementById("air-arr"),t=document.getElementById("air-date");
+      if(d&&!d.dataset.f){d.innerHTML=opt("GMP");d.dataset.f="1";}
+      if(r&&!r.dataset.f){r.innerHTML=opt("CJU");r.dataset.f="1";}
+      if(t&&!t.value){t.value=new Date().toISOString().slice(0,10);}
+    };
+    window.airSearch=async function(){
+      var dep=document.getElementById("air-dep").value,arr=document.getElementById("air-arr").value,dt=document.getElementById("air-date").value;
+      var st=document.getElementById("air-status"),tb=document.getElementById("air-tbl");
+      if(dep===arr){st.textContent="출발과 도착 공항이 같습니다.";return;}
+      st.textContent="조회 중…";tb.innerHTML="";
+      try{
+        var res=await sb.functions.invoke("air-search",{body:{"출발":dep,"도착":arr,"운항일자":dt}});
+        if(res.error){st.textContent="오류: "+res.error.message;return;}
+        var d=res.data||{};
+        if(d.error){st.textContent="오류: "+d.error;return;}
+        var rows=d["결과"]||[];
+        if(!rows.length){st.textContent="결과 없음 — 해당 노선 미운항이거나 API 활성화 지연(신청 직후 최대 1일).";return;}
+        st.textContent=dep+" → "+arr+" · "+dt+" · "+rows.length+"편";
+        var h="<thead><tr>"+["편명","항공사","출발","상태"].map(function(x){return "<th style=\"text-align:left;padding:8px;border-bottom:2px solid #e3e9f4\">"+x+"</th>";}).join("")+"</tr></thead><tbody>";
+        h+=rows.map(function(x){return "<tr><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(x["편명"]||"")+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(x["항공사코드"]||"")+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+hhmm(x["출발시각"])+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(x["운항상태"]||"")+"</td></tr>";}).join("");
+        tb.innerHTML=h+"</tbody>";
+      }catch(e){st.textContent="조회 실패: "+e;}
+    };
+  })();
+  </script>
 </section>
 <section id="view-bid" class="page" hidden>
   <div class="page-title">📑 입찰 <span style="font-size:12px;color:#b45309;background:#fff7e6;border-radius:8px;padding:2px 8px;vertical-align:middle">P4 준비</span></div>
@@ -3486,7 +3523,7 @@ function handleRoute(){
       break;
     case 'air':/* RP-WEB v4 */
       state.activeTab='air';show('#view-air');
-      $('.nav-item[data-nav="air"]').classList.add('active');break;
+      $('.nav-item[data-nav="air"]').classList.add('active');if(window.airInit)airInit();break;
     case 'bid':/* RP-WEB v4 */
       state.activeTab='bid';show('#view-bid');
       $('.nav-item[data-nav="bid"]').classList.add('active');break;

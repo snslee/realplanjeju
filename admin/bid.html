@@ -114,7 +114,7 @@ function render(rows,ana,hist){const tb=document.getElementById('tbl');
   let h='<thead><tr>'+(ana?'<th>적합도</th>':'')+'<th>공고명</th><th>발주기관</th><th>추정가</th><th>마감</th>'+(hist?'<th>이력</th>':'')+'<th></th></tr></thead><tbody>';
   h+=rows.map(function(x){var no=x['공고번호'],on=x['관심상태']?'on':'',url=x['공고url'];
     var nm=url?('<a class="link" href="'+esc(url)+'" target="_blank">'+esc(x['공고명'])+'</a>'):esc(x['공고명']);
-    var pb=ana?'<span class="pbtn" onclick="openM(\''+esc(no)+'\',\''+esc((x['공고명']||'').replace(/\x27/g,\" \"))+'\')">📝 제안서</span>':'';
+    var pb=ana?'<span class="pbtn" onclick="openM(\''+esc(no)+'\',\''+esc((x['공고명']||'').replace(/\x27/g," "))+'\')">📝 제안서</span>':'';
     return '<tr>'+(ana?'<td>'+scoreCell(x)+'</td>':'')+'<td style="max-width:360px">'+nm+'<br><span class="tag">'+esc(x['매칭키워드']||'')+'</span></td><td>'+esc(x['공고기관']||'')+'</td><td>'+won(x['추정가격'])+'</td><td>'+fdt(x['마감일시'])+'</td>'+(hist?'<td>'+histCell(x)+'</td>':'')+'<td style="white-space:nowrap"><span class="mark '+on+'" onclick="mark(this,\''+esc(no)+'\')">'+(x['관심상태']?'⭐':'관심')+'</span>'+pb+'</td></tr>';
   }).join('');tb.innerHTML=h+'</tbody>';}
 async function mark(el,no){try{const r=await sb.rpc('rpc_bid_mark',{'_공고번호':no,'_상태':'검토'});if(r.error){alert('저장 실패: '+r.error.message);return;}el.classList.add('on');el.textContent='⭐';}catch(e){alert('실패: '+e);}}

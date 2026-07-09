@@ -47,7 +47,7 @@ a.link{color:#2563eb;text-decoration:none}a.link:hover{text-decoration:underline
 <div class="top"><b>📑 리얼플랜제주 · 입찰 조회</b><span class="sp"></span><span id="who" style="font-size:12px;color:#cfe0ff"></span><a href="../admin.html">← 관리자 홈</a></div>
 <div class="wrap">
   <div class="title">📑 입찰 공고 · AI 적합도 분석 · 제안서 <span class="tag">나라장터 · 자동수집</span></div>
-  <div class="sub">자동 수집 공고를 AI가 우리 역량·2천만원 기준으로 분석하고, 적합 공고는 제안서 초안까지 자동 작성합니다. 적합도 60↑는 텔레그램 알림.</div>
+  <div class="sub">제주 기반(지역제한 제주 또는 제주·서귀포 발주기관)·추정가 5천만원 이하 공고만 매일 08:00 자동수집·텔레그램 알림. 적합도 분석은 코워크(Claude)에 '입찰 분석해줘'라고 요청하면 반영됩니다.</div>
   <div id="gate" class="card hide" style="color:#b45309">로그인 또는 입찰 권한이 필요합니다. <a class="link" href="../admin.html">관리자 홈에서 로그인</a> 후 다시 열어주세요.</div>
   <div id="app" class="hide">
     <div class="tabs">
@@ -106,7 +106,7 @@ async function boot(){
   loadList();
 }
 function setTab(x){TAB=x;document.getElementById('tabList').classList.toggle('on',x==='list');document.getElementById('tabFav').classList.toggle('on',x==='fav');document.getElementById('tabSearch').classList.toggle('on',x==='search');document.getElementById('searchbar').classList.toggle('hide',x!=='search');if(x==='list')loadList();else if(x==='fav')loadFav();else document.getElementById('tbl').innerHTML='';}
-async function loadList(){const st=document.getElementById('status');st.textContent='불러오는 중…';try{const r=await sb.rpc('rpc_bid_list',{});if(r.error){st.textContent='오류: '+r.error.message;return;}const rows=r.data||[];st.textContent='수집·분석 공고 '+rows.length+'건 (적합도순)';render(rows,true);}catch(e){st.textContent='실패: '+e;}}
+async function loadList(){const st=document.getElementById('status');st.textContent='불러오는 중…';try{const r=await sb.rpc('rpc_bid_list',{});if(r.error){st.textContent='오류: '+r.error.message;return;}const rows=r.data||[];st.textContent='수집·분석 공고 '+rows.length+'건 (최신순)';render(rows,true);}catch(e){st.textContent='실패: '+e;}}
 async function loadFav(){const st=document.getElementById('status');st.textContent='관심공고…';try{const r=await sb.rpc('rpc_bid_list',{'_상태':'관심'});if(r.error){st.textContent='오류: '+r.error.message;return;}const rows=r.data||[];let sx='';try{const s=await sb.rpc('rpc_bid_stats');if(!s.error&&s.data){const d=s.data;sx=' · 낙찰 '+(d['낙찰']||0)+' · 유찰 '+(d['유찰']||0)+(d['승률']!=null?' · 승률 '+d['승률']+'%':'');}}catch(e){}st.textContent='관심공고 '+rows.length+'건'+sx;render(rows,true,true);}catch(e){st.textContent='실패: '+e;}}
 async function doSearch(){const st=document.getElementById('status');const kw=document.getElementById('kw').value.trim(),org=document.getElementById('org').value.trim(),sd=document.getElementById('sd').value,ed=document.getElementById('ed').value;st.textContent='조회 중…';document.getElementById('tbl').innerHTML='';try{const r=await sb.functions.invoke('bid-search',{body:{'키워드':kw,'기관':org,'시작일':sd,'종료일':ed}});if(r.error){st.textContent='오류: '+r.error.message;return;}const d=r.data||{};if(d.error){st.textContent='오류: '+d.error;return;}const rows=d['결과']||[];st.textContent='매칭 '+rows.length+'건 (원본)';render(rows,false);}catch(e){st.textContent='조회 실패: '+e;}}
 function render(rows,ana,hist){const tb=document.getElementById('tbl');

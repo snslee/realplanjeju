@@ -732,6 +732,7 @@ table.qt-items td.narrow input{text-align:right}
       <label style="font-size:12px;color:#5a6478">도착<br><select id="air-arr" style="margin-top:4px;padding:8px;border:1px solid #cfd8e6;border-radius:8px;min-width:140px"></select></label>
       <label style="font-size:12px;color:#5a6478">날짜<br><input type="date" id="air-date" style="margin-top:4px;padding:8px;border:1px solid #cfd8e6;border-radius:8px"></label>
       <button onclick="window.airSearch()" style="padding:9px 22px;background:#2563eb;color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer">조회</button>
+      <label style="font-size:12px;color:#5a6478;display:flex;align-items:center;gap:5px;padding-bottom:8px"><input type="checkbox" id="air-past" onchange="window.airSearch()">지난 편 포함</label>
     </div>
     <div id="air-status" style="font-size:12.5px;color:#7a8598;margin-top:14px"></div>
     <div style="overflow:auto;margin-top:8px"><table id="air-tbl" style="width:100%;border-collapse:collapse;font-size:13px"></table></div>
@@ -759,7 +760,13 @@ table.qt-items td.narrow input{text-align:right}
         var d=res.data||{};
         if(d.error){st.textContent="오류: "+d.error;return;}
         var rows=d["결과"]||[];
-        if(!rows.length){st.textContent="결과 없음 — 해당 노선 미운항이거나 API 활성화 지연(신청 직후 최대 1일).";return;}
+        var allCnt=rows.length;
+        var showPast=!!(document.getElementById("air-past")&&document.getElementById("air-past").checked);
+        if(!showPast){
+          var nowKST=new Date(Date.now()+9*3600000);var nowM=nowKST.getUTCHours()*60+nowKST.getUTCMinutes()-10;
+          rows=rows.filter(function(x){var s=x["운항상태"]||"";if(/^(출발|도착)/.test(s))return false;var tm=parseInt(String(x["출발시각"]||"").replace(/[^0-9]/g,"").slice(0,4)||"",10);if(isNaN(tm))return true;var m=Math.floor(tm/100)*60+(tm%100);return m>=nowM;});
+        }
+        if(!rows.length){st.textContent=allCnt?("오늘 남은 운항편이 없습니다 (전체 "+allCnt+"편 운항 종료) — '지난 편 포함'을 체크하면 전체 내역이 보입니다.":"결과 없음 — 해당 노선 미운항이거나 API 활성화 지연(신청 직후 최대 1일).";tb.innerHTML="";return;}
         var AIRNM={"KE":"대한항공","OZ":"아시아나","7C":"제주항공","TW":"티웨이","LJ":"진에어","BX":"에어부산","RS":"에어서울","ZE":"이스타항공","RF":"에어로케이"};
         
         var fares={};
@@ -771,9 +778,9 @@ table.qt-items td.narrow input{text-align:right}
         var dl=rows.filter(function(x){return /지연|결항|회항/.test(x["운항상태"]||"");}).length;
         var lows=[];Object.keys(fares).forEach(function(k){var pp=k.split("|");if(pp[1]===season&&pp[0]!=="DEFAULT"&&rows.some(function(x){return x["항공사코드"]===pp[0];}))lows.push([fares[k][0],pp[0]]);});
         lows.sort(function(a,b){return a[0]-b[0];});
-        st.innerHTML=dep+" → "+arr+" · "+dt+" <b>("+season+")</b> · "+rows.length+"편"+(dl?" · <span style=\"color:#b45309;font-weight:700\">지연·결항·회항 "+dl+"편</span>":"")+(lows.length?" · 최저 예상 <b style=\"color:#2563eb\">"+fmtW(lows[0][0])+"원~ ("+(AIRNM[lows[0][1]]||lows[0][1])+")</b>":"")+"<br><span style=\"color:#98a3b8;font-size:11.5px\">예상운임은 공시·시장가 기준(유류할증료·공항이용료 포함가 아님) · 편명 클릭 → 네이버 항공권(구간·날짜 자동입력)에서 확정가·잔여석 확인</span>";
+        st.innerHTML=dep+" → "+arr+" · "+dt+" <b>("+season+")</b> · 남은 "+rows.length+"편<span style=\"color:#98a3b8\">/전체 "+allCnt+"편</span>"+(dl?" · <span style=\"color:#b45309;font-weight:700\">지연·결항·회항 "+dl+"편</span>":"")+(lows.length?" · 최저 예상 <b style=\"color:#2563eb\">"+fmtW(lows[0][0])+"원~ ("+(AIRNM[lows[0][1]]||lows[0][1])+")</b>":"")+"<br><span style=\"color:#98a3b8;font-size:11.5px\">예상운임은 공시·시장가 기준(유류할증료·공항이용료 포함가 아님) · 편명 클릭 → 그 시간대(±30분) 확정가·잔여석 자동 필터 조회 · 출발 완료 편은 기본 숨김</span>";
         var h="<thead><tr>"+["편명","항공사","출발","상태","예상운임(편도)"].map(function(x){return "<th style=\"text-align:left;padding:8px;border-bottom:2px solid #e3e9f4\">"+x+"</th>";}).join("")+"</tr></thead><tbody>";
-        h+=rows.map(function(x){var cd=x["항공사코드"]||"";var lk="https://flight.naver.com/flights/domestic/"+dep+"-"+arr+"-"+dt.replace(/-/g,"")+"?adult=1&fareType=Y";return "<tr style=\"cursor:pointer\" title=\"클릭: 네이버 항공권에서 이 날짜 확정가·잔여석 확인\" onclick=\"window.open('"+lk+"','_blank')\"><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(x["편명"]||"")+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(AIRNM[cd]||cd)+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+hhmm(x["출발시각"])+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(x["운항상태"]||"")+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8;font-weight:600;color:#2563eb\">"+fareOf(cd)+"</td></tr>";}).join("");
+        h+=rows.map(function(x){var cd=x["항공사코드"]||"";var tm2=parseInt(String(x["출발시각"]||"").replace(/[^0-9]/g,"").slice(0,4)||"",10);var mins=isNaN(tm2)?null:(Math.floor(tm2/100)*60+(tm2%100));var lk="https://www.skyscanner.co.kr/transport/flights/"+dep.toLowerCase()+"/"+arr.toLowerCase()+"/"+dt.slice(2).replace(/-/g,"")+"/?adultsv2=1"+(mins!=null?("&departure-times="+Math.max(0,mins-30)+"-"+Math.min(1439,mins+45)):"");return "<tr style=\"cursor:pointer\" title=\"클릭: 이 시간대 항공편 확정가·잔여석 확인\" onclick=\"window.open('"+lk+"','_blank')\"><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(x["편명"]||"")+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(AIRNM[cd]||cd)+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+hhmm(x["출발시각"])+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(x["운항상태"]||"")+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8;font-weight:600;color:#2563eb\">"+fareOf(cd)+"</td></tr>";}).join("");
         tb.innerHTML=h+"</tbody>";
       }catch(e){st.textContent="조회 실패: "+e;}
     };

@@ -715,6 +715,11 @@ table.qt-items td.narrow input{text-align:right}
       <div><b style="font-size:13.5px">유입경로별</b><div id="ws-src"></div></div>
       <div><b style="font-size:13.5px">유입 콘텐츠 TOP (블로그 UTM·페이지)</b><div id="ws-top"></div></div>
     </div>
+    <div style="margin-top:22px"><b style="font-size:13.5px">블로그 채널 현황 (최근 7일 · 네이버/티스토리 자동수집)</b><div id="ws-blog"></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+      <div><b style="font-size:13.5px">블로그 유입 검색어 TOP 10 (최신월)</b><div id="ws-kw"></div></div>
+      <div><b style="font-size:13.5px">블로그 → 홈페이지 → 문의 (최근 7일)</b><div id="ws-conv"></div></div>
+    </div>
   </div>
 </section>
 <!-- RP-WEB v2: mkhub iframe 제거 (마케팅=직접 링크) -->
@@ -726,7 +731,7 @@ table.qt-items td.narrow input{text-align:right}
       <label style="font-size:12px;color:#5a6478">출발<br><select id="air-dep" style="margin-top:4px;padding:8px;border:1px solid #cfd8e6;border-radius:8px;min-width:140px"></select></label>
       <label style="font-size:12px;color:#5a6478">도착<br><select id="air-arr" style="margin-top:4px;padding:8px;border:1px solid #cfd8e6;border-radius:8px;min-width:140px"></select></label>
       <label style="font-size:12px;color:#5a6478">날짜<br><input type="date" id="air-date" style="margin-top:4px;padding:8px;border:1px solid #cfd8e6;border-radius:8px"></label>
-      <button onclick="window.airSearch()" style="padding:9px 22px;background:#2563eb;color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer">조회</button>
+      <button onclick="window.airSearch()" style="padding:9px 22px;background:#2563eb;color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer">조회</button><button onclick="var d=document.getElementById('air-dep').value,a=document.getElementById('air-arr').value,t=(document.getElementById('air-date').value||'').replace(/-/g,'');if(!d||!a||!t){alert('출발/도착/날짜를 선택하세요');}else{window.open('https://flight.naver.com/flights/domestic/'+d+'-'+a+'-'+t+'?adult=1&fareType=Y','_blank');}" style="padding:9px 18px;background:#03c75a;color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer;margin-left:4px">가격·좌석 (네이버)</button>
     </div>
     <div id="air-status" style="font-size:12.5px;color:#7a8598;margin-top:14px"></div>
     <div style="overflow:auto;margin-top:8px"><table id="air-tbl" style="width:100%;border-collapse:collapse;font-size:13px"></table></div>
@@ -8785,7 +8790,7 @@ async function wsOpenEditor(site){
     window.open(url+'#rpedit&access='+encodeURIComponent(t.access_token)+'&refresh='+encodeURIComponent(t.refresh_token),'_blank');
   }catch(e){alert('편집 창 열기 실패: '+e.message);}
 }
-function wsInit(){wsLoad();}
+function wsInit(){wsLoad();wsBlogLoad();}
 async function wsLoad(){
   var days=+((document.getElementById('ws-days')||{}).value||30);
   var site=((document.getElementById('ws-site')||{}).value)||'ALL';
@@ -8825,6 +8830,46 @@ function wsRender(rows,days){
   document.getElementById('ws-top').innerHTML=topArr.length?'<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px">'
     +topArr.map(function(s){return '<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9;word-break:break-all">'+s[0]+'</td><td style="text-align:right;font-weight:800;border-bottom:1px solid #f0f3f9;width:44px">'+s[1]+'</td></tr>';}).join('')+'</table>'
     :'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">블로그 CTA에 UTM을 달면 글별 유입이 여기 잡힙니다.</div>';
+}
+/* RP-WEB v7 (2026-07-13): 블로그 채널 현황 + 유입검색어 + 전환 요약 */
+async function wsBlogLoad(){
+  try{
+    var since=new Date(Date.now()-7*864e5).toISOString().slice(0,10);
+    var el=document.getElementById('ws-blog');
+    if(el){
+      var m=await window.sb.from('mk_metrics').select('채널,측정_일자,조회_수,클릭_수,노출_수').gte('측정_일자',since).limit(8000);
+      if(m.error){el.innerHTML='<div style="color:#c0392b;font-size:12.5px">조회 실패: '+m.error.message+'</div>';}
+      else{
+        var by={};(m.data||[]).forEach(function(r){var k=r['채널']||'기타';var o=by[k]=by[k]||{v:0,c:0,i:0};o.v+=(r['조회_수']||0);o.c+=(r['클릭_수']||0);o.i+=(r['노출_수']||0);});
+        var ks=Object.keys(by).sort();
+        el.innerHTML=ks.length?'<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px"><tr style="color:#7a869c;font-size:11.5px"><td style="padding:4px">채널</td><td style="text-align:right">조회</td><td style="text-align:right">노출</td><td style="text-align:right">클릭</td></tr>'+ks.map(function(k){var o=by[k];return '<tr><td style="padding:5px 4px;border-top:1px solid #f0f3f9">'+k+'</td><td style="text-align:right;border-top:1px solid #f0f3f9;font-weight:700">'+o.v.toLocaleString()+'</td><td style="text-align:right;border-top:1px solid #f0f3f9;color:#7a869c">'+(o.i?o.i.toLocaleString():'—')+'</td><td style="text-align:right;border-top:1px solid #f0f3f9;color:#7a869c">'+(o.c?o.c.toLocaleString():'—')+'</td></tr>';}).join('')+'</table>':'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">최근 7일 수집 데이터가 없습니다.</div>';
+      }
+    }
+    var ke=document.getElementById('ws-kw');
+    if(ke){
+      var kw=await window.sb.from('mk_inflow_keywords').select('채널,유입월,키워드,클릭_수,유입비율').order('유입월',{ascending:false}).limit(600);
+      if(kw.error){ke.innerHTML='<div style="color:#c0392b;font-size:12.5px">'+kw.error.message+'</div>';}
+      else{
+        var rows=kw.data||[];var mon=rows.length?rows[0]['유입월']:null;
+        var top=rows.filter(function(r){return r['유입월']===mon;}).sort(function(a,b){return ((b['클릭_수']||0)-(a['클릭_수']||0))||((b['유입비율']||0)-(a['유입비율']||0));}).slice(0,10);
+        ke.innerHTML=top.length?'<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px">'+top.map(function(r){return '<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9">'+r['키워드']+'</td><td style="text-align:right;color:#7a869c;border-bottom:1px solid #f0f3f9;width:80px;font-size:11px">'+(r['채널']||'')+'</td><td style="text-align:right;font-weight:700;border-bottom:1px solid #f0f3f9;width:64px">'+((r['클릭_수']!=null)?(r['클릭_수']+'클릭'):((r['유입비율']||0)+'%'))+'</td></tr>';}).join('')+'</table>':'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">데이터 없음</div>';
+      }
+    }
+    var ce=document.getElementById('ws-conv');
+    if(ce){
+      var since2=new Date(Date.now()-7*864e5).toISOString();
+      var v=await window.sb.from('web_방문로그').select('유입_출처').gte('방문_시각',since2).limit(8000);
+      var cu=await window.sb.from('customers').select('유입경로').gte('created_at',since2).is('deleted_at',null).limit(2000);
+      var vs=(v.data||[]);var blog=vs.filter(function(x){return x['유입_출처']==='naver_blog'||x['유입_출처']==='tistory';}).length;
+      var inq=(cu.data||[]).filter(function(x){return /^홈페이지/.test(x['유입경로']||'');});
+      var inqBlog=inq.filter(function(x){return /(naver_blog|tistory)/.test(x['유입경로']||'');}).length;
+      ce.innerHTML='<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px">'
+        +'<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9">블로그발 홈페이지 방문</td><td style="text-align:right;font-weight:700;border-bottom:1px solid #f0f3f9">'+blog+' / '+vs.length+'건</td></tr>'
+        +'<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9">홈페이지 경유 신규문의</td><td style="text-align:right;font-weight:700;border-bottom:1px solid #f0f3f9">'+inq.length+'건</td></tr>'
+        +'<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9">그중 블로그발 문의</td><td style="text-align:right;font-weight:700;border-bottom:1px solid #f0f3f9">'+inqBlog+'건</td></tr>'
+        +'</table><div style="font-size:11px;color:#98a3b8;margin-top:6px">홈페이지 방문 집계는 2026-07-13부터 시작 · 블로그 CTA에 UTM을 달면 글별 추적됩니다</div>';
+    }
+  }catch(e){}
 }
 /* RP-WEB v2: mkhubInit 제거 */
 /* RP-WEB v3: 대시보드 방문 요약 위젯 */

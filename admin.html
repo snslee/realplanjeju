@@ -8837,12 +8837,12 @@ async function wsBlogLoad(){
     var since=new Date(Date.now()-7*864e5).toISOString().slice(0,10);
     var el=document.getElementById('ws-blog');
     if(el){
-      var m=await window.sb.from('mk_metrics').select('채널,측정_일자,조회_수,클릭_수,노출_수').gte('측정_일자',since).limit(8000);
+      var m=await window.sb.from('mk_metrics').select('채널,측정_일자,평균_순위,클릭_수,노출_수').gte('측정_일자',since).limit(8000);
       if(m.error){el.innerHTML='<div style="color:#c0392b;font-size:12.5px">조회 실패: '+m.error.message+'</div>';}
       else{
-        var by={};(m.data||[]).forEach(function(r){var k=r['채널']||'기타';var o=by[k]=by[k]||{v:0,c:0,i:0};o.v+=(r['조회_수']||0);o.c+=(r['클릭_수']||0);o.i+=(r['노출_수']||0);});
+        var by={};(m.data||[]).forEach(function(r){var k=r['채널']||'기타';var o=by[k]=by[k]||{s:0,n:0,c:0,i:0};if(r['평균_순위']!=null){o.s+=r['평균_순위'];o.n++;}o.c+=(r['클릭_수']||0);o.i+=(r['노출_수']||0);});
         var ks=Object.keys(by).sort();
-        el.innerHTML=ks.length?'<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px"><tr style="color:#7a869c;font-size:11.5px"><td style="padding:4px">채널</td><td style="text-align:right">조회</td><td style="text-align:right">노출</td><td style="text-align:right">클릭</td></tr>'+ks.map(function(k){var o=by[k];return '<tr><td style="padding:5px 4px;border-top:1px solid #f0f3f9">'+k+'</td><td style="text-align:right;border-top:1px solid #f0f3f9;font-weight:700">'+o.v.toLocaleString()+'</td><td style="text-align:right;border-top:1px solid #f0f3f9;color:#7a869c">'+(o.i?o.i.toLocaleString():'—')+'</td><td style="text-align:right;border-top:1px solid #f0f3f9;color:#7a869c">'+(o.c?o.c.toLocaleString():'—')+'</td></tr>';}).join('')+'</table>':'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">최근 7일 수집 데이터가 없습니다.</div>';
+        el.innerHTML=ks.length?'<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px"><tr style="color:#7a869c;font-size:11.5px"><td style="padding:4px">채널</td><td style="text-align:right">검색순위</td><td style="text-align:right">노출</td><td style="text-align:right">클릭</td></tr>'+ks.map(function(k){var o=by[k];return '<tr><td style="padding:5px 4px;border-top:1px solid #f0f3f9">'+k+'</td><td style="text-align:right;border-top:1px solid #f0f3f9;font-weight:700">'+(o.n?(Math.round(o.s/o.n*10)/10)+'위':'—')+'</td><td style="text-align:right;border-top:1px solid #f0f3f9;color:#7a869c">'+(o.i?o.i.toLocaleString():'—')+'</td><td style="text-align:right;border-top:1px solid #f0f3f9;color:#7a869c">'+(o.c?o.c.toLocaleString():'—')+'</td></tr>';}).join('')+'</table>':'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">최근 7일 수집 데이터가 없습니다.</div>';
       }
     }
     var ke=document.getElementById('ws-kw');

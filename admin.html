@@ -762,7 +762,8 @@ table.qt-items td.narrow input{text-align:right}
         var rows=d["결과"]||[];
         var allCnt=rows.length;
         var showPast=!!(document.getElementById("air-past")&&document.getElementById("air-past").checked);
-        if(!showPast){
+        var _todayK=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+        if(!showPast&&dt===_todayK){
           var nowKST=new Date(Date.now()+9*3600000);var nowM=nowKST.getUTCHours()*60+nowKST.getUTCMinutes()-10;
           rows=rows.filter(function(x){var s=x["운항상태"]||"";if(/^(출발|도착)/.test(s))return false;var tm=parseInt(String(x["출발시각"]||"").replace(/[^0-9]/g,"").slice(0,4)||"",10);if(isNaN(tm))return true;var m=Math.floor(tm/100)*60+(tm%100);return m>=nowM;});
         }

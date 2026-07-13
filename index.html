@@ -601,7 +601,7 @@ function logVisit(){
     try{sid=sessionStorage.getItem('rp_sid');if(!sid){sid=Math.random().toString(36).slice(2)+Date.now().toString(36);sessionStorage.setItem('rp_sid',sid);}}catch(e){}
     var q=new URLSearchParams(location.search),utm={};
     ['utm_source','utm_medium','utm_campaign','utm_content'].forEach(function(k){var v=q.get(k);if(v)utm[k]=v;});
-    sb.rpc('rpc_web_log_visit',{p_사이트:SITE,p_페이지:location.pathname,p_referrer:(document.referrer||'').split('?')[0],p_utm:utm,p_디바이스:matchMedia('(max-width:900px)').matches?'mobile':'pc',p_세션:sid});
+    sb.rpc('rpc_web_log_visit',{p_사이트:SITE,p_페이지:location.pathname,p_referrer:(document.referrer||'').split('?')[0],p_utm:utm,p_디바이스:matchMedia('(max-width:900px)').matches?'mobile':'pc',p_세션:sid}).then(function(){},function(){});
   }catch(e){}
 }
 /* 3) 편집 모드 게이트 — owner/manager만 */

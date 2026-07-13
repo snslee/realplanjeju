@@ -766,7 +766,7 @@ table.qt-items td.narrow input{text-align:right}
           var nowKST=new Date(Date.now()+9*3600000);var nowM=nowKST.getUTCHours()*60+nowKST.getUTCMinutes()-10;
           rows=rows.filter(function(x){var s=x["운항상태"]||"";if(/^(출발|도착)/.test(s))return false;var tm=parseInt(String(x["출발시각"]||"").replace(/[^0-9]/g,"").slice(0,4)||"",10);if(isNaN(tm))return true;var m=Math.floor(tm/100)*60+(tm%100);return m>=nowM;});
         }
-        if(!rows.length){st.textContent=allCnt?("오늘 남은 운항편이 없습니다 (전체 "+allCnt+"편 운항 종료) — '지난 편 포함'을 체크하면 전체 내역이 보입니다.":"결과 없음 — 해당 노선 미운항이거나 API 활성화 지연(신청 직후 최대 1일).";tb.innerHTML="";return;}
+        if(!rows.length){st.textContent=allCnt?("오늘 남은 운항편이 없습니다 (전체 "+allCnt+"편 운항 종료) — '지난 편 포함'을 체크하면 전체 내역이 보입니다."):"결과 없음 — 해당 노선 미운항이거나 API 활성화 지연(신청 직후 최대 1일).";tb.innerHTML="";return;}
         var AIRNM={"KE":"대한항공","OZ":"아시아나","7C":"제주항공","TW":"티웨이","LJ":"진에어","BX":"에어부산","RS":"에어서울","ZE":"이스타항공","RF":"에어로케이"};
         
         var fares={};

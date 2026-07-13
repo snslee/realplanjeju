@@ -760,9 +760,20 @@ table.qt-items td.narrow input{text-align:right}
         if(d.error){st.textContent="오류: "+d.error;return;}
         var rows=d["결과"]||[];
         if(!rows.length){st.textContent="결과 없음 — 해당 노선 미운항이거나 API 활성화 지연(신청 직후 최대 1일).";return;}
-        st.textContent=dep+" → "+arr+" · "+dt+" · "+rows.length+"편";
-        var h="<thead><tr>"+["편명","항공사","출발","상태"].map(function(x){return "<th style=\"text-align:left;padding:8px;border-bottom:2px solid #e3e9f4\">"+x+"</th>";}).join("")+"</tr></thead><tbody>";
-        h+=rows.map(function(x){return "<tr><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(x["편명"]||"")+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(x["항공사코드"]||"")+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+hhmm(x["출발시각"])+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(x["운항상태"]||"")+"</td></tr>";}).join("");
+        var AIRNM={"KE":"대한항공","OZ":"아시아나","7C":"제주항공","TW":"티웨이","LJ":"진에어","BX":"에어부산","RS":"에어서울","ZE":"이스타항공","RF":"에어로케이"};
+        var AIRURL={"KE":"https://www.koreanair.com/","OZ":"https://flyasiana.com/","7C":"https://www.jejuair.net/","TW":"https://www.twayair.com/","LJ":"https://www.jinair.com/","BX":"https://www.airbusan.com/","RS":"https://flyairseoul.com/","ZE":"https://www.eastarjet.com/"};
+        var fares={};
+        try{var fr=await sb.from("td_운임표").select("항공사코드,시즌,최저,최고").eq("구간",dep+"-"+arr);(fr.data||[]).forEach(function(f){fares[f["항공사코드"]+"|"+f["시즌"]]=[f["최저"],f["최고"]];});}catch(_){}
+        var dd=new Date(dt+"T00:00:00");var mmdd=(dd.getMonth()+1)*100+dd.getDate();var wd=dd.getDay();
+        var season=((mmdd>=715&&mmdd<=824)||mmdd>=1224||mmdd<=102)?"성수기":((wd===0||wd===5||wd===6)?"주말":"주중");
+        function fmtW(n){return n>=10000?(Math.round(n/1000)/10)+"만":String(n);}
+        function fareOf(cd){var f=fares[cd+"|"+season]||fares["DEFAULT|"+season];return f?fmtW(f[0])+"~"+fmtW(f[1])+"원":"—";}
+        var dl=rows.filter(function(x){return /지연|결항|회항/.test(x["운항상태"]||"");}).length;
+        var lows=[];Object.keys(fares).forEach(function(k){var pp=k.split("|");if(pp[1]===season&&pp[0]!=="DEFAULT"&&rows.some(function(x){return x["항공사코드"]===pp[0];}))lows.push([fares[k][0],pp[0]]);});
+        lows.sort(function(a,b){return a[0]-b[0];});
+        st.innerHTML=dep+" → "+arr+" · "+dt+" <b>("+season+")</b> · "+rows.length+"편"+(dl?" · <span style=\"color:#b45309;font-weight:700\">지연·결항·회항 "+dl+"편</span>":"")+(lows.length?" · 최저 예상 <b style=\"color:#2563eb\">"+fmtW(lows[0][0])+"원~ ("+(AIRNM[lows[0][1]]||lows[0][1])+")</b>":"")+"<br><span style=\"color:#98a3b8;font-size:11.5px\">예상운임은 공시·시장가 기준(유류할증료·공항이용료 포함가 아님) · 확정가·잔여석은 편명 클릭</span>";
+        var h="<thead><tr>"+["편명","항공사","출발","상태","예상운임(편도)"].map(function(x){return "<th style=\"text-align:left;padding:8px;border-bottom:2px solid #e3e9f4\">"+x+"</th>";}).join("")+"</tr></thead><tbody>";
+        h+=rows.map(function(x){var cd=x["항공사코드"]||"";var lk=AIRURL[cd]||("https://flight.naver.com/flights/domestic/"+dep+"-"+arr+"-"+dt.replace(/-/g,"")+"?adult=1&fareType=Y");return "<tr style=\"cursor:pointer\" title=\"클릭: 예약·확정가·잔여석 확인\" onclick=\"window.open('"+lk+"','_blank')\"><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(x["편명"]||"")+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(AIRNM[cd]||cd)+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+hhmm(x["출발시각"])+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8\">"+(x["운항상태"]||"")+"</td><td style=\"padding:8px;border-bottom:1px solid #f0f3f8;font-weight:600;color:#2563eb\">"+fareOf(cd)+"</td></tr>";}).join("");
         tb.innerHTML=h+"</tbody>";
       }catch(e){st.textContent="조회 실패: "+e;}
     };

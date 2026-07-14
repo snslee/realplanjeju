@@ -8821,6 +8821,7 @@ async function wsLoad(){
   var chart=document.getElementById('ws-chart');
   if(r.error){chart.innerHTML='<div style="color:#c0392b;font-size:13px">조회 실패: '+r.error.message+'</div>';return;}
   wsRender(r.data||[],days);
+  try{wsBlogLoad();}catch(e){}
 }
 function wsRender(rows,days){
   var SRC={naver_blog:'네이버 블로그(블A·B·C)',tistory:'티스토리',naver_search:'네이버 검색',naver_etc:'네이버 기타',google:'구글',direct:'직접 방문',instagram:'인스타그램',youtube:'유튜브',facebook:'페이스북',kakao:'카카오',etc:'기타'};

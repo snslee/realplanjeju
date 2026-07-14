@@ -8895,14 +8895,12 @@ async function wsBlogLoad(){
           c2.innerHTML=(!cv.error&&cv.data&&cv.data.length)?('<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px">'+cv.data.map(function(r){var s=r['세션수']||0,q=r['문의수']||0,pct=s?Math.round(q*1000/s)/10:0;return '<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9">'+(r['유입']||'')+'</td><td style="text-align:right;color:#7a869c;border-bottom:1px solid #f0f3f9">'+s+'명</td><td style="text-align:right;font-weight:700;border-bottom:1px solid #f0f3f9">'+q+'문의'+(s?(' ('+pct+'%)'):'')+'</td></tr>';}).join('')+'</table><div style="font-size:11px;color:#98a3b8;margin-top:6px">문의-세션 연결은 2026-07-14부터 집계</div>'):'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">데이터 없음</div>';
         }
       }catch(e){}
-      /* RP-WEB v8: 홈페이지 구글 검색 유입 검색어 (A-4, 2026-07-14) */
+      /* RP-WEB v8.1: 구글 검색 유입 검색어 — 별도 칸·스타일 통일 */
       try{
-        var gk=await window.sb.rpc('rpc_web_gsc_top');
-        if(!gk.error&&gk.data&&gk.data.length){
-          ce.innerHTML+='<div style="font-weight:700;margin-top:12px;font-size:12.5px">구글 검색 유입 검색어 (최근 28일 · GSC)</div>'
-            +'<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:6px">'
-            +gk.data.map(function(r){return '<tr><td style="padding:4px;border-bottom:1px solid #f0f3f9">'+(r['검색어']||'')+'</td><td style="text-align:right;border-bottom:1px solid #f0f3f9">'+(r['노출']||0)+'노출</td><td style="text-align:right;border-bottom:1px solid #f0f3f9">'+(r['클릭']||0)+'클릭</td><td style="text-align:right;font-weight:700;border-bottom:1px solid #f0f3f9">'+(r['순위']!=null?r['순위']+'위':'-')+'</td></tr>';}).join('')
-            +'</table><div style="font-size:11px;color:#98a3b8;margin-top:4px">realplanjeju.com 구글 검색 성과 · 매일 07:50 자동수집</div>';
+        var ge=document.getElementById('ws-gsc');
+        if(ge){
+          var gk=await window.sb.rpc('rpc_web_gsc_top');
+          ge.innerHTML=(!gk.error&&gk.data&&gk.data.length)?('<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px">'+gk.data.map(function(r){return '<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9">'+(r['검색어']||'')+'</td><td style="text-align:right;color:#7a869c;border-bottom:1px solid #f0f3f9">'+(r['노출']||0)+'노출</td><td style="text-align:right;color:#7a869c;border-bottom:1px solid #f0f3f9">'+(r['클릭']||0)+'클릭</td><td style="text-align:right;font-weight:700;border-bottom:1px solid #f0f3f9">'+(r['순위']!=null?r['순위']+'위':'-')+'</td></tr>';}).join('')+'</table><div style="font-size:11px;color:#98a3b8;margin-top:6px">realplanjeju.com 구글 검색 성과 · 매일 07:50 자동수집</div>'):'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">데이터 없음</div>';
         }
       }catch(e){}
     }

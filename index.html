@@ -1084,5 +1084,44 @@ setMode('view');
 };
 </script>
 
+<script>
+/* RP-SITE v2.1: 현장 이야기 — 네이버 블로그 최신글 자동 노출 (B-1, 2026-07-14 승인) */
+(function(){
+  var tries=0;
+  function badge(ch){ if(/블A/.test(ch))return ['여행','#E8F1FF','#2B62C4']; if(/블B/.test(ch))return ['행사','#EAF7EF','#1E7A46']; return ['마케팅','#FFF3E4','#B45309']; }
+  async function inject(){
+    tries++;
+    var anchor=document.getElementById('contact');
+    if(!anchor){ if(tries<12)setTimeout(inject,500); return; }
+    if(document.getElementById('rp-field-story'))return;
+    try{
+      var sb=window.__rpSb; if(!sb)return;
+      var r=await sb.rpc('rpc_web_latest_posts'); var rows=(r&&!r.error&&r.data)?r.data:[];
+      if(!rows.length)return;
+      var cards=rows.map(function(p){ var b=badge(p['채널']||'');
+        return '<a href="'+p['url']+'" target="_blank" rel="noopener" style="display:block;border:1px solid #E6ECF5;border-radius:14px;padding:20px;background:#fff;text-decoration:none;color:#222B3A">'
+          +'<span style="display:inline-block;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:10px;background:'+b[1]+';color:'+b[2]+'">'+b[0]+'</span>'
+          +'<div style="font-size:15.5px;font-weight:700;line-height:1.45;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+String(p['제목']||'').replace(/[<>]/g,'')+'</div>'
+          +'<div style="font-size:12px;color:#7C8698">'+String(p['발행일']||'').replace(/-/g,'.')+' · 네이버 블로그</div></a>';
+      }).join('');
+      var sec=document.createElement('section');
+      sec.id='rp-field-story';
+      sec.innerHTML='<div class="wrap" style="max-width:1140px;margin:0 auto;padding:64px 20px">'
+        +'<div style="color:#4A85F6;font-weight:700;font-size:14px;letter-spacing:1px">FIELD STORY</div>'
+        +'<h2 style="font-size:28px;font-weight:900;margin:8px 0 6px">리얼플랜제주 현장 이야기</h2>'
+        +'<div style="color:#7C8698;font-size:14.5px;margin-bottom:24px">여행·행사·마케팅 현장의 최신 소식</div>'
+        +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">'+cards+'</div>'
+        +'<div style="text-align:center;margin-top:20px;font-size:14px;color:#7C8698">블로그 더 보기: '
+        +'<a href="https://blog.naver.com/realplan_travel" target="_blank" rel="noopener" style="color:#2B62C4;font-weight:700;text-decoration:none">여행</a> · '
+        +'<a href="https://blog.naver.com/realplan_event" target="_blank" rel="noopener" style="color:#2B62C4;font-weight:700;text-decoration:none">행사</a> · '
+        +'<a href="https://blog.naver.com/realplan_marketing" target="_blank" rel="noopener" style="color:#2B62C4;font-weight:700;text-decoration:none">마케팅</a></div></div>';
+      anchor.parentNode.insertBefore(sec,anchor);
+    }catch(e){}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(inject,800);});
+  else setTimeout(inject,800);
+})();
+</script>
+
 </body>
 </html>

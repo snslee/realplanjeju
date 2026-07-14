@@ -8810,7 +8810,7 @@ async function wsOpenEditor(site){
     window.open(url+'#rpedit&access='+encodeURIComponent(t.access_token)+'&refresh='+encodeURIComponent(t.refresh_token),'_blank');
   }catch(e){alert('편집 창 열기 실패: '+e.message);}
 }
-function wsInit(){wsLoad();wsBlogLoad();}
+function wsInit(){wsLoad();}
 async function wsLoad(){
   var days=+((document.getElementById('ws-days')||{}).value||30);
   var site=((document.getElementById('ws-site')||{}).value)||'ALL';

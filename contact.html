@@ -579,6 +579,19 @@
 
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
+    /* --- 방문 로그 + 세션 (A-1·A-2, 2026-07-14) — IP 미저장·실도메인만 --- */
+    let RP_SID = null;
+    (function(){
+      try{
+        RP_SID = sessionStorage.getItem('rp_sid');
+        if(!RP_SID){ RP_SID = Math.random().toString(36).slice(2)+Date.now().toString(36); sessionStorage.setItem('rp_sid', RP_SID); }
+        if(!/realplanjeju\.com$/.test(location.hostname)) return;
+        var q=new URLSearchParams(location.search),utm={};
+        ['utm_source','utm_medium','utm_campaign','utm_content'].forEach(function(k){var v=q.get(k);if(v)utm[k]=v;});
+        sb.rpc('rpc_web_log_visit',{p_사이트:'A',p_페이지:location.pathname,p_referrer:(document.referrer||'').split('?')[0],p_utm:utm,p_디바이스:matchMedia('(max-width:900px)').matches?'mobile':'pc',p_세션:RP_SID}).then(function(){},function(){});
+      }catch(e){}
+    })();
+
     /* --- 쿠키 배너 --- */
     function acceptCookie() {
       try { localStorage.setItem('cookieOk', '1'); } catch(e) {}

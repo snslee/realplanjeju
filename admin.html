@@ -8884,8 +8884,11 @@ async function wsBlogLoad(){
     var ce=document.getElementById('ws-conv');
     if(ce){
       var since2=new Date(Date.now()-7*864e5).toISOString();
-      var v=await window.sb.from('web_방문로그').select('유입_출처').gte('방문_시각',since2).limit(8000);
-      var cu=await window.sb.from('customers').select('유입경로').gte('created_at',since2).is('deleted_at',null).limit(2000);
+      var site2=((document.getElementById('ws-site')||{}).value)||'ALL';
+      var vq=window.sb.from('web_방문로그').select('유입_출처').gte('방문_시각',since2);if(site2!=='ALL')vq=vq.eq('사이트',site2);
+      var v=await vq.limit(8000);
+      var cq=window.sb.from('customers').select('유입경로').gte('created_at',since2).is('deleted_at',null);if(site2!=='ALL')cq=cq.like('유입경로','홈페이지'+site2+'%');
+      var cu=await cq.limit(2000);
       var vs=(v.data||[]);var blog=vs.filter(function(x){return x['유입_출처']==='naver_blog'||x['유입_출처']==='tistory';}).length;
       var inq=(cu.data||[]).filter(function(x){return /^홈페이지/.test(x['유입경로']||'');});
       var inqBlog=inq.filter(function(x){return /(naver_blog|tistory)/.test(x['유입경로']||'');}).length;

@@ -8837,6 +8837,11 @@ function wsRender(rows,days){
   document.getElementById('ws-kpi').innerHTML=[
     ['오늘 방문',todayN],['최근 '+days+'일',total],['일평균',total?Math.round(total/days*10)/10:0],['모바일 비율',total?Math.round(mob/total*100)+'%':'0%']
   ].map(function(k){return '<div style="background:#f7faff;border:1px solid #e3e9f4;border-radius:10px;padding:14px;text-align:center"><div style="font-size:12px;color:#7a869c">'+k[0]+'</div><div style="font-size:22px;font-weight:900;color:#2B62C4">'+k[1]+'</div></div>';}).join('');
+  /* RP-WEB v8.3: A/B 요약칩 (전체 보기일 때만) */
+  var bySite={};rows.forEach(function(v){var st=v['사이트']||'?';bySite[st]=(bySite[st]||0)+1;});
+  var siteSel=((document.getElementById('ws-site')||{}).value)||'ALL';
+  var abEl=document.getElementById('ws-ab');
+  if(abEl){abEl.innerHTML=(siteSel==='ALL')?('<span style="font-size:12px;color:#7a869c;margin-right:4px">사이트별:</span><span style="display:inline-block;margin-right:6px;padding:3px 10px;border-radius:999px;background:#eef4ff;color:#2B62C4;font-weight:800;font-size:12px">A 여행·행사 '+(bySite['A']||0)+'건</span><span style="display:inline-block;padding:3px 10px;border-radius:999px;background:#eefaf2;color:#1e8e4e;font-weight:800;font-size:12px">B 마케팅·교육 '+(bySite['B']||0)+'건</span>'):'';}
   var dates=[];for(var i=days-1;i>=0;i--){dates.push(kst(new Date(Date.now()-i*864e5)));}
   var mx=1;dates.forEach(function(d){if((byDay[d]||0)>mx)mx=byDay[d];});
   document.getElementById('ws-chart').innerHTML='<div style="display:flex;align-items:flex-end;gap:2px;height:120px;border-bottom:1px solid #e3e9f4;padding-bottom:2px">'

@@ -701,7 +701,8 @@
           p_요청사항: (fd.get('요청사항') || '').trim() || null,
           // 포트폴리오 활용 동의는 초기 상담 단계에서 받지 않음 → 계약 시점에 계약서에서 별도 동의 (결정 #21)
           p_동의_콘텐츠: false,
-          p_동의_마케팅: form['동의_마케팅'].checked
+          p_동의_마케팅: form['동의_마케팅'].checked,
+          p_세션: RP_SID
         });
 
         if (error) throw error;

@@ -8901,7 +8901,7 @@ async function wsBlogLoad(){
       try{
         var c2=document.getElementById('ws-conv2');
         if(c2){
-          var cv=await window.sb.rpc('rpc_web_conversion_by_source',{p_일수:30});
+          var cv=await window.sb.rpc('rpc_web_conversion_by_source',{p_일수:30,p_사이트:site2});
           c2.innerHTML=(!cv.error&&cv.data&&cv.data.length)?('<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px">'+cv.data.map(function(r){var s=r['세션수']||0,q=r['문의수']||0,pct=s?Math.round(q*1000/s)/10:0;return '<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9">'+(r['유입']||'')+'</td><td style="text-align:right;color:#7a869c;border-bottom:1px solid #f0f3f9">'+s+'명</td><td style="text-align:right;font-weight:700;border-bottom:1px solid #f0f3f9">'+q+'문의'+(s?(' ('+pct+'%)'):'')+'</td></tr>';}).join('')+'</table><div style="font-size:11px;color:#98a3b8;margin-top:6px">문의-세션 연결은 2026-07-14부터 집계</div>'):'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">데이터 없음</div>';
         }
       }catch(e){}

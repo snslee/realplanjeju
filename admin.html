@@ -8904,6 +8904,28 @@ async function wsBlogLoad(){
           ge.innerHTML=(!gk.error&&gk.data&&gk.data.length)?('<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px">'+gk.data.map(function(r){return '<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9">'+(r['검색어']||'')+'</td><td style="text-align:right;color:#7a869c;border-bottom:1px solid #f0f3f9">'+(r['노출']||0)+'노출</td><td style="text-align:right;color:#7a869c;border-bottom:1px solid #f0f3f9">'+(r['클릭']||0)+'클릭</td><td style="text-align:right;font-weight:700;border-bottom:1px solid #f0f3f9">'+(r['순위']!=null?r['순위']+'위':'-')+'</td></tr>';}).join('')+'</table><div style="font-size:11px;color:#98a3b8;margin-top:6px">realplanjeju.com 구글 검색 성과 · 매일 07:50 자동수집</div>'):'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">데이터 없음</div>';
         }
       }catch(e){}
+      /* RP-WEB v8.2: 네이버 플레이스 월간 기록 (A, 2026-07-14) */
+      try{
+        var pe=document.getElementById('ws-place');
+        if(pe){
+          var ps=await window.sb.rpc('rpc_web_place_stats');
+          var prows=(ps&&!ps.error&&ps.data)?ps.data:[];
+          var ym=new Date().toISOString().slice(0,7);
+          var ph='<div style="margin-top:8px;padding:10px;border:1px solid #e6ecf5;border-radius:10px;background:#fafbfe">'
+            +'<div style="font-size:11.5px;color:#7a869c;margin-bottom:6px">스마트플레이스 관리자 통계 보고 매월 초 1분 입력 · 매월 1일 09:00 리마인드</div>'
+            +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12.5px">'
+            +'<input id="wsp-m" type="month" value="'+ym+'" style="padding:5px;border:1px solid #dbe3f0;border-radius:6px">'
+            +'<input id="wsp-v" type="number" placeholder="조회수" style="width:76px;padding:5px;border:1px solid #dbe3f0;border-radius:6px">'
+            +'<input id="wsp-c" type="number" placeholder="통화" style="width:56px;padding:5px;border:1px solid #dbe3f0;border-radius:6px">'
+            +'<input id="wsp-r" type="number" placeholder="리뷰" style="width:56px;padding:5px;border:1px solid #dbe3f0;border-radius:6px">'
+            +'<input id="wsp-k" type="text" placeholder="유입키워드 TOP (쉼표 구분)" style="flex:1;min-width:140px;padding:5px;border:1px solid #dbe3f0;border-radius:6px">'
+            +'<button onclick="wsPlaceSave()" style="border:0;border-radius:6px;padding:6px 12px;background:#eef4ff;color:#2B62C4;font-weight:700;cursor:pointer">저장</button>'
+            +'</div><div id="wsp-stat" style="font-size:11px;color:#98a3b8;margin-top:4px"></div></div>';
+          ph+=prows.length?('<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px">'+prows.map(function(r){return '<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9">'+String(r['월']||'').slice(0,7)+'</td><td style="text-align:right;border-bottom:1px solid #f0f3f9;font-weight:700">'+(r['조회수']!=null?r['조회수']+'뷰':'-')+'</td><td style="text-align:right;color:#7a869c;border-bottom:1px solid #f0f3f9">'+(r['스마트콜']!=null?r['스마트콜']+'콜':'-')+'</td><td style="text-align:right;color:#7a869c;border-bottom:1px solid #f0f3f9">'+(r['리뷰수']!=null?'리뷰'+r['리뷰수']:'-')+'</td><td style="padding-left:8px;border-bottom:1px solid #f0f3f9;color:#7a869c;font-size:11.5px">'+(r['유입키워드']||'')+'</td></tr>';}).join('')+'</table>'):'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">아직 기록 없음 — 첫 달 기록을 입력해 주세요</div>';
+          pe.innerHTML=ph;
+          window.wsPlaceSave=async function(){var st=document.getElementById('wsp-stat');st.textContent='저장 중…';try{var r=await window.sb.rpc('rpc_web_place_save',{p_월:document.getElementById('wsp-m').value+'-01',p_조회수:parseInt(document.getElementById('wsp-v').value)||null,p_유입키워드:document.getElementById('wsp-k').value||null,p_스마트콜:parseInt(document.getElementById('wsp-c').value)||null,p_리뷰수:parseInt(document.getElementById('wsp-r').value)||null});if(r.error){st.textContent='실패: '+r.error.message;return;}st.textContent='저장됨';wsLoad();}catch(e){st.textContent='실패: '+e;}};
+        }
+      }catch(e){}
     }
   }catch(e){}
 }

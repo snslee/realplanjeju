@@ -494,6 +494,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn" onclick="portFilter('국내여행',this)">🚌 국내여행</button>
         <button class="filter-btn" onclick="portFilter('행사이벤트',this)">🎪 행사이벤트</button>
         <button class="filter-btn" onclick="portFilter('블C',this)">📣 마케팅·교육</button>
+        <button class="filter-btn" onclick="portFilter('회사이력',this)">🎖️ 회사 이력</button>
         <input id="port-q" oninput="_portPage=1;renderPort()" placeholder="🔍 사례명·유형·키워드 검색" style="padding:6px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:.82rem;min-width:200px">
       </div>
       <div class="card"><div class="card-body" style="padding:0" id="port-board"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div></div>
@@ -898,7 +899,7 @@ function renderPortKpi(){
   const act=allPort.filter(r=>r.활성!==false);
   const noUrl=act.filter(r=>!(r.네이버_url||r.url)&&!r.티스토리_url).length;
   const noTxt=act.filter(r=>!r.사례내용||r.사례내용.trim().length<=20).length;
-  const kpi=[['전체 사례',act.length],['국내여행',act.filter(r=>r.사업부==='국내여행').length],['행사이벤트',act.filter(r=>r.사업부==='행사이벤트').length],['마케팅·교육',act.filter(r=>r.사업부==='온라인마케팅'||r.사업부==='마케팅교육').length],['📝 글 미발행 (URL 없음 정상)',noUrl],['⚠️ 내용 없음',noTxt]];
+  const kpi=[['전체 사례',act.length],['국내여행',act.filter(r=>r.사업부==='국내여행').length],['행사이벤트',act.filter(r=>r.사업부==='행사이벤트').length],['마케팅·교육',act.filter(r=>r.사업부==='온라인마케팅'||r.사업부==='마케팅교육').length],['🎖️ 회사 이력',act.filter(r=>r.사업부==='회사이력').length],['📝 글 미발행 (URL 없음 정상)',noUrl],['⚠️ 내용 없음',noTxt]];
   document.getElementById('port-kpi').innerHTML=kpi.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+k[1]+'</div></div>').join('');
 }
 function portFilter(f,b){_portFilter=f;_portPage=1;document.querySelectorAll('#port-filters .filter-btn').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');renderPort();}

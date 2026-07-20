@@ -8815,7 +8815,7 @@ async function wsLoad(){
   var days=+((document.getElementById('ws-days')||{}).value||30);
   var site=((document.getElementById('ws-site')||{}).value)||'ALL';
   var since=new Date(Date.now()-days*864e5).toISOString();
-  var q=window.sb.from('web_방문로그').select('방문_시각,유입_출처,사이트,디바이스,utm_content,페이지').gte('방문_시각',since).order('방문_시각',{ascending:false}).limit(8000);
+  var q=window.sb.from('web_방문로그').select('방문_시각,유입_출처,사이트,디바이스,utm_content,페이지,세션_id').gte('방문_시각',since).order('방문_시각',{ascending:false}).limit(8000);
   if(site!=='ALL')q=q.eq('사이트',site);
   var r=await q;
   var chart=document.getElementById('ws-chart');

@@ -32,7 +32,7 @@
   .full{grid-column:1/-1;}
   .err{color:var(--red);font-size:12px;}
   .load{color:var(--sub);font-size:12px;}
-  .acts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .acts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
   .act{border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.65;border:1px solid var(--line);background:#f8fafc;}
   .act.on{background:#fff7ed;border-color:#fdba74;}
   .act .n{font-size:20px;font-weight:800;}
@@ -79,6 +79,10 @@
   <div class="card"><h2>⑥ 성과 검증 — 매출 키워드 순위 (B2B)</h2>
     <div class="how">피드백 루프가 실제 돈으로 이어지는지 확인하는 칸. <span class="b b3">리퍼브리시 후보</span>가 보이면 ①에 자동 집계됩니다.</div>
     <div id="c6" class="load">불러오는 중…</div></div>
+
+  <div class="card full"><h2>⑦ 역제안 — 데이터가 거꾸로 제안하는 개선안 (매주 월 자동 생성)</h2>
+    <div class="how">순위 격차·승리공식 격차·정체성 누락률·외부 벤치마크(월 1회)를 근거로 시스템이 개선안을 만들어 올립니다. 채택하실 것은 <b>"역제안 승인: (격차 내용)"</b>이라고 지시 — <b>승인된 것만</b> 작성 규칙에 반영되고, 나머지는 그대로 둬도 됩니다.</div>
+    <div id="c7" class="load">불러오는 중…</div></div>
 </div>
 
 <script>
@@ -100,7 +104,9 @@ function gate(r){const q=r.품질지표||{};const isT=(r.채널||'').includes('�
   {n:'H2',ok:q.h2수>0?(q.h2수>=4):null,t:q.h2수>0?q.h2수:'–'},
   {n:'FAQ',ok:q.faq수>0?(q.faq수>=6):null,t:q.faq수>0?q.faq수:'–'},
   {n:'경험어미',ok:(q.경험어미||0)>=3,t:q.경험어미||0},
-  {n:'CTA',ok:(q.cta||0)>=1,t:q.cta?'✓':'✗'}
+  {n:'CTA',ok:(q.cta||0)>=1,t:q.cta?'✓':'✗'},
+  {n:'정체성',ok:q.정체성?q.정체성.통과===true:null,
+   t:q.정체성?(q.정체성.커버+'/'+q.정체성.총+(q.정체성.통과?'':' 빠짐:'+(q.정체성.미포함||[]).join('·'))):'–'}
  ];}
 const passAll=r=>!gate(r).some(x=>x.ok===false);
 async function guard(){
@@ -112,17 +118,18 @@ async function load(){
  const now=new Date();
  document.getElementById('asof').textContent='기준: '+now.toLocaleString('ko-KR');
  const thisMon=monday(now), d28=new Date(thisMon); d28.setDate(d28.getDate()-21);
- const [dr,fb,od,rk]=await Promise.all([
+ const [dr,fb,od,rk,sg]=await Promise.all([
   sb.from('mk_blog_drafts').select('발행일,생성일,채널,핵심키워드,제목,품질지표').not('품질지표','is',null).gte('생성일',d28.toISOString()).order('생성일',{ascending:false}),
   sb.from('mk_draft_feedback').select('발생일,결함코드,결함분류,심각도,상태,조치내용,조치일,재발방지규칙,채널').order('발생일',{ascending:false}).limit(200),
   sb.from('v_open_defects').select('*'),
-  sb.from('v_revenue_keyword_growth').select('*').not('최근순위','is',null).order('최근순위').limit(14)
+  sb.from('v_revenue_keyword_growth').select('*').not('최근순위','is',null).order('최근순위').limit(14),
+  sb.from('mk_improvement_suggestions').select('제안일,출처,채널,격차요약,제안내용,상태').eq('상태','제안').order('제안일',{ascending:false}).limit(12)
  ]);
  if(dr.error||fb.error||od.error||rk.error){
   const e=(dr.error||fb.error||od.error||rk.error).message;
-  for(const id of ['c1','c2','c3','c4','c5','c6'])document.getElementById(id).innerHTML='<span class="err">'+esc(e)+'</span>';
+  for(const id of ['c1','c2','c3','c4','c5','c6','c7'])document.getElementById(id).innerHTML='<span class="err">'+esc(e)+'</span>';
   return;}
- const drafts=dr.data||[], feeds=fb.data||[], opens=od.data||[], ranks=rk.data||[];
+ const drafts=dr.data||[], feeds=fb.data||[], opens=od.data||[], ranks=rk.data||[], suggs=(sg&&sg.data)||[];
  const wk=drafts.filter(r=>new Date(r.생성일)>=thisMon);           // 이번 주 작성분
  const wkMiss=wk.filter(r=>!passAll(r));
  const refurb=ranks.filter(r=>r.최근순위>20);
@@ -135,6 +142,7 @@ async function load(){
    +cell(refurb.length>0,'🔧 리퍼브리시(재작성) 대기',refurb.length+'건','순위 20위 밖으로 밀린 B2B 글: '+esc(refurb.slice(0,3).map(r=>r.핵심키워드).join(', '))+(refurb.length>3?' 외':''),'리퍼브리시 진행해')
    +cell(relapse.length>0,'🚨 재발 결함 (질책 대상)',relapse.length+'건',relapse.length?esc(relapse.map(o=>o.결함코드).join(', '))+' — 같은 실수 반복':'60일 내 같은 결함 반복 없음','재발 결함 원인 보고해')
    +cell(wkMiss.length>0,'✍️ 이번 주 게이트 미달 글',wkMiss.length+'편',wkMiss.length?esc(wkMiss.slice(0,3).map(r=>r.핵심키워드).join(', '))+' — 아래 ②에서 ❌ 확인':'이번 주 작성분 전량 통과','미달분 보강해')
+   +cell(suggs.length>0,'💡 역제안 검토 대기',suggs.length+'건','데이터가 만든 개선안 — 아래 ⑦에서 내용 확인','역제안 검토 보고해')
    +'</div>';
  })();
 
@@ -145,7 +153,7 @@ async function load(){
   document.getElementById('c2').innerHTML=note+tbl(rows,[
    {h:'발행예정',f:r=>esc((r.발행일||'').slice(0,10))},{h:'채널',k:'채널'},
    {h:'키워드',f:r=>esc((r.핵심키워드||'').slice(0,16))},
-   ...['글자수','H2','FAQ','경험어미','CTA'].map((n,i)=>({h:n,f:r=>{const g=gate(r)[i];
+   ...['글자수','H2','FAQ','경험어미','CTA','정체성'].map((n,i)=>({h:n,f:r=>{const g=gate(r)[i];
      return g.ok===null?'<span class="na">–</span>':(g.ok?'<span class="ok">✅ '+esc(g.t)+'</span>':'<span class="no">❌ '+esc(g.t)+'</span>');}})),
    {h:'종합',f:r=>passAll(r)?'<span class="b b1">통과</span>':'<span class="b b2">보강</span>'}]);
  })();
@@ -188,6 +196,18 @@ async function load(){
   document.getElementById('c6').innerHTML=tbl(ranks,[
    {h:'키워드',k:'핵심키워드'},{h:'채널',k:'채널'},{h:'순위',f:r=>'<b>'+esc(r.최근순위)+'위</b>'},
    {h:'상태',f:r=>r.최근순위<=10?'<span class="b b1">1페이지</span>':(r.최근순위<=20?'<span class="b b5">2페이지</span>':'<span class="b b3">리퍼브리시 후보</span>')}]);
+ })();
+
+ // ⑦ 역제안
+ (function(){
+  const el=document.getElementById('c7');
+  if(sg&&sg.error){el.innerHTML='<span class="err">'+esc(sg.error.message)+'</span>';return;}
+  el.innerHTML=tbl(suggs,[
+   {h:'제안일',f:r=>esc(r.제안일||'')},
+   {h:'출처',f:r=>({'순위격차':'<span class="b b3">순위격차</span>','정체성격차':'<span class="b b4">정체성격차</span>','승리공식격차':'<span class="b b5">승리공식</span>','외부벤치마크':'<span class="b b1">외부벤치마크</span>','알고리즘변경':'<span class="b b2">알고리즘</span>'}[r.출처]||esc(r.출처))},
+   {h:'채널',k:'채널'},
+   {h:'격차(무엇이 부족한가)',f:r=>esc((r.격차요약||'').slice(0,44))},
+   {h:'제안(어떻게 고칠까)',f:r=>esc((r.제안내용||'').slice(0,46))}]);
  })();
 }
 load();

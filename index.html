@@ -673,6 +673,7 @@ window.rpSubmitInquiry=async function(){
   ['rpf-org','rpf-name','rpf-tel','rpf-email','rpf-when','rpf-area','rpf-budget','rpf-msg'].forEach(function(i){var el=$(i);if(el)el.value='';});
   $('rpf-ag1').checked=false;$('rpf-ag2').checked=false;
 };
+document.addEventListener('click',function(e){try{var a=e.target.closest&&e.target.closest('a[href^="tel:"],a[href*="pf.kakao.com"]');if(!a||!sb)return;var ty=(a.getAttribute('href')||'').indexOf('tel:')===0?'tel':'kakao';var sid=null;try{sid=sessionStorage.getItem('rp_sid');}catch(_){}sb.rpc('rpc_web_log_click',{p_사이트:SITE,p_유형:ty,p_세션:sid}).then(function(){},function(){});}catch(_){}},true);
 loadContent().then(function(){logVisit();bootEditor();});
 })();
 </script>

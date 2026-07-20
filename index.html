@@ -665,7 +665,7 @@ window.rpSubmitInquiry=async function(){
   var r=await sb.rpc('submit_inquiry',{p_구분:document.getElementById('rpf-type').value,p_사업부:dept,p_회사명:org,p_담당자명:name,p_연락처:tel,
     p_이메일:($('rpf-email')?$('rpf-email').value.trim():'')||null,p_시작일:null,p_종료일:null,p_일정조율가능:null,
     p_희망지역:($('rpf-area')?$('rpf-area').value.trim():'')||null,p_예산:($('rpf-budget')?$('rpf-budget').value.trim():'')||null,
-    p_유입경로:'홈페이지'+SITE+'('+src+')',p_요청사항:req||null,
+    p_유입경로:'홈페이지'+SITE+'('+src+')',p_세션:(function(){try{return sessionStorage.getItem('rp_sid')||null}catch(e){return null}})(),p_요청사항:req||null,
     p_동의_콘텐츠:$('rpf-ag1').checked,p_동의_마케팅:$('rpf-ag2').checked});
   btn.disabled=false;btn.textContent='견적 문의 제출';
   if(r.error){alert('접수 중 오류가 발생했습니다. 카카오톡 상담으로 문의 부탁드립니다.');return;}

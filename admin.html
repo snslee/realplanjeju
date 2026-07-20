@@ -8827,14 +8827,18 @@ function wsRender(rows,days){
   var SRC={naver_blog:'네이버 블로그(블A·B·C)',tistory:'티스토리',naver_search:'네이버 검색',naver_etc:'네이버 기타',google:'구글',direct:'직접 방문',instagram:'인스타그램',youtube:'유튜브',facebook:'페이스북',kakao:'카카오',daum:'다음',bing:'빙',old_homepage:'구 홈페이지',internal:'내부 이동',internal_admin:'내부 테스트',etc:'기타'};
   function kst(d){return new Date(d).toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'});}
   var today=kst(new Date());
-  var byDay={},bySrc={},byTop={},mob=0;
-  rows.forEach(function(v){
+  rows=rows.filter(function(v){return v.유입_출처!=='internal_admin';});
+  var byDay={},byDayS={},sessSet={},bySrc={},byTop={},mob=0;
+  rows.forEach(function(v,i){
     var d=kst(v.방문_시각);byDay[d]=(byDay[d]||0)+1;
+    var sid=v.세션_id||('r'+i);(byDayS[d]=byDayS[d]||{})[sid]=1;sessSet[sid]=1;
     var s=v.유입_출처||'etc';bySrc[s]=(bySrc[s]||0)+1;
     var t=v.utm_content||v.페이지||'';if(t)byTop[t]=(byTop[t]||0)+1;
     if(v.디바이스==='mobile')mob++;
   });
-  var total=rows.length,todayN=byDay[today]||0;
+  var total=Object.keys(sessSet).length,todayN=Object.keys(byDayS[today]||{}).length;
+  var dk=Object.keys(byDay).sort();var span=days;
+  if(dk.length){span=Math.max(1,Math.min(days,Math.round((new Date(today)-new Date(dk[0]))/864e5)+1));}
   document.getElementById('ws-kpi').innerHTML=[
     ['오늘 방문',todayN],['최근 '+days+'일',total],['일평균',total?Math.round(total/days*10)/10:0],['모바일 비율',total?Math.round(mob/total*100)+'%':'0%']
   ].map(function(k){return '<div style="background:#f7faff;border:1px solid #e3e9f4;border-radius:10px;padding:14px;text-align:center"><div style="font-size:12px;color:#7a869c">'+k[0]+'</div><div style="font-size:22px;font-weight:900;color:#2B62C4">'+k[1]+'</div></div>';}).join('');

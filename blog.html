@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>블로그 운영 — 리얼플랜제주 admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{--navy:#1e3a5f;--bg:#f2f5f8;--card:#fff;--ink:#22303f;--sub:#5b6b7c;--line:#e2e8ef;--blue:#2563eb;--green:#16a34a;--red:#dc2626;--amber:#d97706;--violet:#7c3aed;}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Pretendard','Malgun Gothic',sans-serif;}
+  body{background:var(--bg);color:var(--ink);padding:18px 22px;}
+  .top{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .top a{font-size:13px;color:var(--blue);text-decoration:none;font-weight:700;}
+  h1{font-size:19px;}
+  .sub{font-size:12.5px;color:var(--sub);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .card h2{font-size:14px;margin-bottom:2px;}
+  .src{font-size:10.5px;color:#8896a6;margin-bottom:8px;}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th{color:var(--sub);font-weight:600;text-align:left;padding:5px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  td{padding:5px;border-bottom:1px solid #f1f4f8;}
+  .b{display:inline-block;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:700;}
+  .b1{background:#dcfce7;color:var(--green);}.b2{background:#fee2e2;color:var(--red);}.b3{background:#fef3c7;color:var(--amber);}.b4{background:#ede9fe;color:var(--violet);}.b5{background:#dbeafe;color:var(--blue);}
+  .full{grid-column:1/-1;}
+  .err{color:var(--red);font-size:12px;}
+  .load{color:var(--sub);font-size:12px;}
+  @media(max-width:980px){.grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="top">
+  <a href="admin.html">← admin</a>
+  <h1>📝 블로그 운영</h1>
+  <span class="sub" id="asof"></span>
+</div>
+<div class="sub">아침 동선: ① 발행 대기 확인 → ② 매출 순위 → ③ 기획 후보 → ④ 결함 배지 (승인은 초안보관소 절차 그대로)</div>
+
+<div class="grid">
+  <div class="card"><h2>① 발행 대기 초안</h2>
+    <div class="src">mk_blog_drafts (draft·발행URL 없음)</div>
+    <div id="c1" class="load">불러오는 중…</div></div>
+  <div class="card"><h2>② 매출 키워드 성장 (B2B)</h2>
+    <div class="src">v_revenue_keyword_growth — 순위 20위 밖=리퍼브리시 후보</div>
+    <div id="c2" class="load">불러오는 중…</div></div>
+  <div class="card"><h2>③ 기획 후보 — 실제 유입 검색어(미발행)</h2>
+    <div class="src">v_inflow_topic_candidates (최근 90일)</div>
+    <div id="c3" class="load">불러오는 중…</div></div>
+  <div class="card"><h2>④ 반복결함 (미보완)</h2>
+    <div class="src">v_open_defects — 착수 브리프에 자동 경보되는 목록</div>
+    <div id="c4" class="load">불러오는 중…</div></div>
+  <div class="card full"><h2>⑤ 최근 발행 품질지표</h2>
+    <div class="src">mk_blog_drafts.품질지표 (최근 적재 8편)</div>
+    <div id="c5" class="load">불러오는 중…</div></div>
+</div>
+
+<script>
+const SUPABASE_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{detectSessionInUrl:false,persistSession:true,autoRefreshToken:true,flowType:'pkce',lock:(n,t,fn)=>fn()}});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function tbl(rows,cols){if(!rows||!rows.length)return '<div class="load">데이터 없음</div>';
+ let h='<table><tr>'+cols.map(c=>'<th>'+esc(c.h)+'</th>').join('')+'</tr>';
+ for(const r of rows){h+='<tr>'+cols.map(c=>'<td>'+(c.f?c.f(r):esc(r[c.k]))+'</td>').join('')+'</tr>';}
+ return h+'</table>';}
+async function guard(){
+ const {data}=await sb.auth.getSession();
+ if(!data||!data.session){document.body.innerHTML='<p style="padding:40px;font-size:14px">로그인이 필요합니다. <a href="admin.html">admin에서 로그인</a> 후 다시 열어주세요.</p>';return false;}
+ return true;}
+async function load(){
+ if(!(await guard()))return;
+ document.getElementById('asof').textContent='기준: '+new Date().toLocaleString('ko-KR');
+ // ① 발행 대기
+ sb.from('mk_blog_drafts').select('발행일,채널,핵심키워드,제목,상태').eq('상태','draft').is('발행_url',null).order('발행일').limit(20).then(({data,error})=>{
+  document.getElementById('c1').innerHTML=error?'<span class="err">'+esc(error.message)+'</span>':tbl(data,[
+   {h:'발행일',f:r=>esc((r.발행일||'').slice(0,10))},{h:'채널',k:'채널'},{h:'키워드',k:'핵심키워드'},
+   {h:'제목',f:r=>esc((r.제목||'').slice(0,34))}]);});
+ // ② 매출 키워드
+ sb.from('v_revenue_keyword_growth').select('*').not('최근순위','is',null).order('최근순위').limit(12).then(({data,error})=>{
+  document.getElementById('c2').innerHTML=error?'<span class="err">'+esc(error.message)+'</span>':tbl(data,[
+   {h:'키워드',k:'핵심키워드'},{h:'채널',k:'채널'},{h:'순위',f:r=>'<b>'+esc(r.최근순위)+'위</b>'},
+   {h:'상태',f:r=>r.최근순위<=10?'<span class="b b1">1페이지</span>':'<span class="b b3">리퍼브리시 후보</span>'}]);});
+ // ③ 기획 후보
+ sb.from('v_inflow_topic_candidates').select('*').limit(10).then(({data,error})=>{
+  document.getElementById('c3').innerHTML=error?'<span class="err">'+esc(error.message)+'</span>':tbl(data,[
+   {h:'키워드',k:'키워드'},{h:'클릭',k:'클릭'},{h:'노출',k:'노출'},{h:'평균순위',k:'평균순위'}]);});
+ // ④ 반복결함
+ sb.from('v_open_defects').select('*').limit(12).then(({data,error})=>{
+  document.getElementById('c4').innerHTML=error?'<span class="err">'+esc(error.message)+'</span>':tbl(data,[
+   {h:'결함코드',k:'결함코드'},{h:'분류',k:'결함분류'},
+   {h:'심각도',f:r=>({'사고':'<span class="b b2">사고</span>','질책':'<span class="b b3">질책</span>'}[r.심각도]||'<span class="b b1">경미</span>')},
+   {h:'재발',f:r=>r.재발중?'<span class="b b2">재발</span>':'-'},{h:'발생',k:'발생수'}]);});
+ // ⑤ 품질지표
+ sb.from('mk_blog_drafts').select('발행일,채널,핵심키워드,품질지표').not('품질지표','is',null).order('생성일',{ascending:false}).limit(8).then(({data,error})=>{
+  document.getElementById('c5').innerHTML=error?'<span class="err">'+esc(error.message)+'</span>':tbl(data,[
+   {h:'발행일',f:r=>esc((r.발행일||'').slice(0,10))},{h:'채널',k:'채널'},{h:'키워드',k:'핵심키워드'},
+   {h:'공백제외',f:r=>esc(r.품질지표?.공백제외)},{h:'H2',f:r=>esc(r.품질지표?.h2수)},{h:'FAQ',f:r=>esc(r.품질지표?.faq수)},
+   {h:'경험어미',f:r=>esc(r.품질지표?.경험어미)},{h:'CTA',f:r=>esc(r.품질지표?.cta)}]);});
+}
+load();
+</script>
+</body>
+</html>

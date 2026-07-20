@@ -8824,7 +8824,7 @@ async function wsLoad(){
   try{wsBlogLoad();}catch(e){}
 }
 function wsRender(rows,days){
-  var SRC={naver_blog:'네이버 블로그(블A·B·C)',tistory:'티스토리',naver_search:'네이버 검색',naver_etc:'네이버 기타',google:'구글',direct:'직접 방문',instagram:'인스타그램',youtube:'유튜브',facebook:'페이스북',kakao:'카카오',etc:'기타'};
+  var SRC={naver_blog:'네이버 블로그(블A·B·C)',tistory:'티스토리',naver_search:'네이버 검색',naver_etc:'네이버 기타',google:'구글',direct:'직접 방문',instagram:'인스타그램',youtube:'유튜브',facebook:'페이스북',kakao:'카카오',daum:'다음',bing:'빙',old_homepage:'구 홈페이지',internal:'내부 이동',internal_admin:'내부 테스트',etc:'기타'};
   function kst(d){return new Date(d).toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'});}
   var today=kst(new Date());
   var byDay={},bySrc={},byTop={},mob=0;

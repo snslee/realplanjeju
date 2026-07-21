@@ -514,6 +514,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <div class="filter-bar" style="align-items:center"><input id="fact-q" oninput="renderFacts()" placeholder="🔍 항목·내용·출처 검색" style="padding:6px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:.82rem;min-width:240px"></div>
       <div class="card"><div class="card-body" style="padding:0;overflow-x:auto" id="fact-board"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div></div>
     </div>
+  <div class="tab-panel" id="t12">
+      <div style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><h2 style="font-size:1.2rem;font-weight:700">🔧 피드백·보완</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">글별 채점 · 결함 장부 · 보완 이행 · 매출 키워드 · 역제안</p></div>
+        <a href="/blog.html" target="_blank" class="filter-btn" style="text-decoration:none">↗ 새 창</a>
+      </div>
+      <iframe id="fb-frame" style="width:100%;height:calc(100vh - 170px);border:1px solid #e2e8f0;border-radius:12px;background:#fff"></iframe>
+    </div>
   </main>
 </div>
 <div class="modal-bg" id="reject-modal">

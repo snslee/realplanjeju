@@ -202,6 +202,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn" onclick="filterDrafts('approved',this)">✅ 승인</button>
         <button class="filter-btn" onclick="filterDrafts('published',this)">🚀 발행</button>
         <button class="filter-btn" onclick="filterDrafts('rejected',this)">❌ 반려</button>
+        <button class="filter-btn" id="livefix-btn" style="border-color:#fdba74;color:#9a3412" onclick="filterDrafts('livefix',this)">🔧 라이브 보완</button>
       </div>
       <div id="livefix-panel" style="display:none;margin-bottom:14px"></div>
       <div id="drafts-board" style="border:0.5px solid #e2e8f0;border-radius:12px;background:#fff;max-height:46vh;overflow-y:auto"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div>
@@ -794,7 +795,7 @@ async function loadNaverMonthly(clrs){
 async function loadDrafts(){
   document.getElementById('drafts-board').innerHTML='<div class="loading" style="padding:30px;text-align:center">로딩 중...</div>';
   const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형,라이브보완:자가검증_결과->라이브보완').order('발행일',{ascending:false,nullsFirst:false}).order('생성일',{ascending:false}).limit(100);
-  if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];renderDrafts(allDrafts);renderLiveFixPanel(allDrafts);
+  if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];updateLiveFixBtn();if(window._draftFilter==='livefix'){showLiveFixView();}else{renderDrafts(allDrafts);}
 }
 let _draftPage=1,_winPage=1,_slotMonth=0,_statPage=1,_nvPage=1,_rankPage=1,_rankMonth=0,_rankJ='all'; const DRAFT_PER=10,WIN_PER=10,STAT_PER=20,NV_PER=20,RANK_PER=15;
 function pagerHTML(pg,pages,total,fn){ if(pages<=1)return '<span style="font-size:.78rem;color:#94a3b8">총 '+total+'건</span>'; let h=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.max(1,pg-1)})">‹</button>`; for(let i=1;i<=pages;i++){if(i===1||i===pages||Math.abs(i-pg)<=2){h+=`<button class="btn-sm btn-copy" style="${i===pg?'background:#2563eb;color:#fff;border-color:#2563eb':''}" onclick="${fn}(${i})">${i}</button>`;}else if(Math.abs(i-pg)===3){h+='<span style="padding:4px;color:#94a3b8">…</span>';}} h+=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.min(pages,pg+1)})">›</button><span style="align-self:center;font-size:.78rem;color:#94a3b8;margin-left:10px">${pg}/${pages} · 총 ${total}건</span>`; return h; }
@@ -861,7 +862,16 @@ function renderDrafts(list){
       <span style="font-size:.8rem;font-weight:700;color:${sc==null?'#cbd5e1':sc>=9?'#10b981':'#f59e0b'};flex-shrink:0;width:26px;text-align:right">${sc!=null?sc:'-'}</span>
     </div>`;}).join('');
 }
-function filterDrafts(s,b){document.querySelectorAll('#draft-filters .filter-btn').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');renderDrafts(s==='all'?allDrafts:allDrafts.filter(r=>r.상태===s));}
+function filterDrafts(s,b){document.querySelectorAll('#draft-filters .filter-btn').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');window._draftFilter=s;
+  const board=document.getElementById('drafts-board'),pager=document.getElementById('drafts-pager'),panel=document.getElementById('livefix-panel');
+  if(s==='livefix'){showLiveFixView();return;}
+  if(panel)panel.style.display='none'; if(board)board.style.display=''; if(pager)pager.style.display='';
+  renderDrafts(s==='all'?allDrafts:allDrafts.filter(r=>r.상태===s));}
+function showLiveFixView(){
+  const board=document.getElementById('drafts-board'),pager=document.getElementById('drafts-pager'),panel=document.getElementById('livefix-panel');
+  if(board)board.style.display='none'; if(pager)pager.style.display='none';
+  renderLiveFixPanel(allDrafts); if(panel&&panel.innerHTML==='')panel.innerHTML='<div style="text-align:center;padding:30px;color:#94a3b8;background:#fff;border:0.5px solid #e2e8f0;border-radius:12px">라이브 보완 대기 건 없음</div>',panel.style.display='block';}
+function updateLiveFixBtn(){const b=document.getElementById('livefix-btn');if(!b)return;const n=(allDrafts||[]).reduce((a,r)=>a+((Array.isArray(r.라이브보완)?r.라이브보완.filter(f=>f.상태!=='완료').length:0)),0);b.innerHTML='🔧 라이브 보완'+(n?` <span style="background:#ea580c;color:#fff;border-radius:8px;padding:0 6px;font-size:.72rem;font-weight:800">${n}</span>`:'');}
 async function approveDraft(id){const{error}=await sb.from('mk_blog_drafts').update({상태:'approved',승인일:new Date().toISOString()}).eq('id',id);if(error){showToast('승인 실패');return;}showToast('✅ 승인 완료');loadDrafts();}
 function openReject(id){rejectTargetId=id;document.getElementById('reject-reason').value='';document.getElementById('reject-modal').classList.add('open');}
 function closeModal(){document.getElementById('reject-modal').classList.remove('open');rejectTargetId=null;}

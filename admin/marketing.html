@@ -203,6 +203,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn" onclick="filterDrafts('published',this)">🚀 발행</button>
         <button class="filter-btn" onclick="filterDrafts('rejected',this)">❌ 반려</button>
       </div>
+      <div id="livefix-panel" style="display:none;margin-bottom:14px"></div>
       <div id="drafts-board" style="border:0.5px solid #e2e8f0;border-radius:12px;background:#fff;max-height:46vh;overflow-y:auto"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div>
       <div id="drafts-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin:12px 0"></div>
       <div id="drafts-reader" style="margin-top:14px"></div>
@@ -793,7 +794,7 @@ async function loadNaverMonthly(clrs){
 async function loadDrafts(){
   document.getElementById('drafts-board').innerHTML='<div class="loading" style="padding:30px;text-align:center">로딩 중...</div>';
   const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형,라이브보완:자가검증_결과->라이브보완').order('발행일',{ascending:false,nullsFirst:false}).order('생성일',{ascending:false}).limit(100);
-  if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];renderDrafts(allDrafts);
+  if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];renderDrafts(allDrafts);renderLiveFixPanel(allDrafts);
 }
 let _draftPage=1,_winPage=1,_slotMonth=0,_statPage=1,_nvPage=1,_rankPage=1,_rankMonth=0,_rankJ='all'; const DRAFT_PER=10,WIN_PER=10,STAT_PER=20,NV_PER=20,RANK_PER=15;
 function pagerHTML(pg,pages,total,fn){ if(pages<=1)return '<span style="font-size:.78rem;color:#94a3b8">총 '+total+'건</span>'; let h=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.max(1,pg-1)})">‹</button>`; for(let i=1;i<=pages;i++){if(i===1||i===pages||Math.abs(i-pg)<=2){h+=`<button class="btn-sm btn-copy" style="${i===pg?'background:#2563eb;color:#fff;border-color:#2563eb':''}" onclick="${fn}(${i})">${i}</button>`;}else if(Math.abs(i-pg)===3){h+='<span style="padding:4px;color:#94a3b8">…</span>';}} h+=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.min(pages,pg+1)})">›</button><span style="align-self:center;font-size:.78rem;color:#94a3b8;margin-left:10px">${pg}/${pages} · 총 ${total}건</span>`; return h; }
@@ -802,6 +803,47 @@ function gotoWinPage(n){_winPage=n;renderWinning(window._winView||allWinning);}
 function slotYM(){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+_slotMonth);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function applySlotView(){const ym=slotYM();const l=(allSlots||[]).filter(r=>(r.발행일||'').slice(0,7)===ym);_slotPage=1;renderSlots(l);const lb=document.getElementById('slot-month-label');if(lb)lb.textContent=ym+' · '+l.length+'건';}
 function slotMonthNav(d){if(d===0)_slotMonth=0;else _slotMonth+=d;applySlotView();}
+function renderLiveFixPanel(list){
+  const box=document.getElementById('livefix-panel'); if(!box)return;
+  const rows=(list||[]).filter(r=>Array.isArray(r.라이브보완)&&r.라이브보완.length);
+  const pending=rows.reduce((a,r)=>a+r.라이브보완.filter(f=>f.상태!=='완료').length,0);
+  if(!rows.length){box.style.display='none';box.innerHTML='';return;}
+  box.style.display='block';
+  const esc2=t=>String(t||'').replace(/</g,'&lt;');
+  box.innerHTML=`<div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:12px;padding:16px 18px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><span style="font-size:1.05rem;font-weight:800;color:#9a3412">🔧 라이브 보완 — 발행 후 실제 글에 반영할 문장</span><span style="font-size:.78rem;background:#ffedd5;color:#9a3412;padding:2px 10px;border-radius:9px;font-weight:700">대기 ${pending}건</span></div>
+    <div style="font-size:.78rem;color:#92400e;margin-bottom:10px">실행 Claude=자동 처리 · 실행 대표=문장 복사 → 발행된 글에 붙여넣기 → ✅완료 클릭. 반영 여부는 발행 감지 때 자동 대조됩니다.</div>
+    ${rows.map(r=>{
+      const wait=r.라이브보완.filter(f=>f.상태!=='완료').length;
+      return `<div style="background:#fff;border:0.5px solid #fde68a;border-radius:10px;padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer" onclick="openDraftReader('${r.id}')">
+        <span style="font-size:.7rem;background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px">${esc2(r.채널)}</span>
+        <b style="font-size:.88rem;color:#1e293b">${esc2(r.제목)}</b>
+        <span style="font-size:.72rem;color:${wait?'#b45309':'#16a34a'};font-weight:700">${wait?('대기 '+wait):'전부 완료'}</span>
+        ${r.발행_url?`<a href="${r.발행_url}" target="_blank" onclick="event.stopPropagation()" style="font-size:.72rem;color:#2563eb">🔗 발행글 열기</a>`:'<span style="font-size:.7rem;color:#94a3b8">(발행 전)</span>'}
+      </div>
+      ${r.라이브보완.map((f,i)=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-top:0.5px dashed #fde68a;font-size:.83rem">
+        <span style="flex-shrink:0;font-size:.7rem;background:${f.실행자&&f.실행자.includes('Claude')?'#dbeafe':'#fef3c7'};color:${f.실행자&&f.실행자.includes('Claude')?'#1d4ed8':'#92400e'};padding:2px 7px;border-radius:8px;margin-top:2px">${esc2(f.실행자||'대표')}</span>
+        <div style="flex:1;min-width:0"><b>${esc2(f.항목)}</b> · 위치: ${esc2(f.위치)}<div style="background:#f8fafc;border-radius:6px;padding:5px 8px;margin-top:3px;color:#334155;white-space:pre-wrap">${esc2(f.지시문)}</div></div>
+        ${f.상태==='완료'?'<span style="flex-shrink:0;color:#16a34a;font-weight:700;font-size:.78rem;margin-top:2px">✅ 완료</span>':`<span style="flex-shrink:0;display:flex;gap:4px"><button class="btn-sm btn-copy" onclick="event.stopPropagation();copyLiveFix('${r.id}',${i},this)">📋 복사</button><button class="btn-sm btn-approve" onclick="event.stopPropagation();markLiveFixDone('${r.id}',${i})">✅ 완료</button></span>`}
+      </div>`).join('')}
+    </div>`;}).join('')}
+  </div>`;
+}
+async function copyLiveFix(id,i,btn){
+  const r=(allDrafts||[]).find(x=>x.id===id); const f=r&&Array.isArray(r.라이브보완)?r.라이브보완[i]:null;
+  if(!f){showToast('지시문 없음');return;}
+  try{await navigator.clipboard.writeText(f.지시문||'');}catch(e){const ta=document.createElement('textarea');ta.value=f.지시문||'';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+  if(btn){const o=btn.textContent;btn.textContent='✅ 복사됨';setTimeout(()=>btn.textContent=o,1400);}showToast('삽입 문장 복사 완료');
+}
+async function markLiveFixDone(id,i){
+  const{data}=await sb.from('mk_blog_drafts').select('자가검증_결과').eq('id',id).maybeSingle();
+  if(!data||!data.자가검증_결과||!Array.isArray(data.자가검증_결과.라이브보완)){showToast('데이터 없음');return;}
+  const sv=data.자가검증_결과; sv.라이브보완[i].상태='완료'; sv.라이브보완[i].완료일=new Date().toISOString().slice(0,10);
+  const{error}=await sb.from('mk_blog_drafts').update({자가검증_결과:sv}).eq('id',id);
+  if(error){showToast('완료 처리 실패');return;}
+  showToast('✅ 보완 완료 처리');loadDrafts();
+}
 function renderDrafts(list){
   const box=document.getElementById('drafts-board');
   if(!list.length){box.innerHTML='<div style="text-align:center;padding:40px;color:#94a3b8">초안 없음</div>';return;}

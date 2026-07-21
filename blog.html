@@ -10,15 +10,20 @@
   :root{--navy:#1e3a5f;--bg:#f2f5f8;--card:#fff;--ink:#22303f;--sub:#5b6b7c;--line:#e2e8ef;--blue:#2563eb;--green:#16a34a;--red:#dc2626;--amber:#d97706;--violet:#7c3aed;}
   *{box-sizing:border-box;margin:0;padding:0;font-family:'Pretendard','Malgun Gothic',sans-serif;}
   body{background:var(--bg);color:var(--ink);padding:18px 22px;}
-  .top{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+  .top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
   .top a{font-size:13px;color:var(--blue);text-decoration:none;font-weight:700;}
   h1{font-size:19px;}
   .sub{font-size:12.5px;color:var(--sub);}
-  .loop{display:flex;gap:0;flex-wrap:wrap;margin:10px 0 2px;}
-  .lstep{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:11.5px;color:var(--sub);margin-right:22px;position:relative;}
-  .lstep b{color:var(--ink);}
-  .lstep:not(:last-child)::after{content:"→";position:absolute;right:-17px;top:7px;color:#94a3b8;font-weight:700;}
-  .lstep.me{border-color:var(--blue);background:#eff6ff;}
+  /* 성장 스코어보드 */
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:6px;}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
+  .kpi .t{font-size:11.5px;color:var(--sub);font-weight:700;}
+  .kpi .v{font-size:26px;font-weight:800;line-height:1.25;margin:2px 0;}
+  .kpi .v small{font-size:13px;font-weight:700;color:var(--sub);}
+  .kpi .c{font-size:10.5px;color:#8896a6;line-height:1.45;}
+  .kpi.good .v{color:var(--green);} .kpi.warn .v{color:var(--amber);} .kpi.bad .v{color:var(--red);} .kpi.info .v{color:var(--blue);}
+  .legend{font-size:11px;color:#64748b;background:#fff;border:1px dashed #cbd5e1;border-radius:10px;padding:7px 12px;margin-bottom:12px;line-height:1.7;}
+  .legend b{color:var(--ink);}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;}
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
   .card h2{font-size:14px;margin-bottom:2px;}
@@ -35,53 +40,60 @@
   .acts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
   .act{border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.65;border:1px solid var(--line);background:#f8fafc;}
   .act.on{background:#fff7ed;border-color:#fdba74;}
-  .act .n{font-size:20px;font-weight:800;}
+  .act .n{font-size:22px;font-weight:800;}
   .act .say{display:inline-block;margin-top:5px;background:#1e3a5f;color:#fff;border-radius:6px;padding:2px 9px;font-size:11.5px;font-weight:700;}
   .ok{color:var(--green);font-weight:700;}.no{color:var(--red);font-weight:700;}.na{color:#94a3b8;}
-  @media(max-width:980px){.grid{grid-template-columns:1fr;}.acts{grid-template-columns:1fr;}}
+  details summary{cursor:pointer;font-size:12px;color:var(--blue);font-weight:700;margin:6px 0;}
+  .misstable td{background:#fff8f8;}
+  @media(max-width:1200px){.kpis{grid-template-columns:repeat(3,1fr);}}
+  @media(max-width:980px){.grid{grid-template-columns:1fr;}.acts{grid-template-columns:1fr;}.kpis{grid-template-columns:repeat(2,1fr);}}
 </style>
 </head>
 <body>
 <div class="top">
   <a href="admin/marketing.html">← 마케팅 운영</a>
-  <h1>🔧 피드백·보완 — 주간 피드백 루프</h1>
+  <h1>🔧 피드백·보완 — 블로그 성장 관리</h1>
   <span class="sub" id="asof"></span>
 </div>
-<div class="loop">
-  <div class="lstep"><b>1. 작성·적재</b> 매 글 자동 채점(품질지표)</div>
-  <div class="lstep"><b>2. 결함 기록</b> 검증·질책 → mk_draft_feedback</div>
-  <div class="lstep"><b>3. 자동 반영</b> 다음 글 착수 브리프에 결함 경보 자동 주입</div>
-  <div class="lstep"><b>4. 교정 확인</b> 조치 기록돼야 닫힘·60일 내 재발 시 격상</div>
-  <div class="lstep me"><b>5. 대표님</b> 주 1회 이 화면 → 아래 ① 지시만</div>
+
+<!-- 0. 성장 스코어보드: 이 6개 숫자가 "블로그가 크고 있는가"의 전부 -->
+<div class="kpis" id="kpi">
+  <div class="kpi info"><div class="t">🏆 상위노출(1페이지) 글</div><div class="v load">…</div><div class="c">네이버·티스토리 1~10위 진입 글 수 — 성장의 출발점</div></div>
+  <div class="kpi info"><div class="t">📈 티스토리 검색성과 7일</div><div class="v load">…</div><div class="c">구글 노출·클릭(GSC) — 전주 대비 화살표</div></div>
+  <div class="kpi info"><div class="t">🔗 블로그발 홈페이지 방문 30일</div><div class="v load">…</div><div class="c">글 속 CTA·UTM 링크를 타고 넘어온 수 — 매출 다리 1단</div></div>
+  <div class="kpi info"><div class="t">📩 블로그발 문의 누적</div><div class="v load">…</div><div class="c">문의 귀속(utm=blog) — 최종 KPI, 매출 다리 2단</div></div>
+  <div class="kpi info"><div class="t">💰 매출 키워드</div><div class="v load">…</div><div class="c">B2B 키워드 1페이지 수 / 리퍼브리시 대기</div></div>
+  <div class="kpi info"><div class="t">🧯 품질 미달·미보완</div><div class="v load">…</div><div class="c">이번 주 게이트 미달 글 / open 결함 — 0이 목표</div></div>
 </div>
+<div class="legend"><b>이 화면이 재는 성장 필수요소</b> — 글자수·H2 목차=<b>구글(티스토리) 명시 요건</b> · FAQ=<b>네이버 AI브리핑 인용(AEO)</b> · 경험어미=<b>네이버 D.I.A.+ 경험·구글 E-E-A-T</b> · 정체성=<b>C-Rank 주제 일관성</b> · CTA·UTM=<b>문의 전환(매출 브릿지)</b>. 전 항목이 매 글 자동 채점되고, 미달은 아래 ②에, 개선안은 ⑦에 자동으로 올라옵니다.</div>
 
 <div class="grid">
   <div class="card full"><h2>① 이번 주 대표 지시 — 여기 뜬 것만 지시하면 됩니다</h2>
-    <div class="how">1~4단계는 전부 자동으로 돕니다. 대표님이 개입할 일은 이 세 칸에 숫자가 떴을 때뿐이고, 칸에 적힌 <b>지시 문구를 채팅에 그대로</b> 말씀하시면 다음 회기가 실행합니다. 셋 다 0이면 이번 주는 지시 없이 종료.</div>
+    <div class="how">1~4단계(채점→결함기록→자동경보→교정확인)는 전부 자동으로 돕니다. 칸에 숫자가 뜨면 <b>지시 문구를 채팅에 그대로</b> 말씀하세요. 셋 다 0이면 이번 주는 지시 없이 종료.</div>
     <div id="c1" class="load">불러오는 중…</div></div>
 
-  <div class="card full"><h2>② 이번 주 작성분 — 글별 채점표 (잘한 것 ✅ / 미달 ❌)</h2>
-    <div class="src">이번 주 적재된 글 각각의 게이트 채점. ❌가 있는 글 = 보강 대상 · '–'는 측정 안 된 항목(불합격 아님)</div>
+  <div class="card full"><h2>② 보강할 글 — 미달 항목만 바로 보기</h2>
+    <div class="src">이번 주 적재분 중 게이트 미달 글만 표시 · '–'=측정 안 된 항목(불합격 아님) · 통과분은 아래 접힘</div>
     <div id="c2" class="load">불러오는 중…</div></div>
 
-  <div class="card"><h2>③ 결함 장부 — 다음 글에 자동 경보되는 목록</h2>
-    <div class="how">여기 있는 결함은 <b>다음 글 착수 때 자동으로 경보</b>되어 반영됩니다(별도 지시 불필요). 대표님은 <span class="b b2">재발</span> 배지가 붙은 것만 질책하시면 됩니다.</div>
-    <div id="c3" class="load">불러오는 중…</div></div>
-
-  <div class="card"><h2>④ 보완 이행 — 무엇을 어떻게 고쳤나</h2>
-    <div class="how">교정완료 = 실제 조치 내용이 기록된 것만 닫힙니다. 미보완이 몇 주째 줄지 않으면 "미보완 결함 소진 계획 보고해"라고 지시하세요.</div>
-    <div id="c4" class="load">불러오는 중…</div></div>
-
-  <div class="card"><h2>⑤ 주간 성적표 (작성 주 기준 4주 추이)</h2>
-    <div class="src">주차별 작성 편수·게이트 통과율(측정 가능 항목 기준)·평균 글자수·신규 결함·교정</div>
-    <div id="c5" class="load">불러오는 중…</div></div>
-
-  <div class="card"><h2>⑥ 성과 검증 — 매출 키워드 순위 (B2B)</h2>
-    <div class="how">피드백 루프가 실제 돈으로 이어지는지 확인하는 칸. <span class="b b3">리퍼브리시 후보</span>가 보이면 ①에 자동 집계됩니다.</div>
+  <div class="card"><h2>③ 매출 키워드 순위 (B2B) — 피드백이 돈이 되는가</h2>
+    <div class="how"><span class="b b3">리퍼브리시 후보</span>가 보이면 ①에 자동 집계됩니다. 1페이지 키워드가 늘어나는 것이 이 화면의 성공 지표.</div>
     <div id="c6" class="load">불러오는 중…</div></div>
 
-  <div class="card full"><h2>⑦ 역제안 — 데이터가 거꾸로 제안하는 개선안 (매주 월 자동 생성)</h2>
-    <div class="how">순위 격차·승리공식 격차·정체성 누락률·외부 벤치마크(월 1회)를 근거로 시스템이 개선안을 만들어 올립니다. 채택하실 것은 <b>"역제안 승인: (격차 내용)"</b>이라고 지시 — <b>승인된 것만</b> 작성 규칙에 반영되고, 나머지는 그대로 둬도 됩니다.</div>
+  <div class="card"><h2>④ 결함 장부 — 다음 글에 자동 경보되는 목록</h2>
+    <div class="how">여기 있는 결함은 <b>다음 글 착수 때 자동 경보</b>됩니다. 대표님은 <span class="b b2">재발</span> 배지만 질책하시면 됩니다.</div>
+    <div id="c3" class="load">불러오는 중…</div></div>
+
+  <div class="card"><h2>⑤ 보완 이행 — 무엇을 어떻게 고쳤나</h2>
+    <div class="how">교정완료 = 실제 조치 내용이 기록된 것만. 미보완이 몇 주째 줄지 않으면 "미보완 결함 소진 계획 보고해"라고 지시하세요.</div>
+    <div id="c4" class="load">불러오는 중…</div></div>
+
+  <div class="card"><h2>⑥ 주간 성적표 (4주 추이)</h2>
+    <div class="src">주차별 편수·게이트 통과율·평균 글자수·신규 결함·교정</div>
+    <div id="c5" class="load">불러오는 중…</div></div>
+
+  <div class="card full"><h2>⑦ 역제안 — 데이터가 거꾸로 제안하는 개선안</h2>
+    <div class="how">순위 격차·승리글 패턴·주간 재평가·정체성 누락·외부 벤치마크(월 1회)를 근거로 시스템이 개선안을 올립니다. 채택은 <b>"역제안 승인: (격차 내용)"</b> — <b>승인된 것만</b> 작성 규칙에 반영됩니다.</div>
     <div id="c7" class="load">불러오는 중…</div></div>
 </div>
 
@@ -90,14 +102,13 @@ const SUPABASE_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{detectSessionInUrl:false,persistSession:true,autoRefreshToken:true,flowType:'pkce',lock:(n,t,fn)=>fn()}});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function tbl(rows,cols){if(!rows||!rows.length)return '<div class="load">데이터 없음</div>';
- let h='<table><tr>'+cols.map(c=>'<th>'+esc(c.h)+'</th>').join('')+'</tr>';
+function tbl(rows,cols,cls){if(!rows||!rows.length)return '<div class="load">데이터 없음</div>';
+ let h='<table class="'+(cls||'')+'"><tr>'+cols.map(c=>'<th>'+esc(c.h)+'</th>').join('')+'</tr>';
  for(const r of rows){h+='<tr>'+cols.map(c=>'<td>'+(c.f?c.f(r):esc(r[c.k]))+'</td>').join('')+'</tr>';}
  return h+'</table>';}
 function monday(d){const x=new Date(d);const day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);x.setHours(0,0,0,0);return x;}
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function wkLabel(m){const e=new Date(m);e.setDate(e.getDate()+6);return (m.getMonth()+1)+'/'+m.getDate()+'~'+(e.getMonth()+1)+'/'+e.getDate();}
-// 게이트 채점: 측정 안 된 항목(0)은 '–'로 제외, 측정된 항목만 합불 판정
 function gate(r){const q=r.품질지표||{};const isT=(r.채널||'').includes('티');const min=isT?6000:5000;
  return [
   {n:'글자수',ok:(q.공백제외||0)>=min,t:(q.공백제외||0).toLocaleString()},
@@ -113,52 +124,99 @@ async function guard(){
  const {data}=await sb.auth.getSession();
  if(!data||!data.session){document.body.innerHTML='<p style="padding:40px;font-size:14px">로그인이 필요합니다. <a href="admin.html">admin에서 로그인</a> 후 다시 열어주세요.</p>';return false;}
  return true;}
+function kpiSet(i,html,cls){const el=document.querySelectorAll('#kpi .kpi')[i];el.querySelector('.v').innerHTML=html;if(cls){el.classList.remove('info');el.classList.add(cls);}}
 async function load(){
  if(!(await guard()))return;
  const now=new Date();
  document.getElementById('asof').textContent='기준: '+now.toLocaleString('ko-KR');
  const thisMon=monday(now), d28=new Date(thisMon); d28.setDate(d28.getDate()-21);
- const [dr,fb,od,rk,sg]=await Promise.all([
+ const d7=new Date(now);d7.setDate(d7.getDate()-7);
+ const d14=new Date(now);d14.setDate(d14.getDate()-14);
+ const d30=new Date(now);d30.setDate(d30.getDate()-30);
+ const [dr,fb,od,rk,sg,pub,met,vis,inq]=await Promise.all([
   sb.from('mk_blog_drafts').select('발행일,생성일,채널,핵심키워드,제목,품질지표').not('품질지표','is',null).gte('생성일',d28.toISOString()).order('생성일',{ascending:false}),
   sb.from('mk_draft_feedback').select('발생일,결함코드,결함분류,심각도,상태,조치내용,조치일,재발방지규칙,채널').order('발생일',{ascending:false}).limit(200),
   sb.from('v_open_defects').select('*'),
   sb.from('v_revenue_keyword_growth').select('*').not('최근순위','is',null).order('최근순위').limit(14),
-  sb.from('mk_improvement_suggestions').select('제안일,출처,채널,격차요약,제안내용,상태').eq('상태','제안').order('제안일',{ascending:false}).limit(12)
+  sb.from('mk_improvement_suggestions').select('제안일,출처,채널,격차요약,제안내용,상태').eq('상태','제안').order('제안일',{ascending:false}).limit(100),
+  sb.from('mk_blog_publish_log').select('채널,진입판정').in('진입판정',['✅1~5위','⚠️6~10위']),
+  sb.from('mk_metrics').select('노출_수,클릭_수,측정_일자').eq('데이터_소스','gsc').gte('측정_일자',ymd(d14)),
+  sb.from('web_방문로그').select('utm_source,유입_출처').gte('방문_시각',d30.toISOString()),
+  sb.from('mk_inquiry_attribution').select('utm_source')
  ]);
  if(dr.error||fb.error||od.error||rk.error){
   const e=(dr.error||fb.error||od.error||rk.error).message;
   for(const id of ['c1','c2','c3','c4','c5','c6','c7'])document.getElementById(id).innerHTML='<span class="err">'+esc(e)+'</span>';
   return;}
  const drafts=dr.data||[], feeds=fb.data||[], opens=od.data||[], ranks=rk.data||[], suggs=(sg&&sg.data)||[];
- const wk=drafts.filter(r=>new Date(r.생성일)>=thisMon);           // 이번 주 작성분
+ const wk=drafts.filter(r=>new Date(r.생성일)>=thisMon);
  const wkMiss=wk.filter(r=>!passAll(r));
  const refurb=ranks.filter(r=>r.최근순위>20);
+ const page1=ranks.filter(r=>r.최근순위<=10);
  const relapse=opens.filter(o=>o.재발중);
 
- // ① 대표 지시 3칸
+ // ── 성장 스코어보드 ──
+ (function(){
+  if(pub&&!pub.error){const rows=pub.data||[];const nv=rows.filter(r=>(r.채널||'').includes('네이버')).length;const ts=rows.filter(r=>(r.채널||'').includes('티스토리')).length;
+   kpiSet(0,'네 '+nv+' <small>·</small> 티 '+ts+'<small>편</small>', (nv+ts)>0?'good':'warn');}
+  else kpiSet(0,'–');
+  if(met&&!met.error){const rows=met.data||[];const cut=ymd(d7);
+   const s7=rows.filter(r=>r.측정_일자>=cut), sPrev=rows.filter(r=>r.측정_일자<cut);
+   const sum=(a,k)=>a.reduce((x,r)=>x+(r[k]||0),0);
+   const n7=sum(s7,'노출_수'),c7=sum(s7,'클릭_수'),nP=sum(sPrev,'노출_수');
+   const ar=n7>nP?'⬆':(n7<nP?'⬇':'→');
+   kpiSet(1,'노출 '+n7.toLocaleString()+' '+ar+'<br><small>클릭 '+c7.toLocaleString()+' (전주 노출 '+nP.toLocaleString()+')</small>', n7>=nP?'good':'warn');}
+  else kpiSet(1,'–');
+  if(vis&&!vis.error){const rows=vis.data||[];
+   const n=rows.filter(r=>r.utm_source==='blog'||['naver_blog','tistory'].includes(r.유입_출처)).length;
+   kpiSet(2,n+'<small>회</small>', n>0?'good':'bad');}
+  else kpiSet(2,'–');
+  if(inq&&!inq.error){const n=(inq.data||[]).filter(r=>r.utm_source==='blog').length;
+   kpiSet(3,n+'<small>건</small>', n>0?'good':'bad');}
+  else kpiSet(3,'–');
+  kpiSet(4,'1p '+page1.length+' <small>/</small> 리퍼브 '+refurb.length, refurb.length>0?'warn':'good');
+  kpiSet(5,'❌'+wkMiss.length+' <small>/</small> 결함 '+opens.length, (wkMiss.length+opens.length)>0?'warn':'good');
+ })();
+
+ // ── ① 대표 지시 4칸 ──
  (function(){
   const cell=(on,title,n,desc,say)=>'<div class="act'+(on?' on':'')+'"><b>'+title+'</b><div class="n">'+n+'</div>'+desc+(on?'<br><span class="say">지시: "'+say+'"</span>':'<br><span class="na">지시 필요 없음</span>')+'</div>';
   document.getElementById('c1').innerHTML='<div class="acts">'
    +cell(refurb.length>0,'🔧 리퍼브리시(재작성) 대기',refurb.length+'건','순위 20위 밖으로 밀린 B2B 글: '+esc(refurb.slice(0,3).map(r=>r.핵심키워드).join(', '))+(refurb.length>3?' 외':''),'리퍼브리시 진행해')
    +cell(relapse.length>0,'🚨 재발 결함 (질책 대상)',relapse.length+'건',relapse.length?esc(relapse.map(o=>o.결함코드).join(', '))+' — 같은 실수 반복':'60일 내 같은 결함 반복 없음','재발 결함 원인 보고해')
-   +cell(wkMiss.length>0,'✍️ 이번 주 게이트 미달 글',wkMiss.length+'편',wkMiss.length?esc(wkMiss.slice(0,3).map(r=>r.핵심키워드).join(', '))+' — 아래 ②에서 ❌ 확인':'이번 주 작성분 전량 통과','미달분 보강해')
+   +cell(wkMiss.length>0,'✍️ 이번 주 게이트 미달 글',wkMiss.length+'편',wkMiss.length?esc(wkMiss.slice(0,3).map(r=>r.핵심키워드).join(', '))+' — 아래 ②에서 확인':'이번 주 작성분 전량 통과','미달분 보강해')
    +cell(suggs.length>0,'💡 역제안 검토 대기',suggs.length+'건','데이터가 만든 개선안 — 아래 ⑦에서 내용 확인','역제안 검토 보고해')
    +'</div>';
  })();
 
- // ② 글별 채점표 (이번 주 작성분, 없으면 최근 작성 8편)
+ // ── ② 보강할 글(미달만) + 통과분 접힘 ──
  (function(){
-  const rows=(wk.length?wk:drafts.slice(0,8)).slice(0,16);
-  const note=wk.length?'' :'<div class="load" style="margin-bottom:6px">이번 주 작성분 없음 — 최근 작성 8편 표시</div>';
-  document.getElementById('c2').innerHTML=note+tbl(rows,[
-   {h:'발행예정',f:r=>esc((r.발행일||'').slice(0,10))},{h:'채널',k:'채널'},
-   {h:'키워드',f:r=>esc((r.핵심키워드||'').slice(0,16))},
-   ...['글자수','H2','FAQ','경험어미','CTA','정체성'].map((n,i)=>({h:n,f:r=>{const g=gate(r)[i];
-     return g.ok===null?'<span class="na">–</span>':(g.ok?'<span class="ok">✅ '+esc(g.t)+'</span>':'<span class="no">❌ '+esc(g.t)+'</span>');}})),
-   {h:'종합',f:r=>passAll(r)?'<span class="b b1">통과</span>':'<span class="b b2">보강</span>'}]);
+  const base=wk.length?wk:drafts.slice(0,16);
+  const note=wk.length?'':'<div class="load" style="margin-bottom:6px">이번 주 작성분 없음 — 최근 작성분 기준</div>';
+  const miss=base.filter(r=>!passAll(r)), pass=base.filter(r=>passAll(r));
+  const missHtml=miss.length?tbl(miss,[
+    {h:'발행예정',f:r=>esc((r.발행일||'').slice(0,10))},{h:'채널',k:'채널'},
+    {h:'키워드',f:r=>esc((r.핵심키워드||'').slice(0,16))},
+    {h:'무엇이 미달인가',f:r=>gate(r).filter(g=>g.ok===false).map(g=>'<span class="no">❌ '+esc(g.n)+' '+esc(String(g.t))+'</span>').join(' · ')},
+    {h:'조치',f:()=>'<span class="b b3">보강 대상</span>'}],'misstable')
+   :'<div style="font-size:13px;color:var(--green);font-weight:700;padding:4px 0">✅ 미달 없음 — 전량 게이트 통과</div>';
+  const passHtml=pass.length?('<details><summary>통과 '+pass.length+'편 채점 상세 펼쳐보기</summary>'+tbl(pass,[
+    {h:'발행예정',f:r=>esc((r.발행일||'').slice(0,10))},{h:'채널',k:'채널'},
+    {h:'키워드',f:r=>esc((r.핵심키워드||'').slice(0,16))},
+    ...['글자수','H2','FAQ','경험어미','CTA','정체성'].map((n,i)=>({h:n,f:r=>{const g=gate(r)[i];
+      return g.ok===null?'<span class="na">–</span>':(g.ok?'<span class="ok">✅ '+esc(String(g.t))+'</span>':'<span class="no">❌ '+esc(String(g.t))+'</span>');}}))
+   ])+'</details>'):'';
+  document.getElementById('c2').innerHTML=note+missHtml+passHtml;
  })();
 
- // ③ 결함 장부 (open)
+ // ── ③(구⑥) 매출 키워드 ──
+ (function(){
+  document.getElementById('c6').innerHTML=tbl(ranks,[
+   {h:'키워드',k:'핵심키워드'},{h:'채널',k:'채널'},{h:'순위',f:r=>'<b>'+esc(r.최근순위)+'위</b>'},
+   {h:'상태',f:r=>r.최근순위<=10?'<span class="b b1">1페이지</span>':(r.최근순위<=20?'<span class="b b5">2페이지</span>':'<span class="b b3">리퍼브리시 후보</span>')}]);
+ })();
+
+ // ── ④(구③) 결함 장부 ──
  (function(){
   document.getElementById('c3').innerHTML=tbl(opens.slice(0,12),[
    {h:'결함코드',k:'결함코드'},{h:'분류',k:'결함분류'},
@@ -167,7 +225,7 @@ async function load(){
    {h:'재발방지규칙(자동 경보 내용)',f:r=>esc((r.재발방지규칙||'').slice(0,44))}]);
  })();
 
- // ④ 보완 이행
+ // ── ⑤(구④) 보완 이행 ──
  (function(){
   const fixed=feeds.filter(f=>f.상태==='교정완료'&&f.조치내용).sort((a,b)=>(b.조치일||'').localeCompare(a.조치일||'')).slice(0,8);
   const fixN=feeds.filter(f=>f.상태==='교정완료').length;
@@ -176,7 +234,7 @@ async function load(){
    +tbl(fixed,[{h:'결함코드',k:'결함코드'},{h:'조치내용',f:r=>esc((r.조치내용||'').slice(0,42))},{h:'조치일',f:r=>esc(r.조치일||'')}]);
  })();
 
- // ⑤ 주간 성적표 (생성일=작성 주 기준)
+ // ── ⑥(구⑤) 주간 성적표 ──
  (function(){
   const weeks={};
   for(let i=3;i>=0;i--){const m=new Date(thisMon);m.setDate(m.getDate()-7*i);weeks[ymd(m)]={label:wkLabel(m),n:0,pass:0,chars:[],def:0,fix:0};}
@@ -191,20 +249,16 @@ async function load(){
    {h:'교정',f:r=>r.fix?'<span class="b b1">'+r.fix+'건</span>':'0'}]);
  })();
 
- // ⑥ 매출 키워드 순위
- (function(){
-  document.getElementById('c6').innerHTML=tbl(ranks,[
-   {h:'키워드',k:'핵심키워드'},{h:'채널',k:'채널'},{h:'순위',f:r=>'<b>'+esc(r.최근순위)+'위</b>'},
-   {h:'상태',f:r=>r.최근순위<=10?'<span class="b b1">1페이지</span>':(r.최근순위<=20?'<span class="b b5">2페이지</span>':'<span class="b b3">리퍼브리시 후보</span>')}]);
- })();
-
- // ⑦ 역제안
+ // ── ⑦ 역제안 (출처별 집계 + 최신 12) ──
  (function(){
   const el=document.getElementById('c7');
   if(sg&&sg.error){el.innerHTML='<span class="err">'+esc(sg.error.message)+'</span>';return;}
-  el.innerHTML=tbl(suggs,[
+  const byS={};suggs.forEach(s=>{byS[s.출처]=(byS[s.출처]||0)+1;});
+  const chips=Object.entries(byS).map(([k,v])=>'<span class="b '+({'순위격차':'b3','정체성격차':'b4','승리공식격차':'b5','승리글패턴':'b5','주간재평가':'b1','외부벤치마크':'b1'}[k]||'b5')+'" style="margin-right:6px">'+esc(k)+' '+v+'</span>').join('');
+  el.innerHTML='<div style="margin-bottom:8px">대기 총 <b>'+suggs.length+'건</b> — '+chips+'</div>'
+   +tbl(suggs.slice(0,12),[
    {h:'제안일',f:r=>esc(r.제안일||'')},
-   {h:'출처',f:r=>({'순위격차':'<span class="b b3">순위격차</span>','정체성격차':'<span class="b b4">정체성격차</span>','승리공식격차':'<span class="b b5">승리공식</span>','외부벤치마크':'<span class="b b1">외부벤치마크</span>','알고리즘변경':'<span class="b b2">알고리즘</span>'}[r.출처]||esc(r.출처))},
+   {h:'출처',f:r=>({'순위격차':'<span class="b b3">순위격차</span>','정체성격차':'<span class="b b4">정체성격차</span>','승리공식격차':'<span class="b b5">승리공식</span>','승리글패턴':'<span class="b b5">승리글패턴</span>','주간재평가':'<span class="b b1">주간재평가</span>','외부벤치마크':'<span class="b b1">외부벤치마크</span>'}[r.출처]||esc(r.출처))},
    {h:'채널',k:'채널'},
    {h:'격차(무엇이 부족한가)',f:r=>esc((r.격차요약||'').slice(0,44))},
    {h:'제안(어떻게 고칠까)',f:r=>esc((r.제안내용||'').slice(0,46))}]);

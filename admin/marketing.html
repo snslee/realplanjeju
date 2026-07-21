@@ -822,14 +822,57 @@ function renderLiveFixPanel(list){
         <b style="font-size:.88rem;color:#1e293b">${esc2(r.제목)}</b>
         <span style="font-size:.72rem;color:${wait?'#b45309':'#16a34a'};font-weight:700">${wait?('대기 '+wait):'전부 완료'}</span>
         ${r.발행_url?`<a href="${r.발행_url}" target="_blank" onclick="event.stopPropagation()" style="font-size:.72rem;color:#2563eb">🔗 발행글 열기</a>`:'<span style="font-size:.7rem;color:#94a3b8">(발행 전)</span>'}
+        <button class="btn-sm btn-copy" style="margin-left:auto" onclick="event.stopPropagation();toggleLiveFixBody('${r.id}',this)">📄 본문 위치 보기</button>
       </div>
       ${r.라이브보완.map((f,i)=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-top:0.5px dashed #fde68a;font-size:.83rem">
         <span style="flex-shrink:0;font-size:.7rem;background:${f.실행자&&f.실행자.includes('Claude')?'#dbeafe':'#fef3c7'};color:${f.실행자&&f.실행자.includes('Claude')?'#1d4ed8':'#92400e'};padding:2px 7px;border-radius:8px;margin-top:2px">${esc2(f.실행자||'대표')}</span>
         <div style="flex:1;min-width:0"><b>${esc2(f.항목)}</b> · 위치: ${esc2(f.위치)}<div style="background:#f8fafc;border-radius:6px;padding:5px 8px;margin-top:3px;color:#334155;white-space:pre-wrap">${esc2(f.지시문)}</div></div>
         ${f.상태==='완료'?'<span style="flex-shrink:0;color:#16a34a;font-weight:700;font-size:.78rem;margin-top:2px">✅ 완료</span>':`<span style="flex-shrink:0;display:flex;gap:4px"><button class="btn-sm btn-copy" onclick="event.stopPropagation();copyLiveFix('${r.id}',${i},this)">📋 복사</button><button class="btn-sm btn-approve" onclick="event.stopPropagation();markLiveFixDone('${r.id}',${i})">✅ 완료</button></span>`}
       </div>`).join('')}
+      <div id="lfbody-${r.id}" style="display:none"></div>
     </div>`;}).join('')}
   </div>`;
+}
+
+/* 라이브보완 — 본문 내 빨간 표시 (지시문이 본문에 있으면 그 자리, 없으면 위치의 "앵커" 뒤에 삽입 시뮬레이션) */
+function highlightLiveFix(body,fixArr){
+  if(!body||!Array.isArray(fixArr)||!fixArr.length)return{text:body,missing:[]};
+  var t=body,missing=[];
+  fixArr.forEach(function(f,idx){
+    var s=String(f.지시문||'').trim();if(!s)return;
+    var tag='⟦FIX'+idx+(f.상태==='완료'?'D':'P')+'⟧';
+    if(t.indexOf(s)>=0){t=t.replace(s,tag+s+'⟦/FIX⟧');return;}
+    var m=String(f.위치||'').match(/[“"']([^“”"']{6,})[”"']/);
+    var anchor=m?m[1]:null;
+    if(anchor&&t.indexOf(anchor)>=0){t=t.replace(anchor,anchor+' '+tag+s+'⟦/FIX⟧');}
+    else{missing.push(idx);}
+  });
+  return{text:t,missing:missing};
+}
+function fmtBodyFix(t,fixArr){
+  if(!t)return fmtBody(t);
+  var h=highlightLiveFix(t,fixArr||[]);
+  var html=mdRender(h.text);
+  html=html.replace(/⟦FIX(\d+)(P|D)⟧/g,function(_,n,st){
+    var done=st==='D';
+    return '<span style="color:#dc2626;font-weight:700;background:'+(done?'#fff':'#fef2f2')+';border-bottom:2px solid #dc2626;border-radius:3px;padding:0 2px"><span style="font-size:.68rem;background:'+(done?'#16a34a':'#dc2626')+';color:#fff;border-radius:6px;padding:1px 5px;margin-right:4px;vertical-align:middle">'+(done?'✔':'🔧')+' 보완'+(Number(n)+1)+'</span>';
+  }).replace(/⟦\/FIX⟧/g,'</span>');
+  if(h.missing.length){html='<div style="background:#fef2f2;border:0.5px solid #fecaca;border-radius:6px;padding:6px 9px;margin-bottom:8px;font-size:.78rem;color:#b91c1c">⚠ 위치 자동표시 실패 '+h.missing.map(function(i){return '보완'+(i+1);}).join('·')+' — 상단 지시문의 위치 설명을 참고하세요</div>'+html;}
+  return html;
+}
+async function toggleLiveFixBody(id,btn){
+  var el=document.getElementById('lfbody-'+id);if(!el)return;
+  if(el.style.display!=='none'&&el.dataset.loaded){el.style.display='none';if(btn)btn.textContent='📄 본문 위치 보기';return;}
+  if(!el.dataset.loaded){
+    el.style.display='block';el.innerHTML='<div style="padding:10px;color:#94a3b8;font-size:.8rem">본문 불러오는 중...</div>';
+    var r=await sb.from('mk_blog_drafts').select('본문_네이버,본문_티스토리,자가검증_결과').eq('id',id).maybeSingle();
+    var data=r&&r.data;if(!data){el.innerHTML='<div style="padding:10px;color:#b91c1c;font-size:.8rem">로드 실패</div>';return;}
+    var fix=(data.자가검증_결과&&Array.isArray(data.자가검증_결과.라이브보완))?data.자가검증_결과.라이브보완:[];
+    var body=data.본문_네이버||data.본문_티스토리||'';
+    el.innerHTML='<div style="font-size:.72rem;color:#92400e;margin:6px 0 4px">🔴 빨간 문장 = 라이브 보완 삽입 위치 (🔧 배지=대기 · ✔ 배지=반영완료)</div><div style="max-height:50vh;overflow-y:auto;background:#fff;border:0.5px solid #fde68a;border-radius:8px;padding:12px 16px;font-size:.88rem;color:#1e293b">'+fmtBodyFix(body,fix)+'</div>';
+    el.dataset.loaded='1';
+  }
+  el.style.display='block';if(btn)btn.textContent='📄 본문 닫기';
 }
 async function copyLiveFix(id,i,btn){
   const r=(allDrafts||[]).find(x=>x.id===id); const f=r&&Array.isArray(r.라이브보완)?r.라이브보완[i]:null;
@@ -1302,8 +1345,8 @@ async function openDraftReader(id){
       ${isDraft?`<button class="btn-sm btn-approve" onclick="approveDraft('${id}')">✅ 승인</button><button class="btn-sm btn-reject" onclick="openReject('${id}')">❌ 반려</button>`:''}
     </div>
     ${(window.__dc.fix&&window.__dc.fix.length)?`<div style="background:#fff7ed;border:1px solid #fdba74;border-radius:10px;padding:12px 14px;margin-bottom:16px"><div style="font-weight:800;font-size:.92rem;color:#9a3412;margin-bottom:8px">🔧 라이브 보완 지시 — 대기 ${window.__dc.fix.filter(f=>f.상태!=='완료').length}건 / 완료 ${window.__dc.fix.filter(f=>f.상태==='완료').length}건</div>${window.__dc.fix.map((f,i)=>`<div style="font-size:.85rem;margin-bottom:10px;line-height:1.6"><b>${String(f.항목||'').replace(/</g,'&lt;')}</b> · 위치: ${String(f.위치||'').replace(/</g,'&lt;')} · 실행: ${String(f.실행자||'대표')} ${f.상태==='완료'?'<span style="color:#16a34a;font-weight:700">✅ 완료</span>':`<button class="btn-sm btn-copy" onclick="copyFixText(${i},this)">📋 삽입 문장 복사</button>`}<div style="background:#fff;border:0.5px solid #fde68a;border-radius:6px;padding:7px 9px;margin-top:4px;color:#334155;white-space:pre-wrap">${String(f.지시문||'').replace(/</g,'&lt;')}</div></div>`).join('')}</div>`:''}
-    ${nav?`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-weight:700;color:#1d4ed8;font-size:.92rem">📱 네이버 본문</span><button class="btn-sm btn-copy" onclick="copyDraftPart('nav',this)">📋 본문 전체 복사</button></div><div style="max-height:55vh;overflow-y:auto;padding-right:10px;font-size:.95rem;color:#1e293b">${fmtBody(nav)}</div>`:''}
-    ${tis?`<div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 8px"><span style="font-weight:700;color:#7e22ce;font-size:.92rem">💻 티스토리 본문</span><button class="btn-sm btn-copy" onclick="copyDraftPart('tis',this)">📋 본문 전체 복사</button></div><div style="max-height:45vh;overflow-y:auto;padding-right:10px;font-size:.95rem;color:#1e293b">${fmtBody(tis)}</div>`:''}
+    ${nav?`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-weight:700;color:#1d4ed8;font-size:.92rem">📱 네이버 본문</span><button class="btn-sm btn-copy" onclick="copyDraftPart('nav',this)">📋 본문 전체 복사</button></div><div style="max-height:55vh;overflow-y:auto;padding-right:10px;font-size:.95rem;color:#1e293b">${fmtBodyFix(nav,window.__dc.fix)}</div>`:''}
+    ${tis?`<div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 8px"><span style="font-weight:700;color:#7e22ce;font-size:.92rem">💻 티스토리 본문</span><button class="btn-sm btn-copy" onclick="copyDraftPart('tis',this)">📋 본문 전체 복사</button></div><div style="max-height:45vh;overflow-y:auto;padding-right:10px;font-size:.95rem;color:#1e293b">${fmtBodyFix(tis,window.__dc.fix)}</div>`:''}
     ${window.__dc.img?`<details style="margin-top:20px"><summary style="font-weight:700;color:#0e7490;cursor:pointer;font-size:.92rem">🖼 이미지 프롬프트 (${imgArr.length}장) — 펼쳐보기 · 위 버튼은 클립보드 복사</summary><div style="margin-top:8px;background:#f8fafc;border:0.5px solid #e2e8f0;border-radius:8px;padding:14px;white-space:pre-wrap;font-size:.82rem;line-height:1.55;color:#334155;max-height:55vh;overflow-y:auto">${window.__dc.img.replace(/</g,"&lt;")}</div></details>`:""}
   </div>`;
   box.scrollIntoView({behavior:'smooth',block:'start'});

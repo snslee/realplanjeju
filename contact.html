@@ -610,6 +610,9 @@
       }catch(e){}
     })();
 
+    /* --- 전화·카톡 클릭 추적 (2026-07-21 권장번들) --- */
+    document.addEventListener('click',function(e){try{var a=e.target.closest&&e.target.closest('a[href^="tel:"],a[href*="pf.kakao.com"]');if(!a||!sb)return;var ty=(a.getAttribute('href')||'').indexOf('tel:')===0?'tel':'kakao';sb.rpc('rpc_web_log_click',{p_사이트:'A',p_유형:ty,p_세션:RP_SID}).then(function(){},function(){});}catch(_){}},true);
+
     /* --- 쿠키 배너 --- */
     function acceptCookie() {
       try { localStorage.setItem('cookieOk', '1'); } catch(e) {}

@@ -45,6 +45,19 @@
   .ok{color:var(--green);font-weight:700;}.no{color:var(--red);font-weight:700;}.na{color:#94a3b8;}
   details summary{cursor:pointer;font-size:12px;color:var(--blue);font-weight:700;margin:6px 0;}
   .misstable td{background:#fff8f8;}
+  /* 미션 트랙 */
+  .mtracks{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .mtrack{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#f8fafc;}
+  .mtrack h3{font-size:12.5px;margin-bottom:6px;}
+  .mnow{background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:9px 11px;margin-bottom:6px;}
+  .mnow .nm{font-size:13px;font-weight:800;}
+  .mnow .cond{font-size:11.5px;color:#475569;margin:3px 0;line-height:1.55;}
+  .mnow .say{display:inline-block;margin-top:3px;background:#1e3a5f;color:#fff;border-radius:6px;padding:2px 9px;font-size:11px;font-weight:700;}
+  .mrow{font-size:11.5px;padding:3px 2px;color:#475569;display:flex;gap:6px;align-items:center;}
+  .mrow.done{color:var(--green);} .mrow.lock{color:#94a3b8;}
+  .msteps{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .mstep{flex:1;min-width:120px;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:11px;background:#fff;line-height:1.5;}
+  .mstep.now{border-color:#fdba74;background:#fff7ed;} .mstep.done{border-color:#bbf7d0;background:#f0fdf4;} .mstep.lock{opacity:.55;}
   @media(max-width:1200px){.kpis{grid-template-columns:repeat(3,1fr);}}
   @media(max-width:980px){.grid{grid-template-columns:1fr;}.acts{grid-template-columns:1fr;}.kpis{grid-template-columns:repeat(2,1fr);}}
 </style>
@@ -68,6 +81,10 @@
 <div class="legend"><b>이 화면이 재는 성장 필수요소</b> — 글자수·H2 목차=<b>구글(티스토리) 명시 요건</b> · FAQ=<b>네이버 AI브리핑 인용(AEO)</b> · 경험어미=<b>네이버 D.I.A.+ 경험·구글 E-E-A-T</b> · 정체성=<b>C-Rank 주제 일관성</b> · CTA·UTM=<b>문의 전환(매출 브릿지)</b>. 전 항목이 매 글 자동 채점되고, 미달은 아래 ②에, 개선안은 ⑦에 자동으로 올라옵니다.</div>
 
 <div class="grid">
+  <div class="card full"><h2>⓪ 오늘의 미션 — 하나 끝내야 다음이 열립니다</h2>
+    <div class="how">네이버·티스토리 <b>각 1개씩만</b> 진행합니다. 완료 판정은 자동(채점·발행 감지) — 완료되면 다음 미션이 자동 해금됩니다. 아래 잠금 미션은 지금 신경 쓰지 않으셔도 됩니다.</div>
+    <div id="c0" class="load">불러오는 중…</div></div>
+
   <div class="card full"><h2>① 이번 주 대표 지시 — 여기 뜬 것만 지시하면 됩니다</h2>
     <div class="how">1~4단계(채점→결함기록→자동경보→교정확인)는 전부 자동으로 돕니다. 칸에 숫자가 뜨면 <b>지시 문구를 채팅에 그대로</b> 말씀하세요. 셋 다 0이면 이번 주는 지시 없이 종료.</div>
     <div id="c1" class="load">불러오는 중…</div></div>
@@ -80,12 +97,12 @@
     <div class="how"><span class="b b3">리퍼브리시 후보</span>가 보이면 ①에 자동 집계됩니다. 1페이지 키워드가 늘어나는 것이 이 화면의 성공 지표.</div>
     <div id="c6" class="load">불러오는 중…</div></div>
 
-  <div class="card"><h2>④ 결함 장부 — 다음 글에 자동 경보되는 목록</h2>
-    <div class="how">여기 있는 결함은 <b>다음 글 착수 때 자동 경보</b>됩니다. 대표님은 <span class="b b2">재발</span> 배지만 질책하시면 됩니다.</div>
+  <div class="card"><h2>④ 피드백 — 미해결 (여기만 줄이면 됩니다)</h2>
+    <div class="how">상태 <b>open·재발</b>만 표시. 다음 글 착수 때 자동 경보됩니다. 대표님은 <span class="b b2">재발</span> 배지만 질책하시면 됩니다.</div>
     <div id="c3" class="load">불러오는 중…</div></div>
 
-  <div class="card"><h2>⑤ 보완 이행 — 무엇을 어떻게 고쳤나</h2>
-    <div class="how">교정완료 = 실제 조치 내용이 기록된 것만. 미보완이 몇 주째 줄지 않으면 "미보완 결함 소진 계획 보고해"라고 지시하세요.</div>
+  <div class="card"><h2>⑤ 보완 완료 → 검증 중 → 정착</h2>
+    <div class="how"><b>교정완료</b>는 아직 끝이 아닙니다 — 이후 발행 2일치에서 같은 결함이 안 나와야 자동으로 <span class="b b1">정착</span> 처리되고, 다시 나오면 <span class="b b2">재발</span>로 ④에 복귀합니다. 이 흐름이 "피드백이 진짜 반영되는가"의 증거입니다.</div>
     <div id="c4" class="load">불러오는 중…</div></div>
 
   <div class="card"><h2>⑥ 주간 성적표 (4주 추이)</h2>
@@ -133,7 +150,8 @@ async function load(){
  const d7=new Date(now);d7.setDate(d7.getDate()-7);
  const d14=new Date(now);d14.setDate(d14.getDate()-14);
  const d30=new Date(now);d30.setDate(d30.getDate()-30);
- const [dr,fb,od,rk,sg,pub,met,vis,inq]=await Promise.all([
+ try{await sb.rpc('rpc_growth_refresh');}catch(e){}
+ const [dr,fb,od,rk,sg,pub,met,vis,inq,ms]=await Promise.all([
   sb.from('mk_blog_drafts').select('발행일,생성일,채널,핵심키워드,제목,품질지표').not('품질지표','is',null).gte('생성일',d28.toISOString()).order('생성일',{ascending:false}),
   sb.from('mk_draft_feedback').select('발생일,결함코드,결함분류,심각도,상태,조치내용,조치일,재발방지규칙,채널').order('발생일',{ascending:false}).limit(200),
   sb.from('v_open_defects').select('*'),
@@ -142,7 +160,8 @@ async function load(){
   sb.from('mk_blog_publish_log').select('채널,진입판정').in('진입판정',['✅1~5위','⚠️6~10위']),
   sb.from('mk_metrics').select('노출_수,클릭_수,측정_일자').eq('데이터_소스','gsc').gte('측정_일자',ymd(d14)),
   sb.from('web_방문로그').select('utm_source,유입_출처').gte('방문_시각',d30.toISOString()),
-  sb.from('mk_inquiry_attribution').select('utm_source')
+  sb.from('mk_inquiry_attribution').select('utm_source'),
+  sb.from('mk_growth_missions').select('*').order('순번')
  ]);
  if(dr.error||fb.error||od.error||rk.error){
   const e=(dr.error||fb.error||od.error||rk.error).message;
@@ -176,6 +195,25 @@ async function load(){
   else kpiSet(3,'–');
   kpiSet(4,'1p '+page1.length+' <small>/</small> 리퍼브 '+refurb.length, refurb.length>0?'warn':'good');
   kpiSet(5,'❌'+wkMiss.length+' <small>/</small> 결함 '+opens.length, (wkMiss.length+opens.length)>0?'warn':'good');
+ })();
+
+ // ── ⓪ 오늘의 미션 (트랙별 1개·완료 시 자동 해금) ──
+ (function(){
+  const el=document.getElementById('c0');
+  if(!ms||ms.error){el.innerHTML='<span class="err">'+esc(ms&&ms.error?ms.error.message:'미션 데이터 없음')+'</span>';return;}
+  const rows=ms.data||[];
+  const track=t=>{
+   const list=rows.filter(r=>r.트랙===t);
+   const now=list.find(r=>r.상태==='진행중');
+   const icon={'완료':'✅','진행중':'🔶','잠금':'🔒'};
+   const nowHtml=now
+    ?'<div class="mnow"><div class="nm">🔶 '+esc(now.미션코드)+'. '+esc(now.미션명)+'</div><div class="cond">통과 조건: '+esc(now.통과조건)+' · 현재 <b>'+esc(now.현재값||'-')+'</b> / 목표 '+esc(now.목표||'-')+'</div>'+(now.지시문?'<span class="say">'+esc(now.지시문)+'</span>':'')+'</div>'
+    :'<div class="mnow"><div class="nm">🎉 이 트랙 미션 전부 완료</div></div>';
+   const others=list.filter(r=>r!==now).map(r=>'<div class="mrow '+(r.상태==='완료'?'done':'lock')+'">'+icon[r.상태]+' '+esc(r.미션코드)+'. '+esc(r.미션명)+(r.완료일?' <span style="font-size:10px">('+esc(r.완료일)+')</span>':'')+'</div>').join('');
+   return '<div class="mtrack"><h3>'+(t==='네이버'?'🟢 네이버 트랙':'🟠 티스토리 트랙')+'</h3>'+nowHtml+others+'</div>';
+  };
+  const macro=rows.filter(r=>r.트랙==='공통').map(r=>'<div class="mstep '+({'완료':'done','진행중':'now','잠금':'lock'}[r.상태])+'"><b>'+esc(r.미션코드)+' '+esc(r.미션명)+'</b><br>'+esc(r.통과조건)+'<br>현재 '+esc(r.현재값||'-')+' → 목표 '+esc(r.목표||'-')+'</div>').join('');
+  el.innerHTML='<div class="mtracks">'+track('네이버')+track('티스토리')+'</div><div class="msteps">'+macro+'</div>';
  })();
 
  // ── ① 대표 지시 4칸 ──
@@ -216,22 +254,26 @@ async function load(){
    {h:'상태',f:r=>r.최근순위<=10?'<span class="b b1">1페이지</span>':(r.최근순위<=20?'<span class="b b5">2페이지</span>':'<span class="b b3">리퍼브리시 후보</span>')}]);
  })();
 
- // ── ④(구③) 결함 장부 ──
+ // ── ④ 피드백 미해결 (open·재발) ──
  (function(){
-  document.getElementById('c3').innerHTML=tbl(opens.slice(0,12),[
+  const openRows=feeds.filter(f=>f.상태==='open'||f.상태==='재발').slice(0,12);
+  document.getElementById('c3').innerHTML=openRows.length?tbl(openRows,[
    {h:'결함코드',k:'결함코드'},{h:'분류',k:'결함분류'},
    {h:'심각도',f:r=>({'사고':'<span class="b b2">사고</span>','질책':'<span class="b b3">질책</span>'}[r.심각도]||'<span class="b b1">경미</span>')},
-   {h:'재발',f:r=>r.재발중?'<span class="b b2">재발</span>':'-'},
-   {h:'재발방지규칙(자동 경보 내용)',f:r=>esc((r.재발방지규칙||'').slice(0,44))}]);
+   {h:'상태',f:r=>r.상태==='재발'?'<span class="b b2">재발</span>':'<span class="b b3">open</span>'},
+   {h:'재발방지규칙(자동 경보 내용)',f:r=>esc((r.재발방지규칙||'').slice(0,44))}])
+  :'<div style="font-size:13px;color:var(--green);font-weight:700;padding:4px 0">✅ 미해결 피드백 0건</div>';
  })();
 
- // ── ⑤(구④) 보완 이행 ──
+ // ── ⑤ 보완 완료(검증 중) → 정착 ──
  (function(){
-  const fixed=feeds.filter(f=>f.상태==='교정완료'&&f.조치내용).sort((a,b)=>(b.조치일||'').localeCompare(a.조치일||'')).slice(0,8);
-  const fixN=feeds.filter(f=>f.상태==='교정완료').length;
+  const fixed=feeds.filter(f=>f.상태==='교정완료').sort((a,b)=>(b.조치일||'').localeCompare(a.조치일||''));
+  const settled=feeds.filter(f=>f.상태==='정착').sort((a,b)=>(b.조치일||'').localeCompare(a.조치일||''));
+  const openN=feeds.filter(f=>f.상태==='open'||f.상태==='재발').length;
   document.getElementById('c4').innerHTML=
-   '<div style="font-size:12px;margin-bottom:6px">교정완료 <b style="color:var(--green)">'+fixN+'건</b> · 미보완 <b style="color:var(--red)">'+opens.length+'건</b></div>'
-   +tbl(fixed,[{h:'결함코드',k:'결함코드'},{h:'조치내용',f:r=>esc((r.조치내용||'').slice(0,42))},{h:'조치일',f:r=>esc(r.조치일||'')}]);
+   '<div style="font-size:12px;margin-bottom:6px">검증 중 <b style="color:var(--amber)">'+fixed.length+'건</b> · <span class="b b1">정착</span> <b style="color:var(--green)">'+settled.length+'건</b> · 미해결 <b style="color:var(--red)">'+openN+'건</b></div>'
+   +(fixed.length?tbl(fixed.slice(0,8),[{h:'결함코드',k:'결함코드'},{h:'조치내용',f:r=>esc((r.조치내용||'').slice(0,40))},{h:'조치일',f:r=>esc(r.조치일||'')},{h:'검증',f:()=>'<span class="b b3">발행 2일치 무재발 대기</span>'}]):'<div class="load">검증 중인 건 없음</div>')
+   +(settled.length?('<details><summary>🏅 정착 아카이브 '+settled.length+'건 — 자산이 된 규칙</summary>'+tbl(settled.slice(0,20),[{h:'결함코드',k:'결함코드'},{h:'재발방지규칙',f:r=>esc((r.재발방지규칙||'').slice(0,48))},{h:'조치일',f:r=>esc(r.조치일||'')}])+'</details>'):'');
  })();
 
  // ── ⑥(구⑤) 주간 성적표 ──

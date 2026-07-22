@@ -1342,7 +1342,7 @@ async function openDraftReader(id){
   let imgs=data.이미지프롬프트; if(typeof imgs==='string'){try{imgs=JSON.parse(imgs);}catch(e){imgs=null;}}
   const imgArr=Array.isArray(imgs)?imgs:[];
   const fixArr=(data.자가검증_결과&&Array.isArray(data.자가검증_결과.라이브보완))?data.자가검증_결과.라이브보완:[];
-  window.__dc={nav:nav,tis:tis,fix:fixArr,img:imgArr.map((p,i)=>'이미지 '+(i+1)+' — '+(typeof p==='string'?p:(p.prompt||p.설명||JSON.stringify(p)))).join('\n\n')};
+  window.__dc={nav:nav,tis:tis,fix:fixArr,pub_url:data.발행_url||'',img:imgArr.map((p,i)=>'이미지 '+(i+1)+' — '+(typeof p==='string'?p:(p.prompt||p.설명||JSON.stringify(p)))).join('\n\n')};
   const navLen=nav.replace(/\s/g,'').length,tisLen=tis.replace(/\s/g,'').length;
   const isDraft=data.상태==='draft';
   box.innerHTML=`<div style="background:#fff;border:0.5px solid #e2e8f0;border-radius:12px;padding:22px 26px">

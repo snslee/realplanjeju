@@ -465,6 +465,24 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>판정</th><th>의도 키워드</th><th>실제 top 검색어</th><th>노출</th></tr></thead><tbody id="ki-drift"><tr><td colspan="4" class="loading">로딩 중...</td></tr></tbody></table></div>
       </div>
     </div>
+    <div class="tab-panel" id="t13">
+      <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><h2 style="font-size:1.2rem;font-weight:700">🧵 쓰레드 운영</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">@realplan_travel · mk_sns_slots · 소통 6 : 가치 3 : 홍보 1 · 발행 후 30분 답글</p></div>
+        <button onclick="loadThreadsSlots()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
+      </div>
+      <div id="t13-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:14px"></div>
+      <div style="background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:14px">🧵 예정 시각에 텔레그램으로 복붙 카드가 자동 발송됩니다(플레이스 소식과 동일). 게시 후 좋아요·댓글·저장·답글완료를 입력하면 역제안 엔진이 학습합니다. 쓰레드는 해시태그가 아닌 <b>본문 키워드</b>로 노출돼요.</div>
+      <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px">
+        <table style="width:100%;border-collapse:collapse;font-size:.8rem">
+          <thead><tr style="background:#f8fafc;text-align:left"><th style="padding:9px">예정(KST)</th><th>사업부</th><th>유형</th><th>등급</th><th>상태</th><th>반응/답글</th></tr></thead>
+          <tbody id="t13-body"><tr><td colspan="6" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody>
+        </table>
+      </div>
+      <script>
+      async function loadThreadsSlots(){var box=document.getElementById('t13-body');if(!box)return;box.innerHTML='<tr><td colspan="6" style="padding:12px;color:#64748b">로딩 중...</td></tr>';try{var r=await sb.from('mk_sns_slots').select('예정일시,사업부,유형,홍보등급,핵심키워드,상태,좋아요,댓글,저장,공유,답글완료').eq('플랫폼','쓰레드').order('예정일시');if(r.error)throw r.error;var rows=r.data||[];var pub=rows.filter(function(x){return x.상태==='발행'}).length;var wt=rows.filter(function(x){return x.상태==='대기'||x.상태==='카드발송'}).length;document.getElementById('t13-kpi').innerHTML=t13kpi('전체',rows.length)+t13kpi('발행',pub)+t13kpi('대기/발송',wt);box.innerHTML=rows.map(function(x){var dt=x.예정일시?new Date(x.예정일시).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'-';var react=(x.좋아요||0)+'♥ '+(x.댓글||0)+'💬 '+(x.저장||0)+'🔖';var reply=x.답글완료?'✅':'—';return '<tr style="border-top:1px solid #f1f5f9"><td style="padding:8px">'+dt+'</td><td>'+(x.사업부||'')+'</td><td>'+(x.유형||'')+'</td><td>'+(x.홍보등급||'')+'</td><td>'+(x.상태||'')+'</td><td>'+react+' / 답글'+reply+'</td></tr>';}).join('')||'<tr><td colspan="6" style="padding:12px;color:#64748b">카드 없음</td></tr>';}catch(e){box.innerHTML='<tr><td colspan="6" style="padding:12px;color:#dc2626">오류: '+(e&&e.message||e)+'</td></tr>';}}
+      function t13kpi(l,v){return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px"><div style="font-size:.72rem;color:#64748b">'+l+'</div><div style="font-size:1.4rem;font-weight:700">'+v+'</div></div>';}
+      </script>
+    </div>
     <div class="tab-panel" id="t9">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div><h2 style="font-size:1.2rem;font-weight:700">🤖 무인풀오토 실험</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">비동기 분할 생성 큐 (mk_autogen_jobs) · 한 틱 = 한 섹션</p></div>

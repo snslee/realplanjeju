@@ -1567,7 +1567,7 @@ async function loadAssignBoard(force){
   renderAssignBoard();renderDraftPhotoPanel();
 }
 function _asgName(r){var p=String(r.배정_경로||'');var f=p?p.split('\\').pop():'';return f?f:String(r.파일명||'');}
-function asgPathCopy(i){var r=_asgRows[i];if(!r)return;navigator.clipboard.writeText(r.배정_경로||r.로컬경로||'').then(function(){if(window.showToast)showToast('파일 경로 복사됨 — 탐색기 주소창에 붙여넣기');});}
+function asgPathCopy(i){var r=_asgRows[i];if(!r)return;var p=r.배정_경로||r.로컬경로||'';if(!p)return;try{navigator.clipboard.writeText(p);}catch(e){}location.href='rpfolder:'+encodeURIComponent(p);if(window.showToast)showToast('탐색기에서 파일 위치를 엽니다 (경로도 복사됨)');}
 function asgDirCopy(ch){var r=_asgRows.filter(function(x){return x.배정_채널===ch&&x.배정_경로;})[0];if(!r)return;var p=String(r.배정_경로);navigator.clipboard.writeText(p.slice(0,p.lastIndexOf('\\')+1)).then(function(){if(window.showToast)showToast('폴더 경로 복사됨 — 탐색기 주소창에 붙여넣기');});}
 function asgCopy(i){var r=_asgRows[i];if(!r)return;navigator.clipboard.writeText(r.배정_캡션||'').then(function(){if(window.showToast)showToast('캡션 복사됨');});}
 async function asgDone(i){var r=_asgRows[i];if(!r)return;if(!confirm('['+r.파일명+'] 삽입 완료 처리할까요?'))return;var u=await sb.from('mk_photo_assets').update({'사용여부':'사용됨'}).eq('로컬경로',r.로컬경로);if(u.error){alert('실패: '+u.error.message);return;}r.사용여부='사용됨';renderAssignBoard();renderDraftPhotoPanel();}

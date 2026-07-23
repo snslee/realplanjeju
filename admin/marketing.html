@@ -1583,7 +1583,7 @@ function renderAssignBoard(){
   chs.forEach(function(ch){
     var rows=_asgRows.filter(function(r){return r.배정_채널===ch;});
     if(!rows.length)return;
-    h+='<div style="font-size:.8rem;font-weight:700;color:#334155;margin:10px 0 6px">'+ch+' <a href="'+_asgEsc(rows[0].배정_글url)+'" target="_blank" rel="noopener" style="font-size:.72rem;color:#2563eb">글 열기 ↗</a></div>';
+    h+='<div style="font-size:.8rem;font-weight:700;color:#334155;margin:10px 0 6px">'+ch+' <a href="'+_asgEsc(rows[0].배정_글url)+'" target="_blank" rel="noopener" style="font-size:.72rem;color:#2563eb">글 열기 ↗</a> <a href="javascript:void(0)" onclick="asgDirCopy(\''+ch+'\')" style="font-size:.72rem;color:#0891b2">📂 폴더 경로 복사</a></div>';
     rows.forEach(function(r){
       var gi=_asgRows.indexOf(r),done=r.사용여부==='사용됨';
       h+='<div style="display:flex;gap:10px;align-items:flex-start;border:1px solid '+(done?'#e2e8f0':'#bfdbfe')+';border-radius:9px;padding:8px 10px;margin-bottom:6px;background:'+(done?'#f8fafc':'#fff')+'">'

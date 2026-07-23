@@ -1467,7 +1467,7 @@ async function openWinningReader(id){
 }
 
 
-async function copyFixText(i,btn){const f=((window.__dc||{}).fix||[])[i];if(!f){showToast('지시문 없음');return;}try{await navigator.clipboard.writeText(f.지시문||'');}catch(e){const ta=document.createElement('textarea');ta.value=f.지시문||'';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}if(btn){const o=btn.textContent;btn.textContent='✅ 복사됨!';setTimeout(()=>btn.textContent=o,1500);}showToast('삽입 문장 복사 완료');}
+async function copyFixText(i,btn){const f=((window.__dc||{}).fix||[])[i];if(!f){showToast('지시문 없음');return;}const txt=f.복사문구||f.지시문||'';try{await navigator.clipboard.writeText(txt);}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}if(btn){const o=btn.textContent;btn.textContent='✅ 복사됨!';setTimeout(()=>btn.textContent=o,1500);}showToast('삽입 문장 복사 완료');}
 async function copyDraftPart(k,btn){
   const t=(window.__dc||{})[k]||'';
   if(!t){showToast('복사할 내용이 없습니다');return;}

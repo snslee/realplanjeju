@@ -1587,7 +1587,7 @@ function renderAssignBoard(){
     rows.forEach(function(r){
       var gi=_asgRows.indexOf(r),done=r.사용여부==='사용됨';
       h+='<div style="display:flex;gap:10px;align-items:flex-start;border:1px solid '+(done?'#e2e8f0':'#bfdbfe')+';border-radius:9px;padding:8px 10px;margin-bottom:6px;background:'+(done?'#f8fafc':'#fff')+'">'
-        +'<div style="flex:1;min-width:0"><div style="font-size:.78rem;font-weight:700">'+_asgEsc(r.파일명)+(r.초상권플래그?' <span style="background:#fef2f2;color:#b91c1c;font-size:.68rem;padding:1px 6px;border-radius:7px">초상권주의</span>':'')+(done?' <span style="color:#16a34a;font-size:.72rem">✅ 사용됨</span>':'')+'</div>'
+        +'<div style="flex:1;min-width:0"><div style="font-size:.78rem;font-weight:700">'+_asgEsc(_asgName(r))+' <span style="font-weight:400;color:#94a3b8;font-size:.68rem">원본 '+_asgEsc(r.파일명)+'</span>'+(r.초상권플래그?' <span style="background:#fef2f2;color:#b91c1c;font-size:.68rem;padding:1px 6px;border-radius:7px">초상권주의</span>':'')+(done?' <span style="color:#16a34a;font-size:.72rem">✅ 사용됨</span>':'')+'</div>'
         +'<div style="font-size:.73rem;color:#64748b;margin-top:2px">📍 '+_asgEsc(r.배정_위치)+'</div>'
         +'<div style="font-size:.73rem;color:#334155;margin-top:2px">💬 '+_asgEsc(r.배정_캡션)+'</div></div>'
         +'<div style="display:flex;flex-direction:column;gap:4px;white-space:nowrap">'

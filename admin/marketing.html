@@ -959,7 +959,8 @@ async function toggleLiveFixBody(id,btn){
 async function copyLiveFix(id,i,btn){
   const r=(allDrafts||[]).find(x=>x.id===id); const f=r&&Array.isArray(r.라이브보완)?r.라이브보완[i]:null;
   if(!f){showToast('지시문 없음');return;}
-  try{await navigator.clipboard.writeText(f.지시문||'');}catch(e){const ta=document.createElement('textarea');ta.value=f.지시문||'';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+  const txt=f.복사문구||f.지시문||'';
+  try{await navigator.clipboard.writeText(txt);}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
   if(btn){const o=btn.textContent;btn.textContent='✅ 복사됨';setTimeout(()=>btn.textContent=o,1400);}showToast('삽입 문장 복사 완료');
 }
 async function markLiveFixDone(id,i){

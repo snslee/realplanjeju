@@ -1560,7 +1560,7 @@ var _asgRows=[],_asgLoaded=false;
 function _asgEsc(t){return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 async function loadAssignBoard(force){
   if(!_asgLoaded||force){
-    var r=await sb.from('mk_photo_assets').select('로컬경로,파일명,사업부,사용여부,초상권플래그,배정_채널,배정_글url,배정_위치,배정_캡션,배정일').not('배정_채널','is',null).order('배정_채널');
+    var r=await sb.from('mk_photo_assets').select('로컬경로,파일명,사업부,사용여부,초상권플래그,배정_채널,배정_글url,배정_위치,배정_캡션,배정일,배정_경로').not('배정_채널','is',null).order('배정_채널');
     if(r.error){console.error('asg load',r.error);return;}
     _asgRows=r.data||[];_asgLoaded=true;
   }

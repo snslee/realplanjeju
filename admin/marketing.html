@@ -921,7 +921,7 @@ function highlightLiveFix(body,fixArr){
   if(!body||!Array.isArray(fixArr)||!fixArr.length)return{text:body,missing:[]};
   var t=body,missing=[];
   fixArr.forEach(function(f,idx){
-    var s=String(f.지시문||'').trim();if(!s)return; if(/썸네일|실사진|이미지/.test(String(f.항목||'')))return;
+    var s=String(f.복사문구||f.지시문||'').trim();if(!s)return; if(/썸네일|실사진|이미지/.test(String(f.항목||'')))return;
     var tag='⟦FIX'+idx+(f.상태==='완료'?'D':'P')+'⟧';
     if(t.indexOf(s)>=0){t=t.replace(s,tag+s+'⟦/FIX⟧');return;}
     var m=String(f.위치||'').match(/[“"']([^“”"']{6,})[”"']/);

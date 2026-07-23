@@ -906,7 +906,7 @@ function renderLiveFixPanel(list){
         ${r.발행_url?`<a href="${r.발행_url}" target="_blank" onclick="event.stopPropagation()" style="font-size:.72rem;color:#2563eb">🔗 발행글 열기</a>`:'<span style="font-size:.7rem;color:#94a3b8">(발행 전)</span>'}
         <button class="btn-sm btn-copy" style="margin-left:auto" onclick="event.stopPropagation();toggleLiveFixBody('${r.id}',this)">📄 본문 위치 보기</button>
       </div>
-      ${r.라이브보완.map((f,i)=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-top:0.5px dashed #fde68a;font-size:.83rem">
+      ${r.라이브보완.map((f,i)=>({f:f,i:i})).sort((a,b)=>((a.f.상태==='완료'?1:0)-(b.f.상태==='완료'?1:0))||(b.i-a.i)).map(({f,i})=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-top:0.5px dashed #fde68a;font-size:.83rem">
         <span style="flex-shrink:0;font-size:.7rem;background:${f.실행자&&f.실행자.includes('Claude')?'#dbeafe':'#fef3c7'};color:${f.실행자&&f.실행자.includes('Claude')?'#1d4ed8':'#92400e'};padding:2px 7px;border-radius:8px;margin-top:2px">${esc2(f.실행자||'대표')}</span>
         <div style="flex:1;min-width:0"><b>${esc2(f.항목)}</b> · 위치: ${esc2(f.위치)}${f.복사문구&&f.지시문?(' · '+esc2(f.지시문)):''}<div style="background:#f8fafc;border-radius:6px;padding:5px 8px;margin-top:3px;color:#334155;white-space:pre-wrap">${esc2(f.복사문구||f.지시문)}</div></div>
         ${f.상태==='완료'?'<span style="flex-shrink:0;color:#16a34a;font-weight:700;font-size:.78rem;margin-top:2px">✅ 완료</span>':`<span style="flex-shrink:0;display:flex;gap:4px"><button class="btn-sm btn-copy" onclick="event.stopPropagation();copyLiveFix('${r.id}',${i},this)">📋 복사</button><button class="btn-sm btn-approve" onclick="event.stopPropagation();markLiveFixDone('${r.id}',${i})">✅ 완료</button></span>`}

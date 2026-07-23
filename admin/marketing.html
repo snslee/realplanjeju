@@ -1552,5 +1552,67 @@ function renderPhotoAssets(){
   document.getElementById('pf-pager').innerHTML='<button onclick="_pfPage=Math.max(1,_pfPage-1);renderPhotoFp()" class="filter-btn">◀</button> <span style="font-size:.8rem;margin:0 8px">'+_pfPage+' / '+tp+' ('+rows.length+'장)</span> <button onclick="_pfPage=Math.min('+tp+',_pfPage+1);renderPhotoFp()" class="filter-btn">▶</button>';
 }
 </script>
+<script>
+/* t14 v3 (2026-07-23): AI 그리드 토글 제거 → 삽입 대기 사진 보드(채널 6분류·캡션 복사·삽입완료) + 초안보관소 배정 패널. 지문 데이터·크론은 백그라운드 유지 */
+(function(){try{document.querySelectorAll('.pf-src').forEach(function(b){var p=b.parentNode;if(p&&p.parentNode)p.parentNode.removeChild(p);});}catch(e){}})();
+_pfSrc='로컬';
+var _asgRows=[],_asgLoaded=false;
+function _asgEsc(t){return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+async function loadAssignBoard(force){
+  if(!_asgLoaded||force){
+    var r=await sb.from('mk_photo_assets').select('로컬경로,파일명,사업부,사용여부,초상권플래그,배정_채널,배정_글url,배정_위치,배정_캡션,배정일').not('배정_채널','is',null).order('배정_채널');
+    if(r.error){console.error('asg load',r.error);return;}
+    _asgRows=r.data||[];_asgLoaded=true;
+  }
+  renderAssignBoard();renderDraftPhotoPanel();
+}
+function asgCopy(i){var r=_asgRows[i];if(!r)return;navigator.clipboard.writeText(r.배정_캡션||'').then(function(){if(window.showToast)showToast('캡션 복사됨');});}
+async function asgDone(i){var r=_asgRows[i];if(!r)return;if(!confirm('['+r.파일명+'] 삽입 완료 처리할까요?'))return;var u=await sb.from('mk_photo_assets').update({'사용여부':'사용됨'}).eq('로컬경로',r.로컬경로);if(u.error){alert('실패: '+u.error.message);return;}r.사용여부='사용됨';renderAssignBoard();renderDraftPhotoPanel();}
+function renderAssignBoard(){
+  var anchor=document.getElementById('pf-kpi');if(!anchor)return;
+  var host=document.getElementById('asg-board');
+  if(!host){host=document.createElement('div');host.id='asg-board';anchor.parentNode.insertBefore(host,anchor);}
+  var chs=['블A네이버','블A티스토리','블B네이버','블B티스토리','블C네이버','블C티스토리'];
+  var wait=_asgRows.filter(function(r){return r.사용여부==='후보선정';}).length;
+  var h='<div style="background:#fff;border:1.5px solid #93c5fd;border-radius:12px;padding:14px 16px;margin-bottom:14px">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><span style="font-weight:800;color:#1d4ed8">🖼️ 삽입 대기 사진 보드</span><span style="font-size:.76rem;background:#dbeafe;color:#1d4ed8;padding:2px 9px;border-radius:9px;font-weight:700">대기 '+wait+'장</span></div>'
+    +'<div style="font-size:.75rem;color:#475569;margin-bottom:10px">얼굴 모자이크 완료본 · 파일 위치 D:\\리얼플랜\\블로그사진\\ · 캡션 복사 → 글에 사진+캡션 삽입 → ✅삽입완료 (다음날 11:20 지문 크론이 자동 재확인)</div>';
+  chs.forEach(function(ch){
+    var rows=_asgRows.filter(function(r){return r.배정_채널===ch;});
+    if(!rows.length)return;
+    h+='<div style="font-size:.8rem;font-weight:700;color:#334155;margin:10px 0 6px">'+ch+' <a href="'+_asgEsc(rows[0].배정_글url)+'" target="_blank" rel="noopener" style="font-size:.72rem;color:#2563eb">글 열기 ↗</a></div>';
+    rows.forEach(function(r){
+      var gi=_asgRows.indexOf(r),done=r.사용여부==='사용됨';
+      h+='<div style="display:flex;gap:10px;align-items:flex-start;border:1px solid '+(done?'#e2e8f0':'#bfdbfe')+';border-radius:9px;padding:8px 10px;margin-bottom:6px;background:'+(done?'#f8fafc':'#fff')+'">'
+        +'<div style="flex:1;min-width:0"><div style="font-size:.78rem;font-weight:700">'+_asgEsc(r.파일명)+(r.초상권플래그?' <span style="background:#fef2f2;color:#b91c1c;font-size:.68rem;padding:1px 6px;border-radius:7px">초상권주의</span>':'')+(done?' <span style="color:#16a34a;font-size:.72rem">✅ 사용됨</span>':'')+'</div>'
+        +'<div style="font-size:.73rem;color:#64748b;margin-top:2px">📍 '+_asgEsc(r.배정_위치)+'</div>'
+        +'<div style="font-size:.73rem;color:#334155;margin-top:2px">💬 '+_asgEsc(r.배정_캡션)+'</div></div>'
+        +'<div style="display:flex;flex-direction:column;gap:4px;white-space:nowrap">'
+        +'<button class="filter-btn" style="font-size:.72rem" onclick="asgCopy('+gi+')">📋 캡션 복사</button>'
+        +(done?'':'<button class="filter-btn" style="font-size:.72rem;background:#16a34a;color:#fff;border-color:#16a34a" onclick="asgDone('+gi+')">✅ 삽입완료</button>')
+        +'</div></div>';
+    });
+  });
+  h+='</div>';host.innerHTML=h;
+}
+function renderDraftPhotoPanel(){
+  var board=document.getElementById('drafts-board');if(!board)return;
+  var host=document.getElementById('draft-photo-panel');
+  if(!host){host=document.createElement('div');host.id='draft-photo-panel';board.parentNode.insertBefore(host,board);}
+  var wait=_asgRows.filter(function(r){return r.사용여부==='후보선정';});
+  if(!wait.length){host.innerHTML='';return;}
+  var byUrl={};wait.forEach(function(r){var k=(r.배정_채널||'')+'|'+(r.배정_글url||'');(byUrl[k]=byUrl[k]||[]).push(r);});
+  host.innerHTML='<div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:12px;padding:13px 16px;margin-bottom:14px">'
+    +'<div style="font-weight:800;color:#1d4ed8;margin-bottom:6px">📷 실사진 배정 — 삽입 대기 '+wait.length+'장 <span style="font-weight:400;font-size:.74rem;color:#475569">(캡션 복사·완료 처리는 사진 관리 탭)</span></div>'
+    +Object.keys(byUrl).map(function(k){var p=k.split('|');return '<div style="font-size:.76rem;color:#334155;margin-bottom:4px"><b>'+_asgEsc(p[0])+'</b> · <a href="'+_asgEsc(p[1])+'" target="_blank" rel="noopener" style="color:#2563eb">글 열기</a> — '+byUrl[k].map(function(r){return _asgEsc(r.파일명)+' <span style="color:#64748b">('+_asgEsc(String(r.배정_위치||'').split(' — ')[0])+')</span>';}).join(' / ')+'</div>';}).join('')
+    +'</div>';
+}
+try{
+  var _v3PF=loadPhotoFp;
+  loadPhotoFp=async function(force){await loadAssignBoard(force).catch(function(e){console.error(e)});return _v3PF(force);};
+  var _v3LD=loadDrafts;
+  loadDrafts=async function(){var r=await _v3LD.apply(this,arguments);loadAssignBoard().catch(function(){});return r;};
+}catch(e){console.error('t14v3 hook',e);}
+</script>
 </body>
 </html>

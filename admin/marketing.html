@@ -1515,5 +1515,42 @@ async function loadNaverManual(){
 
 initAuth();
 </script>
+<script>
+/* t14 v2 (7/23): 로컬 실사진/발행글 AI 이원 — 기본=로컬 실사진(mk_photo_assets 2,900장) */
+var _pfSrc='로컬',_paRows=[],_paLoaded=false;
+(function(){try{var anchor=document.getElementById('pf-kpi');if(!anchor)return;var bar=document.createElement('div');bar.style.cssText='display:flex;gap:6px;margin:0 0 10px';bar.innerHTML='<button class="filter-btn pf-src active" onclick="pfSetSrc(\'로컬\',this)">📁 로컬 실사진</button><button class="filter-btn pf-src" onclick="pfSetSrc(\'발행글\',this)">🤖 발행글 AI 이미지</button>';anchor.parentNode.insertBefore(bar,anchor);}catch(e){}})();
+function pfSetSrc(s,btn){_pfSrc=s;_pfPage=1;document.querySelectorAll('.pf-src').forEach(function(b){b.classList.remove('active')});if(btn)btn.classList.add('active');loadPhotoFp();}
+var _pfOrigLoad=loadPhotoFp;
+loadPhotoFp=async function(force){
+  if(_pfSrc==='발행글'){return _pfOrigLoad(force);}
+  var box=document.getElementById('pf-grid');if(!box)return;
+  if(!_paLoaded||force){
+    box.innerHTML='<div style="padding:30px;color:#94a3b8;text-align:center">로컬 실사진 자산 불러오는 중...</div>';
+    var all=[],from=0;
+    while(true){var r=await sb.from('mk_photo_assets').select('로컬경로,파일명,사업부,폴더,크기,수정시각,사용여부').order('수정시각',{ascending:false}).range(from,from+999);if(r.error){box.innerHTML='<div style="padding:20px;color:#b91c1c">로드 실패: '+r.error.message+'</div>';return;}all=all.concat(r.data||[]);if(!r.data||r.data.length<1000)break;from+=1000;}
+    _paRows=all;_paLoaded=true;
+  }
+  renderPhotoAssets();
+};
+var _pfOrigRender=renderPhotoFp;
+renderPhotoFp=function(){if(_pfSrc==='발행글')return _pfOrigRender();renderPhotoAssets();};
+function renderPhotoAssets(){
+  var map={'블A':'여행','블B':'행사','블C':'마케팅교육'};
+  var rows=_paRows.filter(function(r){return _pfCh==='전체'||r.사업부===map[_pfCh];});
+  var q=(document.getElementById('pf-q')||{}).value||'';
+  if(q)rows=rows.filter(function(r){return (r.파일명||'').includes(q)||(r.폴더||'').includes(q);});
+  var kpi=document.getElementById('pf-kpi');
+  var byBiz={};rows.forEach(function(r){byBiz[r.사업부]=(byBiz[r.사업부]||0)+1;});
+  if(kpi)kpi.innerHTML='<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 16px;font-size:.8rem">실사진 자산 <b>'+rows.length+'</b>장</div>'+Object.keys(byBiz).map(function(k){return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 16px;font-size:.8rem">'+k+' <b>'+byBiz[k]+'</b></div>';}).join('');
+  var per=100,tp=Math.max(1,Math.ceil(rows.length/per));if(_pfPage>tp)_pfPage=1;
+  var page=rows.slice((_pfPage-1)*per,_pfPage*per);
+  var h='<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;color:#64748b"><th style="text-align:left;padding:8px 10px">파일명</th><th style="text-align:left;padding:8px 10px">폴더</th><th style="padding:8px 10px">사업부</th><th style="padding:8px 10px">크기</th><th style="padding:8px 10px">촬영/수정일</th><th style="padding:8px 10px">사용여부</th></tr></thead><tbody>'+
+    page.map(function(r){var mb=(r.크기/1048576).toFixed(1);var st=r.사용여부||'미대조';var col=st==='사용됨'?'#dc2626':(st==='미사용'?'#16a34a':'#94a3b8');
+    return '<tr style="border-top:1px solid #f1f5f9"><td style="padding:6px 10px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+r.로컬경로+'">'+r.파일명+'</td><td style="padding:6px 10px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#64748b" title="'+(r.폴더||'')+'">'+(r.폴더||'')+'</td><td style="padding:6px 10px;text-align:center">'+(r.사업부||'')+'</td><td style="padding:6px 10px;text-align:center">'+mb+'MB</td><td style="padding:6px 10px;text-align:center">'+(r.수정시각||'').slice(0,10)+'</td><td style="padding:6px 10px;text-align:center;color:'+col+';font-weight:600">'+st+'</td></tr>';}).join('')+
+    '</tbody></table></div>';
+  document.getElementById('pf-grid').innerHTML=h;
+  document.getElementById('pf-pager').innerHTML='<button onclick="_pfPage=Math.max(1,_pfPage-1);renderPhotoFp()" class="filter-btn">◀</button> <span style="font-size:.8rem;margin:0 8px">'+_pfPage+' / '+tp+' ('+rows.length+'장)</span> <button onclick="_pfPage=Math.min('+tp+',_pfPage+1);renderPhotoFp()" class="filter-btn">▶</button>';
+}
+</script>
 </body>
 </html>

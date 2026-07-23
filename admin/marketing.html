@@ -466,6 +466,23 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>판정</th><th>의도 키워드</th><th>실제 top 검색어</th><th>노출</th></tr></thead><tbody id="ki-drift"><tr><td colspan="4" class="loading">로딩 중...</td></tr></tbody></table></div>
       </div>
     </div>
+    <div class="tab-panel" id="t14">
+      <div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><h2 style="font-size:1.2rem;font-weight:700">📷 사진 관리</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">발행글 이미지 지문 대장 · 여기 있는 사진 = 이미 사용됨(같은 채널 재사용 금지 · 타 플랫폼은 자유 · 콜라주 변환 가능)</p></div>
+        <button onclick="loadPhotoFp(true)" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
+      </div>
+      <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:.76rem;padding:8px 12px;border-radius:8px;margin-bottom:12px">실사진은 보조·성장용: AI 8장 유지 + 실사례 문단 옆 1~3장. 글 착수 시 후보 사진은 이 대장과 지문 대조(미사용/사용됨/유사 판정) 후 지정 폴더(블로그사진/여행·행사·마케팅)로 복사됩니다. 매일 11:20 신규 발행글 자동 적재.</div>
+      <div id="pf-kpi" style="display:flex;gap:10px;margin-bottom:10px"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+        <button class="filter-btn pf-ch active" onclick="pfSetCh('전체',this)">전체</button>
+        <button class="filter-btn pf-ch" onclick="pfSetCh('블A',this)">블A 여행</button>
+        <button class="filter-btn pf-ch" onclick="pfSetCh('블B',this)">블B 행사</button>
+        <button class="filter-btn pf-ch" onclick="pfSetCh('블C',this)">블C 마케팅</button>
+        <input id="pf-q" placeholder="글 URL 검색" oninput="_pfPage=1;renderPhotoFp()" style="border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;font-size:.8rem;min-width:180px">
+      </div>
+      <div id="pf-grid"></div>
+      <div id="pf-pager" style="margin-top:12px;text-align:center"></div>
+    </div>
     <div class="tab-panel" id="t13">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div><h2 style="font-size:1.2rem;font-weight:700">🧵 쓰레드 운영</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">@realplan_travel · mk_sns_slots · 소통 6 : 가치 3 : 홍보 1 · 발행 후 30분 답글</p></div>

@@ -1592,6 +1592,7 @@ function renderAssignBoard(){
         +'<div style="font-size:.73rem;color:#334155;margin-top:2px">💬 '+_asgEsc(r.배정_캡션)+'</div></div>'
         +'<div style="display:flex;flex-direction:column;gap:4px;white-space:nowrap">'
         +'<button class="filter-btn" style="font-size:.72rem" onclick="asgCopy('+gi+')">📋 캡션 복사</button>'
+        +'<button class="filter-btn" style="font-size:.72rem" onclick="asgPathCopy('+gi+')">📂 파일 경로</button>'
         +(done?'':'<button class="filter-btn" style="font-size:.72rem;background:#16a34a;color:#fff;border-color:#16a34a" onclick="asgDone('+gi+')">✅ 삽입완료</button>')
         +'</div></div>';
     });

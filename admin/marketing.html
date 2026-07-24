@@ -1597,6 +1597,7 @@ function asgPathCopy(i){var r=_asgRows[i];if(!r)return;var p=r.배정_경로||r.
 function asgDirCopy(ch){var r=_asgRows.filter(function(x){return x.배정_채널===ch&&x.배정_경로;})[0];if(!r)return;var p=String(r.배정_경로);var d=p.slice(0,p.lastIndexOf('\\')+1);try{navigator.clipboard.writeText(d);}catch(e){}location.href='rpfolder:'+encodeURIComponent(d);if(window.showToast)showToast('탐색기에서 폴더를 엽니다 (경로도 복사됨)');}
 function asgCopy(i){var r=_asgRows[i];if(!r)return;navigator.clipboard.writeText(r.배정_캡션||'').then(function(){if(window.showToast)showToast('캡션 복사됨');});}
 async function asgDone(i){var r=_asgRows[i];if(!r)return;if(!confirm('['+r.파일명+'] 삽입 완료 처리할까요?'))return;var u=await sb.from('mk_photo_assets').update({'사용여부':'사용됨'}).eq('로컬경로',r.로컬경로);if(u.error){alert('실패: '+u.error.message);return;}r.사용여부='사용됨';renderAssignBoard();renderDraftPhotoPanel();}
+function asgTab(i){var a=document.getElementById('asgP0'),b=document.getElementById('asgP1');if(a)a.style.display=(i==='0'?'block':'none');if(b)b.style.display=(i==='1'?'block':'none');['0','1'].forEach(function(k){var x=document.getElementById('nb_'+k);if(x){x.style.background=(k===i?'#7c3aed':'#fff');x.style.color=(k===i?'#fff':'#475569');}});}
 function renderAssignBoard(){
   var anchor=document.getElementById('pf-kpi');if(!anchor)return;
   var host=document.getElementById('asg-board');

@@ -119,6 +119,19 @@
 const SUPABASE_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{detectSessionInUrl:false,persistSession:true,autoRefreshToken:true,flowType:'pkce',lock:(n,t,fn)=>fn()}});
+async function loadReconcile(){
+ try{
+  const {data,error}=await sb.rpc('rpc_feedback_reconcile');
+  const el=document.getElementById('reconcile'); if(!el) return;
+  if(error||!data){el.innerHTML='<div class="load">정합 신호등 로드 실패</div>';return;}
+  const col=s=>s==='RED'?'var(--red)':s==='AMBER'?'var(--amber)':'var(--green)';
+  const dot=s=>s==='RED'?'🔴':s==='AMBER'?'🟡':'🟢';
+  const chip=(n,o)=>`<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--line);border-radius:16px;font-size:13px;margin:2px;background:#fff"><b style="color:${col(o['신호'])}">${dot(o['신호'])} ${n}</b></span>`;
+  const t=data['종합'],f=data['①피드백정합'],g=data['②역제안정합'],r=data['③순위정합'],m=data['④슬롯매출정합'];
+  el.innerHTML=`<div style="background:var(--card);border:1px solid var(--line);border-left:4px solid ${col(t)};border-radius:10px;padding:12px 16px;margin:0 0 14px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:15px">🩺 데이터 정합 신호등</b><b style="color:${col(t)}">종합 ${t}</b><span class="sub" style="margin-left:auto">전수 대사 · 주간 자동점검(월 07:30)</span></div><div style="margin-top:8px">${chip('피드백',f)}${chip('역제안',g)}${chip('순위',r)}${chip('슬롯매출',m)}</div><div class="sub" style="margin-top:6px;font-size:12px">① 미표식 ${f['감시규칙_미표식']} · 완료조치일누락 ${f['완료_조치일누락']} · 중복 ${f['중복']} ｜ ② 적체 ${g['제안_14일적체']} · 중복 ${g['중복']} ｜ ③ 중복측정 ${r['중복측정']} ｜ ④ 고아 ${m['고아_metrics']} · 중복 ${m['중복_metrics']} · 측정대기 ${m['측정대기_참고']}</div></div>`;
+ }catch(e){ const el=document.getElementById('reconcile'); if(el) el.innerHTML='<div class="load">정합 신호등 오류</div>'; }
+}
+loadReconcile();
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function tbl(rows,cols,cls){if(!rows||!rows.length)return '<div class="load">데이터 없음</div>';
  let h='<table class="'+(cls||'')+'"><tr>'+cols.map(c=>'<th>'+esc(c.h)+'</th>').join('')+'</tr>';

@@ -169,7 +169,7 @@ async function load(){
  const d30=new Date(now);d30.setDate(d30.getDate()-30);
  try{await sb.rpc('rpc_growth_refresh');}catch(e){}
  const [dr,fb,od,rk,sg,pub,met,vis,inq,ms]=await Promise.all([
-  sb.from('mk_blog_drafts').select('발행일,생성일,채널,핵심키워드,제목,품질지표').not('품질지표','is',null).gte('생성일',d28.toISOString()).order('생성일',{ascending:false}),
+  sb.from('mk_blog_drafts').select('발행일,생성일,채널,핵심키워드,제목,품질지표,상태').not('품질지표','is',null).gte('생성일',d28.toISOString()).order('생성일',{ascending:false}),
   sb.from('mk_draft_feedback').select('발생일,결함코드,결함분류,심각도,상태,조치내용,조치일,재발방지규칙,채널').order('발생일',{ascending:false}).limit(200),
   sb.from('v_open_defects').select('*'),
   sb.from('v_revenue_keyword_growth').select('*').not('최근순위','is',null).order('최근순위').limit(14),

@@ -1602,29 +1602,30 @@ function renderAssignBoard(){
   var anchor=document.getElementById('pf-kpi');if(!anchor)return;
   var host=document.getElementById('asg-board');
   if(!host){host=document.createElement('div');host.id='asg-board';anchor.parentNode.insertBefore(host,anchor);}
-  var chs=['블A네이버','블A티스토리','블B네이버','블B티스토리','블C네이버','블C티스토리'];
-  var wait=_asgRows.filter(function(r){return r.사용여부==='후보선정';}).length;
-  var h='<div style="background:#fff;border:1.5px solid #93c5fd;border-radius:12px;padding:14px 16px;margin-bottom:14px">'
-    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><span style="font-weight:800;color:#1d4ed8">🖼️ 삽입 대기 사진 보드</span><span style="font-size:.76rem;background:#dbeafe;color:#1d4ed8;padding:2px 9px;border-radius:9px;font-weight:700">대기 '+wait+'장</span></div>'
-    +'<div style="font-size:.75rem;color:#475569;margin-bottom:10px">얼굴 모자이크 완료본 · 파일 위치 D:\\리얼플랜\\블로그사진\\ · 캡션 복사 → 글에 사진+캡션 삽입 → ✅삽입완료 (다음날 11:20 지문 크론이 자동 재확인)</div>';
-  chs.forEach(function(ch){
-    var rows=_asgRows.filter(function(r){return r.배정_채널===ch;});
-    if(!rows.length)return;
-    h+='<div style="font-size:.8rem;font-weight:700;color:#334155;margin:10px 0 6px">'+ch+' <a href="'+_asgEsc(rows[0].배정_글url)+'" target="_blank" rel="noopener" style="font-size:.72rem;color:#2563eb">글 열기 ↗</a> <a href="javascript:void(0)" onclick="asgDirCopy(\''+ch+'\')" style="font-size:.72rem;color:#0891b2">📂 폴더 열기</a></div>';
-    rows.forEach(function(r){
-      var gi=_asgRows.indexOf(r),done=r.사용여부==='사용됨';
-      h+='<div style="display:flex;gap:10px;align-items:flex-start;border:1px solid '+(done?'#e2e8f0':'#bfdbfe')+';border-radius:9px;padding:8px 10px;margin-bottom:6px;background:'+(done?'#f8fafc':'#fff')+'">'
-        +'<div style="flex:1;min-width:0"><div style="font-size:.78rem;font-weight:700">'+_asgEsc(_asgName(r))+' <span style="font-weight:400;color:#94a3b8;font-size:.68rem">원본 '+_asgEsc(r.파일명)+'</span>'+(r.초상권플래그?' <span style="background:#fef2f2;color:#b91c1c;font-size:.68rem;padding:1px 6px;border-radius:7px">초상권주의</span>':'')+(done?' <span style="color:#16a34a;font-size:.72rem">✅ 사용됨</span>':'')+'</div>'
-        +'<div style="font-size:.73rem;color:#64748b;margin-top:2px">📍 '+_asgEsc(r.배정_위치)+'</div>'
-        +'<div style="font-size:.73rem;color:#334155;margin-top:2px">💬 '+_asgEsc(r.배정_캡션)+'</div></div>'
-        +'<div style="display:flex;flex-direction:column;gap:4px;white-space:nowrap">'
-        +'<button class="filter-btn" style="font-size:.72rem" onclick="asgCopy('+gi+')">📋 캡션 복사</button>'
-        +'<button class="filter-btn" style="font-size:.72rem" onclick="asgPathCopy('+gi+')">📂 파일 위치 열기</button>'
-        +(done?'':'<button class="filter-btn" style="font-size:.72rem;background:#16a34a;color:#fff;border-color:#16a34a" onclick="asgDone('+gi+')">✅ 삽입완료</button>')
-        +'</div></div>';
-    });
-  });
-  [[`🟢 스마트플레이스 사진(플레이스 소식)`,`place`],[`🟡 카카오톡채널 사진`,`kakao`],[`🔵 구글비즈니스 사진`,`gbp`]].forEach(function(pair){var c=(window._chCards||[]).filter(function(x){return x.채널===pair[1];})[0];if(!c)return;var _bu=({여행:`블A 여행`,행사:`블B 행사`,마케팅:`블C 마케팅`})[c.사업부]||String(c.사업부||``);var _dt=String(c.발송_시각||``).slice(0,10);h+=`<div style="font-size:.8rem;font-weight:700;color:#7c3aed;margin:14px 0 6px;border-top:2px solid #ede9fe;padding-top:8px">${pair[0]} <span style="font-weight:400;color:#94a3b8;font-size:.72rem">· 발송 소식 사진(${_bu} · ${_dt})</span></div>`;h+=`<div style="display:flex;gap:10px;align-items:flex-start;border:1px solid #e2e8f0;border-radius:9px;padding:8px 10px;margin-bottom:6px;background:#faf5ff"><div style="flex:1;min-width:0"><div style="font-size:.78rem;font-weight:700">${_asgEsc(c.사진_파일명)}${c.사진_초상권플래그?` <span style="background:#fef2f2;color:#b91c1c;font-size:.68rem;padding:1px 6px;border-radius:7px">초상권주의</span>`:``}</div><div style="font-size:.73rem;color:#334155;margin-top:2px">💬 ${_asgEsc(c.사진_캡션)}</div></div><div style="display:flex;flex-direction:column;gap:4px;white-space:nowrap"><button class="filter-btn" style="font-size:.72rem" data-cap="${_asgEsc(c.사진_캡션)}" onclick="navigator.clipboard.writeText(this.getAttribute('data-cap')||'');if(window.showToast)showToast('캡션 복사됨')">📋 캡션 복사</button><button class="filter-btn" style="font-size:.72rem" data-path="${_asgEsc(c.사진_경로)}" onclick="var p=this.getAttribute('data-path')||'';try{navigator.clipboard.writeText(p);}catch(e){}location.href='rpfolder:'+encodeURIComponent(p)">📂 파일 위치 열기</button></div></div>`;});h+='</div>';host.innerHTML=h;
+  var _wait=_asgRows.filter(function(r){return r.사용여부==='후보선정';});
+var _byG={};_wait.forEach(function(r){var k=r.배정_글url||'(글)';(_byG[k]=_byG[k]||[]).push(r);});
+var _gs=Object.keys(_byG);
+var _cc=window._chCards||[];
+var _navBtn=function(id,label,cnt,on){return `<button id="nb_${id}" onclick="asgTab('${id}')" style="border:1px solid #e2e8f0;border-radius:20px;padding:7px 13px;font-size:.76rem;font-weight:700;cursor:pointer;background:${on?'#7c3aed':'#fff'};color:${on?'#fff':'#475569'}">${label} <span style="font-size:.63rem;background:${on?'rgba(255,255,255,.25)':'#eef2ff'};color:${on?'#fff':'#4338ca'};padding:1px 7px;border-radius:12px">${cnt}</span></button>`;};
+var h=`<div style="background:#fff;border:1.5px solid #93c5fd;border-radius:12px;padding:14px 16px;margin-bottom:14px">`;
+h+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px">`+_navBtn('0',`📥 삽입 대기`,_wait.length,true)+_navBtn('1',`📡 채널 소식`,_cc.length,false)+`<button onclick="var e=document.getElementById('pf-kpi');if(e)e.scrollIntoView({behavior:'smooth'})" style="border:1px solid #e2e8f0;border-radius:20px;padding:7px 13px;font-size:.76rem;font-weight:700;cursor:pointer;background:#fff;color:#475569">🗂️ 실사진 대장 <span style="font-size:.63rem;background:#eef2ff;color:#4338ca;padding:1px 7px;border-radius:12px">2,907</span></button></div>`;
+h+=`<div id="asgP0">`;
+h+=`<div style="font-size:.74rem;color:#475569;margin-bottom:11px">블로그 글에 넣을 사진 · <b>글 단위</b> · <b>대기(미삽입)만</b>. 삽입완료를 누르면 목록에서 사라집니다.</div>`;
+if(!_gs.length){h+=`<div style="font-size:.82rem;color:#94a3b8;padding:16px;text-align:center;border:1px dashed #cbd5e1;border-radius:10px">삽입 대기 사진이 없습니다 ✅</div>`;}
+_gs.forEach(function(g){var rows=_byG[g];var allr=_asgRows.filter(function(r){return (r.배정_글url||'(글)')===g;});var done=allr.filter(function(r){return r.사용여부==='사용됨';}).length;var tot=allr.length;var pct=tot?Math.round(done/tot*100):0;var ch0=rows[0].배정_채널||'';var url=_asgEsc(rows[0].배정_글url);
+h+=`<div style="border:1px solid #e2e8f0;border-radius:11px;margin-bottom:11px;overflow:hidden"><div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#f5f3ff;border-bottom:1px solid #ece9fb"><div style="font-size:.8rem;font-weight:800">📄 ${_asgEsc(ch0)} <a href="${url}" target="_blank" rel="noopener" style="font-size:.7rem;color:#2563eb;font-weight:500">글 열기 ↗</a></div><span style="font-size:.65rem;font-weight:800;background:#fef3c7;color:#b45309;padding:2px 9px;border-radius:12px">대기 ${rows.length}장</span></div>`;
+rows.forEach(function(r){var gi=_asgRows.indexOf(r);h+=`<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 12px;border-top:1px solid #f1f5f9"><div style="flex:1;min-width:0"><div style="font-size:.77rem;font-weight:700"><span style="font-size:.62rem;background:#eef2ff;color:#4338ca;border-radius:5px;padding:1px 6px;margin-right:5px">${_asgEsc(r.배정_위치)||'위치'}</span>${_asgEsc(_asgName(r))}${r.초상권플래그?` <span style="background:#fef2f2;color:#b91c1c;font-size:.62rem;padding:1px 6px;border-radius:5px">초상권주의</span>`:``}</div><div style="font-size:.72rem;color:#334155;margin-top:2px">💬 ${_asgEsc(r.배정_캡션)}</div></div><div style="display:flex;flex-direction:column;gap:4px;white-space:nowrap"><button class="filter-btn" style="font-size:.7rem" onclick="asgCopy(${gi})">📋 캡션</button><button class="filter-btn" style="font-size:.7rem" onclick="asgPathCopy(${gi})">📂 위치</button><button class="filter-btn" style="font-size:.7rem;background:#16a34a;color:#fff;border-color:#16a34a" onclick="asgDone(${gi})">✅ 삽입완료</button></div></div>`;});
+h+=`<div style="display:flex;align-items:center;gap:9px;padding:8px 12px;border-top:1px solid #f1f5f9;background:#fcfcfd"><span style="font-size:.67rem;color:#64748b">삽입 진행</span><div style="flex:1;height:7px;background:#e9edf3;border-radius:7px;overflow:hidden"><i style="display:block;height:100%;width:${pct}%;background:#16a34a"></i></div><span style="font-size:.66rem;font-weight:700;color:#166534">${done}/${tot} · ${pct}%</span></div>`;
+h+=`</div>`;});
+h+=`</div>`;
+h+=`<div id="asgP1" style="display:none">`;
+h+=`<div style="font-size:.74rem;color:#475569;margin-bottom:11px">발송한 채널 소식 사진 · 최근 발송 1건씩(발송 사업부·날짜 표시).</div>`;
+[[`🟢 스마트플레이스`,`place`,`플레이스 소식`],[`🟡 카카오톡 채널`,`kakao`,`채널 소식`],[`🔵 구글 비즈니스`,`gbp`,`업데이트 게시`]].forEach(function(pair){var c=_cc.filter(function(x){return x.채널===pair[1];})[0];var bu=c?(({여행:`블A 여행`,행사:`블B 행사`,마케팅:`블C 마케팅`})[c.사업부]||String(c.사업부||``)):``;var dt=c?String(c.발송_시각||``).slice(0,10):``;
+h+=`<div style="border:1px solid #e2e8f0;border-radius:11px;margin-bottom:11px;overflow:hidden"><div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#f5f3ff;border-bottom:1px solid #ece9fb"><div style="font-size:.8rem;font-weight:800">${pair[0]} <span style="font-size:.68rem;color:#8b8fa3;font-weight:500">${pair[2]}${c?` · ${bu} · ${dt}`:``}</span></div><span style="font-size:.65rem;font-weight:800;background:${c?`#dcfce7`:`#f1f5f9`};color:${c?`#166534`:`#94a3b8`};padding:2px 9px;border-radius:12px">${c?`발송됨`:`없음`}</span></div>`;
+if(c){h+=`<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 12px;border-top:1px solid #f1f5f9"><div style="flex:1;min-width:0"><div style="font-size:.77rem;font-weight:700">${_asgEsc(c.사진_파일명)}${c.사진_초상권플래그?` <span style="background:#fef2f2;color:#b91c1c;font-size:.62rem;padding:1px 6px;border-radius:5px">초상권주의</span>`:``}</div><div style="font-size:.72rem;color:#334155;margin-top:2px">💬 ${_asgEsc(c.사진_캡션)}</div></div><div style="display:flex;flex-direction:column;gap:4px;white-space:nowrap"><button class="filter-btn" style="font-size:.7rem" data-cap="${_asgEsc(c.사진_캡션)}" onclick="navigator.clipboard.writeText(this.getAttribute('data-cap')||'');if(window.showToast)showToast('캡션 복사됨')">📋 캡션</button><button class="filter-btn" style="font-size:.7rem" data-path="${_asgEsc(c.사진_경로)}" onclick="var p=this.getAttribute('data-path')||'';try{navigator.clipboard.writeText(p);}catch(e){}location.href='rpfolder:'+encodeURIComponent(p)">📂 위치</button></div></div>`;}
+h+=`</div>`;});
+h+=`</div>`;
+h+=`</div>`;host.innerHTML=h;
 }
 function renderDraftPhotoPanel(){
   var board=document.getElementById('drafts-board');if(!board)return;

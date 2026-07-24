@@ -1589,7 +1589,7 @@ async function loadAssignBoard(force){
     if(r.error){console.error('asg load',r.error);return;}
     _asgRows=r.data||[];_asgLoaded=true;
   }
-  try{var _cc=await sb.from(`mk_channel_cards`).select(`사업부`).eq(`상태`,`발송`).order(`발송_시각`,{ascending:false}).limit(1);window._chLastBU=(_cc.data&&_cc.data[0]&&_cc.data[0].사업부)||``;}catch(e){window._chLastBU=``;}
+  try{var _cc=await sb.from(`mk_channel_cards`).select(`채널,사업부,주제,사진_파일명,사진_경로,사진_캡션,사진_초상권플래그,발송_시각`).eq(`상태`,`발송`).not(`사진_파일명`,`is`,null).order(`발송_시각`,{ascending:false}).limit(40);window._chCards=_cc.data||[];}catch(e){window._chCards=[];}
   renderAssignBoard();renderDraftPhotoPanel();
 }
 function _asgName(r){var p=String(r.배정_경로||'');var f=p?p.split('\\').pop():'';return f?f:String(r.파일명||'');}

@@ -1589,6 +1589,7 @@ async function loadAssignBoard(force){
     if(r.error){console.error('asg load',r.error);return;}
     _asgRows=r.data||[];_asgLoaded=true;
   }
+  try{var _cc=await sb.from(`mk_channel_cards`).select(`사업부`).eq(`상태`,`발송`).order(`발송_시각`,{ascending:false}).limit(1);window._chLastBU=(_cc.data&&_cc.data[0]&&_cc.data[0].사업부)||``;}catch(e){window._chLastBU=``;}
   renderAssignBoard();renderDraftPhotoPanel();
 }
 function _asgName(r){var p=String(r.배정_경로||'');var f=p?p.split('\\').pop():'';return f?f:String(r.파일명||'');}

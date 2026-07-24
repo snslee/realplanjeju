@@ -630,6 +630,19 @@ const PROJECT_REF='iodfqlkeiwxyuojwcozv';
 const SB_AUTH_KEY='sb-'+PROJECT_REF+'-auth-token';
 const SB_VERIFIER_KEY='sb-'+PROJECT_REF+'-auth-token-code-verifier';
 const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{detectSessionInUrl:false,persistSession:true,autoRefreshToken:true,flowType:'pkce',lock:(n,t,fn)=>fn()}});
+async function loadGrowthSignal(){
+  var el=document.getElementById('growth-signal'); if(!el) return;
+  try{
+    var res=await sb.rpc('rpc_growth_reconcile'); var d=res.data; if(!d){el.innerHTML='';return;}
+    function col(s){ if(s==='RED')return '#dc2626'; if(s==='AMBER')return '#d97706'; if(s==='GREEN')return '#16a34a'; return '#64748b'; }
+    function dot(s){ if(s==='RED')return '🔴'; if(s==='AMBER')return '🟡'; if(s==='GREEN')return '🟢'; return '⚪'; }
+    var ax=[['①공급',d['①공급']],['②품질',d['②품질']],['③순위성장',d['③순위성장']],['④채널확산',d['④채널확산']],['⑤SNS채널',d['⑤SNS채널']],['⑥라이브보완',d['⑥라이브보완']],['⑦스킬동기화',d['⑦스킬동기화']],['⑧신선도',d['⑧신선도']]];
+    var chips=''; for(var i=0;i<ax.length;i++){ var nm=ax[i][0]; var o=ax[i][1]; if(!o){o={};} chips=chips+'<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid #e2e8f0;border-radius:16px;font-size:12px;margin:2px;background:#fff"><b style="color:'+col(o['신호'])+'">'+dot(o['신호'])+' '+nm+'</b></span>'; }
+    var t=d['종합'];
+    el.innerHTML='<div style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid '+col(t)+';border-radius:10px;padding:12px 16px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:15px">🌱 성장 정합 신호등</b><b style="color:'+col(t)+'">종합 '+t+'</b><span style="margin-left:auto;font-size:12px;color:#64748b">매출 제외 · 블로그·SNS 성장 · 매일 09시 텔레그램</span></div><div style="margin-top:8px">'+chips+'</div></div>';
+  }catch(e){ el.innerHTML=''; }
+}
+loadGrowthSignal();
 let trendChart=null,allDrafts=[],allSlots=[],allRankEntries=[],rejectTargetId=null;
 
 async function manualExchangeCode(code){

@@ -253,7 +253,7 @@ async function load(){
     {h:'발행예정',f:r=>esc((r.발행일||'').slice(0,10))},{h:'채널',k:'채널'},
     {h:'키워드',f:r=>esc((r.핵심키워드||'').slice(0,16))},
     {h:'무엇이 미달인가',f:r=>gate(r).filter(g=>g.ok===false).map(g=>'<span class="no">❌ '+esc(g.n)+' '+esc(String(g.t))+'</span>').join(' · ')},
-    {h:'조치',f:r=>r.상태==='published'?'<span class="b b3">🔴 미완료·라이브수정</span>':(r.상태==='in_progress'||r.상태==='draft')?'<span class="b" style="background:#e2e8f0;color:#475569">✏️ 미발행·작성시반영</span>:'<span class="b b3">보강 대상</span>'}],'misstable')
+    {h:'조치',f:r=>r.상태==='published'?'<span class="b b3">🔴 미완료·라이브수정</span>':(r.상태==='in_progress'||r.상태==='draft')?'<span class="b" style="background:#e2e8f0;color:#475569">✏️ 미발행·작성시반영</span>':'<span class="b b3">보강 대상</span>'}],'misstable')
    :'<div style="font-size:13px;color:var(--green);font-weight:700;padding:4px 0">✅ 미달 없음 — 전량 게이트 통과</div>';
   const passHtml=pass.length?('<details><summary>통과 '+pass.length+'편 채점 상세 펼쳐보기</summary>'+tbl(pass,[
     {h:'발행예정',f:r=>esc((r.발행일||'').slice(0,10))},{h:'채널',k:'채널'},

@@ -503,7 +503,7 @@ if(window.__rpT){clearInterval(window.__rpT);}
 dots.innerHTML='';
 slides.forEach(function(_,i){var d=document.createElement('div');d.className='dot'+(i===0?' on':'');d.onclick=function(){go(i);reset();};dots.appendChild(d);});
 function go(i){slides[cur].classList.remove('on');dots.children[cur].classList.remove('on');cur=i;slides[cur].classList.add('on');dots.children[cur].classList.add('on');}
-function next(){go((cur+1)%slides.length);}
+function next(){go((cur+1)%slides.length);}slides.forEach(function(s,i){s.classList.toggle('on',i===cur);});
 function reset(){clearInterval(timer);clearInterval(window.__rpT);timer=window.__rpT=setInterval(next,10000);}
 reset();
 

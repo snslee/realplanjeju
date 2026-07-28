@@ -93,7 +93,7 @@ const SUPABASE_KEY='sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce'}});
 let TAB='list',curNo=null,curName=null;
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-function fdt(s){if(!s)return '-';return String(s).replace('T',' ').slice(0,16);}
+function fdt(s){if(!s)return '-';var d=new Date(s);if(isNaN(d.getTime()))return String(s).replace('T',' ').slice(0,16);return new Date(d.getTime()+9*3600000).toISOString().slice(0,16).replace('T',' ');}
 function won(v){if(v==null)return '';return Math.round(v/10000).toLocaleString()+'만';}
 function scoreCell(x){var s=x['적합도'];if(s==null)return '<span class="score s-na">-</span>';var c=s>=70?'s-hi':(s>=50?'s-mid':'s-lo');return '<span class="score '+c+'">'+s+'</span><span class="verd">'+esc(x['참여판정']||'')+(x['승산등급']?' · 승산'+esc(x['승산등급']):'')+'</span>';}
 async function boot(){

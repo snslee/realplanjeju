@@ -1953,7 +1953,7 @@ function renderDraftPhotoPanel(){
   host.innerHTML='<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:9px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:.78rem;color:#1d4ed8;font-weight:700">📷 삽입 대기 실사진 '+wait.length+'장</span><span style="font-size:.72rem;color:#64748b">캡션·위치·삽입완료는 각 글 카드 안에서 처리합니다</span></div>';return;
   var byUrl={};wait.forEach(function(r){var k=(r.배정_채널||'')+'|'+(r.배정_글url||'');(byUrl[k]=byUrl[k]||[]).push(r);});
   host.innerHTML='<div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:12px;padding:13px 16px;margin-bottom:14px">'
-    +'<div style="font-weight:800;color:#1d4ed8;margin-bottom:6px">📷 실사진 배정 — 삽입 대기 '+wait.length+'장 <span style="font-weight:400;font-size:.74rem;color:#475569">(캡션 복사·완료 처리는 사진 관리 탭)</span></div>'
+    +'<div style="font-weight:800;color:#1d4ed8;margin-bottom:6px">🖼 배정 이미지(실사진·제작물) — 삽입 대기 '+wait.length+'장 <span style="font-weight:400;font-size:.74rem;color:#475569">(캡션 복사·완료 처리는 사진 관리 탭)</span></div>'
     +Object.keys(byUrl).map(function(k){var p=k.split('|');return '<div style="font-size:.76rem;color:#334155;margin-bottom:4px"><b>'+_asgEsc(p[0])+'</b> · <a href="'+_asgEsc(p[1])+'" target="_blank" rel="noopener" style="color:#2563eb">글 열기</a> — '+byUrl[k].map(function(r){return _asgEsc(r.파일명)+' <span style="color:#64748b">('+_asgEsc(String(r.배정_위치||'').split(' — ')[0])+')</span>';}).join(' / ')+'</div>';}).join('')
     +'</div>';
 }

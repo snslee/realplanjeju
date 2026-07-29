@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.8.1</title>
+<title>리얼플랜제주 마케팅 운영 v1.8.2</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -91,7 +91,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.8.1</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.8.2</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -133,12 +133,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div class="kpi-card"><div class="kpi-label">🏆 네이버 평균순위</div><div class="kpi-value" id="kpi-순위">--</div><div class="kpi-sub">블A·B·C 평균</div></div>
       </div>
       <!-- ▼ 상단 고정: 채널별 추세 2그래프 (노출=티스토리 / 순위=네이버) -->
-      <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:10px">📐 <b>두 그래프는 측정 기준이 다릅니다.</b> 왼쪽=티스토리 <b>노출수</b>(높을수록 좋음·GSC 자동수집) / 오른쪽=네이버 <b>평균순위</b>(낮을수록 좋음·순위 자동수집). 같은 잣대로 비교하지 마세요.</div>
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:10px">📐 <b>두 그래프는 측정 기준이 다릅니다.</b> 왼쪽=티스토리 <b>노출수</b>(높을수록 좋음·GSC 자동수집) / 오른쪽=네이버 <b>평균순위</b>(낮을수록 좋음·순위 자동수집). 같은 잣대로 비교하지 마세요.<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #bfdbfe;color:#b45309">⚠️ <b>오른쪽 순위 그래프는 추세로 읽지 마세요.</b> 추적 대상이 <b>최근 발행글</b>이라 날짜마다 모집단이 바뀝니다 — 선이 내려간 것은 같은 글의 순위 하락이 아니라 <b>하위권 신규 글이 들어온 결과</b>일 수 있습니다. 글 단위 순위 변화는 「상위노출 진입」 탭에서 보세요.</div></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin-bottom:16px">
         <div class="card" style="margin:0"><div class="card-hdr"><h3>📈 티스토리 채널별 노출 추세 (최근 14일) · 노출수↑ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">로그축</span></h3></div>
           <div class="card-body" style="height:300px;position:relative"><canvas id="trendChart"></canvas><div id="chart-loading" class="loading">로딩 중...</div></div>
         </div>
-        <div class="card" style="margin:0"><div class="card-hdr"><h3>🏆 네이버 채널별 평균순위 추세 (최근 14일) · 순위↓ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">등수</span></h3></div>
+        <div class="card" style="margin:0"><div class="card-hdr"><h3>🏆 네이버 채널별 평균순위 추세 (최근 14일) · 순위↓ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">등수 · 모집단 매일 변동</span></h3></div>
           <div class="card-body" style="height:300px;position:relative"><canvas id="naverRankChart"></canvas><div id="naver-chart-loading" class="loading">로딩 중...</div></div>
         </div>
       </div>
@@ -260,9 +260,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
           <div style="font-size:.74rem;color:#64748b;margin-bottom:8px">데이터 파이프라인 (E2E 연결 — 끊김 없음)</div>
           <div id="cd-pipeline" style="display:flex;align-items:center;justify-content:space-between;gap:4px;flex-wrap:wrap;font-size:.74rem"></div>
         </div>
-        <div style="font-weight:700;font-size:.82rem;color:#166534;margin:4px 0 6px">📗 네이버 채널</div>
+        <div style="font-weight:700;font-size:.82rem;color:#166534;margin:4px 0 6px">📗 네이버 채널 <span style="font-weight:500;font-size:.7rem;color:#94a3b8">· 네이버 검색 순위 (핵심키워드 기준)</span></div>
         <div id="cd-naver" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:12px"></div>
-        <div style="font-weight:700;font-size:.82rem;color:#9a3412;margin:4px 0 6px">📙 티스토리 채널</div>
+        <div style="font-weight:700;font-size:.82rem;color:#9a3412;margin:4px 0 6px">📙 티스토리 채널 <span style="font-weight:500;font-size:.7rem;color:#94a3b8">· <b style="color:#b45309">구글</b> 검색 순위 (GSC) — 위 네이버 카드와 검색엔진이 다릅니다</span></div>
         <div id="cd-tistory" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:12px"></div>
         <div id="cd-weak" style="font-size:.8rem;color:#334155;background:#fff;border:0.5px solid #bbf7d0;border-radius:8px;padding:10px 12px;line-height:1.6"></div>
       </div>
@@ -1881,7 +1881,9 @@ function renderAssignBoard(){
   var _byDv={A:[],B:[],C:[]};_rows.forEach(function(r){var m=String(r.배정_채널||'').match(/블([ABC])/);(_byDv[m?m[1]:'A']).push(r);});
   var _navBtn=function(id,label,cnt,on){return '<button id="nb_'+id+'" onclick="asgTab(\''+id+'\')" style="border:1px solid #e2e8f0;border-radius:20px;padding:8px 15px;font-size:.8rem;font-weight:800;cursor:pointer;background:'+(on?'#7c3aed':'#fff')+';color:'+(on?'#fff':'#475569')+'">'+label+' <span id="nb_cnt'+id+'" style="font-size:.63rem;background:'+(on?'rgba(255,255,255,.25)':'#eef2ff')+';color:'+(on?'#fff':'#4338ca')+';padding:1px 7px;border-radius:12px">'+cnt+'</span></button>';};
   var _chip=function(v,label){var on=_view===v;return '<span id="chip_'+v+'" onclick="asgView(\''+v+'\')" style="cursor:pointer;font-size:.72rem;border:1px solid '+(on?'#0f172a':'#e2e8f0')+';border-radius:16px;padding:5px 12px;background:'+(on?'#0f172a':'#fff')+';color:'+(on?'#fff':'#475569')+';font-weight:700">'+label+'</span>';};
-  var _dvBtn=function(k,label,cnt,on){return '<button id="db_'+k+'" onclick="asgDiv(\''+k+'\')" style="border:1px solid '+(on?'#ddd6fe':'#e2e8f0')+';background:'+(on?'#f5f3ff':'#fff')+';color:'+(on?'#5b21b6':'#475569')+';border-radius:9px;padding:6px 13px;font-size:.75rem;font-weight:700;cursor:pointer">'+label+' <span style="font-size:.62rem;background:#eef2ff;color:#4338ca;padding:1px 7px;border-radius:12px">'+cnt+'</span></button>';};
+  // v1.8.2 — 버튼 숫자를 「대기 n · 완료 n」으로 분리. 종전 단일 숫자는 완료분까지 합산돼 본문(대기만 표시)과 기준이 달랐음.
+  var _dvCnt=function(dv){var a=_byDv[dv]||[];var w=0,d=0;a.forEach(function(r){if(r.사용여부==='후보선정')w++;else if(r.사용여부==='사용됨')d++;});return {w:w,d:d};};
+  var _dvBtn=function(k,label,c,on){var w=c.w,d=c.d;return '<button id="db_'+k+'" onclick="asgDiv(\''+k+'\')" style="border:1px solid '+(on?'#ddd6fe':'#e2e8f0')+';background:'+(on?'#f5f3ff':'#fff')+';color:'+(on?'#5b21b6':'#475569')+';border-radius:9px;padding:6px 13px;font-size:.75rem;font-weight:700;cursor:pointer">'+label+' <span style="font-size:.62rem;background:'+(w>0?'#fef3c7':'#f1f5f9')+';color:'+(w>0?'#b45309':'#94a3b8')+';padding:1px 7px;border-radius:12px">대기 '+w+'</span> <span style="font-size:.62rem;background:#dcfce7;color:#166534;padding:1px 7px;border-radius:12px">완료 '+d+'</span></button>';};
   var _cardHtml=function(gkey,rows){
     var s0=rows[0];var sl=s0.슬롯||{};
     var all=_pool.filter(function(r){return _gk(r)===gkey;});
@@ -1925,7 +1927,7 @@ function renderAssignBoard(){
   var lb=(window._asgTab==='1')?['최근 발송','지난 발송','전체']:['발행 예정','지난 글','전체'];
   h+='<div id="asgChips" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">'+_chip('week',lb[0])+_chip('past',lb[1])+_chip('all',lb[2])+'</div>';
   h+='<div id="asgP0">';
-  h+='<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">'+_dvBtn('A','블A 여행',_byDv.A.length,_dv==='A')+_dvBtn('B','블B 행사',_byDv.B.length,_dv==='B')+_dvBtn('C','블C 마케팅',_byDv.C.length,_dv==='C')+'</div>';
+  h+='<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">'+_dvBtn('A','블A 여행',_dvCnt('A'),_dv==='A')+_dvBtn('B','블B 행사',_dvCnt('B'),_dv==='B')+_dvBtn('C','블C 마케팅',_dvCnt('C'),_dv==='C')+'</div>';
   h+='<div id="dv_A" style="display:'+(_dv==='A'?'block':'none')+'">'+_dvPanel('A')+'</div>';
   h+='<div id="dv_B" style="display:'+(_dv==='B'?'block':'none')+'">'+_dvPanel('B')+'</div>';
   h+='<div id="dv_C" style="display:'+(_dv==='C'?'block':'none')+'">'+_dvPanel('C')+'</div>';

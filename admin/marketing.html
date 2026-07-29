@@ -504,7 +504,7 @@ async function loadChannelPhotoLog(){var box=document.getElementById('tchan-phot
 box.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px">'+rows.map(function(x){
 var img=x.원본_url?'<img src="'+x.원본_url+'" style="width:100%;height:150px;object-fit:cover;border-radius:8px 8px 0 0">':'<div style="height:150px;background:#f1f5f9;border-radius:8px 8px 0 0"></div>';
 return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">'+img
-+'<div style="padding:9px"><div style="font-size:.74rem;font-weight:700">'+(x.자산종류==='콜라주'?'\uD83E\uDDF7 콜라주':'\uD83D\uDCF7 실사진')+' <span style="color:#94a3b8;font-weight:500">'+_e(x.배정일||'')+'</span></div>'
++'<div style="padding:9px"><div style="font-size:.74rem;font-weight:700">'+({'콜라주':'\uD83E\uDDF7 실사진 콜라주','코스맵':'\uD83D\uDDFA 코스맵','배치도':'\uD83D\uDCD0 배치도','도표':'\uD83D\uDCCA 도표','인포카드':'\uD83C\uDCCF 인포카드','현지참고콜라주':'\uD83D\uDDBC 현지참고(외부출처)'}[x.자산종류]||'\uD83D\uDCF7 실사진')+' <span style="color:#94a3b8;font-weight:500">'+_e(x.배정일||'')+'</span></div>'
 +'<div style="font-size:.72rem;color:#475569;margin-top:3px;word-break:break-all">'+_e(x.파일명)+'</div>'
 +'<div style="font-size:.7rem;color:#2563eb;margin-top:3px">'+_e(x.배정_채널||'')+'</div>'
 +(x.배정_캡션?'<div style="font-size:.7rem;color:#64748b;margin-top:3px;line-height:1.45">'+_e(x.배정_캡션)+'</div>':'')

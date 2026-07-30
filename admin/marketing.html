@@ -131,7 +131,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div class="kpi-card"><div class="kpi-label">👆 티스토리 총클릭</div><div class="kpi-value" id="kpi-클릭">--</div><div class="kpi-sub" id="kpi-클릭-sub">최근 8일 누적</div></div>
         <div class="kpi-card"><div class="kpi-label">🎯 평균 CTR</div><div class="kpi-value" id="kpi-ctr">--</div><div class="kpi-sub">클릭/노출</div></div>
         <div class="kpi-card"><div class="kpi-label">🏆 네이버 평균순위</div><div class="kpi-value" id="kpi-순위">--</div><div class="kpi-sub" id="kpi-순위-sub">mk_rank_tracker 정본</div></div>
+        <!-- v1.8.7 — 「조회수보다 구독→체류→문의로 이어지는 힘」 대표 지시. 구독=네이버 이웃수 실측 -->
+        <div class="kpi-card"><div class="kpi-label">👥 구독(네이버 이웃)</div><div class="kpi-value" id="kpi-구독">--</div><div class="kpi-sub" id="kpi-구독-sub">3채널 합계 · 매일 23:50 자동수집</div></div>
       </div>
+      <!-- v1.8.7 — 라이브 실물 감사 · B2B 유입 경로 -->
+      <div id="live-audit-card" style="margin:0 0 16px"></div>
+      <div id="b2b-path-card" style="margin:0 0 16px"></div>
       <!-- ▼ 상단 고정: 채널별 추세 2그래프 (노출=티스토리 / 순위=네이버) -->
       <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:10px">📐 <b>두 그래프는 측정 기준이 다릅니다.</b> 왼쪽=티스토리 <b>노출수</b>(높을수록 좋음·GSC 자동수집) / 오른쪽=네이버 <b>평균순위</b>(낮을수록 좋음·순위 자동수집). 같은 잣대로 비교하지 마세요.<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #bfdbfe;color:#b45309">⚠️ <b>오른쪽 순위 그래프 읽는 법.</b> 정본 <code>mk_rank_tracker</code>(발행글 핵심키워드 전량 실측)이며 <b>100위 내 미발견(미진입)은 평균에서 빠집니다</b> — 미진입 건수는 「잠자는 거인」 탭에서 확인하세요. <b>2026-07-27에 추적 키워드가 13→60개로 확대</b>되었으므로 그 이전 구간과는 직접 비교하지 마세요. 글 단위 순위 변화는 「상위노출 진입」 탭에서 봅니다.</div></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin-bottom:16px">
@@ -669,6 +674,90 @@ async function loadGrowthSignal(){
   }catch(e){ el.innerHTML=''; }
 }
 loadGrowthSignal();
+
+// ── v1.8.7 라이브 실물 감사 ──────────────────────────────────────────────
+// 대시보드 숫자가 아니라 「실제로 살아있는 페이지」를 긁어서 판정한 결과.
+// 2026-07-30 사고 교훈: EF가 ok:true 를 돌려줘도 적재가 0건일 수 있다 → 여기서는 적재된 행만 센다.
+async function loadLiveAudit(){
+  var el=document.getElementById('live-audit-card'); if(!el) return;
+  try{
+    var r=await sb.from('mk_live_audit').select('채널,핵심키워드,판정,cta_존재,aeo_앵커,외부도메인_위반,검사일,외부_url').order('검사일',{ascending:false}).limit(300);
+    var rows=r.data||[]; if(!rows.length){ el.innerHTML=''; return; }
+    var last=rows[0]['검사일'];
+    var cur=rows.filter(function(x){return x['검사일']===last;});
+    var v=cur.filter(function(x){return x['판정']==='위반';});
+    var w=cur.filter(function(x){return x['판정']==='주의';});
+    var ok=cur.length-v.length-w.length;
+    var bar=function(n,c,t){ return '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid #e2e8f0;border-radius:16px;font-size:12px;margin:2px;background:#fff"><b style="color:'+c+'">'+t+' '+n+'</b></span>'; };
+    var list='';
+    v.slice(0,6).forEach(function(x){
+      var why=[]; if(!x['cta_존재']) why.push('CTA 링크 없음');
+      if((x['외부도메인_위반']||[]).length) why.push('외부도메인 '+x['외부도메인_위반'].length+'건');
+      list+='<div style="font-size:12px;padding:5px 0;border-top:1px dashed #fecaca"><b>'+x['채널']+'</b> · '+(x['핵심키워드']||'')+' — <span style="color:#dc2626">'+why.join(' / ')+'</span> <a href="'+x['외부_url']+'" target="_blank" style="color:#2563eb">글 열기</a></div>';
+    });
+    if(w.length) list+='<div style="font-size:12px;color:#b45309;padding-top:6px;border-top:1px dashed #fde68a">주의 '+w.length+'건 — 대부분 「핵심 요약」 AEO 앵커 누락. 고치면 다음날 06:15 자동 재검사에서 스스로 해소됩니다.</div>';
+    var col=v.length?'#dc2626':(w.length?'#d97706':'#16a34a');
+    el.innerHTML='<div style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid '+col+';border-radius:10px;padding:12px 16px">'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:15px">🔎 라이브 실물 감사</b>'
+      +'<span style="margin-left:auto;font-size:12px;color:#64748b">'+last+' 기준 '+cur.length+'건 · 매일 06:15 자동 · 발행된 페이지를 직접 긁어 판정</span></div>'
+      +'<div style="margin-top:8px">'+bar(v.length,'#dc2626','🔴 위반')+bar(w.length,'#d97706','🟡 주의')+bar(ok,'#16a34a','🟢 정상')+'</div>'
+      +list+'</div>';
+  }catch(e){ el.innerHTML=''; }
+}
+loadLiveAudit();
+
+// ── v1.8.7 B2B 유입 경로 (G28) ──────────────────────────────────────────
+// 블A(국내여행)에만 트래픽 자산이 있다(이웃 7,292 vs 블B 18 / 블C 24).
+// B2B 의도어를 가진 블A 글에서 블B·블C로 넘기는 링크가 없으면 그게 새는 구간이다.
+async function loadB2bPath(){
+  var el=document.getElementById('b2b-path-card'); if(!el) return;
+  try{
+    var a=await sb.from('mk_live_audit').select('외부_url,b2b_대상,b2b_크로스링크,검사일').eq('b2b_대상',true).order('검사일',{ascending:false}).limit(200);
+    var rows=a.data||[];
+    var last=rows.length?rows[0]['검사일']:null;
+    var cur=rows.filter(function(x){return x['검사일']===last;});
+    var gap=cur.filter(function(x){return x['b2b_크로스링크']!==true;});
+    var c=await sb.from('mk_b2b_crosslink_candidates').select('원본_채널,원본_키워드,의도어,타깃_사업부,타깃_매칭방식,삽입_관련글,삽입_cta,원본_url').limit(300);
+    var cand=c.data||[];
+    var gapSet={}; gap.forEach(function(x){ gapSet[x['외부_url']]=1; });
+    var todo=cand.filter(function(x){ return gapSet[x['원본_url']]; });
+    var rowsHtml='';
+    todo.slice(0,6).forEach(function(x){
+      rowsHtml+='<div style="font-size:12px;padding:6px 0;border-top:1px dashed #e2e8f0">'
+        +'<b>'+x['원본_채널']+'</b> · '+x['원본_키워드']+' <span style="color:#64748b">(의도어 '+x['의도어']+' → '+x['타깃_사업부']+', '+x['타깃_매칭방식']+')</span>'
+        +'<div style="margin-top:3px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:5px 7px;font-family:monospace;font-size:11px;word-break:break-all">'+x['삽입_관련글']+'<br>'+x['삽입_cta']+'</div></div>';
+    });
+    var col=gap.length?'#d97706':'#16a34a';
+    el.innerHTML='<div style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid '+col+';border-radius:10px;padding:12px 16px">'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:15px">🔗 B2B 유입 경로 (G28)</b>'
+      +'<b style="color:'+col+'">크로스링크 누락 '+gap.length+' / 대상 '+cur.length+'</b>'
+      +'<span style="margin-left:auto;font-size:12px;color:#64748b">블A 여행글 → 블B(행사)·블C(마케팅교육) · 후보 전체 '+cand.length+'건</span></div>'
+      +(rowsHtml?('<div style="margin-top:6px">'+rowsHtml+'</div><div style="font-size:11px;color:#64748b;margin-top:6px">위 두 줄을 글 하단 CTA 위에 그대로 붙여넣으면 됩니다. 다음날 06:15 자동 재검사에서 해소 확인됩니다.</div>')
+        :'<div style="font-size:12px;color:#16a34a;margin-top:6px">B2B 의도 글 전부 크로스링크가 걸려 있습니다.</div>')
+      +'</div>';
+  }catch(e){ el.innerHTML=''; }
+}
+loadB2bPath();
+
+// ── v1.8.7 구독(이웃) KPI ────────────────────────────────────────────────
+async function loadAudienceKpi(){
+  var v=document.getElementById('kpi-구독'), s=document.getElementById('kpi-구독-sub'); if(!v) return;
+  try{
+    var r=await sb.from('mk_channel_audience').select('채널,플랫폼,구독_이웃수,방문자_전체,측정일').order('측정일',{ascending:false}).limit(60);
+    var rows=r.data||[]; if(!rows.length){ v.textContent='--'; return; }
+    var last=rows[0]['측정일'];
+    var cur=rows.filter(function(x){return x['측정일']===last;});
+    var nv=cur.filter(function(x){return x['플랫폼']==='naver';});
+    var tot=0; nv.forEach(function(x){ tot+=(x['구독_이웃수']||0); });
+    v.textContent=tot.toLocaleString();
+    var parts=nv.map(function(x){ return x['채널'].replace('네이버','')+' '+(x['구독_이웃수']||0).toLocaleString(); });
+    var ti=cur.filter(function(x){return x['플랫폼']==='tistory'&&x['방문자_전체'];});
+    var tstr=ti.length?(' · 티스토리 누적방문 '+ti.map(function(x){return x['채널'].replace('티스토리','')+' '+(x['방문자_전체']||0).toLocaleString();}).join('/')):'';
+    if(s) s.textContent=parts.join(' / ')+tstr;
+  }catch(e){}
+}
+loadAudienceKpi();
+
 let trendChart=null,allDrafts=[],allSlots=[],allRankEntries=[],rejectTargetId=null;
 
 async function manualExchangeCode(code){

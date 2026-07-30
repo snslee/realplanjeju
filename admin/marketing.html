@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.8.5</title>
+<title>리얼플랜제주 마케팅 운영 v1.8.6</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -91,7 +91,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.8.5</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.8.6</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -658,10 +658,11 @@ async function loadGrowthSignal(){
     var res=await sb.rpc('rpc_growth_reconcile'); var d=res.data; if(!d){el.innerHTML='';return;}
     function col(s){ if(s==='RED')return '#dc2626'; if(s==='AMBER')return '#d97706'; if(s==='GREEN')return '#16a34a'; return '#64748b'; }
     function dot(s){ if(s==='RED')return '🔴'; if(s==='AMBER')return '🟡'; if(s==='GREEN')return '🟢'; return '⚪'; }
-    var ax=[['①공급',d['①공급']],['②품질',d['②품질']],['③순위성장',d['③순위성장']],['④채널확산',d['④채널확산']],['⑤SNS채널',d['⑤SNS채널']],['⑥라이브보완',d['⑥라이브보완']],['⑦스킬동기화',d['⑦스킬동기화']],['⑧신선도',d['⑧신선도']],['⑨조회수',d['⑨조회수']]];
+    var ax=[['①공급',d['①공급']],['②품질',d['②품질']],['③순위성장',d['③순위성장']],['④채널확산',d['④채널확산']],['⑤SNS채널',d['⑤SNS채널']],['⑥라이브보완',d['⑥라이브보완']],['⑦스킬동기화',d['⑦스킬동기화']],['⑧신선도',d['⑧신선도']],['⑨전환정합',d['⑨전환정합']]];
     // v1.8.5 — ⑨조회수 신설. 8축에 매출과 가장 가까운 지표(네이버 조회수)가 없었다. 칩에 증감율까지 표기한다.
     var chips=''; for(var i=0;i<ax.length;i++){ var nm=ax[i][0]; var o=ax[i][1]; if(!o){o={};}
-      var ext=''; if(nm==='⑨조회수'&&o['증감율']!=null){ext='<span style="color:#64748b;font-weight:400"> '+(Number(o['증감율'])>0?'+':'')+o['증감율']+'%</span>';}
+      // v1.8.6 — ⑨는 조회수 총량이 아니라 「문의로 이어지는 힘」. 칩에 병목 수치를 직접 띄운다.
+      var ext=''; if(nm==='⑨전환정합'&&o['UTM규격률']!=null){ext='<span style="color:#64748b;font-weight:400"> UTM '+o['UTM규격률']+'% · 블로그경유 '+(o['블로그경유_30일']!=null?o['블로그경유_30일']:'-')+'</span>';}
       chips=chips+'<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid #e2e8f0;border-radius:16px;font-size:12px;margin:2px;background:#fff"><b style="color:'+col(o['신호'])+'">'+dot(o['신호'])+' '+nm+'</b>'+ext+'</span>'; }
     var t=d['종합'];
     el.innerHTML='<div style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid '+col(t)+';border-radius:10px;padding:12px 16px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:15px">🌱 성장 정합 신호등</b><b style="color:'+col(t)+'">종합 '+t+'</b><span style="margin-left:auto;font-size:12px;color:#64748b">매출 제외 · 블로그·SNS 성장 · 매일 09시 텔레그램</span></div><div style="margin-top:8px">'+chips+'</div></div>';

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.8.9</title>
+<title>리얼플랜제주 마케팅 운영 v1.9.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -91,7 +91,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.8.9</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.9.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -266,6 +266,16 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div><h2 style="font-size:1.2rem;font-weight:700">🏆 상위노출 진입 현황</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">D+7·14·30·90 순위 추적</p></div>
         <button onclick="loadRankEntries()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
+      </div>
+      <div class="card" style="margin:0 0 18px;border:1px solid #fecaca">
+        <div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🔁 리라이트 우선순위 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">매출 밀어올리기 · v_rewrite_priority · 상업(B2B)글만</span></h3>
+          <button class="filter-btn" onclick="loadRewritePriority()">🔄</button></div>
+        <div id="rw-thisweek" style="background:#fef2f2;border-bottom:1px solid #fecaca;color:#991b1b;font-size:.8rem;padding:9px 12px;font-weight:600">이번 주 리라이트 1편: <span id="rw-pick">로딩…</span></div>
+        <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.71rem;padding:6px 12px">11~30위 상업글을 top10으로. 그 주 정규 슬롯 1개를 여기 1위 글 리라이트로 편성(대표 지시). 정보성 글은 제외.</div>
+        <div class="card-body" style="padding:0;overflow-x:auto">
+          <table class="tbl"><thead><tr><th>점수</th><th>채널</th><th>순위</th><th>키워드</th><th>검색량</th><th>실유입</th></tr></thead>
+          <tbody id="rw-body"><tr><td colspan="6" class="loading">로딩 중...</td></tr></tbody></table>
+        </div>
       </div>
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px 16px;margin-bottom:18px">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
@@ -850,7 +860,7 @@ function renderPhotoFp(){
   document.getElementById('pf-grid').innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">'+(h||'<div style="padding:20px;color:#94a3b8">데이터 없음</div>')+'</div>';
   document.getElementById('pf-pager').innerHTML='<button onclick="_pfPage=Math.max(1,_pfPage-1);renderPhotoFp()" class="filter-btn">◀</button> <span style="font-size:.8rem;margin:0 8px">'+_pfPage+' / '+tp+' ('+rows.length+'장)</span> <button onclick="_pfPage=Math.min('+tp+',_pfPage+1);renderPhotoFp()" class="filter-btn">▶</button>';
 }
-function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6'){loadAlgo();loadSkillRules();}if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();if(id==='t12'){var fbf=document.getElementById('fb-frame');if(fbf&&!fbf.getAttribute('src'))fbf.setAttribute('src','/blog.html');loadFunnelRecon();}}
+function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();loadRewritePriority();}if(id==='t6'){loadAlgo();loadSkillRules();}if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();if(id==='t12'){var fbf=document.getElementById('fb-frame');if(fbf&&!fbf.getAttribute('src'))fbf.setAttribute('src','/blog.html');loadFunnelRecon();}}
 async function loadKeywordInsight(){ loadKeywordRadar(); loadNvTerms();
   const[tot,yk,ui]=await Promise.all([
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}),
@@ -1447,6 +1457,19 @@ async function loadGiants(){ loadUncovered(); loadGiantsNaver();
   tbody.innerHTML=rows.map(r=>{const ctr=r.ctr,isNv=r.src==='naver_search';const j=isNv?(r.r==null?'📊 데이터없음':r.r<=5?'🔵 우수':r.r<=15?'🟢 유지':r.r<=30?'🟡 개선필요':'🔴 즉시액션'):(ctr<1?'🔴 즉시액션':ctr<3?'🟡 제목개선':ctr<5?'🟢 유지':'🔵 우수');const jc=isNv?(r.r==null?'#94a3b8':r.r<=5?'#3b82f6':r.r<=15?'#10b981':r.r<=30?'#f59e0b':'#ef4444'):(ctr<1?'#ef4444':ctr<3?'#f59e0b':ctr<5?'#10b981':'#3b82f6');const srcBg=r.src==='gsc'?'#dbeafe':'#dcfce7';const srcTx=r.src==='gsc'?'#1e40af':'#166534';const nStat=isNv?'<span style="font-size:.7rem;color:#94a3b8">(순위기준)</span>':'';return `<tr><td><span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:.78rem">${r.ch}</span></td><td><span style="background:${srcBg};color:${srcTx};padding:2px 8px;border-radius:12px;font-size:.75rem">${srcLabel[r.src]||r.src}</span></td><td style="font-weight:700">${isNv?'-':r.n.toLocaleString()}</td><td>${isNv?'-':r.c.toLocaleString()}</td><td style="font-weight:700;color:${jc}">${isNv?(r.r?r.r.toFixed(1)+'위':'-'):ctr.toFixed(2)+'%'}</td><td>${r.r?r.r.toFixed(1)+'위':'-'}</td><td>${j} ${nStat}</td></tr>`;}).join('');
 }
 
+async function loadRewritePriority(){
+  const tb=document.getElementById('rw-body'); if(!tb) return;
+  try{
+    const {data,error}=await sb.from('v_rewrite_priority').select('채널,순위,트랙,상업,핵심키워드,검색량,실유입,우선점수').eq('상업',true).order('우선점수',{ascending:false}).limit(30);
+    if(error) throw error;
+    const rw=(data||[]).filter(r=>r.트랙&&r.트랙.indexOf('리라이트')===0);
+    const pk=document.getElementById('rw-pick');
+    if(rw.length&&pk) pk.textContent=`${(rw[0].채널||'').replace('네이버','·네').replace('티스토리','·티')} 「${rw[0].핵심키워드}」 ${rw[0].순위}위 (검색량 ${rw[0].검색량??'-'}·${rw[0].우선점수}점)`;
+    else if(pk) pk.textContent='대상 없음';
+    if(!rw.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:14px">리라이트 대상 없음</td></tr>';return;}
+    tb.innerHTML=rw.slice(0,20).map((r,i)=>`<tr${i===0?' style="background:#fef2f2;font-weight:600"':''}><td><b>${r.우선점수}</b></td><td>${(r.채널||'').replace('네이버','·네').replace('티스토리','·티')}</td><td>${r.순위}위</td><td>${r.핵심키워드||''}</td><td>${r.검색량??'-'}</td><td>${r.실유입??'-'}</td></tr>`).join('');
+  }catch(e){tb.innerHTML='<tr><td colspan="6" style="color:#dc2626;padding:12px">리라이트 우선순위 로드 실패: '+(e.message||e)+'</td></tr>';}
+}
 async function loadRankEntries(){
   document.getElementById('rank-body').innerHTML='<tr><td colspan="9" class="loading">로딩 중...</td></tr>';
   const{data,error}=await sb.from('mk_blog_publish_log').select('채널,핵심키워드,발행일,외부_url,진입판정,d_plus_7_rank,d_plus_14_rank,d_plus_30_rank,d_plus_90_rank').order('발행일',{ascending:false}).limit(100);

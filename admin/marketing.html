@@ -956,7 +956,7 @@ async function runAutogenTick(){
 function renderStatsPage(){var ydData=window._ydView||[];var _sp=Math.max(1,Math.ceil(ydData.length/STAT_PER));if(_statPage>_sp)_statPage=1;var pe=document.getElementById('stats-pager');if(pe)pe.innerHTML=pagerHTML(_statPage,_sp,ydData.length,'gotoStatPage');document.getElementById('stats-body').innerHTML=ydData.length?ydData.slice((_statPage-1)*STAT_PER,_statPage*STAT_PER).map(r=>`<tr><td><b>${r.채널||'-'}</b></td><td style="font-size:.75rem;color:#64748b">${r.데이터_소스||'-'}</td><td>${(r.노출_수||0).toLocaleString()}</td><td>${(r.클릭_수||0).toLocaleString()}</td><td>${r.ctr_pct!=null?Number(r.ctr_pct).toFixed(2)+'%':'-'}</td><td>${r.평균_순위!=null?Number(r.평균_순위).toFixed(1)+'위':'-'}</td><td style="color:#94a3b8;font-size:.78rem">${r.수집_시각?r.수집_시각.slice(0,10):'-'}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">데이터 없음</td></tr>';}
 function gotoStatPage(n){_statPage=n;renderStatsPage();}
 async function fetchAllRows(sel,filt){let all=[],f=0;const sz=1000;for(;;){let q=sb.from('mk_metrics').select(sel);q=filt(q).range(f,f+sz-1);const{data,error}=await q;if(error)throw error;all=all.concat(data||[]);if(!data||data.length<sz)break;f+=sz;if(f>60000)break;}return all;}
-async function loadStats(){
+async function loadStats(){ loadFunnel();
   document.getElementById('chart-loading').style.display='block';
   const since=new Date(Date.now()-14*86400000).toISOString();
   const since7=new Date(Date.now()-7*86400000).toISOString();

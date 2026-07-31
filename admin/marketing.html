@@ -1865,7 +1865,8 @@ async function loadNaverManual(){
   kb.innerHTML=kws.length?kws.map(r=>'<div style="margin-bottom:10px"><div style="font-weight:700;font-size:.8rem;margin-bottom:4px">'+r.채널+' · '+(r.측정_일자||'').slice(0,7)+'</div><div style="display:flex;flex-wrap:wrap;gap:5px">'+r.유입_검색어.map(k=>'<span style="background:#eef2ff;color:#3730a3;padding:2px 8px;border-radius:9px;font-size:.74rem">'+k+'</span>').join('')+'</div></div>').join(''):'업로드된 유입 검색어 없음';
 }
 
-initAuth();
+// v1.9.1 — 뒤 스크립트 블록의 함수(loadFunnel 등)가 정의되기 전에 실행되던 레이스 수리
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initAuth);}else{setTimeout(initAuth,0);}
 </script>
 <script>
 /* t14 v2 (7/23): 로컬 실사진/발행글 AI 이원 — 기본=로컬 실사진(mk_photo_assets 2,900장) */

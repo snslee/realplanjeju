@@ -2175,6 +2175,8 @@ async function loadFunnel(){try{
   const seg=[['노출(최근집계)',data['노출_최근8일']],['클릭',data['클릭_최근8일']],['방문 28일',data['방문_28일']],['블로그유입',data['블로그유입_28일']],['문의 30일',data['문의_30일']],['귀속',data['문의귀속_30일']],['견적 90일',data['견적_90일']],['계약',data['계약_90일']]];
   document.getElementById('fs-cells').innerHTML=seg.map((s,i)=>'<span style="background:#f1f5f9;border-radius:8px;padding:4px 10px"><b>'+((s[1]??0).toLocaleString())+'</b> '+s[0]+'</span>'+(i<seg.length-1?'<span style="color:#cbd5e1">→</span>':'')).join('');
   var t=document.getElementById('fs-time');if(t)t.textContent='· '+String(data['기준시각']||'').slice(0,16).replace('T',' ');
+  var chm=data['채널유입_28일']||{};var chTxt=['place','kakao','gbp','karrot','threads'].map(function(k){var v=chm[k]||chm['naver_place']&&k==='place'||0;return k+' <b>'+(chm[k]||0)+'</b>';}).join(' · ');
+  document.getElementById('fs-cells').innerHTML+='<span style="background:#eef2ff;color:#3730a3;border-radius:8px;padding:4px 10px">채널유입 28일 '+chTxt+'</span>';
 }catch(e){console.error('funnel',e);}}
 async function loadFunnelRecon(){try{
   const el=document.getElementById('funnel-recon');if(!el)return;

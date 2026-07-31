@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.9.1</title>
+<title>리얼플랜제주 마케팅 운영 v1.9.2</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -73,10 +73,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 .mob-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.65rem;color:#94a3b8;cursor:pointer;gap:2px}
 .mob-item.active{color:var(--primary)}
 @media(max-width:768px){.sidebar{width:56px}.sidebar .nav-item{justify-content:center;padding:12px 6px;font-size:0;gap:0;border-left-width:2px}.sidebar .nav-item span{font-size:1.15rem}.nav-section{display:none}.main{margin-left:56px;padding:16px;margin-bottom:16px}.kpi-grid{grid-template-columns:repeat(2,1fr)}.mobile-nav{display:none}}
-.sec-nav{position:sticky;top:0;z-index:30;background:rgba(248,250,252,.96);backdrop-filter:blur(4px);padding:8px 0;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #e2e8f0;margin:0 0 14px}
+.sec-nav{position:sticky;top:var(--hdr);z-index:30;background:rgba(248,250,252,.96);backdrop-filter:blur(4px);padding:8px 0;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #e2e8f0;margin:0 0 14px}
 .sec-chip{font-size:.74rem;padding:4px 11px;border-radius:999px;border:1px solid #cbd5e1;background:#fff;color:#334155;cursor:pointer;white-space:nowrap}
 .sec-chip:hover{border-color:#4A85F6;color:#2B62C4}
-[data-sec]{scroll-margin-top:64px}
+[data-sec],.card,details{scroll-margin-top:calc(var(--hdr) + 58px)}
 </style>
 </head>
 <body>
@@ -95,7 +95,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.9.1</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.9.2</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -866,8 +866,16 @@ function renderPhotoFp(){
   document.getElementById('pf-grid').innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">'+(h||'<div style="padding:20px;color:#94a3b8">데이터 없음</div>')+'</div>';
   document.getElementById('pf-pager').innerHTML='<button onclick="_pfPage=Math.max(1,_pfPage-1);renderPhotoFp()" class="filter-btn">◀</button> <span style="font-size:.8rem;margin:0 8px">'+_pfPage+' / '+tp+' ('+rows.length+'장)</span> <button onclick="_pfPage=Math.min('+tp+',_pfPage+1);renderPhotoFp()" class="filter-btn">▶</button>';
 }
-function buildSecNavs(){document.querySelectorAll('.tab-panel').forEach(function(p){if(p.querySelector('.sec-nav'))return;var els=p.querySelectorAll('[data-sec]');if(els.length<2)return;var nav=document.createElement('div');nav.className='sec-nav';els.forEach(function(el){var b=document.createElement('button');b.className='sec-chip';b.textContent=el.getAttribute('data-sec');b.onclick=function(){el.scrollIntoView({behavior:'smooth',block:'start'});};nav.appendChild(b);});var hdr=p.firstElementChild;if(hdr&&hdr.nextSibling)p.insertBefore(nav,hdr.nextSibling);else p.appendChild(nav);});}
-function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2'){loadDrafts();loadRewritePriority();}if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6'){loadAlgo();loadSkillRules();}if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();if(id==='t12'){var fbf=document.getElementById('fb-frame');if(fbf&&!fbf.getAttribute('src'))fbf.setAttribute('src','/blog.html');loadFunnelRecon();}}
+function _secLabel(h){var c=h.cloneNode(true);c.querySelectorAll('span,small,button,code').forEach(function(x){x.remove();});var t=c.textContent.replace(/\s+/g,' ').trim();return t.length>16?t.slice(0,16)+'…':t;}
+function buildSecNavs(){document.querySelectorAll('.tab-panel').forEach(function(p){if(p.querySelector('.sec-nav'))return;
+  var items=[];
+  p.querySelectorAll('[data-sec]').forEach(function(el){items.push({el:el,label:el.getAttribute('data-sec')});});
+  if(items.length<2){items=[];p.querySelectorAll('.card-hdr h3, details > summary').forEach(function(h){var t=h.closest('.card')||h.closest('details');if(!t||t.closest('[data-sec]'))return;var lb=_secLabel(h);if(!lb)return;items.push({el:t,label:lb});});}
+  if(items.length<2)return;
+  var nav=document.createElement('div');nav.className='sec-nav';
+  items.forEach(function(it){var b=document.createElement('button');b.className='sec-chip';b.textContent=it.label;b.onclick=function(){it.el.scrollIntoView({behavior:'smooth',block:'start'});};nav.appendChild(b);});
+  var hdr=p.firstElementChild;if(hdr&&hdr.nextSibling)p.insertBefore(nav,hdr.nextSibling);else p.appendChild(nav);});}
+function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');setTimeout(buildSecNavs,400);if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2'){loadDrafts();loadRewritePriority();}if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6'){loadAlgo();loadSkillRules();}if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();if(id==='t12'){var fbf=document.getElementById('fb-frame');if(fbf&&!fbf.getAttribute('src'))fbf.setAttribute('src','/blog.html');loadFunnelRecon();}}
 async function loadKeywordInsight(){ loadKeywordRadar(); loadNvTerms();
   const[tot,yk,ui]=await Promise.all([
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}),
@@ -1474,11 +1482,20 @@ async function loadRewritePriority(){
     const {data,error}=await sb.from('v_rewrite_priority').select('채널,순위,트랙,상업,핵심키워드,검색량,실유입,우선점수').eq('상업',true).order('우선점수',{ascending:false}).limit(30);
     if(error) throw error;
     const rw=(data||[]).filter(r=>r.트랙&&r.트랙.indexOf('리라이트')===0);
+    // v1.9.2 — 이미 리라이트 슬롯이 편성(또는 최근 완료)된 키워드는 픽에서 제외하고 ⏳ 표시
+    let sched=new Set();
+    try{
+      const since=new Date(Date.now()-14*86400000).toISOString().slice(0,10);
+      const {data:rs}=await sb.from('mk_blog_slots').select('핵심키워드').eq('슬롯유형','리라이트').gte('발행일',since);
+      (rs||[]).forEach(x=>sched.add(String(x.핵심키워드||'').replace(/\s/g,'')));
+    }catch(_e){}
+    const isSched=r=>sched.has(String(r.핵심키워드||'').replace(/\s/g,''));
+    const pickRow=rw.find(r=>!isSched(r));
     const pk=document.getElementById('rw-pick');
-    if(rw.length&&pk) pk.textContent=`${(rw[0].채널||'').replace('네이버','·네').replace('티스토리','·티')} 「${rw[0].핵심키워드}」 ${rw[0].순위}위 (검색량 ${rw[0].검색량??'-'}·${rw[0].우선점수}점)`;
+    if(pickRow&&pk) pk.textContent=`${(pickRow.채널||'').replace('네이버','·네').replace('티스토리','·티')} 「${pickRow.핵심키워드}」 ${pickRow.순위}위 (검색량 ${pickRow.검색량??'-'}·${pickRow.우선점수}점)`;
     else if(pk) pk.textContent='대상 없음';
     if(!rw.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:14px">리라이트 대상 없음</td></tr>';return;}
-    tb.innerHTML=rw.slice(0,20).map((r,i)=>`<tr${i===0?' style="background:#fef2f2;font-weight:600"':''}><td><b>${r.우선점수}</b></td><td>${(r.채널||'').replace('네이버','·네').replace('티스토리','·티')}</td><td>${r.순위}위</td><td>${r.핵심키워드||''}</td><td>${r.검색량??'-'}</td><td>${r.실유입??'-'}</td></tr>`).join('');
+    tb.innerHTML=rw.slice(0,20).map(r=>{const sc=isSched(r);const top=(pickRow&&r===pickRow);return `<tr${top?' style="background:#fef2f2;font-weight:600"':(sc?' style="color:#94a3b8"':'')}><td><b>${r.우선점수}</b></td><td>${(r.채널||'').replace('네이버','·네').replace('티스토리','·티')}</td><td>${r.순위}위</td><td>${r.핵심키워드||''}${sc?' <span style="font-size:.68rem;background:#f1f5f9;color:#64748b;padding:1px 6px;border-radius:8px">⏳ 편성됨</span>':''}</td><td>${r.검색량??'-'}</td><td>${r.실유입??'-'}</td></tr>`;}).join('');
   }catch(e){tb.innerHTML='<tr><td colspan="6" style="color:#dc2626;padding:12px">리라이트 우선순위 로드 실패: '+(e.message||e)+'</td></tr>';}
 }
 async function loadRankEntries(){

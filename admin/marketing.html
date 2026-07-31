@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.8.8</title>
+<title>리얼플랜제주 마케팅 운영 v1.8.9</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -91,7 +91,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.8.8</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.8.9</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -456,6 +456,19 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:16px" id="ki-kpi"></div>
       <div class="card" style="margin:0 0 16px"><div class="card-hdr"><h3>📡 키워드 레이더 상태 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">검색량 신선도 · 실검색어 매칭률 · 방문자 수집</span></h3></div>
         <div class="card-body"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px" id="ki-radar"><div class="loading">로딩 중...</div></div></div>
+      </div>
+      <div class="card" style="margin:0 0 16px"><div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🔎 네이버 실검색어 TOP <span style="font-weight:500;font-size:.72rem;color:#94a3b8">creator-advisor 실유입 · 고객이 실제 검색한 말</span></h3>
+        <div id="nv-term-filter" style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="filter-btn active" data-ch="전체" onclick="renderNvTerms('전체')">전체</button>
+          <button class="filter-btn" data-ch="블A네이버" onclick="renderNvTerms('블A네이버')">블A</button>
+          <button class="filter-btn" data-ch="블B네이버" onclick="renderNvTerms('블B네이버')">블B</button>
+          <button class="filter-btn" data-ch="블C네이버" onclick="renderNvTerms('블C네이버')">블C</button>
+        </div></div>
+        <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.72rem;padding:7px 11px">💡 네이버는 온디맨드 수집(쿠키 40분 만료). <b id="nv-term-date">-</b> 기준. 우리 글이 없는 검색어는 🕳️ 표시 → 슬롯 후보.</div>
+        <div class="card-body" style="padding:0;overflow-x:auto">
+          <table class="tbl"><thead><tr><th>채널</th><th>실검색어</th><th>유입</th><th>비율%</th><th>커버</th></tr></thead>
+          <tbody id="nv-term-body"><tr><td colspan="5" class="loading">로딩 중...</td></tr></tbody></table>
+        </div>
       </div>
       <div class="card" style="margin:0 0 16px"><div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🏆 조회수 상위 글 (mk_top_posts)</h3>
         <div id="ki-top-filter" style="display:flex;gap:6px;flex-wrap:wrap">
@@ -838,7 +851,7 @@ function renderPhotoFp(){
   document.getElementById('pf-pager').innerHTML='<button onclick="_pfPage=Math.max(1,_pfPage-1);renderPhotoFp()" class="filter-btn">◀</button> <span style="font-size:.8rem;margin:0 8px">'+_pfPage+' / '+tp+' ('+rows.length+'장)</span> <button onclick="_pfPage=Math.min('+tp+',_pfPage+1);renderPhotoFp()" class="filter-btn">▶</button>';
 }
 function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6'){loadAlgo();loadSkillRules();}if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();if(id==='t12'){var fbf=document.getElementById('fb-frame');if(fbf&&!fbf.getAttribute('src'))fbf.setAttribute('src','/blog.html');loadFunnelRecon();}}
-async function loadKeywordInsight(){ loadKeywordRadar();
+async function loadKeywordInsight(){ loadKeywordRadar(); loadNvTerms();
   const[tot,yk,ui]=await Promise.all([
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}),
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}).eq('출처','연관키워드DB'),
@@ -1371,6 +1384,31 @@ async function loadUncovered(){
     if(!data||!data.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:14px">미커버 검색어 없음</td></tr>';return;}
     tb.innerHTML=data.map(r=>`<tr><td>${r.채널||''}</td><td style="font-weight:600">${r.실검색어||''}</td><td>${r.클릭합??0}</td><td>${r.노출합??0}</td><td>${r.유입비율합??''}</td><td>${r.평균순위??''}</td><td>${(r.최근유입월||'').slice(0,7)}</td></tr>`).join('');
   }catch(e){tb.innerHTML='<tr><td colspan="7" style="color:#dc2626;padding:12px">미커버 로드 실패: '+(e.message||e)+'</td></tr>';}
+}
+window._nvTerms=[];
+async function loadNvTerms(){
+  const tb=document.getElementById('nv-term-body'); if(!tb) return;
+  try{
+    const {data,error}=await sb.from('mk_inflow_keywords').select('채널,키워드,클릭_수,유입비율,유입월').eq('출처','creator_advisor').order('유입월',{ascending:false}).limit(600);
+    if(error) throw error;
+    const latest=(data&&data.length)?data.reduce((m,r)=>r.유입월>m?r.유입월:m,'2000-01-01'):null;
+    const rows=(data||[]).filter(r=>r.유입월===latest);
+    // 커버 판정: publish_log 핵심키워드 포함 매칭
+    const {data:pub}=await sb.from('mk_blog_publish_log').select('채널,핵심키워드').not('핵심키워드','is',null);
+    const norm=s=>(s||'').toLowerCase().replace(/\s/g,'');
+    const pmap={}; (pub||[]).forEach(p=>{(pmap[p.채널]=pmap[p.채널]||[]).push(norm(p.핵심키워드));});
+    window._nvTerms=rows.map(r=>{const nk=norm(r.키워드);const covered=(pmap[r.채널]||[]).some(k=>k&&(nk.includes(k)||k.includes(nk)));return {...r,covered};})
+      .sort((a,b)=>(b.클릭_수||0)-(a.클릭_수||0));
+    const el=document.getElementById('nv-term-date'); if(el) el.textContent=latest||'-';
+    renderNvTerms('전체');
+  }catch(e){tb.innerHTML='<tr><td colspan="5" style="color:#dc2626;padding:12px">네이버 실검색어 로드 실패: '+(e.message||e)+'</td></tr>';}
+}
+function renderNvTerms(ch){
+  document.querySelectorAll('#nv-term-filter .filter-btn').forEach(b=>b.classList.toggle('active',b.getAttribute('data-ch')===ch));
+  const tb=document.getElementById('nv-term-body'); if(!tb) return;
+  let rows=window._nvTerms||[]; if(ch!=='전체') rows=rows.filter(r=>r.채널===ch); rows=rows.slice(0,40);
+  if(!rows.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:14px">데이터 없음 — 쿠키 온디맨드 백필 필요</td></tr>';return;}
+  tb.innerHTML=rows.map(r=>`<tr><td>${(r.채널||'').replace('네이버','')}</td><td style="font-weight:600">${r.키워드||''}</td><td>${r.클릭_수??0}</td><td>${r.유입비율??''}</td><td>${r.covered?'<span style="color:#059669">✓</span>':'<span style="color:#d97706">🕳️</span>'}</td></tr>`).join('');
 }
 async function loadKeywordRadar(){
   const box=document.getElementById('ki-radar'); if(!box) return;

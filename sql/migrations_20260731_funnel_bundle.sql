@@ -1,0 +1,15 @@
+-- ============================================================
+-- 2026-07-31 퍼널 감사 승인 번들 — Supabase 정본 변경분 총람
+-- 승인: 대표(전체 번들) · 백업: mk_*_bak_20260731_*
+-- ============================================================
+-- [1] rpc_due_for_d_n_check v2 — 소급 레거시(소급등록·노션반영) 제외 + ORDER BY 발행일 DESC (D+7 큐 잼 해소)
+-- [2] EF blog-rank-tistory-gsc v1.2(ver4) — 미노출도 rank null 기록·postId URL 대응·limit 상한 / 롤백=ver3
+-- [3] EF acc-telegram-upload v2.1(ver4) — threads URL 답장 자동접수(rpc_sns_register_url) / 롤백=ver3
+-- [4] rpc_sns_register_url v1.0 — 텔레그램 답장 → 카드발송 슬롯 발행_url 자동 기입
+-- [5] rpc_portfolio_auto_sync v1.0 + 크론 portfolio-auto-sync-2250kst — 발행 URL 자동 기입·미등재/세트미완결 감지
+-- [6] rpc_funnel_kpi / rpc_funnel_reconcile(p_notify) + 크론 funnel-reconcile-0740kst — 퍼널 KPI·정합 감시
+-- [7] rpc_blog_brief_4axis v1.0(키워드 4축 브리핑) · rpc_fullauto_observe v1.0(풀오토 관찰 기록)
+-- [8] 데이터 정리: naver_manual 빈중복 3행 삭제 / facts 연간·분기 만료일 45건 / 슬롯 컬럼교차 10행 / autogen 잡 1건 / dhash 101장 산출 / karrot 카드 7건 보충
+-- [9] 크론 신설: naver-manual-reminder-1st-0900kst · naver-manual-dupcheck-2nd · ai-citation-check-weekly-mon
+-- [10] admin/marketing.html 퍼널 개정 5커밋(f7114fb·dd04b5c·744968e·c32865d·0506266) — 목적문+KPI 스트립+정합 신호등
+-- ※ RPC 전체 정의는 Supabase migrations가 정본. EF 소스는 ef-source-backup 주간 크론이 GitHub에 자동 수집.

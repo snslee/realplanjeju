@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.8.6</title>
+<title>리얼플랜제주 마케팅 운영 v1.8.8</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -91,7 +91,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.8.6</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.8.8</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -247,6 +247,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         </div>
       </div>
       <div class="card"><div class="card-hdr"><h3>🏆 네이버 채널별 순위 현황 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">mk_rank_tracker 정본 · 키워드별 최신 측정 · 순위↓</span></h3></div><div class="card-body" style="padding:0;overflow-x:auto"><div style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;color:#166534;font-size:.72rem;padding:7px 11px">✅ 발행글 <b>핵심키워드 전량</b>을 네이버 블로그 검색에서 실측한 정본입니다(100위 내 미발견=<b>미진입</b>으로 카운트). 평균순위는 <b>진입분만</b>의 평균이라, 미진입 칸을 반드시 같이 보세요.</div><table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>평균순위<span style="font-weight:400;color:#94a3b8">(진입분)</span></th><th>추적 키워드</th><th>진입</th><th>미진입</th><th>top10 진입률</th><th>판정</th></tr></thead><tbody id="giants-naver-body"><tr><td colspan="8" class="loading">로딩 중...</td></tr></tbody></table></div></div>
+      <div class="card"><div class="card-hdr"><h3>🕳️ 미커버 실검색어 TOP 20 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">v_uncovered_terms · 검색 유입은 있는데 우리 글(핵심키워드)이 없는 검색어</span></h3></div>
+        <div class="card-body" style="padding:0;overflow-x:auto">
+          <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.72rem;padding:7px 11px">💡 슬롯 후보 원천입니다. 채택 전 <b>G15 5단 게이트</b>(충돌·SERP 의도)를 반드시 통과시키세요. 네이버분은 월간 유입분석 파일, 티스토리분은 GSC가 원천입니다.</div>
+          <table class="tbl"><thead><tr><th>채널</th><th>실검색어</th><th>클릭합</th><th>노출합</th><th>유입비율합</th><th>평균순위</th><th>최근유입월</th></tr></thead>
+          <tbody id="uncovered-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
+        </div>
+      </div>
       <div class="card"><div class="card-hdr"><h3>💡 액션 가이드</h3></div>
         <div class="card-body"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;font-size:.85rem">
           <div style="background:#fee2e2;border-radius:8px;padding:14px"><div style="font-weight:700;margin-bottom:6px;color:#991b1b">🔴 CTR 1% 미만</div><p style="color:#7f1d1d">제목 리프레시 + 썸네일 교체 즉시</p></div>
@@ -447,6 +454,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
       <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:14px">ℹ️ 키워드 풀은 전부 <b>참고용(활성 off)</b>입니다. STAGE 0에서 rpc_blog_brief가 채널·주제·시즌에 맞는 키워드·상위글·오디언스를 자동 반환합니다.</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:16px" id="ki-kpi"></div>
+      <div class="card" style="margin:0 0 16px"><div class="card-hdr"><h3>📡 키워드 레이더 상태 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">검색량 신선도 · 실검색어 매칭률 · 방문자 수집</span></h3></div>
+        <div class="card-body"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px" id="ki-radar"><div class="loading">로딩 중...</div></div></div>
+      </div>
       <div class="card" style="margin:0 0 16px"><div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🏆 조회수 상위 글 (mk_top_posts)</h3>
         <div id="ki-top-filter" style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="filter-btn active" data-ch="전체" onclick="renderKiTop('전체')">전체</button>
@@ -828,7 +838,7 @@ function renderPhotoFp(){
   document.getElementById('pf-pager').innerHTML='<button onclick="_pfPage=Math.max(1,_pfPage-1);renderPhotoFp()" class="filter-btn">◀</button> <span style="font-size:.8rem;margin:0 8px">'+_pfPage+' / '+tp+' ('+rows.length+'장)</span> <button onclick="_pfPage=Math.min('+tp+',_pfPage+1);renderPhotoFp()" class="filter-btn">▶</button>';
 }
 function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6'){loadAlgo();loadSkillRules();}if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();if(id==='t12'){var fbf=document.getElementById('fb-frame');if(fbf&&!fbf.getAttribute('src'))fbf.setAttribute('src','/blog.html');loadFunnelRecon();}}
-async function loadKeywordInsight(){
+async function loadKeywordInsight(){ loadKeywordRadar();
   const[tot,yk,ui]=await Promise.all([
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}),
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}).eq('출처','연관키워드DB'),
@@ -1353,7 +1363,36 @@ async function loadGiantsNaver(){
       +'<td style="font-weight:700;color:'+j[1]+'">'+j[0]+'</td></tr>';
   }).join('');
 }
-async function loadGiants(){ loadGiantsNaver();
+async function loadUncovered(){
+  const tb=document.getElementById('uncovered-body'); if(!tb) return;
+  try{
+    const {data,error}=await sb.from('v_uncovered_terms').select('채널,실검색어,클릭합,노출합,유입비율합,평균순위,최근유입월').limit(20);
+    if(error) throw error;
+    if(!data||!data.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:14px">미커버 검색어 없음</td></tr>';return;}
+    tb.innerHTML=data.map(r=>`<tr><td>${r.채널||''}</td><td style="font-weight:600">${r.실검색어||''}</td><td>${r.클릭합??0}</td><td>${r.노출합??0}</td><td>${r.유입비율합??''}</td><td>${r.평균순위??''}</td><td>${(r.최근유입월||'').slice(0,7)}</td></tr>`).join('');
+  }catch(e){tb.innerHTML='<tr><td colspan="7" style="color:#dc2626;padding:12px">미커버 로드 실패: '+(e.message||e)+'</td></tr>';}
+}
+async function loadKeywordRadar(){
+  const box=document.getElementById('ki-radar'); if(!box) return;
+  const tile=(label,val,sub,color)=>`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px"><div style="font-size:.72rem;color:#64748b">${label}</div><div style="font-size:1.3rem;font-weight:800;color:${color||'#0f172a'}">${val}</div><div style="font-size:.7rem;color:#94a3b8">${sub||''}</div></div>`;
+  try{
+    const today=new Date();const d7=new Date(today.getTime()-7*864e5).toISOString().slice(0,10);
+    const [fresh,tot,match,vis]=await Promise.all([
+      sb.from('mk_keywords').select('id',{count:'exact',head:true}).gte('검증일',d7),
+      sb.from('v_keyword_match').select('실검색어',{count:'exact',head:true}),
+      sb.from('v_keyword_match').select('실검색어',{count:'exact',head:true}).not('매칭키워드','is',null),
+      sb.from('mk_metrics').select('측정_일자').eq('데이터_소스','naver_visitor').order('측정_일자',{ascending:false}).limit(1)
+    ]);
+    const rate=tot.count?((match.count||0)/tot.count*100).toFixed(1):'0';
+    box.innerHTML=[
+      tile('검색량 7일 내 갱신',(fresh.count??0)+'건','searchad-volume-rotate · 일 100건 로테이션'),
+      tile('실검색어 매칭률',rate+'%',(match.count||0)+' / '+(tot.count||0)+'행 · v_keyword_match',rate<20?'#dc2626':(rate<50?'#d97706':'#059669')),
+      tile('미커버 원천','v_uncovered_terms','잠자는 거인 탭 하단 TOP20'),
+      tile('네이버 방문자 수집',(vis.data&&vis.data[0]?vis.data[0].측정_일자:'-'),'fn_collect_naver_visitors · 매일 00:35')
+    ].join('');
+  }catch(e){box.innerHTML='<div style="color:#dc2626">레이더 로드 실패: '+(e.message||e)+'</div>';}
+}
+async function loadGiants(){ loadUncovered(); loadGiantsNaver();
   document.getElementById('giants-body').innerHTML='<tr><td colspan="6" class="loading">로딩 중...</td></tr>';
   const since=new Date(Date.now()-14*86400000).toISOString();
   let data;try{data=await fetchAllRows('채널,데이터_소스,노출_수,클릭_수,평균_순위,측정_일자',q=>q.eq('데이터_소스','gsc').gte('수집_시각',since));}catch(e){showToast('잠자는 거인 로드 실패');return;}

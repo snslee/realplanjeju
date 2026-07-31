@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.9.3</title>
+<title>리얼플랜제주 마케팅 운영 v1.9.4</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -98,7 +98,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.9.3</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.9.4</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -876,6 +876,7 @@ function _secApply(nav,idx){
   gs.forEach(function(g,i){var on=(idx<0||i===idx);g.els.forEach(function(e){if(e&&e.classList)e.classList.toggle('sec-off',!on);});});
   nav.querySelectorAll('.sec-chip').forEach(function(b){var bi=parseInt(b.getAttribute('data-si'),10);b.classList.toggle('active',bi===idx);});
   nav._cur=idx;
+  try{if(nav._key)localStorage.setItem(nav._key,String(idx));}catch(_){}
   try{window.dispatchEvent(new Event('resize'));}catch(_){}
   try{if(window.Chart&&Chart.getChart)document.querySelectorAll('canvas').forEach(function(c){var ch=Chart.getChart(c);if(ch&&c.offsetParent)ch.resize();});}catch(_){}
 }
@@ -892,7 +893,9 @@ function buildSecNavs(){document.querySelectorAll('.tab-panel').forEach(function
   groups.forEach(function(g,i){var b=document.createElement('button');b.className='sec-chip';b.setAttribute('data-si',i);b.textContent=g.label;b.onclick=function(){_secApply(nav,i);};nav.appendChild(b);});
   var ab=document.createElement('button');ab.className='sec-chip';ab.setAttribute('data-si','-1');ab.textContent='\uD83D\uDDC2 \uC804\uCCB4';ab.onclick=function(){_secApply(nav,-1);};nav.appendChild(ab);
   var hdr=p.firstElementChild;if(hdr&&hdr.nextSibling)p.insertBefore(nav,hdr.nextSibling);else p.appendChild(nav);
-  _secApply(nav,0);});}
+  nav._key='rp_secnav_'+(p.id||'x');
+  var sv=0;try{var raw=localStorage.getItem(nav._key);if(raw!==null){var n2=parseInt(raw,10);if(n2===-1||(n2>=0&&n2<groups.length))sv=n2;}}catch(_){}
+  _secApply(nav,sv);});}
 // 숨은 섹션 안의 요소로 이동해야 할 때 그 섹션을 자동으로 펴준다
 function secReveal(el){
   if(!el)return;var p=el.closest('.tab-panel');if(!p)return;

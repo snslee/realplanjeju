@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.9.4</title>
+<title>리얼플랜제주 마케팅 운영 v1.9.5</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -98,7 +98,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.9.4</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.9.5</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -890,11 +890,11 @@ function buildSecNavs(){document.querySelectorAll('.tab-panel').forEach(function
   if(tops.length<2)return;
   var groups=tops.map(function(t){var els=[t.top],n=t.top.nextElementSibling;while(n&&seen.indexOf(n)<0){if(!n.classList.contains('sec-nav'))els.push(n);n=n.nextElementSibling;}return{label:t.label,els:els};});
   var nav=document.createElement('div');nav.className='sec-nav';nav._groups=groups;
-  groups.forEach(function(g,i){var b=document.createElement('button');b.className='sec-chip';b.setAttribute('data-si',i);b.textContent=g.label;b.onclick=function(){_secApply(nav,i);};nav.appendChild(b);});
   var ab=document.createElement('button');ab.className='sec-chip';ab.setAttribute('data-si','-1');ab.textContent='\uD83D\uDDC2 \uC804\uCCB4';ab.onclick=function(){_secApply(nav,-1);};nav.appendChild(ab);
+  groups.forEach(function(g,i){var b=document.createElement('button');b.className='sec-chip';b.setAttribute('data-si',i);b.textContent=g.label;b.onclick=function(){_secApply(nav,i);};nav.appendChild(b);});
   var hdr=p.firstElementChild;if(hdr&&hdr.nextSibling)p.insertBefore(nav,hdr.nextSibling);else p.appendChild(nav);
   nav._key='rp_secnav_'+(p.id||'x');
-  var sv=0;try{var raw=localStorage.getItem(nav._key);if(raw!==null){var n2=parseInt(raw,10);if(n2===-1||(n2>=0&&n2<groups.length))sv=n2;}}catch(_){}
+  var sv=-1;try{var raw=localStorage.getItem(nav._key);if(raw!==null){var n2=parseInt(raw,10);if(n2===-1||(n2>=0&&n2<groups.length))sv=n2;}}catch(_){}
   _secApply(nav,sv);});}
 // 숨은 섹션 안의 요소로 이동해야 할 때 그 섹션을 자동으로 펴준다
 function secReveal(el){

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.9.0</title>
+<title>리얼플랜제주 마케팅 운영 v1.9.1</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -73,6 +73,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 .mob-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.65rem;color:#94a3b8;cursor:pointer;gap:2px}
 .mob-item.active{color:var(--primary)}
 @media(max-width:768px){.sidebar{width:56px}.sidebar .nav-item{justify-content:center;padding:12px 6px;font-size:0;gap:0;border-left-width:2px}.sidebar .nav-item span{font-size:1.15rem}.nav-section{display:none}.main{margin-left:56px;padding:16px;margin-bottom:16px}.kpi-grid{grid-template-columns:repeat(2,1fr)}.mobile-nav{display:none}}
+.sec-nav{position:sticky;top:0;z-index:30;background:rgba(248,250,252,.96);backdrop-filter:blur(4px);padding:8px 0;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #e2e8f0;margin:0 0 14px}
+.sec-chip{font-size:.74rem;padding:4px 11px;border-radius:999px;border:1px solid #cbd5e1;background:#fff;color:#334155;cursor:pointer;white-space:nowrap}
+.sec-chip:hover{border-color:#4A85F6;color:#2B62C4}
+[data-sec]{scroll-margin-top:64px}
 </style>
 </head>
 <body>
@@ -91,7 +95,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.9.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.9.1</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -125,12 +129,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div><h2 style="font-size:1.2rem;font-weight:700">📊 통계 대시보드</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">최근 7일 / mk_metrics</p></div>
         <button onclick="loadStats()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
-      <div id="growth-signal" style="margin:0 0 16px"></div>
-      <div id="funnel-strip" style="margin:0 0 16px;padding:12px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:12px">
+      <div id="growth-signal" data-sec="🚦 신호등" style="margin:0 0 16px"></div>
+      <div id="funnel-strip" data-sec="🎯 퍼널" style="margin:0 0 16px;padding:12px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:12px">
         <div style="font-size:.78rem;color:#64748b;margin-bottom:8px">🎯 <b>목적</b> — 블ABC·4채널·쓰레드의 글과 사진을 지속 개선해 <b>홈페이지 유입 → 문의 → 계약</b>으로 잇는다 <span id="fs-time" style="color:#94a3b8"></span></div>
         <div id="fs-cells" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:.8rem">로딩 중...</div>
       </div>
-      <div class="kpi-grid">
+      <div class="kpi-grid" data-sec="📌 KPI">
         <div class="kpi-card"><div class="kpi-label">📈 티스토리 총노출</div><div class="kpi-value" id="kpi-노출">--</div><div class="kpi-sub" id="kpi-노출-sub">최근 8일 누적</div></div>
         <div class="kpi-card"><div class="kpi-label">👆 티스토리 총클릭</div><div class="kpi-value" id="kpi-클릭">--</div><div class="kpi-sub" id="kpi-클릭-sub">최근 8일 누적</div></div>
         <div class="kpi-card"><div class="kpi-label">🎯 평균 CTR</div><div class="kpi-value" id="kpi-ctr">--</div><div class="kpi-sub">클릭/노출</div></div>
@@ -139,12 +143,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div class="kpi-card"><div class="kpi-label">👥 구독(네이버 이웃)</div><div class="kpi-value" id="kpi-구독">--</div><div class="kpi-sub" id="kpi-구독-sub">3채널 합계 · 매일 23:50 자동수집</div></div>
       </div>
       <!-- v1.8.7 — 라이브 실물 감사 · B2B 유입 경로 -->
-      <div id="live-audit-card" style="margin:0 0 16px"></div>
-      <div id="b2b-path-card" style="margin:0 0 16px"></div>
+      <div id="live-audit-card" data-sec="🔎 라이브 감사" style="margin:0 0 16px"></div>
+      <div id="b2b-path-card" data-sec="🔗 B2B 경로" style="margin:0 0 16px"></div>
       <!-- ▼ 상단 고정: 채널별 추세 2그래프 (노출=티스토리 / 순위=네이버) -->
       <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:10px">📐 <b>두 그래프는 측정 기준이 다릅니다.</b> 왼쪽=티스토리 <b>노출수</b>(높을수록 좋음·GSC 자동수집) / 오른쪽=네이버 <b>평균순위</b>(낮을수록 좋음·순위 자동수집). 같은 잣대로 비교하지 마세요.<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #bfdbfe;color:#b45309">⚠️ <b>오른쪽 순위 그래프 읽는 법.</b> 정본 <code>mk_rank_tracker</code>(발행글 핵심키워드 전량 실측)이며 <b>100위 내 미발견(미진입)은 평균에서 빠집니다</b> — 미진입 건수는 「잠자는 거인」 탭에서 확인하세요. <b>2026-07-27에 추적 키워드가 13→60개로 확대</b>되었으므로 그 이전 구간과는 직접 비교하지 마세요. 글 단위 순위 변화는 「상위노출 진입」 탭에서 봅니다.</div></div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin-bottom:16px">
-        <div class="card" style="margin:0"><div class="card-hdr"><h3>📈 티스토리 채널별 노출 추세 (최근 14일) · 노출수↑ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">로그축</span></h3></div>
+      <div data-sec="📈 추세 그래프" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin-bottom:16px">
+        <div class="card" style="margin:0"><div class="card-hdr"><h3>📈 티스토리 채널별 노출 (일별 수집) · 노출수↑ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">각 점=직전 8일 누적(GSC)·로그축</span> <span id="tis-days-note" style="font-weight:600;font-size:.72rem;color:#b45309"></span></h3></div>
           <div class="card-body" style="height:300px;position:relative"><canvas id="trendChart"></canvas><div id="chart-loading" class="loading">로딩 중...</div></div>
         </div>
         <div class="card" style="margin:0"><div class="card-hdr"><h3>🏆 네이버 채널별 평균순위 추세 (최근 14일) · 순위↓ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">mk_rank_tracker 정본 · 미진입 제외</span></h3></div>
@@ -153,7 +157,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
 
       <!-- ▼ 네이버 월별 조회수 (C' / naver_manual 월별총계 · 제목 NULL) -->
-      <div class="card" style="margin:0 0 16px"><div class="card-hdr"><h3>📊 네이버 채널별 월별 조회수 추세 (최근 12개월) · 조회수↑ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">로그축</span></h3></div>
+      <div class="card" data-sec="📊 월별 조회수" style="margin:0 0 16px"><div class="card-hdr"><h3>📊 네이버 채널별 월별 조회수 추세 (최근 12개월) · 조회수↑ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">로그축</span></h3></div>
         <div class="card-body" style="position:relative">
           <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.72rem;padding:7px 11px;border-radius:8px;margin-bottom:10px">ℹ️ 월별·수동 업로드 기준. 상단 자동수집(일별) 차트와 별개입니다.</div>
           <div style="height:280px;position:relative"><canvas id="naverMonthlyChart"></canvas><div id="naver-monthly-loading" class="loading">로딩 중...</div></div>
@@ -161,7 +165,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
 
       <!-- ▼ 하단: 접기/펼치기 아코디언 (기본 접힘) -->
-      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden">
+      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden" data-sec="📥 Excel 업로드">
         <summary style="padding:13px 18px;font-weight:700;font-size:.92rem;cursor:pointer">📥 네이버 통계 Excel 업로드</summary>
         <div style="padding:0 18px 16px">
           <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:10px">ℹ️ 업로드 데이터(naver_manual)는 아래 <b>게시물별 조회수 · 유입 검색어</b>에만 반영됩니다. 상단 KPI 카드·추세 그래프는 GSC(티스토리)·네이버 순위 <b>자동수집</b> 기준이라 반영되지 않습니다.</div>
@@ -177,7 +181,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
           <div id="nv-preview"></div>
         </div>
       </details>
-      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden">
+      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden" data-sec="📊 게시물 조회수">
         <summary style="padding:13px 18px;font-weight:700;font-size:.92rem;cursor:pointer">📊 네이버 게시물별 조회수 (naver_manual)</summary>
         <div style="overflow-x:auto">
           <table class="tbl"><thead><tr><th>채널</th><th>측정월</th><th>제목</th><th>조회수</th><th>작성일</th></tr></thead>
@@ -185,11 +189,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
           <div id="nv-views-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;padding:12px"></div>
         </div>
       </details>
-      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden">
+      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden" data-sec="🔎 유입 검색어">
         <summary style="padding:13px 18px;font-weight:700;font-size:.92rem;cursor:pointer">🔎 네이버 유입 검색어 (naver_manual)</summary>
         <div id="nv-kw-body" style="padding:0 18px 16px;font-size:.82rem;color:#64748b">—</div>
       </details>
-      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden">
+      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden" data-sec="📋 어제 지표">
         <summary style="padding:13px 18px;font-weight:700;font-size:.92rem;cursor:pointer">📋 채널별 어제 지표</summary>
         <div style="overflow-x:auto">
           <table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>노출</th><th>클릭</th><th>CTR%</th><th>평균순위</th><th>측정일</th></tr></thead>
@@ -203,7 +207,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div><h2 style="font-size:1.2rem;font-weight:700">📝 초안 보관소</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">mk_blog_drafts</p></div>
         <button onclick="loadDrafts()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
-      <div class="filter-bar" id="draft-filters">
+      <div class="filter-bar" id="draft-filters" data-sec="📝 초안 목록">
         <button class="filter-btn active" onclick="filterDrafts('all',this)">전체</button>
         <button class="filter-btn" onclick="filterDrafts('draft',this)">📋 초안</button>
         <button class="filter-btn" onclick="filterDrafts('approved',this)">✅ 승인</button>
@@ -212,6 +216,16 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn" id="livefix-btn" style="border-color:#fdba74;color:#9a3412" onclick="filterDrafts('livefix',this)">🔧 라이브 보완</button>
       </div>
       <div id="livefix-panel" style="display:none;margin-bottom:14px"></div>
+      <div class="card" data-sec="🔁 리라이트 우선순위" style="margin:14px 0 18px;border:1px solid #fecaca">
+        <div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🔁 리라이트 우선순위 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">매출 밀어올리기 · v_rewrite_priority · 상업(B2B)글만</span></h3>
+          <button class="filter-btn" onclick="loadRewritePriority()">🔄</button></div>
+        <div id="rw-thisweek" style="background:#fef2f2;border-bottom:1px solid #fecaca;color:#991b1b;font-size:.8rem;padding:9px 12px;font-weight:600">이번 주 리라이트 1편: <span id="rw-pick">로딩…</span></div>
+        <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.71rem;padding:6px 12px">11~30위 상업글을 top10으로. 그 주 정규 슬롯 1개를 여기 1위 글 리라이트로 편성(대표 지시). 정보성 글은 제외.</div>
+        <div class="card-body" style="padding:0;overflow-x:auto">
+          <table class="tbl"><thead><tr><th>점수</th><th>채널</th><th>순위</th><th>키워드</th><th>검색량</th><th>실유입</th></tr></thead>
+          <tbody id="rw-body"><tr><td colspan="6" class="loading">로딩 중...</td></tr></tbody></table>
+        </div>
+      </div>
       <div id="drafts-board" style="border:0.5px solid #e2e8f0;border-radius:12px;background:#fff;max-height:46vh;overflow-y:auto"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div>
       <div id="drafts-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin:12px 0"></div>
       <div id="drafts-reader" style="margin-top:14px"></div>
@@ -240,21 +254,22 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div><h2 style="font-size:1.2rem;font-weight:700">🔍 잠자는 거인</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">티스토리=노출·CTR(GSC) / 네이버=순위(mk_rank_tracker 정본 · 미진입 포함) — 최근 14일</p></div>
         <button onclick="loadGiants()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
-      <div class="card"><div class="card-hdr"><h3>📊 채널별 노출·CTR 현황 <span style="font-weight:500;font-size:.72rem;color:#94a3b8" id="giants-window">최근 8일 누적</span></h3></div>
+      <div class="card" data-sec="📊 노출·CTR" ><div class="card-hdr"><h3>📊 채널별 노출·CTR 현황 <span style="font-weight:500;font-size:.72rem;color:#94a3b8" id="giants-window">최근 8일 누적</span></h3></div>
         <div class="card-body" style="padding:0;overflow-x:auto">
           <table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>총노출</th><th>총클릭</th><th>평균CTR%</th><th>평균순위</th><th>판정</th></tr></thead>
-          <tbody id="giants-body"><tr><td colspan="6" class="loading">로딩 중...</td></tr></tbody></table>
+          <tbody id="giants-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
         </div>
       </div>
-      <div class="card"><div class="card-hdr"><h3>🏆 네이버 채널별 순위 현황 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">mk_rank_tracker 정본 · 키워드별 최신 측정 · 순위↓</span></h3></div><div class="card-body" style="padding:0;overflow-x:auto"><div style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;color:#166534;font-size:.72rem;padding:7px 11px">✅ 발행글 <b>핵심키워드 전량</b>을 네이버 블로그 검색에서 실측한 정본입니다(100위 내 미발견=<b>미진입</b>으로 카운트). 평균순위는 <b>진입분만</b>의 평균이라, 미진입 칸을 반드시 같이 보세요.</div><table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>평균순위<span style="font-weight:400;color:#94a3b8">(진입분)</span></th><th>추적 키워드</th><th>진입</th><th>미진입</th><th>top10 진입률</th><th>판정</th></tr></thead><tbody id="giants-naver-body"><tr><td colspan="8" class="loading">로딩 중...</td></tr></tbody></table></div></div>
-      <div class="card"><div class="card-hdr"><h3>🕳️ 미커버 실검색어 TOP 20 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">v_uncovered_terms · 검색 유입은 있는데 우리 글(핵심키워드)이 없는 검색어</span></h3></div>
+      <div class="card" data-sec="🏆 네이버 순위" ><div class="card-hdr"><h3>🏆 네이버 채널별 순위 현황 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">mk_rank_tracker 정본 · 키워드별 최신 측정 · 순위↓</span></h3></div><div class="card-body" style="padding:0;overflow-x:auto"><div style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;color:#166534;font-size:.72rem;padding:7px 11px">✅ 발행글 <b>핵심키워드 전량</b>을 네이버 블로그 검색에서 실측한 정본입니다(100위 내 미발견=<b>미진입</b>으로 카운트). 평균순위는 <b>진입분만</b>의 평균이라, 미진입 칸을 반드시 같이 보세요.</div><table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>평균순위<span style="font-weight:400;color:#94a3b8">(진입분)</span></th><th>추적 키워드</th><th>진입</th><th>미진입</th><th>top10 진입률</th><th>판정</th></tr></thead><tbody id="giants-naver-body"><tr><td colspan="8" class="loading">로딩 중...</td></tr></tbody></table></div></div>
+      <div class="card" data-sec="🕳️ 미커버 실검색어" ><div class="card-hdr"><h3>🕳️ 미커버 실검색어 TOP 20 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">v_uncovered_terms · 검색 유입은 있는데 우리 글(핵심키워드)이 없는 검색어</span></h3></div>
         <div class="card-body" style="padding:0;overflow-x:auto">
           <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.72rem;padding:7px 11px">💡 슬롯 후보 원천입니다. 채택 전 <b>G15 5단 게이트</b>(충돌·SERP 의도)를 반드시 통과시키세요. 네이버분은 월간 유입분석 파일, 티스토리분은 GSC가 원천입니다.</div>
+          <div id="unc-filters" style="display:flex;gap:6px;padding:8px 11px;border-bottom:1px solid #f1f5f9;flex-wrap:wrap"><button class="filter-btn active" onclick="filterUnc('전체',this)">전체</button><button class="filter-btn" onclick="filterUnc('블A',this)">블A</button><button class="filter-btn" onclick="filterUnc('블B',this)">블B</button><button class="filter-btn" onclick="filterUnc('블C',this)">블C</button></div>
           <table class="tbl"><thead><tr><th>채널</th><th>실검색어</th><th>클릭합</th><th>노출합</th><th>유입비율합</th><th>평균순위</th><th>최근유입월</th></tr></thead>
           <tbody id="uncovered-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
         </div>
       </div>
-      <div class="card"><div class="card-hdr"><h3>💡 액션 가이드</h3></div>
+      <div class="card" data-sec="💡 액션 가이드" ><div class="card-hdr"><h3>💡 액션 가이드</h3></div>
         <div class="card-body"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;font-size:.85rem">
           <div style="background:#fee2e2;border-radius:8px;padding:14px"><div style="font-weight:700;margin-bottom:6px;color:#991b1b">🔴 CTR 1% 미만</div><p style="color:#7f1d1d">제목 리프레시 + 썸네일 교체 즉시</p></div>
           <div style="background:#fef3c7;border-radius:8px;padding:14px"><div style="font-weight:700;margin-bottom:6px;color:#92400e">🟡 CTR 1~3%</div><p style="color:#78350f">제목 개선 + 내부 링크 강화</p></div>
@@ -267,17 +282,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div><h2 style="font-size:1.2rem;font-weight:700">🏆 상위노출 진입 현황</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">D+7·14·30·90 순위 추적</p></div>
         <button onclick="loadRankEntries()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
-      <div class="card" style="margin:0 0 18px;border:1px solid #fecaca">
-        <div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🔁 리라이트 우선순위 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">매출 밀어올리기 · v_rewrite_priority · 상업(B2B)글만</span></h3>
-          <button class="filter-btn" onclick="loadRewritePriority()">🔄</button></div>
-        <div id="rw-thisweek" style="background:#fef2f2;border-bottom:1px solid #fecaca;color:#991b1b;font-size:.8rem;padding:9px 12px;font-weight:600">이번 주 리라이트 1편: <span id="rw-pick">로딩…</span></div>
-        <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.71rem;padding:6px 12px">11~30위 상업글을 top10으로. 그 주 정규 슬롯 1개를 여기 1위 글 리라이트로 편성(대표 지시). 정보성 글은 제외.</div>
-        <div class="card-body" style="padding:0;overflow-x:auto">
-          <table class="tbl"><thead><tr><th>점수</th><th>채널</th><th>순위</th><th>키워드</th><th>검색량</th><th>실유입</th></tr></thead>
-          <tbody id="rw-body"><tr><td colspan="6" class="loading">로딩 중...</td></tr></tbody></table>
-        </div>
-      </div>
-      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px 16px;margin-bottom:18px">
+      
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px 16px;margin-bottom:18px" data-sec="🎯 성과 진단">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
           <div><div style="font-weight:800;font-size:1.02rem">🎯 채널 성과 진단</div><div style="font-size:.78rem;color:#166534">우리 글 D+7 실성과 (mk_blog_publish_log 실시간 집계)</div></div>
           <button class="filter-btn" onclick="loadChannelDiagnosis()">🔄</button>
@@ -292,7 +298,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div id="cd-tistory" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:12px"></div>
         <div id="cd-weak" style="font-size:.8rem;color:#334155;background:#fff;border:0.5px solid #bbf7d0;border-radius:8px;padding:10px 12px;line-height:1.6"></div>
       </div>
-      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:14px 16px;margin-bottom:18px">
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:14px 16px;margin-bottom:18px" data-sec="🏆 명예의전당">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
           <div><div style="font-weight:800;font-size:1.02rem">🏆 상위노출 명예의전당</div><div style="font-size:.78rem;color:#92400e">mk_winning_posts · 역대 상위노출 글 학습 코퍼스</div></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -316,7 +322,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn" onclick="filterRank('🔶11~30위',this)">🔶 11~30위</button>
         <button class="filter-btn" onclick="filterRank('❌미진입',this)">❌ 미진입</button>
       </div>
-      <div class="card"><div class="card-body" style="padding:0;overflow-x:auto">
+      <div class="card" data-sec="📅 순위 추적" ><div class="card-body" style="padding:0;overflow-x:auto">
         <table class="tbl"><thead><tr><th>발행일</th><th>채널</th><th>키워드</th><th>D+7</th><th>D+14</th><th>D+30</th><th>D+90</th><th>판정</th><th>링크</th></tr></thead>
         <tbody id="rank-body"><tr><td colspan="9" class="loading">로딩 중...</td></tr></tbody></table>
         <div id="rank-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;padding:12px"></div>
@@ -825,7 +831,7 @@ async function initAuth(){
   const s=readLocalAuthSession();if(s){showApp(s.user);return;}showLogin();
 }
 function showLogin(){document.getElementById('login-screen').style.display='flex';document.getElementById('app').style.display='none';}
-function showApp(user){document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';document.getElementById('hdr-email').textContent=user?(user.email||''):'';loadStats();loadNaverManual();}
+function showApp(user){document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';document.getElementById('hdr-email').textContent=user?(user.email||''):'';buildSecNavs();loadStats();loadNaverManual();}
 async function doLogin(){
   const btn=document.getElementById('login-btn'),e=document.getElementById('login-err');
   e.textContent='';btn.disabled=true;btn.textContent='연결 중...';
@@ -860,7 +866,8 @@ function renderPhotoFp(){
   document.getElementById('pf-grid').innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">'+(h||'<div style="padding:20px;color:#94a3b8">데이터 없음</div>')+'</div>';
   document.getElementById('pf-pager').innerHTML='<button onclick="_pfPage=Math.max(1,_pfPage-1);renderPhotoFp()" class="filter-btn">◀</button> <span style="font-size:.8rem;margin:0 8px">'+_pfPage+' / '+tp+' ('+rows.length+'장)</span> <button onclick="_pfPage=Math.min('+tp+',_pfPage+1);renderPhotoFp()" class="filter-btn">▶</button>';
 }
-function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2')loadDrafts();if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();loadRewritePriority();}if(id==='t6'){loadAlgo();loadSkillRules();}if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();if(id==='t12'){var fbf=document.getElementById('fb-frame');if(fbf&&!fbf.getAttribute('src'))fbf.setAttribute('src','/blog.html');loadFunnelRecon();}}
+function buildSecNavs(){document.querySelectorAll('.tab-panel').forEach(function(p){if(p.querySelector('.sec-nav'))return;var els=p.querySelectorAll('[data-sec]');if(els.length<2)return;var nav=document.createElement('div');nav.className='sec-nav';els.forEach(function(el){var b=document.createElement('button');b.className='sec-chip';b.textContent=el.getAttribute('data-sec');b.onclick=function(){el.scrollIntoView({behavior:'smooth',block:'start'});};nav.appendChild(b);});var hdr=p.firstElementChild;if(hdr&&hdr.nextSibling)p.insertBefore(nav,hdr.nextSibling);else p.appendChild(nav);});}
+function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2'){loadDrafts();loadRewritePriority();}if(id==='t3')loadSlots();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6'){loadAlgo();loadSkillRules();}if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();if(id==='t12'){var fbf=document.getElementById('fb-frame');if(fbf&&!fbf.getAttribute('src'))fbf.setAttribute('src','/blog.html');loadFunnelRecon();}}
 async function loadKeywordInsight(){ loadKeywordRadar(); loadNvTerms();
   const[tot,yk,ui]=await Promise.all([
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}),
@@ -1011,14 +1018,10 @@ async function loadStats(){ loadFunnel();
   document.getElementById('kpi-ctr').textContent=imp>0?((clk/imp)*100).toFixed(2)+'%':'--';
   // v1.8.3 — 네이버 평균순위 정본 교체(mk_metrics naver_search → mk_rank_tracker). 미진입 건수도 함께 표기.
   try{
-    const _rt=await window._rtFetch(14);
-    const _hit=_rt.filter(x=>x.순위!=null), _miss=_rt.length-_hit.length;
-    const _byCh={}; _hit.forEach(x=>{(_byCh[x.ch]=_byCh[x.ch]||[]).push(x.순위);});
-    const _chAvg=Object.keys(_byCh).map(k=>_byCh[k].reduce((a,b)=>a+b,0)/_byCh[k].length);
-    const _avg=_chAvg.length?_chAvg.reduce((a,b)=>a+b,0)/_chAvg.length:null;
-    document.getElementById('kpi-순위').textContent=_avg==null?'--':_avg.toFixed(1)+'위';
+    const _s=await window._rtSummary();
+    document.getElementById('kpi-순위').textContent=_s.overall.avg==null?'--':_s.overall.avg.toFixed(1)+'위';
     const _sub=document.getElementById('kpi-순위-sub');
-    if(_sub)_sub.innerHTML='진입 '+_hit.length+'키 평균 · <b style="color:'+(_miss>0?'#b45309':'#64748b')+'">미진입 '+_miss+'키 제외</b>';
+    if(_sub)_sub.innerHTML='진입 '+_s.overall.hit+'키 가중평균 · <b style="color:'+(_s.overall.miss>0?'#b45309':'#64748b')+'">미진입 '+_s.overall.miss+'키 제외</b> · 잠자는거인 탭과 동일 정본';
   }catch(e){ document.getElementById('kpi-순위').textContent='--'; }
   const yd=new Date(Date.now()-86400000).toISOString().slice(0,10);
   const ydData=data.filter(r=>r.수집_시각&&r.수집_시각.startsWith(yd));
@@ -1027,7 +1030,7 @@ async function loadStats(){ loadFunnel();
   gscD.forEach(r=>{const d=r.수집_시각?r.수집_시각.slice(5,10):'-';const k=r.채널+'|'+d;byd[k]=(byd[k]||0)+(r.노출_수||0);});
   const chs=[...new Set(gscD.map(r=>r.채널))].sort(),days=[...new Set(gscD.map(r=>r.수집_시각?r.수집_시각.slice(5,10):''))].sort().slice(-14);
   const clrs=['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'];
-  document.getElementById('chart-loading').style.display='none';
+  document.getElementById('chart-loading').style.display='none';var _tn=document.getElementById('tis-days-note');if(_tn)_tn.textContent='수집 '+days.length+'일차'+(days.length<14?' — 14일 쌓이면 추세로 읽으세요':'');
   if(trendChart)trendChart.destroy();
   trendChart=new Chart(document.getElementById('trendChart').getContext('2d'),{type:'line',data:{labels:days,datasets:chs.map((ch,i)=>({label:ch,data:days.map(d=>byd[ch+'|'+d]||null),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.4,fill:false,pointRadius:4,spanGaps:true}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{type:'logarithmic',grid:{color:'#f1f5f9'},title:{display:true,text:'노출수 (각 점 = 직전 8일 누적·로그축)'},ticks:{callback:function(v){return Number(v).toLocaleString();}}},x:{grid:{display:false}}}}});
   // 네이버 순위 차트
@@ -1040,7 +1043,7 @@ async function loadStats(){ loadFunnel();
   navD.forEach(r=>{const d=String(r.측정_일자||'').slice(5,10);const k=r.채널+'|'+d;if(!navAgg[k])navAgg[k]={s:0,n:0};navAgg[k].s+=Number(r.순위);navAgg[k].n++;});
   Object.keys(navAgg).forEach(k=>{navByD[k]=Math.round((navAgg[k].s/navAgg[k].n)*10)/10;});
   if(window._naverRankChart)window._naverRankChart.destroy();
-  if(document.getElementById('naverRankChart'))window._naverRankChart=new Chart(document.getElementById('naverRankChart').getContext('2d'),{type:'line',data:{labels:navDays,datasets:navChs.map((ch,i)=>({label:ch,data:navDays.map(d=>navByD[ch+'|'+d]??null),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.4,fill:false,pointRadius:4,spanGaps:true}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{reverse:true,beginAtZero:false,grid:{color:'#f1f5f9'},title:{display:true,text:'순위 (낮을수록 좋음)'}},x:{grid:{display:false}}}}});
+  if(document.getElementById('naverRankChart'))window._naverRankChart=new Chart(document.getElementById('naverRankChart').getContext('2d'),{type:'line',data:{labels:navDays,datasets:navChs.map((ch,i)=>({label:ch,data:navDays.map(d=>navByD[ch+'|'+d]??null),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.4,fill:false,pointRadius:4,spanGaps:true,segment:{borderDash:function(c){return navDays[c.p0DataIndex]<'07-27'?[4,4]:undefined;}}}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{reverse:true,beginAtZero:false,grid:{color:'#f1f5f9'},title:{display:true,text:'순위 (낮을수록 좋음)'}},x:{grid:{display:false}}}},plugins:[{id:'expandMark',afterDraw:function(ch){var i=-1;for(var k=0;k<navDays.length;k++){if(navDays[k]>='07-27'){i=k;break;}}if(i<0)return;var x=ch.scales.x.getPixelForValue(i);var c=ch.ctx;c.save();c.strokeStyle='#f59e0b';c.setLineDash([5,4]);c.beginPath();c.moveTo(x,ch.chartArea.top);c.lineTo(x,ch.chartArea.bottom);c.stroke();c.setLineDash([]);c.fillStyle='#b45309';c.font='bold 10px sans-serif';c.fillText('7/27 키워드 13→60 확대 — 좌측(점선)과 비교 금지',x+5,ch.chartArea.top+12);c.restore();}}]});
   loadNaverMonthly(clrs);
 }
 
@@ -1347,19 +1350,19 @@ window._rtFetch=async function(days){
   if(error)throw error;
   return window._rtLatest(data);
 };
+// v1.9.1 — 순위 요약 단일 정본. KPI 카드·잠자는 거인 탭이 이 함수 하나만 읽는다(정합 보장).
+window._rtSummary=async function(){
+  const latest=await window._rtFetch(14);
+  const byCh={};
+  latest.forEach(r=>{const k=r.ch;if(!k)return;if(!byCh[k])byCh[k]={kw:0,hit:0,miss:0,sum:0,top10:0};byCh[k].kw++;if(r.순위==null)byCh[k].miss++;else{byCh[k].hit++;byCh[k].sum+=r.순위;if(r.순위<=10)byCh[k].top10++;}});
+  let hit=0,miss=0,sum=0;Object.values(byCh).forEach(a=>{hit+=a.hit;miss+=a.miss;sum+=a.sum;});
+  return {byCh,overall:{avg:hit?sum/hit:null,hit,miss}};
+};
 async function loadGiantsNaver(){
   const nb=document.getElementById('giants-naver-body'); if(!nb)return;
-  let latest;
-  try{ latest=await window._rtFetch(14); }
+  let agg;
+  try{ agg=(await window._rtSummary()).byCh; }
   catch(e){ nb.innerHTML='<tr><td colspan="8" style="color:#ef4444">로드 실패: '+(e.message||e)+'</td></tr>'; return; }
-  const agg={};
-  latest.forEach(r=>{
-    const k=r.ch; if(!k)return;
-    if(!agg[k])agg[k]={kw:0,hit:0,miss:0,sum:0,top10:0};
-    agg[k].kw++;
-    if(r.순위==null)agg[k].miss++;
-    else{agg[k].hit++;agg[k].sum+=r.순위;if(r.순위<=10)agg[k].top10++;}
-  });
   const rows=Object.keys(agg).sort().map(ch=>{
     const a=agg[ch];
     return {ch,kw:a.kw,hit:a.hit,miss:a.miss,r:a.hit>0?a.sum/a.hit:null,t10:a.kw>0?(a.top10/a.kw*100):0,missPct:a.kw>0?(a.miss/a.kw*100):0};
@@ -1386,13 +1389,21 @@ async function loadGiantsNaver(){
       +'<td style="font-weight:700;color:'+j[1]+'">'+j[0]+'</td></tr>';
   }).join('');
 }
+window._uncAll=[];
+function renderUnc(pfx){
+  const tb=document.getElementById('uncovered-body'); if(!tb) return;
+  const rows=window._uncAll.filter(r=>pfx==='전체'||String(r.채널||'').indexOf(pfx)===0).slice(0,20);
+  if(!rows.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:14px">미커버 검색어 없음</td></tr>';return;}
+  tb.innerHTML=rows.map(r=>`<tr><td>${r.채널||''}</td><td style="font-weight:600">${r.실검색어||''}</td><td>${r.클릭합??0}</td><td>${r.노출합??0}</td><td>${r.유입비율합??''}</td><td>${r.평균순위??''}</td><td>${(r.최근유입월||'').slice(0,7)}</td></tr>`).join('');
+}
+function filterUnc(pfx,el){document.querySelectorAll('#unc-filters .filter-btn').forEach(b=>b.classList.remove('active'));if(el)el.classList.add('active');renderUnc(pfx);}
 async function loadUncovered(){
   const tb=document.getElementById('uncovered-body'); if(!tb) return;
   try{
-    const {data,error}=await sb.from('v_uncovered_terms').select('채널,실검색어,클릭합,노출합,유입비율합,평균순위,최근유입월').limit(20);
+    const {data,error}=await sb.from('v_uncovered_terms').select('채널,실검색어,클릭합,노출합,유입비율합,평균순위,최근유입월').limit(60);
     if(error) throw error;
-    if(!data||!data.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:14px">미커버 검색어 없음</td></tr>';return;}
-    tb.innerHTML=data.map(r=>`<tr><td>${r.채널||''}</td><td style="font-weight:600">${r.실검색어||''}</td><td>${r.클릭합??0}</td><td>${r.노출합??0}</td><td>${r.유입비율합??''}</td><td>${r.평균순위??''}</td><td>${(r.최근유입월||'').slice(0,7)}</td></tr>`).join('');
+    window._uncAll=data||[];
+    renderUnc('전체');
   }catch(e){tb.innerHTML='<tr><td colspan="7" style="color:#dc2626;padding:12px">미커버 로드 실패: '+(e.message||e)+'</td></tr>';}
 }
 window._nvTerms=[];

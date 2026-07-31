@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.9.5</title>
+<title>리얼플랜제주 마케팅 운영 v1.10.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -98,7 +98,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.9.5</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.10.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -114,7 +114,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     <div class="nav-item" title="콘텐츠 슬롯" onclick="switchTab('t3',this)"><span>🎯</span>콘텐츠 슬롯</div>
     <div class="nav-item" title="포트폴리오" onclick="switchTab('t10',this)"><span>💼</span>포트폴리오</div>
     <div class="nav-item" title="사실관계DB" onclick="switchTab('t11',this)"><span>📚</span>사실관계DB</div>
-    <div class="nav-item" title="사진 관리" onclick="switchTab('t14',this);loadPhotoFp()"><span>📷</span>사진 관리</div>
+    <div class="nav-item" title="미디어 관리(영상·사진·음악·설계)" onclick="switchTab('t14',this);mediaInit()"><span>🎬</span>미디어 관리</div>
     <div class="nav-section">설정</div>
     <div class="nav-item" title="작성 가이드" onclick="switchTab('t6',this)"><span>🎨</span>작성 가이드</div>
     <div class="nav-item" title="스케줄" onclick="switchTab('t7',this)"><span>📅</span>스케줄</div>
@@ -514,9 +514,32 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     </div>
     <div class="tab-panel" id="t14">
       <div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div><h2 style="font-size:1.2rem;font-weight:700">📷 사진 관리</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">삽입 대기 보드(모자이크 완료본·캡션 복붙·삽입완료 처리) + 로컬 실사진 자산 2,900장 · AI 지문 대조는 매일 11:20 자동 · 사용됨 4장 적립 시 2+2 콜라주로 재활용</p></div>
-        <button onclick="loadPhotoFp(true)" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
+        <div><h2 style="font-size:1.2rem;font-weight:700">🎬 미디어 관리</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">영상 · 사진 · 음악 · 설계를 한 곳에서. <b>재고 우선(GV27)</b> — 새로 만들기 전에 여기서 먼저 찾습니다.</p></div>
+        <button onclick="mediaRefresh()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        <button class="filter-btn md-t active" onclick="mediaTab('video',this)">🎬 영상 · 설계</button>
+        <button class="filter-btn md-t" onclick="mediaTab('photo',this)">📷 사진</button>
+        <button class="filter-btn md-t" onclick="mediaTab('bgm',this)">🎵 음악</button>
+        <button class="filter-btn md-t" onclick="mediaTab('design',this)">📐 설계 전체</button>
+      </div>
+      <div id="md-kpi" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px"></div>
+      <div id="md-video" class="md-panel">
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.76rem;padding:8px 12px;border-radius:8px;margin-bottom:12px">완성 영상은 <b>설계(컷플랜·게이트·톤·지출)</b>를 같이 봅니다. 아래 <b>현장영상 재고</b>는 실제 촬영본이라 AI 영상보다 신뢰도가 높고 실적 오인 위험이 0입니다 — 앰비언스(현장음) 원천도 여기입니다.</div>
+        <div id="md-video-list" style="margin-bottom:20px;color:#64748b;font-size:.8rem">불러오는 중...</div>
+        <h3 style="font-size:1rem;font-weight:700;margin:18px 0 8px">🎥 현장영상 재고 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_photo_assets 자산종류=현장영상 · 컷 소재 + 앰비언스 원천</span></h3>
+        <div id="md-video-stock" style="color:#64748b;font-size:.8rem">불러오는 중...</div>
+      </div>
+      <div id="md-bgm" class="md-panel" style="display:none">
+        <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:.76rem;padding:8px 12px;border-radius:8px;margin-bottom:12px"><b>곡명으로 고르지 않습니다.</b> BPM·에너지·타격감·도입상승을 코드로 재서 6분류로 나눴습니다. 영상 주제 분류와 곡 분류가 다르면 <b>GV19</b>가 렌더를 막습니다.</div>
+        <div id="md-bgm-filter" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"></div>
+        <div id="md-bgm-list" style="color:#64748b;font-size:.8rem">불러오는 중...</div>
+      </div>
+      <div id="md-design" class="md-panel" style="display:none">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-size:.76rem;padding:8px 12px;border-radius:8px;margin-bottom:12px">설계서 정본 <b>mk_video_designs</b> — 렌더 전 승인 근거. <b>지출 요청</b> 칸이 비어 있으면 재고로 전량 충당했다는 뜻입니다.</div>
+        <div id="md-design-list" style="color:#64748b;font-size:.8rem">불러오는 중...</div>
+      </div>
+      <div id="md-photo" class="md-panel" style="display:none">
       <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:.76rem;padding:8px 12px;border-radius:8px;margin-bottom:12px">실사진은 보조·성장용: AI 8장 유지 + 실사례 문단 옆 1~3장. 글 착수 시 후보 사진은 이 대장과 지문 대조(미사용/사용됨/유사 판정) 후 지정 폴더(블로그사진/여행·행사·마케팅)로 복사됩니다. 매일 11:20 신규 발행글 자동 적재.</div>
       <div id="pf-kpi" style="display:flex;gap:10px;margin-bottom:10px"></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
@@ -528,6 +551,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
       <div id="pf-grid"></div>
       <div id="pf-pager" style="margin-top:12px;text-align:center"></div>
+      </div>
     </div>
     <div class="tab-panel" id="tchan">
       <div style="margin-bottom:20px"><h2 style="font-size:1.2rem;font-weight:700">📡 채널 소식</h2><p style="font-size:.82rem;color:#64748b">스마트플레이스·카카오·구글 채널 소식 카드 규격 정본(mk_channel_rules). realplan-channel 스킬·channel-card-dispatch EF가 이 규격을 따릅니다.</p></div>
@@ -2309,5 +2333,210 @@ try{
   loadDrafts=async function(){var r=await _v3LD.apply(this,arguments);loadAssignBoard().catch(function(){});return r;};
 }catch(e){console.error('t14v3 hook',e);}
 </script>
+<script>
+/* ── 미디어 관리 v1.0 (2026-07-31) — 영상·사진·음악·설계 통합
+   원칙: 재고 우선(GV27). 새 자산을 만들기 전에 이 화면에서 먼저 찾는다. */
+(function(){
+var _md={loaded:false,bgm:[],designs:[],stock:[],cat:'전체'};
+var CATNAME={A:'활력·경기',B:'밝은 진행',C:'따뜻한 여행',D:'차분한 설명',E:'웅장·의전',F:'밝은 홍보'};
+var CATUSE={A:'체육대회·운동회·팀빌딩',B:'워크샵·행사진행·기업교육',C:'국내여행·코스',D:'견적·정산·법규·컨설팅',E:'개회식·시상식·취임식',F:'제안서·회사소개'};
+var CATCOL={A:'#dc2626',B:'#ea580c',C:'#0d9488',D:'#2563eb',E:'#7c3aed',F:'#65a30d'};
+function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function card(t,v,sub){return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 16px;font-size:.8rem">'+E(t)+' <b>'+E(v)+'</b>'+(sub?'<div style="color:#94a3b8;font-size:.7rem">'+E(sub)+'</div>':'')+'</div>';}
+function copy(txt){try{navigator.clipboard.writeText(txt);}catch(e){}}
+window.mdCopy=function(s){copy(s);};
+
+window.mediaTab=function(k,el){
+  ['video','photo','bgm','design'].forEach(function(x){
+    var p=document.getElementById('md-'+x); if(p)p.style.display=(x===k?'':'none');});
+  document.querySelectorAll('#t14 .md-t').forEach(function(b){b.classList.remove('active');});
+  if(el)el.classList.add('active');
+  if(k==='photo'&&typeof loadPhotoFp==='function'&&!window._mdPhotoOnce){window._mdPhotoOnce=1;loadPhotoFp();}
+};
+window.mediaRefresh=function(){_md.loaded=false;mediaInit(true);};
+
+window.mediaInit=async function(force){
+  if(_md.loaded&&!force)return; _md.loaded=true;
+  try{
+    var r1=await sb.from('mk_video_designs').select('*').order('버전',{ascending:false}).order('채널');
+    var r2=await sb.from('mk_bgm_library').select('*').order('분류').order('활력점수',{ascending:false});
+    var r3=await sb.from('mk_photo_assets').select('파일명,로컬경로,사업부,장면,자산종류,길이_초,영상_규격,영상_메타,크기,사용여부,최근사용일').eq('자산종류','현장영상').order('파일명');
+    var r4=await sb.from('mk_photo_assets').select('id',{count:'exact',head:true}).eq('자산종류','사진');
+    var r5=await sb.from('mk_photo_assets').select('id',{count:'exact',head:true}).eq('자산종류','사진').or('재사용_횟수.is.null,재사용_횟수.eq.0');
+    if(r1.error)throw r1.error; if(r2.error)throw r2.error; if(r3.error)throw r3.error;
+    _md.designs=r1.data||[]; _md.bgm=r2.data||[]; _md.stock=r3.data||[];
+    var secs=_md.stock.reduce(function(a,b){return a+(+b.길이_초||0);},0);
+    var k=document.getElementById('md-kpi');
+    if(k)k.innerHTML=
+      card('🎬 완성 영상',_md.designs.length+'편','v2 '+_md.designs.filter(function(d){return d.버전==='v2';}).length+' · v1 '+_md.designs.filter(function(d){return d.버전==='v1';}).length)
+     +card('🎥 현장영상',_md.stock.length+'개',Math.round(secs)+'초 · 앰비언스 원천')
+     +card('📷 실사진',(r4.count||0)+'장','미사용 '+(r5.count||0)+'장')
+     +card('🎵 보유 BGM',_md.bgm.length+'곡','6분류 실측')
+     +card('💵 누적 지출','$'+(_md.designs.reduce(function(a,b){return a+(+b.지출_금액_usd||0);},0)).toFixed(2),'재고 우선 원칙');
+    renderVideos(); renderStock(); renderBgm(); renderDesigns();
+  }catch(e){
+    var b=document.getElementById('md-video-list');
+    if(b)b.innerHTML='<div style="color:#dc2626">오류: '+E(e.message||e)+'</div>';
+    console.error('mediaInit',e);
+  }
+};
+
+function gateSummary(g){
+  if(!g)return '<span style="color:#94a3b8">—</span>';
+  var vals=Object.keys(g).map(function(x){return g[x];});
+  var pass=vals.filter(function(v){return v==='pass';}).length;
+  var fail=vals.filter(function(v){return v==='fail';}).length;
+  var col=fail?'#dc2626':'#16a34a';
+  return '<span style="color:'+col+';font-weight:700">'+pass+'/'+vals.length+' 통과'+(fail?' · fail '+fail:'')+'</span>';
+}
+function bgmChip(d){
+  if(!d.bgm_분류)return '';
+  var c=d.bgm_분류;
+  return '<span style="background:'+CATCOL[c]+'18;color:'+CATCOL[c]+';padding:1px 7px;border-radius:6px;font-size:.68rem;font-weight:700">'+c+' '+E(CATNAME[c]||'')+'</span>';
+}
+function mismatch(d){
+  var kw=(d.키워드||'')+(d.제목||'');
+  var want = /체육대회|운동회|팀빌딩/.test(kw)?'A':(/교육|컨설팅|마케팅/.test(kw)?'B':(/여행|가볼만한곳|코스/.test(kw)?'C':null));
+  if(!want||!d.bgm_분류)return '';
+  if(d.bgm_분류===want)return '';
+  return '<span style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:1px 7px;border-radius:6px;font-size:.68rem;font-weight:700" title="GV19 음악정합">⚠ 음악 불일치 (권장 '+want+' '+E(CATNAME[want])+')</span>';
+}
+
+function renderVideos(){
+  var b=document.getElementById('md-video-list'); if(!b)return;
+  if(!_md.designs.length){b.innerHTML='<div>등록된 영상이 없습니다.</div>';return;}
+  b.innerHTML=_md.designs.map(function(d,i){
+    var t=d.톤_점수, sp=d.지출_요청;
+    return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:8px">'
+    +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+    +'<span style="background:'+(d.버전==='v2'?'#4A85F6':'#94a3b8')+';color:#fff;padding:2px 8px;border-radius:6px;font-size:.7rem;font-weight:700">'+E(d.버전)+'</span>'
+    +'<b style="font-size:.86rem">'+E(d.제목||d.영상키)+'</b>'
+    +'<span style="color:#64748b;font-size:.74rem">'+E(d.채널)+'</span></div>'
+    +'<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:.75rem;color:#475569">'
+    +'<span>⏱ '+(d.총길이_초||0)+'초</span><span>✂ '+(d.컷수||0)+'컷</span>'
+    +(d.실사진_비중?'<span>📷 실사진 '+d.실사진_비중+'%</span>':'')
+    +(d.용량_mb?'<span>💾 '+d.용량_mb+'MB</span>':'')
+    +'<span>🎵 '+E(d.bgm_파일명||'—')+'</span>'+bgmChip(d)+mismatch(d)
+    +'<span>'+gateSummary(d.게이트_결과)+'</span>'
+    +(t?'<span style="color:'+(t.충족==='7/7'?'#16a34a':'#b45309')+'">🗣 톤 '+E(t.충족)+'</span>':'')
+    +'<span style="color:'+((+d.지출_금액_usd)>0?'#b45309':'#16a34a')+'">💵 $'+(+d.지출_금액_usd||0).toFixed(2)+'</span>'
+    +'</div>'
+    +(d.비고?'<div style="font-size:.73rem;color:#64748b;margin-top:5px">'+E(d.비고)+'</div>':'')
+    +'<div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">'
+    +'<button class="btn-sm btn-copy" style="font-size:.7rem" onclick="mdToggle(\'mdd'+i+'\')">📐 설계 보기</button>'
+    +(d.산출물_경로?'<button class="btn-sm btn-copy" style="font-size:.7rem" onclick="mdCopy('+JSON.stringify(d.산출물_경로).replace(/"/g,'&quot;')+')">📂 영상 경로</button>':'')
+    +(d.설계서_경로?'<button class="btn-sm btn-copy" style="font-size:.7rem" onclick="mdCopy('+JSON.stringify(d.설계서_경로).replace(/"/g,'&quot;')+')">📄 설계서 경로</button>':'')
+    +(d.qr_단계==1?'<span style="background:#fffbeb;color:#92400e;border:1px solid #fde68a;padding:2px 8px;border-radius:6px;font-size:.68rem">QR 1차(채널홈) — 발행 후 재렌더 필요</span>':'')
+    +'</div>'
+    +'<div id="mdd'+i+'" style="display:none;margin-top:10px;border-top:1px dashed #e2e8f0;padding-top:10px">'+designDetail(d)+'</div>'
+    +'</div>';
+  }).join('');
+}
+window.mdToggle=function(id){var e=document.getElementById(id);if(e)e.style.display=(e.style.display==='none'?'':'none');};
+
+function designDetail(d){
+  var h='';
+  var cp=d.컷플랜;
+  if(cp&&cp.length){
+    h+='<div style="font-weight:700;font-size:.78rem;margin-bottom:4px">컷 시퀀스</div>'
+     +'<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:.72rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:5px">#</th><th style="padding:5px">구간</th><th style="padding:5px">종류</th><th style="padding:5px">소스</th><th style="padding:5px">이동</th><th style="padding:5px">자막</th></tr></thead><tbody>'
+     +cp.map(function(c){return '<tr style="border-top:1px solid #eef2f7"><td style="padding:5px;font-weight:700;color:#2B62C4">'+E(c.n)+'</td><td style="padding:5px;white-space:nowrap">'+E(c.s)+'~'+E((+c.s+ +c.d).toFixed(1))+'<span style="color:#94a3b8"> ('+E(c.d)+'s)</span></td><td style="padding:5px">'+E(c.k||'')+'</td><td style="padding:5px;color:#475569">'+E(c.src||'')+'</td><td style="padding:5px;font-family:monospace;color:#2B62C4">'+E(c.mv||'')+'</td><td style="padding:5px">'+E(c.sub||'')+'</td></tr>';}).join('')
+     +'</tbody></table></div>';
+  }
+  var g=d.게이트_결과;
+  if(g){
+    h+='<div style="font-weight:700;font-size:.78rem;margin:10px 0 4px">게이트</div><div style="display:flex;gap:5px;flex-wrap:wrap">'
+     +Object.keys(g).map(function(k){var v=g[k];var col=v==='pass'?['#166534','#dcfce7']:(v==='fail'?['#b91c1c','#fee2e2']:['#64748b','#eef2f7']);
+       return '<span style="color:'+col[0]+';background:'+col[1]+';padding:2px 7px;border-radius:5px;font-size:.68rem">'+E(k)+'</span>';}).join('')+'</div>';
+  }
+  var t=d.톤_점수;
+  if(t){
+    h+='<div style="font-weight:700;font-size:.78rem;margin:10px 0 4px">인플루언서 톤 — 승리글 표지 7종</div><div style="font-size:.73rem;color:#475569">'
+     +['저희','경력19년','경험어미','예고형','감정개입','마무리회사명','사례1인칭'].map(function(k){
+        return (t[k]?'✅':'❌')+' '+k+' '+(t[k]||0);}).join(' &nbsp;·&nbsp; ')
+     +' &nbsp;→ <b style="color:'+(t.충족==='7/7'?'#16a34a':'#b45309')+'">'+E(t.충족)+' '+E(t.판정||'')+'</b></div>';
+  }
+  var sp=d.지출_요청;
+  if(sp){
+    h+='<div style="font-weight:700;font-size:.78rem;margin:10px 0 4px">지출 요청 <span style="font-weight:500;color:#94a3b8">· 재고 5단에서 못 찾은 것만</span></div>'
+     +'<div style="font-size:.73rem;color:#475569">'+E(sp.원칙||'')+' · AI사진 '+(sp.AI사진||0)+' · AI영상 '+(sp.AI영상||0)+' · AI음악 '+(sp.AI음악||0)+' · <b>합계 $'+(sp.합계_usd||0)+'</b>'
+     +(sp.사유?'<div style="color:#16a34a;margin-top:3px">'+E(sp.사유)+'</div>':'')+'</div>';
+  }
+  return h||'<div style="color:#94a3b8;font-size:.75rem">설계 데이터가 없습니다(구엔진 산출물).</div>';
+}
+
+function renderStock(){
+  var b=document.getElementById('md-video-stock'); if(!b)return;
+  if(!_md.stock.length){b.innerHTML='<div>등록된 현장영상이 없습니다.</div>';return;}
+  var by={};
+  _md.stock.forEach(function(x){var m=x.영상_메타||{};var k=m.행사명||x.사업부||'기타';(by[k]=by[k]||[]).push(x);});
+  b.innerHTML=Object.keys(by).map(function(k){
+    var rows=by[k]; var tot=rows.reduce(function(a,c){return a+(+c.길이_초||0);},0);
+    return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px;overflow:hidden">'
+    +'<div style="background:#f8fafc;padding:8px 12px;font-size:.8rem;font-weight:700">'+E(k)+' <span style="color:#94a3b8;font-weight:500">· '+rows.length+'개 · '+Math.round(tot)+'초</span></div>'
+    +rows.map(function(x){var m=x.영상_메타||{};
+      return '<div style="display:flex;gap:10px;align-items:center;padding:7px 12px;border-top:1px solid #eef2f7;font-size:.74rem;flex-wrap:wrap">'
+      +'<span style="flex:1;min-width:180px;font-weight:600">'+E(x.파일명)+'</span>'
+      +'<span>⏱ '+(x.길이_초||0)+'s</span>'
+      +'<span style="color:#64748b">'+E(x.영상_규격||'')+'</span>'
+      +(m.앰비언스_가용?'<span style="background:#dcfce7;color:#166534;padding:1px 7px;border-radius:5px;font-size:.68rem">🔊 앰비언스 '+E(m.오디오_평균dB)+'dB</span>':'<span style="background:#fee2e2;color:#b91c1c;padding:1px 7px;border-radius:5px;font-size:.68rem">무음</span>')
+      +'<span style="background:'+(x.사용여부==='미사용'?'#eef2ff':'#dcfce7')+';color:'+(x.사용여부==='미사용'?'#3730a3':'#166534')+';padding:1px 7px;border-radius:5px;font-size:.68rem">'+E(x.사용여부||'')+'</span>'
+      +'<button class="btn-sm btn-copy" style="font-size:.68rem" onclick="mdCopy('+JSON.stringify(x.로컬경로).replace(/"/g,'&quot;')+')">📂 경로</button>'
+      +'</div>';}).join('')+'</div>';
+  }).join('');
+}
+
+function renderBgm(){
+  var f=document.getElementById('md-bgm-filter'), b=document.getElementById('md-bgm-list');
+  if(!b)return;
+  var cats=['전체','A','B','C','D','E','F'];
+  if(f)f.innerHTML=cats.map(function(c){
+    var n=c==='전체'?_md.bgm.length:_md.bgm.filter(function(x){return x.분류===c;}).length;
+    return '<button class="filter-btn md-bc'+(_md.cat===c?' active':'')+'" onclick="mdBgmCat(\''+c+'\',this)">'+(c==='전체'?'전체':c+' '+CATNAME[c])+' '+n+'</button>';}).join('');
+  var rows=_md.bgm.filter(function(x){return _md.cat==='전체'||x.분류===_md.cat;});
+  var by={};
+  rows.forEach(function(x){(by[x.분류]=by[x.분류]||[]).push(x);});
+  b.innerHTML=Object.keys(by).sort().map(function(c){
+    return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:10px;overflow:hidden">'
+    +'<div style="background:'+CATCOL[c]+'12;padding:8px 12px;font-size:.82rem;font-weight:700;color:'+CATCOL[c]+'">'+c+' '+E(CATNAME[c])+' <span style="color:#64748b;font-weight:500">· '+by[c].length+'곡 · '+E(CATUSE[c])+'</span></div>'
+    +'<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:.73rem"><thead><tr style="background:#f8fafc;text-align:left">'
+    +'<th style="padding:6px">곡</th><th style="padding:6px;text-align:right">BPM</th><th style="padding:6px;text-align:right">에너지</th><th style="padding:6px;text-align:right">타격/s</th><th style="padding:6px;text-align:right">도입상승</th><th style="padding:6px;text-align:right">활력</th><th style="padding:6px;text-align:center">사용</th><th style="padding:6px"></th></tr></thead><tbody>'
+    +by[c].map(function(x){
+      return '<tr style="border-top:1px solid #eef2f7"><td style="padding:6px;font-weight:600">'+E(x.파일명.replace(/\.mp3$/,''))
+      +(x.정리폴더?'':' <span style="background:#eef2ff;color:#3730a3;padding:0 5px;border-radius:4px;font-size:.65rem">숏츠폴더</span>')
+      +(x.보컬_의심?' <span style="background:#fee2e2;color:#b91c1c;padding:0 5px;border-radius:4px;font-size:.65rem">보컬의심</span>':'')+'</td>'
+      +'<td style="padding:6px;text-align:right;font-family:monospace">'+E(Math.round(x.bpm))+'</td>'
+      +'<td style="padding:6px;text-align:right;font-family:monospace">'+E((+x.에너지).toFixed(3))+'</td>'
+      +'<td style="padding:6px;text-align:right;font-family:monospace">'+E((+x.타격_초).toFixed(2))+'</td>'
+      +'<td style="padding:6px;text-align:right;font-family:monospace">'+E((+x.도입상승).toFixed(2))+'</td>'
+      +'<td style="padding:6px;text-align:right;font-family:monospace;font-weight:700;color:'+((+x.활력점수)>0.5?'#dc2626':((+x.활력점수)<-0.4?'#2563eb':'#475569'))+'">'+E((+x.활력점수).toFixed(2))+'</td>'
+      +'<td style="padding:6px;text-align:center">'+(x.사용_횟수||0)+'</td>'
+      +'<td style="padding:6px"><button class="btn-sm btn-copy" style="font-size:.66rem" onclick="mdCopy('+JSON.stringify(x.로컬경로||'').replace(/"/g,'&quot;')+')">📂</button></td></tr>';}).join('')
+    +'</tbody></table></div></div>';
+  }).join('')||'<div>해당 분류에 곡이 없습니다.</div>';
+}
+window.mdBgmCat=function(c,el){_md.cat=c;renderBgm();};
+
+function renderDesigns(){
+  var b=document.getElementById('md-design-list'); if(!b)return;
+  if(!_md.designs.length){b.innerHTML='<div>설계 데이터가 없습니다.</div>';return;}
+  b.innerHTML='<div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px">'
+  +'<table style="width:100%;border-collapse:collapse;font-size:.74rem"><thead><tr style="background:#f8fafc;text-align:left">'
+  +'<th style="padding:8px">영상</th><th style="padding:8px">버전</th><th style="padding:8px">상태</th><th style="padding:8px;text-align:right">길이</th><th style="padding:8px;text-align:right">컷</th><th style="padding:8px;text-align:right">실사진%</th><th style="padding:8px">BGM</th><th style="padding:8px">게이트</th><th style="padding:8px">톤</th><th style="padding:8px;text-align:right">지출</th></tr></thead><tbody>'
+  +_md.designs.map(function(d){
+    var t=d.톤_점수;
+    return '<tr style="border-top:1px solid #eef2f7"><td style="padding:8px"><b>'+E(d.제목||d.영상키)+'</b><div style="color:#94a3b8;font-size:.68rem">'+E(d.채널)+' · '+E(d.영상키)+'</div></td>'
+    +'<td style="padding:8px">'+E(d.버전)+'</td><td style="padding:8px">'+E(d.상태)+'</td>'
+    +'<td style="padding:8px;text-align:right">'+(d.총길이_초||0)+'s</td><td style="padding:8px;text-align:right">'+(d.컷수||0)+'</td>'
+    +'<td style="padding:8px;text-align:right">'+(d.실사진_비중==null?'—':d.실사진_비중)+'</td>'
+    +'<td style="padding:8px">'+bgmChip(d)+' '+mismatch(d)+'</td>'
+    +'<td style="padding:8px">'+gateSummary(d.게이트_결과)+'</td>'
+    +'<td style="padding:8px">'+(t?E(t.충족):'—')+'</td>'
+    +'<td style="padding:8px;text-align:right;color:'+((+d.지출_금액_usd)>0?'#b45309':'#16a34a')+'">$'+(+d.지출_금액_usd||0).toFixed(2)+'</td></tr>';}).join('')
+  +'</tbody></table></div>';
+}
+})();
+</script>
+
 </body>
 </html>

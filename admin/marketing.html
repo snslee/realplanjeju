@@ -2130,6 +2130,20 @@ function renderDraftPhotoPanel(){
     +Object.keys(byUrl).map(function(k){var p=k.split('|');return '<div style="font-size:.76rem;color:#334155;margin-bottom:4px"><b>'+_asgEsc(p[0])+'</b> · <a href="'+_asgEsc(p[1])+'" target="_blank" rel="noopener" style="color:#2563eb">글 열기</a> — '+byUrl[k].map(function(r){return _asgEsc(r.파일명)+' <span style="color:#64748b">('+_asgEsc(String(r.배정_위치||'').split(' — ')[0])+')</span>';}).join(' / ')+'</div>';}).join('')
     +'</div>';
 }
+/* 퍼널 v1.0 (2026-07-31 승인분) — 목적: 플랫폼→유입→문의→계약 */
+async function loadFunnel(){try{
+  const{data}=await sb.rpc('rpc_funnel_kpi');if(!data)return;
+  const seg=[['노출(최근집계)',data['노출_최근8일']],['클릭',data['클릭_최근8일']],['방문 28일',data['방문_28일']],['블로그유입',data['블로그유입_28일']],['문의 30일',data['문의_30일']],['귀속',data['문의귀속_30일']],['견적 90일',data['견적_90일']],['계약',data['계약_90일']]];
+  document.getElementById('fs-cells').innerHTML=seg.map((s,i)=>'<span style="background:#f1f5f9;border-radius:8px;padding:4px 10px"><b>'+((s[1]??0).toLocaleString())+'</b> '+s[0]+'</span>'+(i<seg.length-1?'<span style="color:#cbd5e1">→</span>':'')).join('');
+  var t=document.getElementById('fs-time');if(t)t.textContent='· '+String(data['기준시각']||'').slice(0,16).replace('T',' ');
+}catch(e){console.error('funnel',e);}}
+async function loadFunnelRecon(){try{
+  const el=document.getElementById('funnel-recon');if(!el)return;
+  const{data:r}=await sb.rpc('rpc_funnel_reconcile');if(!r){el.innerHTML='';return;}
+  const dot=function(s){return({'GREEN':'#10b981','AMBER':'#f59e0b','RED':'#dc2626'})[s]||'#94a3b8';};
+  const items=[['UTM 미부착',r['UTM미부착']],['문의 귀속',r['문의귀속']],['D+7 공백',r['D7공백']],['포트폴리오 URL',r['포트폴리오URL없음']],['채널카드 대기',r['채널카드대기']],['쓰레드 미기입',r['쓰레드미기입']]];
+  el.innerHTML='<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:.78rem"><b>퍼널 정합 '+(r['종합']||'')+'</b>'+items.map(function(x){var v=x[1]||{};var s=v['신호']||'INFO';var n=v['값']!=null?v['값']:(v['귀속']!=null?(v['귀속']+'/'+v['문의']):'-');return '<span style="display:inline-flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:'+dot(s)+'"></span>'+x[0]+' <b>'+n+'</b></span>';}).join('')+'</div>';
+}catch(e){console.error('funnelRecon',e);}}
 try{
   var _v3PF=loadPhotoFp;
   loadPhotoFp=async function(force){await loadAssignBoard(force).catch(function(e){console.error(e)});return _v3PF(force);};

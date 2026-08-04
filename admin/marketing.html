@@ -1222,8 +1222,8 @@ async function loadNaverMonthly(clrs){
 
 async function loadDrafts(){
   document.getElementById('drafts-board').innerHTML='<div class="loading" style="padding:30px;text-align:center">로딩 중...</div>';
-  const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형,슬롯_id,라이브보완:자가검증_결과->라이브보완,리라이트_원본url,gk:품질지표->gatekeeper').order('발행일',{ascending:false,nullsFirst:false}).order('생성일',{ascending:false}).limit(100);
-  if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];window.allDrafts=allDrafts;window._draftBySlot={};allDrafts.forEach(function(d){if(d.슬롯_id)window._draftBySlot[d.슬롯_id]=d.id;});try{const{data:lf}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형,슬롯_id,라이브보완:자가검증_결과->라이브보완,리라이트_원본url,gk:품질지표->gatekeeper').not('자가검증_결과->라이브보완','is',null).limit(100);(lf||[]).forEach(r=>{if(!allDrafts.some(d=>d.id===r.id))allDrafts.push(r);});}catch(e){}updateLiveFixBtn();if(window._draftFilter==='livefix'){showLiveFixView();}else{renderDrafts(allDrafts);}
+  const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형,슬롯_id,라이브보완:자가검증_결과->라이브보완,리라이트_원본url').order('발행일',{ascending:false,nullsFirst:false}).order('생성일',{ascending:false}).limit(100);
+  if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];window.allDrafts=allDrafts;window._draftBySlot={};allDrafts.forEach(function(d){if(d.슬롯_id)window._draftBySlot[d.슬롯_id]=d.id;});try{const{data:lf}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형,슬롯_id,라이브보완:자가검증_결과->라이브보완,리라이트_원본url').not('자가검증_결과->라이브보완','is',null).limit(100);(lf||[]).forEach(r=>{if(!allDrafts.some(d=>d.id===r.id))allDrafts.push(r);});}catch(e){}updateLiveFixBtn();if(window._draftFilter==='livefix'){showLiveFixView();}else{renderDrafts(allDrafts);}
 }
 let _draftPage=1,_winPage=1,_slotMonth=0,_statPage=1,_nvPage=1,_rankPage=1,_rankMonth=0,_rankJ='all'; const DRAFT_PER=10,WIN_PER=10,STAT_PER=20,NV_PER=20,RANK_PER=15;
 function pagerHTML(pg,pages,total,fn){ if(pages<=1)return '<span style="font-size:.78rem;color:#94a3b8">총 '+total+'건</span>'; let h=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.max(1,pg-1)})">‹</button>`; for(let i=1;i<=pages;i++){if(i===1||i===pages||Math.abs(i-pg)<=2){h+=`<button class="btn-sm btn-copy" style="${i===pg?'background:#2563eb;color:#fff;border-color:#2563eb':''}" onclick="${fn}(${i})">${i}</button>`;}else if(Math.abs(i-pg)===3){h+='<span style="padding:4px;color:#94a3b8">…</span>';}} h+=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.min(pages,pg+1)})">›</button><span style="align-self:center;font-size:.78rem;color:#94a3b8;margin-left:10px">${pg}/${pages} · 총 ${total}건</span>`; return h; }
@@ -1232,29 +1232,15 @@ function gotoWinPage(n){_winPage=n;renderWinning(window._winView||allWinning);}
 function slotYM(){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+_slotMonth);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function applySlotView(){const ym=slotYM();const l=(allSlots||[]).filter(r=>(r.발행일||'').slice(0,7)===ym);_slotPage=1;renderSlots(l);const lb=document.getElementById('slot-month-label');if(lb)lb.textContent=ym+' · '+l.length+'건';}
 function slotMonthNav(d){if(d===0)_slotMonth=0;else _slotMonth+=d;applySlotView();}
-/* ══ 리라이트 원본 URL · 인플루언서 톤 배지 (2026-08-04 대표 지시) ══════════
-   리라이트는 새 글이 아니라 「그 URL을 고치는 일」이라 원본 주소가 화면에 있어야 한다.
-   톤은 G7 어미 · G8 문단 · G10 상투구 + 호흡(공감훅·말걸기·짧은문장)을 한 줄로 보여준다. */
+/* ══ 리라이트 원본 글 링크 (2026-08-04 대표 지시 · 톤 배지는 08-04 원복 삭제) ══════
+   리라이트는 새 글이 아니라 「그 URL을 고치는 일」이라, 초안을 열었을 때
+   상단 칩 줄에 원본 주소가 바로 있어야 한다. 목록 행에는 넣지 않는다(제목이 밀린다). */
 function rewriteBadge(d){
   if((d.슬롯유형||'')!=='리라이트') return '';
-  if(!d.리라이트_원본url) return '<span style="display:inline-block;margin:2px 4px 2px 0;padding:2px 8px;border:1px solid #dc2626;color:#dc2626;border-radius:10px;font-size:.7rem">⚠️ 원본 URL 없음</span>';
+  if(!d.리라이트_원본url) return '<span style="background:#fef2f2;color:#b91c1c;padding:3px 9px;border-radius:8px">⚠️ 원본 URL 없음</span>';
   return '<a href="'+d.리라이트_원본url+'" target="_blank" onclick="event.stopPropagation()" '
-       + 'style="display:inline-block;margin:2px 4px 2px 0;padding:2px 8px;border:1px solid #ea580c;color:#ea580c;border-radius:10px;font-size:.7rem;text-decoration:none">'
+       + 'style="background:#fff7ed;color:#c2410c;padding:3px 9px;border-radius:8px;text-decoration:none;font-weight:700">'
        + '🔁 원본 글 열기</a>';
-}
-function toneBadge(d){
-  var g=d.gk; if(!g) return '';
-  var t=g['톤']||{}, e=g['어미']||{}, out=[];
-  var pill=function(txt,col){return '<span style="display:inline-block;margin:2px 4px 2px 0;padding:2px 8px;border:1px solid '+col+';color:'+col+';border-radius:10px;font-size:.7rem">'+txt+'</span>';};
-  if(e['비율']!=null) out.push(pill('어미 '+e['비율']+'%'+(e['최다']?'('+e['최다']+')':''), e['비율']>33?'#dc2626':'#16a34a'));
-  if(g['문단초과']!=null) out.push(pill('문단초과 '+g['문단초과'], g['문단초과']>0?'#dc2626':'#16a34a'));
-  if(g['상투구밀도']!=null) out.push(pill('상투구 '+g['상투구밀도'], g['상투구밀도']>2?'#dc2626':'#16a34a'));
-  if(t['공감훅']!=null) out.push(pill('훅 '+t['공감훅']+' · 말걸기 '+(t['말걸기']||0)+' · 짧은문장 '+(t['짧은문장비율']||0)+'%',
-                                     (t['공감훅']>0&&(t['짧은문장비율']||0)>=30)?'#2563eb':'#b45309'));
-  if(t['해요체비율']!=null) out.push(pill('해요체 '+t['해요체비율']+'%','#7e22ce'));
-  if(g['통과']===false) out.push(pill('❌ 검수 보완필요','#dc2626'));
-  else if(g['통과']===true) out.push(pill('✅ 검수 통과','#16a34a'));
-  return out.join('');
 }
 function renderLiveFixPanel(list){
   const box=document.getElementById('livefix-panel'); if(!box)return;
@@ -1271,7 +1257,7 @@ function renderLiveFixPanel(list){
       return `<div style="background:#fff;border:0.5px solid #fde68a;border-radius:10px;padding:12px 14px;margin-bottom:8px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer" onclick="openDraftReader('${r.id}')">
         <span style="font-size:.7rem;background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px">${esc2(r.채널)}</span>
-        <b style="font-size:.88rem;color:#1e293b">${esc2(r.제목)}</b>${rewriteBadge(r)}
+        <b style="font-size:.88rem;color:#1e293b">${esc2(r.제목)}</b>
         <span style="font-size:.72rem;color:${wait?'#b45309':'#16a34a'};font-weight:700">${wait?('대기 '+wait):'전부 완료'}</span>
         ${r.발행_url?`<a href="${r.발행_url}" target="_blank" onclick="event.stopPropagation()" style="font-size:.72rem;color:#2563eb">🔗 발행글 열기</a>`:'<span style="font-size:.7rem;color:#94a3b8">(발행 전)</span>'}
         <button class="btn-sm btn-copy" style="margin-left:auto" onclick="event.stopPropagation();toggleLiveFixBody('${r.id}',this)">📄 본문 위치 보기</button>
@@ -1350,7 +1336,7 @@ function renderDrafts(list){
   box.innerHTML=(function(){window._draftView=list;const _dp=Math.max(1,Math.ceil(list.length/DRAFT_PER));if(_draftPage>_dp)_draftPage=1;const pe=document.getElementById('drafts-pager');if(pe)pe.innerHTML=pagerHTML(_draftPage,_dp,list.length,'gotoDraftPage');return list.slice((_draftPage-1)*DRAFT_PER,_draftPage*DRAFT_PER);})().map((r,i)=>{
     const sc=r.자가검증_점수;
     return `<div onclick="openDraftReader('${r.id}')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;${i?'border-top:0.5px solid #f1f5f9;':''}cursor:pointer">
-      <span style="font-size:.7rem;background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px;flex-shrink:0">${r.채널||'-'}${rewriteBadge(r)}${toneBadge(r)}</span>
+      <span style="font-size:.7rem;background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px;flex-shrink:0">${r.채널||'-'}</span>
       <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:.9rem;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;gap:6px;align-items:center">${_tyB(r.슬롯유형)}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.제목||'(제목 없음)'}</span></div><div style="font-size:.68rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🔑 ${r.핵심키워드||'-'}${r.글자수_네이버?(' · '+r.글자수_네이버+'자'):''}${r.생성일?(' · 업로드 '+r.생성일.slice(5,10)):''}</div></div>
       ${(window._photoCntBySlot&&window._photoCntBySlot[r.슬롯_id])?`<span onclick="event.stopPropagation();gotoVaultSlot('${r.슬롯_id}')" style="cursor:pointer;font-size:.68rem;background:#e0f2fe;color:#0369a1;padding:2px 7px;border-radius:9px;flex-shrink:0;font-weight:700" title="사진 창고에서 이 글 사진 보기">📷 ${window._photoCntBySlot[r.슬롯_id]}</span>`:''}
       <span style="font-size:.68rem;background:${sbg[r.상태]||'#f1f5f9'};color:${stx[r.상태]||'#64748b'};padding:2px 7px;border-radius:9px;flex-shrink:0">${sl[r.상태]||r.상태||'초안'}</span>
@@ -1907,7 +1893,7 @@ function mdRender(md){
 async function openDraftReader(id){
   const box=document.getElementById('drafts-reader'); if(!box)return;
   box.innerHTML='<div class="loading" style="padding:20px;text-align:center">불러오는 중...</div>';
-  const{data}=await sb.from('mk_blog_drafts').select('본문_네이버,본문_티스토리,제목,채널,핵심키워드,자가검증_점수,자가검증_결과,이미지프롬프트,발행_url,상태,생성일,슬롯유형,슬롯_id').eq('id',id).maybeSingle();
+  const{data}=await sb.from('mk_blog_drafts').select('본문_네이버,본문_티스토리,제목,채널,핵심키워드,자가검증_점수,자가검증_결과,이미지프롬프트,발행_url,상태,생성일,슬롯유형,슬롯_id,리라이트_원본url').eq('id',id).maybeSingle();
   if(!data){box.innerHTML='';return;}
   const nav=data.본문_네이버||'',tis=data.본문_티스토리||'';
   let imgs=data.이미지프롬프트; if(typeof imgs==='string'){try{imgs=JSON.parse(imgs);}catch(e){imgs=null;}}
@@ -1939,6 +1925,7 @@ async function openDraftReader(id){
       <span style="background:#eef2ff;color:#3730a3;padding:3px 9px;border-radius:8px">🔑 핵심키워드: ${data.핵심키워드||'-'}</span>
       <span style="background:#f1f5f9;color:#475569;padding:3px 9px;border-radius:8px">📝 글자수 ${nav?(navLen.toLocaleString()+'자'):(tisLen.toLocaleString()+'자')}</span>
       ${data.슬롯유형?`<span style="background:#fef9c3;color:#78350f;padding:3px 9px;border-radius:8px">유형: ${data.슬롯유형}</span>`:''}
+      ${rewriteBadge(data)}
       ${data.자가검증_점수!=null?`<span style="background:#dcfce7;color:#065f46;padding:3px 9px;border-radius:8px">자가검증 ${data.자가검증_점수}</span>`:''}
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;border-bottom:0.5px solid #e2e8f0;padding-bottom:14px">

@@ -98,7 +98,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.9.5</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.9.6</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -111,6 +111,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     <div class="nav-item" title="피드백·보완" onclick="switchTab('t12',this)"><span>🔧</span>피드백·보완</div>
     <div class="nav-section">콘텐츠</div>
     <div class="nav-item" title="초안 보관소" onclick="switchTab('t2',this)"><span>📝</span>초안 보관소</div>
+    <div class="nav-item" title="리라이트" onclick="switchTab('t15',this)"><span>🔁</span>리라이트</div>
     <div class="nav-item" title="편성안" onclick="switchTab('tplan',this)"><span>📋</span>편성안 <b id="plan-badge" style="margin-left:auto;font-size:.7rem;color:#dc2626"></b></div>
     <div class="nav-item" title="콘텐츠 슬롯" onclick="switchTab('t3',this)"><span>🎯</span>콘텐츠 슬롯</div>
     <div class="nav-item" title="포트폴리오" onclick="switchTab('t10',this)"><span>💼</span>포트폴리오</div>
@@ -223,16 +224,49 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <div id="drafts-board" style="border:0.5px solid #e2e8f0;border-radius:12px;background:#fff;max-height:72vh;overflow-y:auto"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div>
       <div id="drafts-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin:12px 0"></div>
       <div id="drafts-reader" style="margin-top:14px"></div>
-      <div class="card" data-sec="🔁 리라이트 우선순위" style="margin:14px 0 18px;border:1px solid #fecaca">
-        <div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🔁 리라이트 우선순위 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">매출 밀어올리기 · v_rewrite_priority · 상업(B2B)글만</span></h3>
-          <button class="filter-btn" onclick="loadRewritePriority()">🔄</button></div>
-        <div id="rw-thisweek" style="background:#fef2f2;border-bottom:1px solid #fecaca;color:#991b1b;font-size:.8rem;padding:9px 12px;font-weight:600">이번 주 리라이트 1편: <span id="rw-pick">로딩…</span></div>
-        <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.71rem;padding:6px 12px">11~30위 상업글을 top10으로. 그 주 정규 슬롯 1개를 여기 1위 글 리라이트로 편성(대표 지시). 정보성 글은 제외.</div>
-        <div class="card-body" style="padding:0;overflow-x:auto">
-          <table class="tbl"><thead><tr><th>점수</th><th>채널</th><th>순위</th><th>키워드</th><th>검색량</th><th>실유입</th></tr></thead>
-          <tbody id="rw-body"><tr><td colspan="6" class="loading">로딩 중...</td></tr></tbody></table>
-        </div>
+      <div class="card" data-sec="🔁 리라이트" style="margin:14px 0 18px;border:1px solid #fecaca">
+        <div class="card-hdr"><h3>🔁 리라이트 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">— 전용 탭으로 이관했습니다 (v1.9.6)</span></h3></div>
+        <div style="padding:12px 14px;font-size:.82rem;color:#475569">순위가 붙은 글을 밀어 올리는 작업은 대상 → 진단 → 초안 → 반영 4단으로 왼쪽 <b>🔁 리라이트</b> 탭에서 진행합니다.
+          <button class="btn-sm btn-copy" style="margin-left:8px" onclick="document.querySelectorAll('.nav-item').forEach(function(n){if(n.title==='리라이트')n.click();})">🔁 리라이트 탭 열기</button></div>
       </div>
+    </div>
+    <!-- ══ 리라이트 탭 (2026-08-04 대표 승인 · 권장번들 D+G+H) ══════════════
+         REWRITE.md 정본 4~30위 · 1~3위 잠금 · 원본 슬롯 UTM _rN · 미디어 매트릭스
+         ① 대상판 v_rewrite_queue → ② 진단판 fn_rewrite_diagnose → ③ 초안판(대표 직접 수정)
+         → ④ 반영판 fn_media_matrix_check + 라이브 분담                        -->
+    <div class="tab-panel" id="t15">
+      <div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><h2 style="font-size:1.2rem;font-weight:700">🔁 리라이트</h2>
+          <p style="font-size:.82rem;color:#64748b;margin-top:2px">v_rewrite_queue — 이미 순위가 붙은 글을 밀어 올린다. 새 글이 아니다</p></div>
+        <button onclick="loadRewriteTab()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
+      </div>
+      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:9px 13px;margin-bottom:12px;font-size:.79rem;color:#991b1b">
+        <b>이번 주 1편:</b> <span id="rw2-pick">로딩…</span>
+        <span style="color:#b91c1c;font-weight:400"> · 원본 URL·발행일·핵심키워드는 바꾸지 않습니다. 1~3위는 잠금입니다.</span>
+      </div>
+      <div class="filter-bar" id="rw2-steps" style="margin-bottom:10px">
+        <button class="filter-btn active" onclick="rwStep('q',this)">① 대상판</button>
+        <button class="filter-btn" onclick="rwStep('d',this)">② 진단판</button>
+        <button class="filter-btn" onclick="rwStep('w',this)">③ 초안판</button>
+        <button class="filter-btn" onclick="rwStep('p',this)">④ 반영판</button>
+      </div>
+      <div id="rw2-q">
+        <div class="filter-bar" style="margin-bottom:10px">
+          <button class="filter-btn active" onclick="rwFilter('t1',this)">① 상단 밀어올리기 4~10위</button>
+          <button class="filter-btn" onclick="rwFilter('t2',this)">② 1페이지 진입 11~30위</button>
+          <button class="filter-btn" onclick="rwFilter('all',this)">전체</button>
+          <button class="filter-btn" onclick="rwFilter('lock',this)">🔒 보호 1~3위</button>
+          <button class="filter-btn active" id="rw2-biz" onclick="rwToggleBiz(this)">💼 상업(B2B)만</button>
+        </div>
+        <div class="card"><div class="card-body" style="padding:0;overflow-x:auto">
+          <table class="tbl"><thead><tr><th>점수</th><th>채널</th><th>순위</th><th>키워드</th><th>검색량</th><th>실유입</th><th>회차</th><th>본문</th><th>상태</th><th></th></tr></thead>
+          <tbody id="rw2-body"><tr><td colspan="10" class="loading">로딩 중...</td></tr></tbody></table>
+        </div></div>
+        <div id="rw2-pager" style="font-size:.78rem;color:#94a3b8;text-align:center;margin-top:10px"></div>
+      </div>
+      <div id="rw2-d" style="display:none"></div>
+      <div id="rw2-w" style="display:none"></div>
+      <div id="rw2-p" style="display:none"></div>
     </div>
     <div class="tab-panel" id="t3">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
@@ -929,7 +963,7 @@ function secReveal(el){
   var nav=p.querySelector(':scope > .sec-nav');if(!nav||!nav._groups)return;
   for(var i=0;i<nav._groups.length;i++){var g=nav._groups[i];for(var j=0;j<g.els.length;j++){if(g.els[j]===el||g.els[j].contains(el)){if(nav._cur!==i&&nav._cur!==-1)_secApply(nav,i);return;}}}
 }
-function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');setTimeout(buildSecNavs,400);if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2'){loadDrafts();loadRewritePriority();}if(id==='t3')loadSlots();if(id==='tplan')loadSlotPlan();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6'){loadAlgo();loadSkillRules();}if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();if(id==='t12'){var fbf=document.getElementById('fb-frame');if(fbf&&!fbf.getAttribute('src'))fbf.setAttribute('src','/blog.html');loadFunnelRecon();}}
+function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');setTimeout(buildSecNavs,400);if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2'){loadDrafts();loadRewritePriority();}if(id==='t15')loadRewriteTab();if(id==='t3')loadSlots();if(id==='tplan')loadSlotPlan();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6'){loadAlgo();loadSkillRules();}if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();if(id==='t12'){var fbf=document.getElementById('fb-frame');if(fbf&&!fbf.getAttribute('src'))fbf.setAttribute('src','/blog.html');loadFunnelRecon();}}
 
 /* ══ 편성안 (0기 slot-planner) — 2026-08-04 신설 ══════════════════════════
    읽기 전용이다. 승인·반려는 rpc_slot_plan_approve/reject 만 쓰고 anon으로 직접
@@ -2440,6 +2474,248 @@ try{
   var _v3LD=loadDrafts;
   loadDrafts=async function(){var r=await _v3LD.apply(this,arguments);loadAssignBoard().catch(function(){});return r;};
 }catch(e){console.error('t14v3 hook',e);}
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════════════════
+   🔁 리라이트 탭 v1.0 — 2026-08-04 대표 승인 권장번들(D+G+H)
+   정본: realplan-blog/references/REWRITE.md
+   ① 대상판 v_rewrite_queue → ② 진단판 fn_rewrite_diagnose
+   → ③ 초안판(대표 직접 수정·저장·재검사) → ④ 반영판 fn_media_matrix_check
+   원칙 — 원본 URL·발행일·핵심키워드 유지 / 1~3위 잠금 / 기존 H2·이미지 삭제 0
+   ══════════════════════════════════════════════════════════════════════ */
+var RW={rows:[],f:'t1',biz:true,sel:null,diag:null,draft:null};
+function rwEsc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function rwPill(txt,col){return '<span style="display:inline-block;margin:2px 4px 2px 0;padding:2px 8px;border:1px solid '+col+';color:'+col+';border-radius:10px;font-size:.7rem">'+txt+'</span>';}
+
+async function loadRewriteTab(){
+  var tb=document.getElementById('rw2-body'); if(!tb)return;
+  tb.innerHTML='<tr><td colspan="10" class="loading">로딩 중...</td></tr>';
+  try{
+    const{data,error}=await sb.from('v_rewrite_queue').select('*');
+    if(error)throw error;
+    RW.rows=data||[]; renderRwQueue(); rwPick();
+  }catch(e){tb.innerHTML='<tr><td colspan="10" style="color:#dc2626;padding:12px">리라이트 대상 로드 실패: '+rwEsc(e.message||e)+'</td></tr>';}
+}
+function rwPick(){
+  var el=document.getElementById('rw2-pick'); if(!el)return;
+  var pool=RW.rows.filter(function(r){return !r.잠금&&r.진행===''&&r.상업;});
+  var one=pool.filter(function(r){return String(r.트랙||'').indexOf('①')===0;}).sort(function(a,b){return b.우선점수-a.우선점수;})[0]
+        ||pool.sort(function(a,b){return b.우선점수-a.우선점수;})[0];
+  el.innerHTML=one?(rwEsc(one.채널)+' · <b>'+one.순위+'위</b> · '+rwEsc(one.핵심키워드)+' <span style="color:#7f1d1d">(우선점수 '+one.우선점수+')</span>'):'대상 없음';
+}
+function rwFilter(f,b){RW.f=f;document.querySelectorAll('#rw2-q .filter-bar .filter-btn').forEach(function(x){if(x.id!=='rw2-biz')x.classList.remove('active');});if(b)b.classList.add('active');renderRwQueue();}
+function rwToggleBiz(b){RW.biz=!RW.biz;if(b)b.classList.toggle('active',RW.biz);renderRwQueue();}
+function rwView(){
+  var l=RW.rows.slice();
+  if(RW.f==='t1')l=l.filter(function(r){return String(r.트랙||'').indexOf('①')===0;});
+  else if(RW.f==='t2')l=l.filter(function(r){return String(r.트랙||'').indexOf('②')===0;});
+  else if(RW.f==='lock')l=l.filter(function(r){return r.잠금;});
+  else l=l.filter(function(r){return !r.잠금;});
+  if(RW.biz&&RW.f!=='lock')l=l.filter(function(r){return r.상업;});
+  return l;
+}
+function renderRwQueue(){
+  var tb=document.getElementById('rw2-body'); if(!tb)return;
+  var l=rwView(), pg=document.getElementById('rw2-pager');
+  if(pg)pg.textContent='총 '+l.length+'건 · 진행중 '+l.filter(function(r){return r.진행==='진행중';}).length+'건 · 완료 '+l.filter(function(r){return r.진행==='완료';}).length+'건';
+  if(!l.length){tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:14px">대상 없음</td></tr>';return;}
+  tb.innerHTML=l.slice(0,60).map(function(r){
+    var i=RW.rows.indexOf(r);
+    var act=r.잠금?'<span style="color:#94a3b8;font-size:.72rem">🔒 손대지 않음</span>'
+      :(r.진행==='진행중'?'<span style="color:#b45309;font-size:.72rem;font-weight:700">⏳ 진행중</span>'
+      :(r.진행==='완료'?'<span style="color:#16a34a;font-size:.72rem;font-weight:700">✅ 완료</span>'
+      :'<button class="btn-sm btn-copy" style="font-size:.7rem" onclick="rwStart('+i+')">착수하기</button>'));
+    return '<tr'+(r.잠금?' style="background:#f8fafc;color:#94a3b8"':'')+'>'
+      +'<td style="font-weight:800">'+r.우선점수+'</td>'
+      +'<td style="font-size:.75rem">'+rwEsc(r.채널)+'</td>'
+      +'<td style="font-weight:700;color:'+(r.순위<=3?'#94a3b8':(r.순위<=10?'#dc2626':'#b45309'))+'">'+r.순위+'</td>'
+      +'<td>'+rwEsc(r.핵심키워드)+(r.상업?' <span style="font-size:.62rem;background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:6px">B2B</span>':'')+'</td>'
+      +'<td>'+(r.검색량==null?'-':Number(r.검색량).toLocaleString())+'</td>'
+      +'<td>'+(r.실유입==null?'-':r.실유입)+'</td>'
+      +'<td style="font-size:.72rem">_r'+r.다음_회차+'</td>'
+      +'<td>'+(r.본문보유?'<span style="color:#16a34a">✔</span>':'<span style="color:#dc2626" title="원본 본문이 DB에 없다 — 라이브 수집 필요">✕</span>')+'</td>'
+      +'<td style="font-size:.72rem">'+rwEsc(String(r.트랙||'').slice(0,1))+'</td>'
+      +'<td>'+act+'</td></tr>';
+  }).join('');
+}
+function rwStep(s,b){
+  ['q','d','w','p'].forEach(function(k){var e=document.getElementById('rw2-'+k);if(e)e.style.display=(k===s?'':'none');});
+  document.querySelectorAll('#rw2-steps .filter-btn').forEach(function(x){x.classList.remove('active');});
+  if(b)b.classList.add('active');
+  if(s==='w')renderRwWrite();
+  if(s==='p')renderRwPublish();
+}
+function rwStepBtn(i){var b=document.querySelectorAll('#rw2-steps .filter-btn')[i];if(b)b.click();}
+
+/* ── ② 진단판 — RW-1 결손 6항 ── */
+async function rwStart(i){
+  var r=RW.rows[i]; if(!r)return; RW.sel=r; RW.diag=null; RW.draft=null;
+  rwStepBtn(1);
+  var box=document.getElementById('rw2-d');
+  box.innerHTML='<div class="loading" style="padding:26px;text-align:center">원본 실측 중...</div>';
+  try{
+    const{data,error}=await sb.rpc('fn_rewrite_diagnose',{p_url:r.외부_url});
+    if(error)throw error;
+    RW.diag=data; renderRwDiag();
+  }catch(e){box.innerHTML='<div style="color:#dc2626;padding:14px">진단 실패: '+rwEsc(e.message||e)+'</div>';}
+}
+function renderRwDiag(){
+  var box=document.getElementById('rw2-d'), r=RW.sel, d=RW.diag; if(!box||!r)return;
+  if(!d){box.innerHTML='<div style="padding:14px;color:#94a3b8">먼저 ① 대상판에서 착수할 글을 고르세요.</div>';return;}
+  if(d.진단불가){
+    box.innerHTML='<div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:12px;padding:16px 18px">'
+      +'<div style="font-weight:800;color:#9a3412;margin-bottom:6px">⚠️ '+rwEsc(d.진단불가)+'</div>'
+      +'<div style="font-size:.82rem;color:#7c2d12">'+rwEsc(r.채널)+' · '+rwEsc(r.핵심키워드)+' · '+r.순위+'위<br>'
+      +'라이브 본문을 먼저 확보해야 결손을 셀 수 있습니다. <a href="'+rwEsc(r.외부_url)+'" target="_blank">🔗 원본 글 열기</a></div></div>';return;
+  }
+  var w=d.RW1||{}, rows=[
+    ['① AEO 요약 앵커', w['①AEO'], '「핵심 요약. 」 인라인 · 공백제외 300자'],
+    ['② H2 소제목',     w['②H2'],  '평문 소제목을 ## 로 승격'],
+    ['③ 공식 통계(G23)', w['③통계'], '없으면 AI 답변엔진이 안 물어간다'],
+    ['④ 하위 질문',     w['④질문'], '미달분이 곧 추가할 H2'],
+    ['⑤ CTA UTM',      w['⑤UTM'], '무태깅이면 이 글 문의가 전부 귀속 0'],
+    ['⑥ 인플루언서 톤', w['⑥톤'],  '정보 나열체면 체류·저장이 안 붙는다']
+  ];
+  var miss=(d.결손||[]);
+  box.innerHTML='<div class="card"><div class="card-hdr"><h3>② 진단 — 무엇이 없어서 '+r.순위+'위에 머물러 있나</h3></div>'
+   +'<div style="padding:12px 16px">'
+   +'<div style="font-size:.85rem;margin-bottom:10px">'+rwEsc(r.채널)+' · <b>'+rwEsc(r.핵심키워드)+'</b> · 원본 자수 '+(d.원본_자수||0).toLocaleString()+'자 '
+   +'<a href="'+rwEsc(r.외부_url)+'" target="_blank" style="margin-left:8px;font-size:.78rem">🔗 원본 글 열기</a></div>'
+   +'<table class="tbl"><thead><tr><th>항목</th><th>판정</th><th>실측</th><th>왜 필요한가</th></tr></thead><tbody>'
+   +rows.map(function(x){
+       var v=x[1]||{}, ok=v['통과'];
+       var det=Object.keys(v).filter(function(k){return k!=='통과'&&k!=='tone';}).map(function(k){return k+' '+v[k];}).join(' · ');
+       return '<tr><td>'+x[0]+'</td><td>'+(ok?'<span style="color:#16a34a;font-weight:700">✅</span>':'<span style="color:#dc2626;font-weight:700">❌</span>')+'</td>'
+         +'<td style="font-size:.76rem;color:#475569">'+rwEsc(det)+'</td><td style="font-size:.74rem;color:#64748b">'+x[2]+'</td></tr>';
+     }).join('')
+   +'</tbody></table>'
+   +'<div style="margin-top:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:11px 14px">'
+   +'<div style="font-weight:800;color:#991b1b;margin-bottom:5px">📌 '+rwEsc(d.판정||'')+'</div>'
+   +'<ul style="margin:0 0 0 16px;font-size:.82rem;color:#7f1d1d">'+miss.map(function(m){return '<li>'+rwEsc(m)+'</li>';}).join('')+'</ul></div>'
+   +'<div style="margin-top:10px;font-size:.78rem;color:#475569">원본 슬롯 <code>'+rwEsc(String(d.원본_슬롯_id||'-')).slice(0,8)+'…</code> · UTM 은 <b>'+rwEsc(String(d.원본_슬롯_id||'-')).slice(0,8)+'…_r'+r.다음_회차+'</b> 로 붙습니다(리라이트 슬롯 아님).</div>'
+   +'<div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">'
+   +'<button class="btn-sm btn-copy" onclick="rwCopyBrief()">📋 클로드에게 넘길 착수 지시문 복사</button>'
+   +'<button class="btn-sm btn-approve" onclick="rwStepBtn(2)">③ 초안판으로 →</button></div>'
+   +'</div></div>';
+}
+async function rwCopyBrief(){
+  var r=RW.sel,d=RW.diag; if(!r)return;
+  var t='리라이트 착수\n채널: '+r.채널+'\n핵심키워드: '+r.핵심키워드+'\n현재순위: '+r.순위+'위\n원본URL: '+r.외부_url
+    +'\n원본 슬롯_id: '+(d&&d.원본_슬롯_id||'')+'\nUTM: '+(d&&d.원본_슬롯_id||'')+'_r'+r.다음_회차
+    +'\n결손: '+((d&&d.결손||[]).join(' / ')||'-')
+    +'\n\n※ REWRITE.md RW-2 유지/변경 경계 준수 — 원본 URL·발행일·핵심키워드 유지, 기존 H2·이미지 삭제 0, 고유 H2 2개 이상 추가.';
+  try{await navigator.clipboard.writeText(t);}catch(e){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+  showToast('착수 지시문 복사 완료');
+}
+
+/* ── ③ 초안판 — 대표가 직접 수정·저장 ── */
+async function renderRwWrite(){
+  var box=document.getElementById('rw2-w'), r=RW.sel; if(!box)return;
+  if(!r){box.innerHTML='<div style="padding:14px;color:#94a3b8">① 대상판에서 글을 먼저 고르세요.</div>';return;}
+  if(!r.리라이트_초안_id){
+    box.innerHTML='<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:16px 18px">'
+      +'<div style="font-weight:800;color:#92400e;margin-bottom:6px">보강본이 아직 없습니다</div>'
+      +'<div style="font-size:.84rem;color:#78350f">② 진단판의 <b>착수 지시문</b>을 복사해 클로드에게 주시면, 보강본 전문을 이 자리에 초안으로 올립니다.<br>'
+      +'적재되면 여기서 <b>직접 고치고 저장</b>하실 수 있습니다.</div></div>';return;
+  }
+  box.innerHTML='<div class="loading" style="padding:26px;text-align:center">초안 불러오는 중...</div>';
+  try{
+    const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,제목,본문_네이버,본문_티스토리,상태,자가검증_점수,글자수_네이버,글자수_티스토리,리라이트_회차,원본_슬롯_id').eq('id',r.리라이트_초안_id).maybeSingle();
+    if(error)throw error;
+    RW.draft=data; renderRwEditor();
+  }catch(e){box.innerHTML='<div style="color:#dc2626;padding:14px">초안 로드 실패: '+rwEsc(e.message||e)+'</div>';}
+}
+function rwIsNaver(){return String((RW.draft&&RW.draft.채널)||(RW.sel&&RW.sel.채널)||'').indexOf('네이버')>=0;}
+function renderRwEditor(){
+  var box=document.getElementById('rw2-w'), d=RW.draft, r=RW.sel; if(!box||!d)return;
+  var nv=rwIsNaver(), body=nv?(d.본문_네이버||''):(d.본문_티스토리||'');
+  box.innerHTML='<div class="card"><div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px">'
+   +'<h3>③ 초안 — 대표님이 직접 고치는 자리</h3>'
+   +'<span style="font-size:.74rem;color:#64748b">'+rwEsc(d.채널)+' · '+rwEsc(d.상태)+' · 점수 '+(d.자가검증_점수==null?'-':d.자가검증_점수)+'</span></div>'
+   +'<div style="padding:12px 16px">'
+   +'<div style="font-weight:700;font-size:.92rem;margin-bottom:8px">'+rwEsc(d.제목||'')+'</div>'
+   +'<div style="font-size:.75rem;color:#64748b;margin-bottom:6px">원본 대비 자수 <b id="rw2-len">'+body.length.toLocaleString()+'</b>자 · '
+   +'<a href="'+rwEsc(r?r.외부_url:'#')+'" target="_blank">🔗 원본 글 열기</a> — 기존 H2·이미지는 지우지 않고 <b>추가</b>합니다</div>'
+   +'<textarea id="rw2-body-edit" oninput="var e=document.getElementById(\'rw2-len\');if(e)e.textContent=this.value.length.toLocaleString();" '
+   +'style="width:100%;height:46vh;font-size:.86rem;line-height:1.65;padding:12px;border:1px solid #cbd5e1;border-radius:10px;font-family:inherit">'+rwEsc(body)+'</textarea>'
+   +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">'
+   +'<button class="btn-sm btn-approve" onclick="rwSaveBody()">💾 저장</button>'
+   +'<button class="btn-sm btn-copy" onclick="rwRecheck()">🔍 재검사(톤·문단)</button>'
+   +'<button class="btn-sm btn-copy" onclick="rwCopyBody(this)">📋 본문 전체 복사</button>'
+   +(d.상태==='draft'?'<button class="btn-sm btn-approve" onclick="approveDraft(\''+d.id+'\')">✅ 승인</button><button class="btn-sm btn-reject" onclick="openReject(\''+d.id+'\')">❌ 반려</button>':'')
+   +'<button class="btn-sm btn-copy" onclick="rwStepBtn(3)">④ 반영판으로 →</button></div>'
+   +'<div id="rw2-check" style="margin-top:12px"></div>'
+   +'</div></div>';
+}
+async function rwSaveBody(){
+  var d=RW.draft; if(!d)return;
+  var v=document.getElementById('rw2-body-edit').value;
+  var nv=rwIsNaver(), p={};
+  if(nv){p['본문_네이버']=v;p['글자수_네이버']=v.length;}else{p['본문_티스토리']=v;p['글자수_티스토리']=v.length;}
+  try{
+    const{error}=await sb.from('mk_blog_drafts').update(p).eq('id',d.id);
+    if(error)throw error;
+    showToast('💾 저장 완료 — UTM 회차는 자동 정합됩니다');
+    await renderRwWrite();
+  }catch(e){showToast('저장 실패: '+(e.message||e));}
+}
+async function rwCopyBody(btn){
+  var v=document.getElementById('rw2-body-edit').value;
+  try{await navigator.clipboard.writeText(v);}catch(e){var ta=document.createElement('textarea');ta.value=v;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+  if(btn){var o=btn.textContent;btn.textContent='✅ 복사됨';setTimeout(function(){btn.textContent=o;},1400);}
+}
+async function rwRecheck(){
+  var el=document.getElementById('rw2-check'); if(!el)return;
+  var v=document.getElementById('rw2-body-edit').value;
+  el.innerHTML='<span class="loading">검사 중...</span>';
+  try{
+    const{data,error}=await sb.rpc('fn_tone_check',{p_body:v,p_naver:rwIsNaver()});
+    if(error)throw error;
+    var t=(data&&data['톤'])||{}, e2=(data&&data['어미'])||{}, out=[];
+    if(e2['비율']!=null)out.push(rwPill('어미 '+e2['비율']+'%'+(e2['최다']?'('+e2['최다']+')':''),e2['비율']>33?'#dc2626':'#16a34a'));
+    if(data&&data['문단초과']!=null)out.push(rwPill('문단초과 '+data['문단초과'],data['문단초과']>0?'#dc2626':'#16a34a'));
+    if(t['공감훅']!=null)out.push(rwPill('공감훅 '+t['공감훅'],t['공감훅']>0?'#2563eb':'#dc2626'));
+    if(t['짧은문장비율']!=null)out.push(rwPill('짧은문장 '+t['짧은문장비율']+'%',(t['짧은문장비율']>=30)?'#16a34a':'#b45309'));
+    if(t['해요체비율']!=null)out.push(rwPill('해요체 '+t['해요체비율']+'%','#7e22ce'));
+    var faq=(v.match(/Q[1-6]\./g)||[]).length, h2=(v.match(/^##[^#]/gm)||[]).length;
+    out.push(rwPill('FAQ Q1~Q6 '+faq+'개',faq>=6?'#16a34a':'#dc2626'));
+    out.push(rwPill('H2 '+h2+'개',h2>0?'#16a34a':'#dc2626'));
+    el.innerHTML='<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px">'+out.join('')+'</div>';
+  }catch(e){el.innerHTML='<span style="color:#dc2626">재검사 실패: '+rwEsc(e.message||e)+'</span>';}
+}
+
+/* ── ④ 반영판 — 미디어 매트릭스 + 라이브 분담 ── */
+async function renderRwPublish(){
+  var box=document.getElementById('rw2-p'), r=RW.sel; if(!box)return;
+  if(!r||!r.리라이트_초안_id){box.innerHTML='<div style="padding:14px;color:#94a3b8">보강본 초안이 있어야 반영 점검을 할 수 있습니다.</div>';return;}
+  box.innerHTML='<div class="loading" style="padding:26px;text-align:center">미디어 매트릭스 확인 중...</div>';
+  try{
+    const{data,error}=await sb.rpc('fn_media_matrix_check',{p_draft_id:r.리라이트_초안_id});
+    if(error)throw error;
+    var need=data.요구||{}, got=data.실측||{}, bad=data.미달||[];
+    var nv=String(r.채널||'').indexOf('네이버')>=0;
+    box.innerHTML='<div class="card"><div class="card-hdr"><h3>④ 반영 — 라이브에 올리기 전 마지막 관문</h3></div><div style="padding:12px 16px">'
+     +'<div style="font-weight:800;color:'+(data.통과?'#16a34a':'#dc2626')+';margin-bottom:8px">'+rwEsc(data.판정||'')+'</div>'
+     +'<table class="tbl"><thead><tr><th>미디어</th><th>요구</th><th>배정</th><th>판정</th></tr></thead><tbody>'
+     +'<tr><td>실사진(G19)</td><td>'+need['실사진']+'</td><td>'+got['실사진']+'</td><td>'+(got['실사진']>=need['실사진']?'✅':'❌')+'</td></tr>'
+     +'<tr><td>제작물(G21) — '+rwEsc(need['제작물종류']||'')+'</td><td>'+need['제작물']+'</td><td>'+got['제작물']+'</td><td>'+(got['제작물']>=need['제작물']?'✅':'❌')+'</td></tr>'
+     +'<tr><td>영상'+(nv?'':' (티스토리는 2026-02-23 업로드 폐지)')+'</td><td>'+need['영상']+'</td><td>'+got['영상']+'</td><td>'+(got['영상']>=need['영상']?'✅':'❌')+'</td></tr>'
+     +'</tbody></table>'
+     +(bad.length?'<div style="margin-top:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 13px;font-size:.82rem;color:#7f1d1d">'
+        +'<b>미달 — 라이브 반영 전에 채웁니다.</b> 미사용 실사진 재고 '+(got['미사용재고']||0)+'장이 남아 있습니다(새로 만들기 전에 재고 먼저).<ul style="margin:6px 0 0 16px">'
+        +bad.map(function(x){return '<li>'+rwEsc(x)+'</li>';}).join('')+'</ul></div>':'')
+     +'<div style="margin-top:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:11px 14px;font-size:.82rem;color:#1e3a8a">'
+     +'<b>라이브 반영 분담</b><table class="tbl" style="margin-top:6px"><thead><tr><th>채널</th><th>텍스트</th><th>이미지·영상</th></tr></thead><tbody>'
+     +'<tr><td>네이버</td><td>대표 직접</td><td>대표 직접</td></tr>'
+     +'<tr><td>티스토리</td><td>클로드 직접</td><td><b>대표 직접</b> — 라이브 수정 경로에 파일 업로드가 없습니다</td></tr>'
+     +'</tbody></table></div>'
+     +'<div style="margin-top:12px;font-size:.82rem;color:#475569"><b>반영 체크리스트</b><br>'
+     +'① 원본 URL·발행일·핵심키워드 그대로 &nbsp; ② 기존 H2·이미지 삭제 0건 &nbsp; ③ 제목 앞 「(리라이트)」 프리픽스 제거<br>'
+     +'④ 자수 원본 대비 증가 &nbsp; ⑤ '+(nv?'네이버 영상 3종(검색허용·전용 제목/설명/태그·챕터)은 대표 계정 작업':'티스토리는 영상 없이 진행')+' &nbsp; ⑥ 반영 후 D+14 순위 재측정'
+     +'</div></div></div>';
+  }catch(e){box.innerHTML='<div style="color:#dc2626;padding:14px">매트릭스 확인 실패: '+rwEsc(e.message||e)+'</div>';}
+}
+
 </script>
 </body>
 </html>

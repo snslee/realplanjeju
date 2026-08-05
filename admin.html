@@ -8012,12 +8012,13 @@ document.addEventListener('DOMContentLoaded',init);
     try{
       var Y=ys.filter(function(v){return v.연도;});
       new Chart(document.getElementById('acc-ch-year'),{type:'bar',data:{labels:Y.map(function(v){return v.연도;}),datasets:[{label:'공식 매출(재무제표)',data:Y.map(function(v){return v.공식_매출액;}),backgroundColor:'#185fa5'},{label:'관리 매출(시스템)',data:Y.map(function(v){return v.관리_매출;}),backgroundColor:'#94c5f0'},{label:'공식 당기손익',data:Y.map(function(v){return v.공식_당기손익;}),type:'line',borderColor:'#b91c1c'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:'연도별 매출·손익 — 공식(재무제표) vs 관리(시스템)'}},scales:{y:{ticks:{callback:function(v){return (v/1000000)+'M';}}}}}});
-      sbc().from('acc_거래내역').select('사업부,구분,금액').gte('거래일',(new Date().getFullYear()-1)+'-01-01').neq('상태','취소').limit(5000).then(function(r){
+      /*RP-ACC-BU v1.1 당해년 확정만 — 전년은 마스터엑셀 이관값이라 사업부가 부정확 (2026-08-05)*/
+      sbc().from('acc_거래내역').select('사업부,구분,금액').gte('거래일',new Date().getFullYear()+'-01-01').eq('상태','확정').limit(5000).then(function(r){
         if(r.error||!r.data)return;
         var agg={};
         r.data.forEach(function(t){if(t.구분!=='수입'||!t.사업부)return;agg[t.사업부]=(agg[t.사업부]||0)+Number(t.금액);});
-        var ks=Object.keys(agg);
-        new Chart(document.getElementById('acc-ch-bu'),{type:'doughnut',data:{labels:ks,datasets:[{data:ks.map(function(k){return agg[k];}),backgroundColor:['#185fa5','#0f6e56','#b45309','#7c3aed','#64748b']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:'사업부별 매출 ('+(new Date().getFullYear()-1)+'년~현재)'},legend:{position:(window.innerWidth<820?'bottom':'right')}}}});
+        var ks=Object.keys(agg).sort(function(a,b){return agg[b]-agg[a];});
+        new Chart(document.getElementById('acc-ch-bu'),{type:'doughnut',data:{labels:ks,datasets:[{data:ks.map(function(k){return agg[k];}),backgroundColor:['#185fa5','#0f6e56','#b45309','#7c3aed','#64748b']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:'사업부별 매출 ('+new Date().getFullYear()+'년 확정)'},legend:{position:(window.innerWidth<820?'bottom':'right')}}}});
       });
       new Chart(document.getElementById('acc-ch-month'),{type:'line',data:{labels:ms.map(function(m){return String(m.월).slice(0,7);}),datasets:[{label:'수입',data:ms.map(function(m){return m.수입합계;}),borderColor:'#0f6e56'},{label:'지출(고정+변동)',data:ms.map(function(m){return Number(m.고정비합계||0)+Number(m.변동지출합계||0);}),borderColor:'#b91c1c'},{label:'순이익',data:ms.map(function(m){return m.순이익;}),borderColor:'#185fa5'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:'월별 손익 추이 (당해)'}},scales:{y:{ticks:{callback:function(v){return (v/1000000)+'M';}}}}}});
     }catch(e){}
@@ -8042,9 +8043,15 @@ document.addEventListener('DOMContentLoaded',init);
     sbc().from('acc_거래내역').select('*').gte('거래일',S.month).lte('거래일',monEnd()).order('거래일',{ascending:false}).limit(500)
     .then(function(r){
       if(r.error){err(r.error);return;}
-      var rows=r.data||[],ti=0,to=0;
-      rows.forEach(function(t){if(t.상태!=='취소'){if(t.구분==='수입')ti+=Number(t.금액);else to+=Number(t.금액);}});
-      var h=monNav()+'<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">'+kpi('수입',ti)+kpi('지출',to)+kpi('순이익',ti-to)+'</div><div id="acc-tx-form"></div>'
+      /*RP-ACC-KPI v1.1 확정/예정 분리 — 예정은 자금계획이지 손익이 아니다 (2026-08-05)*/
+      var rows=r.data||[],ti=0,to=0,pl=0;
+      rows.forEach(function(t){
+        if(t.상태==='확정'){if(t.구분==='수입')ti+=Number(t.금액);else to+=Number(t.금액);}
+        else if(t.상태==='예정'&&t.구분==='지출')pl+=Number(t.금액);
+      });
+      var h=monNav()+'<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">'
+        +kpi('수입(확정)',ti)+kpi('지출(확정)',to)+kpi('순이익(확정)',ti-to)
+        +(pl?kpi('예정지출(자금계획)',pl):'')+'</div><div id="acc-tx-form"></div>'
         +'<table class="acc-table"><tr><th>거래일</th><th>구분</th><th>카테고리</th><th>사업부</th><th>금액</th><th>거래처</th><th>수단</th><th>상태</th><th>적요</th><th></th></tr>';
       rows.forEach(function(t){
         h+='<tr style="'+(t.상태==='취소'?'opacity:.45;text-decoration:line-through':'')+'"><td>'+t.거래일+'</td><td>'+t.구분+'</td><td>'+esc(catName(t.카테고리_id))+'</td><td>'+esc(t.사업부||'')+'</td>'

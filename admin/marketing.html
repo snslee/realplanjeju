@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.11.0</title>
+<title>리얼플랜제주 마케팅 운영 v1.12.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -98,7 +98,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.11.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.12.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -112,14 +112,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     <div class="nav-section">콘텐츠</div>
     <div class="nav-item" title="초안 보관소" onclick="switchTab('t2',this)"><span>📝</span>초안 보관소</div>
     <div class="nav-item" title="리라이트" onclick="switchTab('t15',this)"><span>🔁</span>리라이트</div>
-    <div class="nav-item" title="편성안" onclick="switchTab('tplan',this)"><span>📋</span>편성안 <b id="plan-badge" style="margin-left:auto;font-size:.7rem;color:#dc2626"></b></div>
-    <div class="nav-item" title="콘텐츠 슬롯" onclick="switchTab('t3',this)"><span>🎯</span>콘텐츠 슬롯</div>
+    <div class="nav-item" title="편성(승인대기·슬롯표·달력)" onclick="switchTab('tsch',this);schOpen()"><span>📆</span>편성 <b id="plan-badge" style="margin-left:auto;font-size:.7rem;color:#dc2626"></b></div>
     <div class="nav-item" title="포트폴리오" onclick="switchTab('t10',this)"><span>💼</span>포트폴리오</div>
     <div class="nav-item" title="사실관계DB" onclick="switchTab('t11',this)"><span>📚</span>사실관계DB</div>
     <div class="nav-item" title="미디어 관리(영상·사진·음악·설계)" onclick="switchTab('t14',this);mediaInit()"><span>🎬</span>미디어 관리</div>
     <div class="nav-section">설정</div>
     <div class="nav-item" title="작성 가이드" onclick="switchTab('t6',this)"><span>🎨</span>작성 가이드</div>
-    <div class="nav-item" title="스케줄" onclick="switchTab('t7',this)"><span>📅</span>스케줄</div>
     <div class="nav-item" title="키워드·인사이트" onclick="switchTab('t8',this)"><span>🔑</span>키워드·인사이트</div>
     <div class="nav-item" title="채널 소식" onclick="switchTab('tchan',this);loadChannelRules()"><span>📡</span>채널 소식</div>
     <div class="nav-section">SNS</div>
@@ -1023,7 +1021,7 @@ function secReveal(el){
   var nav=p.querySelector(':scope > .sec-nav');if(!nav||!nav._groups)return;
   for(var i=0;i<nav._groups.length;i++){var g=nav._groups[i];for(var j=0;j<g.els.length;j++){if(g.els[j]===el||g.els[j].contains(el)){if(nav._cur!==i&&nav._cur!==-1)_secApply(nav,i);return;}}}
 }
-function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');setTimeout(buildSecNavs,400);if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2'){loadDrafts();loadRewritePriority();}if(id==='t15')loadRewriteTab();if(id==='t3')loadSlots();if(id==='tplan')loadSlotPlan();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6'){loadAlgo();loadSkillRules();}if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();if(id==='t12'){var fbf=document.getElementById('fb-frame');if(fbf&&!fbf.getAttribute('src'))fbf.setAttribute('src','/blog.html');loadFunnelRecon();}}
+function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');setTimeout(buildSecNavs,400);if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2'){loadDrafts();loadRewritePriority();}if(id==='t15')loadRewriteTab();if(id==='t3')loadSlots();if(id==='tsch')schOpen();if(id==='tplan')loadSlotPlan();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6'){loadAlgo();loadSkillRules();}if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();if(id==='t12'){var fbf=document.getElementById('fb-frame');if(fbf&&!fbf.getAttribute('src'))fbf.setAttribute('src','/blog.html');loadFunnelRecon();}}
 
 /* ══ 편성안 (0기 slot-planner) — 2026-08-04 신설 ══════════════════════════
    읽기 전용이다. 승인·반려는 rpc_slot_plan_approve/reject 만 쓰고 anon으로 직접
@@ -3219,6 +3217,115 @@ window.renderYtList=function(){
     +'<td>'+(x.영상id?'<a href="https://youtu.be/'+E(x.영상id)+'" target="_blank" style="color:#2563eb">열기</a>':'')+'</td></tr>';}).join('')
     ||'<tr><td colspan="8" style="padding:12px;color:#64748b">해당 조건에 영상이 없습니다</td></tr>';
 };
+})();
+</script>
+
+<script>
+/* ══ 편성 통합 v1.0 (2026-08-05) — 편성안 + 콘텐츠 슬롯 + 스케줄 → 「📆 편성」 1탭 3보기
+   원칙: HTML 수술을 하지 않는다. 기존 패널 3개를 런타임에 옮겨 담아
+         id·로더 함수를 전부 보존한다(회귀 0). 사진관리 대장 wrap과 같은 방식.
+   승인·반려는 rpc_slot_plan_approve / rpc_slot_plan_reject 만 쓴다(직접 UPDATE 금지). */
+(function(){
+var SUB=[['plan','tplan','📋 승인대기','loadSlotPlan'],
+         ['slots','t3','🎯 슬롯표','loadSlots'],
+         ['cal','t7','📅 달력','initCalendar']];
+function esc(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+window.schInit=function(){
+  if(document.getElementById('tsch'))return true;
+  var first=document.getElementById('tplan'); if(!first)return false;
+  var w=document.createElement('div'); w.className='tab-panel'; w.id='tsch';
+  w.innerHTML='<div style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
+   +'<div><h2 style="font-size:1.2rem;font-weight:700">📆 편성</h2>'
+   +'<p style="font-size:.82rem;color:#64748b;margin-top:2px">승인 전(편성안) → 확정(슬롯표) → 달력. <b>같은 일의 세 가지 보기</b>이고 데이터는 mk_slot_plan → mk_blog_slots 하나로 흐릅니다.</p></div>'
+   +'<div id="sch-act"></div></div>'
+   +'<div id="sch-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>'
+   +'<div id="sch-host"></div>';
+  first.parentNode.insertBefore(w,first);
+  var host=w.querySelector('#sch-host');
+  SUB.forEach(function(s){
+    var p=document.getElementById(s[1]); if(!p)return;
+    p.classList.remove('tab-panel'); p.classList.remove('active');
+    p.classList.add('sch-sub'); p.style.display='none';
+    host.appendChild(p);
+  });
+  document.getElementById('sch-chips').innerHTML=SUB.map(function(s){
+    return '<button class="filter-btn sch-c" data-v="'+s[0]+'" onclick="schView(\''+s[0]+'\',this)">'+s[2]+'</button>';}).join('');
+  return true;
+};
+window.schView=function(v,el){
+  var s=SUB.filter(function(x){return x[0]===v;})[0]; if(!s)return;
+  SUB.forEach(function(x){var p=document.getElementById(x[1]); if(p)p.style.display=(x[0]===v?'':'none');});
+  document.querySelectorAll('#sch-chips .sch-c').forEach(function(b){b.classList.remove('active');});
+  (el||document.querySelector('#sch-chips .sch-c[data-v="'+v+'"]')).classList.add('active');
+  window._schV=v; try{localStorage.setItem('rp_schView',v);}catch(e){}
+  if(typeof window[s[3]]==='function'){try{window[s[3]]();}catch(e){console.error(s[3],e);}}
+  if(v==='plan') setTimeout(schActions,900);
+  else document.getElementById('sch-act').innerHTML='';
+};
+window.schOpen=function(){
+  if(!schInit())return;
+  var badge=document.getElementById('plan-badge');
+  var pending=badge&&badge.textContent.indexOf('승인대기')>=0;
+  var v=window._schV||(pending?'plan':(function(){try{return localStorage.getItem('rp_schView');}catch(e){return null;}})()||'slots');
+  schView(v);
+};
+
+/* ── 승인 / 반려 버튼 (2단 클릭 — 실수 방지) ── */
+function curPlan(){var s=document.getElementById('plan-sel');return s&&s.value?s.value:null;}
+function curState(){
+  var k=document.getElementById('plan-kpi'); if(!k)return '';
+  var t=k.innerText||''; return /초안/.test(t)?'초안':(/확정/.test(t)?'확정':(/반려/.test(t)?'반려':''));
+}
+window.schActions=function(){
+  var box=document.getElementById('sch-act'); if(!box)return;
+  var id=curPlan(), st=curState();
+  if(!id||st!=='초안'){box.innerHTML=st?'<span style="font-size:.78rem;color:#64748b">상태 '+esc(st)+' — 처리할 것 없음</span>':'';return;}
+  box.innerHTML='<div style="display:flex;gap:6px;align-items:center">'
+   +'<button class="filter-btn" style="border-color:#16a34a;color:#16a34a;font-weight:700" onclick="schAsk(\'approve\')">👍 승인</button>'
+   +'<button class="filter-btn" style="border-color:#dc2626;color:#dc2626" onclick="schAsk(\'reject\')">⛔ 반려</button></div>';
+};
+window.schAsk=function(mode){
+  var box=document.getElementById('sch-act'); if(!box)return;
+  var id=curPlan(); if(!id)return;
+  if(mode==='approve'){
+    box.innerHTML='<div style="display:flex;gap:6px;align-items:center;background:#f0fdf4;border:1px solid #16a34a;border-radius:8px;padding:6px 10px">'
+     +'<span style="font-size:.76rem;color:#166534">이 편성안을 <b>콘텐츠 슬롯으로 확정</b>합니다. 진행 중인 슬롯은 건드리지 않습니다.</span>'
+     +'<button class="filter-btn" style="border-color:#16a34a;background:#16a34a;color:#fff;font-weight:700" onclick="schRun(\'approve\')">정말 승인</button>'
+     +'<button class="filter-btn" onclick="schActions()">취소</button></div>';
+  }else{
+    box.innerHTML='<div style="display:flex;gap:6px;align-items:center;background:#fef2f2;border:1px solid #dc2626;border-radius:8px;padding:6px 10px">'
+     +'<input id="sch-why" placeholder="반려 사유(필수)" style="border:1px solid #fecaca;border-radius:6px;padding:5px 9px;font-size:.78rem;min-width:200px">'
+     +'<button class="filter-btn" style="border-color:#dc2626;background:#dc2626;color:#fff;font-weight:700" onclick="schRun(\'reject\')">정말 반려</button>'
+     +'<button class="filter-btn" onclick="schActions()">취소</button></div>';
+  }
+};
+window.schRun=async function(mode){
+  var id=curPlan(); if(!id)return;
+  var box=document.getElementById('sch-act');
+  var why=(document.getElementById('sch-why')||{}).value||'';
+  if(mode==='reject'&&!why.trim()){if(window.showToast)showToast('반려 사유를 적어주세요');return;}
+  box.innerHTML='<span style="font-size:.78rem;color:#64748b">처리 중...</span>';
+  try{
+    var r = (mode==='approve')
+      ? await sb.rpc('rpc_slot_plan_approve',{p_plan_id:id})
+      : await sb.rpc('rpc_slot_plan_reject',{p_plan_id:id,'p_사유':why.trim()});
+    if(r.error)throw r.error;
+    if(window.showToast)showToast(mode==='approve'?'승인 완료 — 콘텐츠 슬롯에 반영됐습니다':'반려 처리됐습니다');
+    var b=document.getElementById('plan-badge'); if(b&&mode!=='approve')b.textContent='';
+    if(mode==='approve'&&b)b.textContent='';
+    if(typeof loadSlotPlan==='function')await loadSlotPlan();
+    if(typeof loadSlots==='function'){try{loadSlots();}catch(e){}}
+    setTimeout(schActions,800);
+  }catch(e){
+    box.innerHTML='<span style="font-size:.78rem;color:#b91c1c">실패: '+esc(e.message||e)+'</span>';
+    console.error('schRun',e);
+  }
+};
+/* 편성안 선택 변경 시 버튼 상태 재계산 */
+document.addEventListener('change',function(e){
+  if(e.target&&e.target.id==='plan-sel')setTimeout(schActions,900);
+},true);
 })();
 </script>
 

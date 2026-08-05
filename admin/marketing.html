@@ -98,7 +98,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.9.6</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.9.7</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -2498,7 +2498,7 @@ async function loadRewriteTab(){
 }
 function rwPick(){
   var el=document.getElementById('rw2-pick'); if(!el)return;
-  var pool=RW.rows.filter(function(r){return !r.잠금&&r.진행===''&&r.상업;});
+  var pool=RW.rows.filter(function(r){return !r.잠금&&r.진행!=='진행중'&&r.상업;});
   var one=pool.filter(function(r){return String(r.트랙||'').indexOf('①')===0;}).sort(function(a,b){return b.우선점수-a.우선점수;})[0]
         ||pool.sort(function(a,b){return b.우선점수-a.우선점수;})[0];
   el.innerHTML=one?(rwEsc(one.채널)+' · <b>'+one.순위+'위</b> · '+rwEsc(one.핵심키워드)+' <span style="color:#7f1d1d">(우선점수 '+one.우선점수+')</span>'):'대상 없음';
@@ -2522,7 +2522,7 @@ function renderRwQueue(){
   tb.innerHTML=l.slice(0,60).map(function(r){
     var i=RW.rows.indexOf(r);
     var act=r.잠금?'<span style="color:#94a3b8;font-size:.72rem">🔒 손대지 않음</span>'
-      :(r.진행==='진행중'?'<span style="color:#b45309;font-size:.72rem;font-weight:700">⏳ 진행중</span>'
+      :(r.진행==='진행중'?'<span style="color:#b45309;font-size:.72rem;font-weight:700">⏳ 진행중'+(r.착수_경과일!=null?' D+'+r.착수_경과일+(r.착수_경과일>14?' 🔥':''):'')+'</span>'
       :(r.진행==='완료'?'<span style="color:#16a34a;font-size:.72rem;font-weight:700">✅ 완료</span>'
       :'<button class="btn-sm btn-copy" style="font-size:.7rem" onclick="rwStart('+i+')">착수하기</button>'));
     return '<tr'+(r.잠금?' style="background:#f8fafc;color:#94a3b8"':'')+'>'
@@ -2532,7 +2532,7 @@ function renderRwQueue(){
       +'<td>'+rwEsc(r.핵심키워드)+(r.상업?' <span style="font-size:.62rem;background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:6px">B2B</span>':'')+'</td>'
       +'<td>'+(r.검색량==null?'-':Number(r.검색량).toLocaleString())+'</td>'
       +'<td>'+(r.실유입==null?'-':r.실유입)+'</td>'
-      +'<td style="font-size:.72rem">_r'+r.다음_회차+'</td>'
+      +'<td style="font-size:.72rem">_r'+r.다음_회차+(r.과회차?' <span title="4회차 이상 — 리라이트로 안 되는 글일 수 있다" style="color:#b45309">⚠</span>':'')+(r.병합_건수>1?'<br><span title="'+rwEsc(r.병합_키워드||'')+'" style="font-size:.62rem;color:#7e22ce">+'+(r.병합_건수-1)+'키워드</span>':'')+'</td>'
       +'<td>'+(r.본문보유?'<span style="color:#16a34a">✔</span>':'<span style="color:#dc2626" title="원본 본문이 DB에 없다 — 라이브 수집 필요">✕</span>')+'</td>'
       +'<td style="font-size:.72rem">'+rwEsc(String(r.트랙||'').slice(0,1))+'</td>'
       +'<td>'+act+'</td></tr>';
@@ -2640,14 +2640,14 @@ function renderRwEditor(){
    +'style="width:100%;height:46vh;font-size:.86rem;line-height:1.65;padding:12px;border:1px solid #cbd5e1;border-radius:10px;font-family:inherit">'+rwEsc(body)+'</textarea>'
    +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">'
    +'<button class="btn-sm btn-approve" onclick="rwSaveBody()">💾 저장</button>'
-   +'<button class="btn-sm btn-copy" onclick="rwRecheck()">🔍 재검사(톤·문단)</button>'
+   +'<button class="btn-sm btn-copy" onclick="rwRecheck()">🔍 게이트 재검사</button><button class="btn-sm btn-copy" onclick="rwToneCheck()">🎨 톤만 보기</button>'
    +'<button class="btn-sm btn-copy" onclick="rwCopyBody(this)">📋 본문 전체 복사</button>'
    +(d.상태==='draft'?'<button class="btn-sm btn-approve" onclick="approveDraft(\''+d.id+'\')">✅ 승인</button><button class="btn-sm btn-reject" onclick="openReject(\''+d.id+'\')">❌ 반려</button>':'')
    +'<button class="btn-sm btn-copy" onclick="rwStepBtn(3)">④ 반영판으로 →</button></div>'
    +'<div id="rw2-check" style="margin-top:12px"></div>'
    +'</div></div>';
 }
-async function rwSaveBody(){
+async function rwSaveBody(quiet){
   var d=RW.draft; if(!d)return;
   var v=document.getElementById('rw2-body-edit').value;
   var nv=rwIsNaver(), p={};
@@ -2655,6 +2655,7 @@ async function rwSaveBody(){
   try{
     const{error}=await sb.from('mk_blog_drafts').update(p).eq('id',d.id);
     if(error)throw error;
+    if(quiet===true)return;
     showToast('💾 저장 완료 — UTM 회차는 자동 정합됩니다');
     await renderRwWrite();
   }catch(e){showToast('저장 실패: '+(e.message||e));}
@@ -2665,6 +2666,33 @@ async function rwCopyBody(btn){
   if(btn){var o=btn.textContent;btn.textContent='✅ 복사됨';setTimeout(function(){btn.textContent=o;},1400);}
 }
 async function rwRecheck(){
+  var el=document.getElementById('rw2-check'); if(!el)return;
+  var d=RW.draft; if(!d){el.innerHTML='<span style="color:#dc2626">초안이 없습니다</span>';return;}
+  el.innerHTML='<span class="loading">게이트 검사 중...</span>';
+  try{
+    await rwSaveBody(true);
+    const{data:g,error:ge}=await sb.rpc('rpc_rewrite_recheck',{p_draft_id:d.id});
+    if(ge)throw ge;
+    RW.gate=(g&&g['게이트'])||null;
+    renderRwGate(el,RW.gate);
+    return;
+  }catch(e){el.innerHTML='<span style="color:#dc2626">재검사 실패: '+rwEsc(e.message||e)+'</span>';return;}
+}
+function renderRwGate(el,g){
+  if(!g){el.innerHTML='<span style="color:#dc2626">게이트 결과 없음</span>';return;}
+  var pass=g['통과']===true, sc=g['점수'], f=g['실패']||[], w=g['경고']||[], m=g['실측']||{};
+  var head='<div style="font-weight:800;font-size:.9rem;color:'+(pass?'#16a34a':'#dc2626')+'">'+rwEsc(g['판정']||'')+'</div>';
+  var fb=f.length?'<div style="margin-top:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:9px 12px;font-size:.8rem;color:#7f1d1d"><b>차단 — 이건 고쳐야 라이브에 못 올립니다</b><ul style="margin:5px 0 0 16px">'+f.map(function(x){return '<li>'+rwEsc(x)+'</li>';}).join('')+'</ul></div>':'';
+  var wb=w.length?'<div style="margin-top:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:9px 12px;font-size:.8rem;color:#78350f"><b>권장 — 채우면 좋습니다(막지는 않습니다)</b><ul style="margin:5px 0 0 16px">'+w.map(function(x){return '<li>'+rwEsc(x)+'</li>';}).join('')+'</ul></div>':'';
+  var pills=[rwPill('점수 '+sc,pass?'#16a34a':'#dc2626')];
+  if(m['자수']!=null)pills.push(rwPill('자수 '+Number(m['자수']).toLocaleString(),'#334155'));
+  if(m['소제목']!=null)pills.push(rwPill('소제목 '+m['소제목'],m['소제목']>0?'#16a34a':'#dc2626'));
+  if(m['표']!=null)pills.push(rwPill('표 '+m['표']+'/구분행 '+m['구분행'],(m['표']===m['구분행'])?'#16a34a':'#dc2626'));
+  if(m['이미지마커']!=null)pills.push(rwPill('이미지마커 '+m['이미지마커'],'#7e22ce'));
+  if(m['UTM회차']!=null)pills.push(rwPill('_r'+m['UTM회차'],'#2563eb'));
+  el.innerHTML='<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px">'+head+'<div style="margin-top:6px">'+pills.join('')+'</div>'+fb+wb+'</div>';
+}
+async function rwToneCheck(){
   var el=document.getElementById('rw2-check'); if(!el)return;
   var v=document.getElementById('rw2-body-edit').value;
   el.innerHTML='<span class="loading">검사 중...</span>';
@@ -2699,7 +2727,7 @@ async function renderRwPublish(){
      +'<table class="tbl"><thead><tr><th>미디어</th><th>요구</th><th>배정</th><th>판정</th></tr></thead><tbody>'
      +'<tr><td>실사진(G19)</td><td>'+need['실사진']+'</td><td>'+got['실사진']+'</td><td>'+(got['실사진']>=need['실사진']?'✅':'❌')+'</td></tr>'
      +'<tr><td>제작물(G21) — '+rwEsc(need['제작물종류']||'')+'</td><td>'+need['제작물']+'</td><td>'+got['제작물']+'</td><td>'+(got['제작물']>=need['제작물']?'✅':'❌')+'</td></tr>'
-     +'<tr><td>영상'+(nv?'':' (티스토리는 2026-02-23 업로드 폐지)')+'</td><td>'+need['영상']+'</td><td>'+got['영상']+'</td><td>'+(got['영상']>=need['영상']?'✅':'❌')+'</td></tr>'
+     +'<tr><td>영상 <span style="font-size:.66rem;background:#fef3c7;color:#78350f;padding:1px 6px;border-radius:6px">권장</span>'+(nv?'':' (티스토리는 2026-02-23 업로드 폐지)')+'</td><td>'+(need['영상_권장']||0)+'</td><td>'+got['영상']+'</td><td>'+(got['영상']>=(need['영상_권장']||0)?'✅':'<span style="color:#b45309">➖ 권장 미달</span>')+'</td></tr>'
      +'</tbody></table>'
      +(bad.length?'<div style="margin-top:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 13px;font-size:.82rem;color:#7f1d1d">'
         +'<b>미달 — 라이브 반영 전에 채웁니다.</b> 미사용 실사진 재고 '+(got['미사용재고']||0)+'장이 남아 있습니다(새로 만들기 전에 재고 먼저).<ul style="margin:6px 0 0 16px">'
@@ -2709,11 +2737,47 @@ async function renderRwPublish(){
      +'<tr><td>네이버</td><td>대표 직접</td><td>대표 직접</td></tr>'
      +'<tr><td>티스토리</td><td>클로드 직접</td><td><b>대표 직접</b> — 라이브 수정 경로에 파일 업로드가 없습니다</td></tr>'
      +'</tbody></table></div>'
+     +'<div id="rw2-pubbox" style="margin-top:12px"></div>'
      +'<div style="margin-top:12px;font-size:.82rem;color:#475569"><b>반영 체크리스트</b><br>'
      +'① 원본 URL·발행일·핵심키워드 그대로 &nbsp; ② 기존 H2·이미지 삭제 0건 &nbsp; ③ 제목 앞 「(리라이트)」 프리픽스 제거<br>'
      +'④ 자수 원본 대비 증가 &nbsp; ⑤ '+(nv?'네이버 영상 3종(검색허용·전용 제목/설명/태그·챕터)은 대표 계정 작업':'티스토리는 영상 없이 진행')+' &nbsp; ⑥ 반영 후 D+14 순위 재측정'
      +'</div></div></div>';
+    await rwRenderPubBox();
   }catch(e){box.innerHTML='<div style="color:#dc2626;padding:14px">매트릭스 확인 실패: '+rwEsc(e.message||e)+'</div>';}
+}
+async function rwRenderPubBox(){
+  var el=document.getElementById('rw2-pubbox'), r=RW.sel; if(!el||!r||!r.리라이트_초안_id)return;
+  el.innerHTML='<span class="loading">게이트 확인 중...</span>';
+  try{
+    const{data:g,error}=await sb.rpc('rpc_rewrite_recheck',{p_draft_id:r.리라이트_초안_id});
+    if(error)throw error;
+    var gate=(g&&g['게이트'])||{}, pass=gate['통과']===true, sc=gate['점수'];
+    var done=(r.진행==='완료');
+    el.innerHTML='<div style="background:'+(pass?'#f0fdf4':'#fef2f2')+';border:1px solid '+(pass?'#bbf7d0':'#fecaca')+';border-radius:10px;padding:11px 14px">'
+      +'<div style="font-weight:800;color:'+(pass?'#166534':'#7f1d1d')+'">'+rwEsc(gate['판정']||'')+'</div>'
+      +((gate['실패']||[]).length?'<ul style="margin:6px 0 0 16px;font-size:.8rem;color:#7f1d1d">'+(gate['실패']||[]).map(function(x){return '<li>'+rwEsc(x)+'</li>';}).join('')+'</ul>':'')
+      +((gate['경고']||[]).length?'<ul style="margin:6px 0 0 16px;font-size:.78rem;color:#78350f">'+(gate['경고']||[]).map(function(x){return '<li>'+rwEsc(x)+'(권장)</li>';}).join('')+'</ul>':'')
+      +'<div style="margin-top:10px">'
+      +(done?'<span style="color:#16a34a;font-weight:800">✅ 반영 완료 — 반영일 기록됨</span>'
+            :'<button class="btn-sm '+(pass?'btn-approve':'btn-reject')+'" onclick="rwPublish('+(pass?'false':'true')+')">'
+             +(pass?'🚀 라이브 반영 완료 (반영일·반영전 순위 자동 기록)':'⚠️ 게이트 미통과 — 그래도 완료 처리')+'</button>')
+      +'</div>'
+      +'<div style="margin-top:7px;font-size:.75rem;color:#475569">완료를 찍어야 D+7·D+14 성과 판정이 돌아갑니다. 반영 직전 순위는 이때 스냅샷으로 남습니다(되돌리기 근거).</div>'
+      +'</div>';
+  }catch(e){el.innerHTML='<span style="color:#dc2626">게이트 확인 실패: '+rwEsc(e.message||e)+'</span>';}
+}
+async function rwPublish(force){
+  var r=RW.sel; if(!r||!r.리라이트_초안_id)return;
+  if(force&&!confirm('게이트를 통과하지 못했습니다. 그래도 완료로 기록할까요?'))return;
+  if(!force&&!confirm('라이브 반영을 완료로 기록합니다.\n\n오늘 날짜가 반영일로 남고, 반영 직전 순위가 스냅샷으로 저장됩니다.\n진행할까요?'))return;
+  try{
+    const{data,error}=await sb.rpc('rpc_rewrite_publish',{p_draft_id:r.리라이트_초안_id,p_force:!!force});
+    if(error)throw error;
+    if(data&&data.ok!==true){showToast('완료 실패: '+((data&&data['오류'])||''));return;}
+    showToast('🚀 반영 완료 — '+((data&&data['안내'])||''));
+    await loadRewriteTab();
+    await renderRwPublish();
+  }catch(e){showToast('완료 실패: '+(e.message||e));}
 }
 
 </script>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.12.0</title>
+<title>리얼플랜제주 마케팅 운영 v1.12.1</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -98,7 +98,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.12.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.12.1</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -3308,10 +3308,34 @@ window.schRun=async function(mode){
   box.innerHTML='<span style="font-size:.78rem;color:#64748b">처리 중...</span>';
   try{
     var r = (mode==='approve')
-      ? await sb.rpc('rpc_slot_plan_approve',{p_plan_id:id})
+      ? await sb.rpc('rpc_slot_plan_approve',{p_plan_id:id,p_force:(mode==='approve'&&window._schForce===id)})
       : await sb.rpc('rpc_slot_plan_reject',{p_plan_id:id,'p_사유':why.trim()});
     if(r.error)throw r.error;
-    if(window.showToast)showToast(mode==='approve'?'승인 완료 — 콘텐츠 슬롯에 반영됐습니다':'반려 처리됐습니다');
+    /* ★게이트 응답 처리 (2026-08-05) — ok:false는 예외가 아니라 정상 응답이다.
+       이걸 안 보면 차단됐는데 「승인 완료」라고 잘못 뜬다. */
+    var d=r.data;
+    if(d&&d.ok===false){
+      window._schForce=null;
+      if(d.err==='slot_collision'){
+        var rows=(d['충돌']||[]).map(function(c){
+          return '<li style="margin:3px 0">'+esc(c['사유'])+' · 공통 「'+esc(c['공통'])+'」 · '+c['간격일']+'일<br>'
+            +'<span style="color:#7f1d1d">'+esc(c.a)+'</span><br><span style="color:#7f1d1d">'+esc(c.b)+'</span></li>';}).join('');
+        box.innerHTML='<div style="background:#fef2f2;border:1px solid #dc2626;border-radius:8px;padding:10px 12px;max-width:640px">'
+         +'<div style="font-size:.8rem;font-weight:700;color:#b91c1c">⛔ 승인이 차단됐습니다 — 슬롯간 중복 '+(d['차단']||0)+'건'
+         +(d['경고']?' <span style="font-weight:400;color:#b45309">(경고 '+d['경고']+'건)</span>':'')+'</div>'
+         +'<ul style="margin:6px 0 6px 16px;font-size:.74rem;color:#334155">'+rows+'</ul>'
+         +'<div style="font-size:.72rem;color:#64748b;margin-bottom:6px">편성안을 고치는 게 정석입니다. 알고도 진행하려면 강제 승인하세요(알림에 기록됩니다).</div>'
+         +'<button class="filter-btn" style="border-color:#b45309;color:#b45309;font-weight:700" onclick="window._schForce=\''+id+'\';schRun(\'approve\')">⚠ 그래도 승인</button> '
+         +'<button class="filter-btn" onclick="schActions()">취소</button></div>';
+      }else{
+        box.innerHTML='<span style="font-size:.78rem;color:#b91c1c">거부: '+esc(d.err||JSON.stringify(d))+'</span>';
+      }
+      return;
+    }
+    window._schForce=null;
+    if(window.showToast)showToast(mode==='approve'
+      ?('승인 완료 — 슬롯 '+(d&&d['생성']!=null?d['생성']+'건 ':'')+'반영됐습니다'+(d&&d['차단무시']?' (차단 '+d['차단무시']+'건 무시)':''))
+      :'반려 처리됐습니다');
     var b=document.getElementById('plan-badge'); if(b&&mode!=='approve')b.textContent='';
     if(mode==='approve'&&b)b.textContent='';
     if(typeof loadSlotPlan==='function')await loadSlotPlan();

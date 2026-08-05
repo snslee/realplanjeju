@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.10.1</title>
+<title>리얼플랜제주 마케팅 운영 v1.11.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -98,7 +98,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.10.1</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.11.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -123,9 +123,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     <div class="nav-item" title="키워드·인사이트" onclick="switchTab('t8',this)"><span>🔑</span>키워드·인사이트</div>
     <div class="nav-item" title="채널 소식" onclick="switchTab('tchan',this);loadChannelRules()"><span>📡</span>채널 소식</div>
     <div class="nav-section">SNS</div>
-    <div class="nav-item" title="쓰레드 운영" onclick="switchTab('t13',this);loadThreadsSlots()"><span>🧵</span>쓰레드 운영</div>
+    <div class="nav-item" title="SNS 운영(쓰레드·유튜브)" onclick="switchTab('t13',this);snsInit()"><span>📱</span>SNS 운영</div>
     <div class="nav-section">실험</div>
-    <div class="nav-item" title="무인풀오토 실험" onclick="switchTab('t9',this)"><span>🤖</span>무인풀오토 실험</div>
+    <div class="nav-item" title="무인풀오토 실험" onclick="switchTab('t9',this)"><span>🤖</span>무인풀오토 실험 <span style="margin-left:auto;font-size:.62rem;color:#94a3b8">중단</span></div>
   </nav>
   <!-- mobile-nav 제거: 사이드바 아이콘 축소형으로 통일(A안 v1.8.1) — 전 탭 모바일 접근 -->
   <main class="main">
@@ -661,10 +661,15 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
       </script>
     </div>
     <div class="tab-panel" id="t13">
-      <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div><h2 style="font-size:1.2rem;font-weight:700">🧵 쓰레드 운영</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">@realplan_travel · mk_sns_slots · 소통 6 : 가치 3 : 홍보 1 · 발행 후 30분 답글</p></div>
-        <button onclick="loadThreadsSlots()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
+      <div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><h2 style="font-size:1.2rem;font-weight:700">📱 SNS 운영</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">쓰레드 @realplan_travel · 유튜브 <b>리얼플랜여행</b> 621편·구독 2,860 · 채널 <a href="https://www.youtube.com/@realplan_travel" target="_blank" style="color:#2563eb">@realplan_travel</a></p></div>
+        <button onclick="snsRefresh()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        <button class="filter-btn sns-t active" onclick="snsTab('threads',this)">🧵 쓰레드</button>
+        <button class="filter-btn sns-t" onclick="snsTab('youtube',this)">▶️ 유튜브</button>
+      </div>
+      <div id="sns-threads" class="sns-panel">
       <div id="t13-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:14px"></div>
       <div style="background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:14px">🧵 예정 시각에 텔레그램으로 복붙 카드가 자동 발송됩니다(플레이스 소식과 동일). 게시 후 좋아요·댓글·저장·답글완료를 입력하면 역제안 엔진이 학습합니다. 쓰레드는 해시태그가 아닌 <b>본문 키워드</b>로 노출돼요.</div>
       <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px">
@@ -677,7 +682,36 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
       async function loadThreadsSlots(){var box=document.getElementById('t13-body');if(!box)return;box.innerHTML='<tr><td colspan="6" style="padding:12px;color:#64748b">로딩 중...</td></tr>';try{var r=await sb.from('mk_sns_slots').select('예정일시,사업부,유형,홍보등급,핵심키워드,상태,좋아요,댓글,저장,공유,답글완료').eq('플랫폼','쓰레드').order('예정일시');if(r.error)throw r.error;var rows=r.data||[];var pub=rows.filter(function(x){return x.상태==='발행'}).length;var wt=rows.filter(function(x){return x.상태==='대기'||x.상태==='카드발송'}).length;document.getElementById('t13-kpi').innerHTML=t13kpi('전체',rows.length)+t13kpi('발행',pub)+t13kpi('대기/발송',wt);box.innerHTML=rows.map(function(x){var dt=x.예정일시?new Date(x.예정일시).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'-';var react=(x.좋아요||0)+'♥ '+(x.댓글||0)+'💬 '+(x.저장||0)+'🔖';var reply=x.답글완료?'✅':'—';return '<tr style="border-top:1px solid #f1f5f9"><td style="padding:8px">'+dt+'</td><td>'+(x.사업부||'')+'</td><td>'+(x.유형||'')+'</td><td>'+(x.홍보등급||'')+'</td><td>'+(x.상태||'')+'</td><td>'+react+' / 답글'+reply+'</td></tr>';}).join('')||'<tr><td colspan="6" style="padding:12px;color:#64748b">카드 없음</td></tr>';}catch(e){box.innerHTML='<tr><td colspan="6" style="padding:12px;color:#dc2626">오류: '+(e&&e.message||e)+'</td></tr>';}}
       function t13kpi(l,v){return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px"><div style="font-size:.72rem;color:#64748b">'+l+'</div><div style="font-size:1.4rem;font-weight:700">'+v+'</div></div>';}
       </script>
+      </div>
+      <div id="sns-youtube" class="sns-panel" style="display:none">
+        <div id="yt-warn" style="display:none;font-size:.78rem;padding:9px 12px;border-radius:8px;margin-bottom:12px"></div>
+        <div id="yt-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
+
+        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">① 채널 현황 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_assets 정본 · 매주 월 09:00 자동 수집(youtube-inventory)</span></h3></div>
+        <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">형식</th><th style="text-align:right">편수</th><th style="text-align:right">총조회</th><th style="text-align:right">평균</th><th style="text-align:right">최고</th><th>마지막 발행</th></tr></thead><tbody id="yt-form"><tr><td colspan="6" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody></table></div>
+        <div id="yt-trend" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;font-size:.76rem;margin-bottom:16px;color:#64748b"></div>
+
+        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">② 편성 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_slots · 시즌 창을 놓치면 1년 밀린다</span></h3></div>
+        <div id="yt-season" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px"></div>
+        <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:16px"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">발행일</th><th>코너</th><th>핵심키워드</th><th>제목</th><th>상태</th></tr></thead><tbody id="yt-slots"><tr><td colspan="5" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody></table></div>
+
+        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">③ 성과 · Phase A 졸업 조건 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_metrics D+7/D+28 · 4개 충족 시 대표 출연 착수</span></h3></div>
+        <div id="yt-grad" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:.78rem;margin-bottom:16px"></div>
+
+        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">④ 재고 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· 발행분 621편(재활용 후보) + 미발행 재료 mk_video_sources</span></h3></div>
+        <div id="yt-src" style="margin-bottom:10px"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center">
+          <button class="filter-btn yt-f active" onclick="ytFilter('b2b',this)">B2B 21편</button>
+          <button class="filter-btn yt-f" onclick="ytFilter('long',this)">롱폼 41편</button>
+          <button class="filter-btn yt-f" onclick="ytFilter('top',this)">조회 상위</button>
+          <button class="filter-btn yt-f" onclick="ytFilter('summer',this)">여름 소재</button>
+          <input id="yt-q" placeholder="제목 검색" oninput="renderYtList()" style="border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;font-size:.8rem;min-width:160px">
+          <span id="yt-cnt" style="font-size:.74rem;color:#64748b"></span>
+        </div>
+        <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px;max-height:520px"><table style="width:100%;border-collapse:collapse;font-size:.76rem"><thead><tr style="background:#f8fafc;text-align:left;position:sticky;top:0"><th style="padding:8px">제목</th><th style="width:60px">형식</th><th style="width:64px;text-align:right">조회</th><th style="width:56px;text-align:right">길이</th><th style="width:70px">시즌</th><th style="width:70px">대상</th><th style="width:80px">현장실측</th><th style="width:56px"></th></tr></thead><tbody id="yt-list"><tr><td colspan="8" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody></table></div>
+      </div>
     </div>
+
     <div class="tab-panel" id="t9">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div><h2 style="font-size:1.2rem;font-weight:700">🤖 초벌 생성 큐</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">3기 초안 에이전트 대기 중 · 구 blog-autogen-v2/autogen-async-worker는 2026-08-04 폐기(적재 실적 0건·게이트 미구현). 섹션 분할 상태머신(mk_autogen_jobs)만 3기로 이식합니다.</p></div>
@@ -3008,6 +3042,182 @@ function renderDesigns(){
     +'<td style="padding:8px;text-align:right;color:'+((+d.지출_금액_usd)>0?'#b45309':'#16a34a')+'">$'+(+d.지출_금액_usd||0).toFixed(2)+'</td></tr>';}).join('')
   +'</tbody></table></div>';
 }
+})();
+</script>
+
+<script>
+/* ══ SNS 운영 v1.0 (2026-08-05) — 쓰레드 + 유튜브 통합 ═══════════════════════
+   유튜브 정본: mk_youtube_assets(발행분 621) · mk_video_sources(미발행 재료)
+               mk_youtube_slots(편성) · mk_youtube_metrics(성과 D+7/D+28)
+   읽기 전용. 채널 실변경(재생목록·메타)은 EF youtube-notice + 대표 승인 경로만 쓴다. */
+(function(){
+var _yt={assets:[],src:[],slots:[],metrics:[],loaded:false,f:'b2b'};
+function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function N(n){return (+n||0).toLocaleString();}
+function kpi(t,v,sub,col){return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:11px 14px"><div style="font-size:.71rem;color:#64748b">'+E(t)+'</div><div style="font-size:1.16rem;font-weight:800;margin-top:2px'+(col?';color:'+col:'')+'">'+E(v)+'</div>'+(sub?'<div style="font-size:.68rem;color:#94a3b8;margin-top:2px">'+E(sub)+'</div>':'')+'</div>';}
+
+window.snsTab=function(k,el){
+  ['threads','youtube'].forEach(function(x){var p=document.getElementById('sns-'+x);if(p)p.style.display=(x===k?'':'none');});
+  document.querySelectorAll('#t13 .sns-t').forEach(function(b){b.classList.remove('active');});
+  if(el)el.classList.add('active');
+  if(k==='youtube') ytInit();
+  if(k==='threads'&&typeof loadThreadsSlots==='function'&&!window._snsThOnce){window._snsThOnce=1;loadThreadsSlots();}
+};
+window.snsRefresh=function(){
+  var on=document.getElementById('sns-youtube');
+  if(on&&on.style.display!=='none'){_yt.loaded=false;ytInit(true);}
+  else if(typeof loadThreadsSlots==='function')loadThreadsSlots();
+};
+window.snsInit=function(){if(typeof loadThreadsSlots==='function'&&!window._snsThOnce){window._snsThOnce=1;loadThreadsSlots();}};
+
+/* ── 시즌 창 D-day ── */
+var SEASON={'여름':[6,8],'가을':[10,11],'겨울':[12,2],'봄':[3,4]};
+function seasonWindow(s){
+  var w=SEASON[s]; if(!w) return null;
+  var now=new Date(), y=now.getFullYear(), m=now.getMonth()+1;
+  var inWin = (w[0]<=w[1]) ? (m>=w[0]&&m<=w[1]) : (m>=w[0]||m<=w[1]);
+  var endY=y, endM=w[1];
+  if(!inWin){ // 다음 창 시작
+    var sy=y; if(m>w[1]&&w[0]<=w[1]) sy=y+1; else if(w[0]>w[1]&&m>w[1]&&m<w[0]) sy=y;
+    var start=new Date(sy,w[0]-1,1);
+    if(start<now) start=new Date(sy+1,w[0]-1,1);
+    return {in:false,days:Math.ceil((start-now)/86400000),label:w[0]+'월 개시'};
+  }
+  if(w[0]>w[1]&&m>=w[0]) endY=y+1;
+  var end=new Date(endY,endM,0,23,59,59);
+  return {in:true,days:Math.ceil((end-now)/86400000),label:endM+'/'+end.getDate()+' 마감'};
+}
+
+window.ytInit=async function(force){
+  if(_yt.loaded&&!force)return; _yt.loaded=true;
+  var warn=document.getElementById('yt-warn');
+  try{
+    var r1=await sb.from('mk_youtube_assets').select('영상id,제목,발행일,조회수,좋아요,댓글수,길이_초,형식,주제분류,지역,대상,b2b_전환가치,재생목록,촬영시즌,시점고지,예약발행월,현장실측').order('조회수',{ascending:false}).limit(1000);
+    var r2=await sb.from('mk_video_sources').select('분류,편수,길이_초,해상도,지역,사업부,롱폼_활용등급,얼굴포함,저작권,사용여부').order('롱폼_활용등급');
+    var r3=await sb.from('mk_youtube_slots').select('*').order('발행일',{ascending:true}).limit(200);
+    var r4=await sb.from('mk_youtube_metrics').select('*').order('수집_시각',{ascending:false}).limit(400);
+    if(r1.error)throw r1.error;
+    _yt.assets=r1.data||[]; _yt.src=r2.data||[]; _yt.slots=r3.data||[]; _yt.metrics=r4.data||[];
+    if(!_yt.assets.length&&warn){warn.style.display='';warn.style.cssText+=';background:#fef2f2;border:1px solid #fecaca;color:#b91c1c';warn.innerHTML='⛔ 재고 0건으로 조회됨 — RLS SELECT 정책을 확인하세요(mk_youtube_assets).';}
+    else if(warn)warn.style.display='none';
+    renderYtKpi(); renderYtForm(); renderYtTrend(); renderYtSeason(); renderYtSlots(); renderYtGrad(); renderYtSrc(); renderYtList();
+  }catch(e){
+    if(warn){warn.style.display='';warn.style.cssText+=';background:#fef2f2;border:1px solid #fecaca;color:#b91c1c';warn.innerHTML='⛔ 조회 실패: '+E(e.message||e);}
+    console.error('ytInit',e);
+  }
+};
+
+function renderYtKpi(){
+  var a=_yt.assets, tot=a.reduce(function(s,x){return s+(+x.조회수||0);},0);
+  var last=a.reduce(function(m,x){return (x.발행일&&x.발행일>m)?x.발행일:m;},'');
+  var days=last?Math.floor((new Date()-new Date(last))/86400000):null;
+  var b2b=a.filter(function(x){return x.대상==='B2B';}).length;
+  var pl=a.filter(function(x){return x.재생목록;}).length;
+  document.getElementById('yt-kpi').innerHTML=
+    kpi('▶️ 발행 영상',N(a.length)+'편','누적 '+N(tot)+'회')
+   +kpi('⏸ 마지막 업로드',(last||'-').slice(0,10),(days!=null?days+'일 경과':''),(days!=null&&days>30)?'#dc2626':'')
+   +kpi('🎯 B2B 영상',N(b2b)+'편','전체의 '+(a.length?(100*b2b/a.length).toFixed(1):0)+'%')
+   +kpi('🗂 재생목록 배정',N(pl)+'편',(a.length-pl)+'편 미배정',(pl===0)?'#dc2626':'')
+   +kpi('📋 편성 슬롯',N(_yt.slots.length)+'건',_yt.slots.length?'':'미편성',(_yt.slots.length?'':'#dc2626'))
+   +kpi('📊 성과 적재',N(_yt.metrics.length)+'행',_yt.metrics.length?'':'측정 없음',(_yt.metrics.length?'':'#dc2626'));
+}
+function renderYtForm(){
+  var g={};
+  _yt.assets.forEach(function(x){var k=x.형식||'미분류';g[k]=g[k]||{n:0,v:0,mx:0,last:''};
+    g[k].n++;g[k].v+=(+x.조회수||0);g[k].mx=Math.max(g[k].mx,+x.조회수||0);
+    if(x.발행일&&x.발행일>g[k].last)g[k].last=x.발행일;});
+  var rows=Object.keys(g).sort(function(a,b){return g[b].n-g[a].n;}).map(function(k){var d=g[k];
+    return '<tr style="border-top:1px solid #eef2f7"><td style="padding:8px;font-weight:700">'+E(k)+'</td>'
+    +'<td style="text-align:right">'+N(d.n)+'</td><td style="text-align:right">'+N(d.v)+'</td>'
+    +'<td style="text-align:right;font-weight:700'+((d.v/d.n)<500?';color:#dc2626':'')+'">'+N(Math.round(d.v/d.n))+'</td>'
+    +'<td style="text-align:right">'+N(d.mx)+'</td><td>'+E(d.last.slice(0,10))+'</td></tr>';}).join('');
+  document.getElementById('yt-form').innerHTML=rows||'<tr><td colspan="6" style="padding:12px;color:#64748b">데이터 없음</td></tr>';
+}
+function renderYtTrend(){
+  var g={};
+  _yt.assets.forEach(function(x){if(!x.발행일)return;var m=x.발행일.slice(0,7);g[m]=g[m]||{n:0,v:0};g[m].n++;g[m].v+=(+x.조회수||0);});
+  var ks=Object.keys(g).sort().slice(-10);
+  var h='<b>최근 10개월 평균 조회</b> <span style="color:#94a3b8">· 편수는 괄호</span><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">';
+  var mx=Math.max.apply(null,ks.map(function(k){return g[k].v/g[k].n;}))||1;
+  ks.forEach(function(k){var av=Math.round(g[k].v/g[k].n);var w=Math.max(4,Math.round(56*av/mx));
+    h+='<div style="text-align:center;min-width:62px"><div style="height:60px;display:flex;align-items:flex-end;justify-content:center"><div style="width:22px;height:'+w+'px;background:'+(av<2000?'#f87171':'#4A85F6')+';border-radius:3px 3px 0 0"></div></div><div style="font-size:.66rem;margin-top:3px;font-weight:700">'+N(av)+'</div><div style="font-size:.62rem;color:#94a3b8">'+k.slice(2)+' ('+g[k].n+')</div></div>';});
+  h+='</div>';
+  document.getElementById('yt-trend').innerHTML=h;
+}
+function renderYtSeason(){
+  var g={};
+  _yt.assets.forEach(function(x){var s=x.촬영시즌||'미판정';g[s]=(g[s]||0)+1;});
+  var h='';
+  ['여름','가을','겨울','봄'].forEach(function(s){
+    var w=seasonWindow(s), n=g[s]||0;
+    var urgent=w&&w.in&&w.days<=35;
+    h+='<div style="background:#fff;border:1px solid '+(urgent?'#f59e0b':'#e2e8f0')+';border-radius:10px;padding:10px 13px">'
+      +'<div style="font-size:.74rem;color:#64748b">'+s+' 소재 '+n+'편</div>'
+      +'<div style="font-size:1.02rem;font-weight:800;margin-top:2px;color:'+(urgent?'#b45309':'#334155')+'">'
+      +(w?(w.in?('창 열림 · D-'+w.days):('닫힘 · '+w.days+'일 뒤'))+'':'상시')+'</div>'
+      +'<div style="font-size:.66rem;color:#94a3b8;margin-top:2px">'+(w?w.label:'')+(urgent?' · 놓치면 1년 대기':'')+'</div></div>';
+  });
+  h+='<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 13px"><div style="font-size:.74rem;color:#64748b">중립 소재</div><div style="font-size:1.02rem;font-weight:800;margin-top:2px">'+(g['중립']||0)+'편</div><div style="font-size:.66rem;color:#94a3b8;margin-top:2px">상시 발행 가능</div></div>';
+  document.getElementById('yt-season').innerHTML=h;
+}
+function renderYtSlots(){
+  var s=_yt.slots;
+  if(!s.length){document.getElementById('yt-slots').innerHTML='<tr><td colspan="5" style="padding:14px;color:#b45309;background:#fffbeb">편성된 유튜브 슬롯이 없습니다. <b>mk_youtube_slots 0행</b> — 편성 적재 승인 후 여기 표시됩니다.</td></tr>';return;}
+  document.getElementById('yt-slots').innerHTML=s.map(function(r){
+    return '<tr style="border-top:1px solid #eef2f7"><td style="padding:8px;white-space:nowrap">'+E(r.발행일||'')+'</td><td>'+E(r.코너||'')+'</td><td><b>'+E(r.핵심키워드||'')+'</b></td><td>'+E((r.최종제목||'').slice(0,60))+'</td><td>'+E(r.상태||'')+'</td></tr>';}).join('');
+}
+function renderYtGrad(){
+  var m=_yt.metrics;
+  var G=[['첫 30초 유지','80% 이상','평균시청지속률_pct',80],['노출 CTR','6% 이상','노출클릭률_pct',6],['평균 시청','길이의 40% 이상','평균시청지속률_pct',40]];
+  var h='';
+  if(!m.length){
+    h='<div style="color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;margin-bottom:10px"><b>측정 데이터 0행</b> — 졸업 조건 4개 중 3개를 지금 잴 수 없습니다. D+7/D+28 수집 배선이 필요합니다.</div>';
+  }
+  h+='<div style="display:grid;gap:8px">';
+  G.forEach(function(g){
+    var vals=m.map(function(x){return +x[g[2]];}).filter(function(v){return v>0;});
+    var ok=vals.filter(function(v){return v>=g[3];}).length;
+    var pct=Math.min(100,Math.round(100*ok/3));
+    h+='<div><div style="display:flex;justify-content:space-between;font-size:.76rem"><span><b>'+g[0]+'</b> <span style="color:#94a3b8">'+g[1]+'</span></span><span style="color:'+(ok>=3?'#16a34a':'#64748b')+'">'+(vals.length?ok+'/3편':'측정 없음')+'</span></div>'
+      +'<div style="height:8px;background:#eef2f7;border-radius:4px;margin-top:4px;overflow:hidden"><div style="height:8px;width:'+pct+'%;background:'+(ok>=3?'#16a34a':'#4A85F6')+'"></div></div></div>';
+  });
+  h+='<div><div style="display:flex;justify-content:space-between;font-size:.76rem"><span><b>제작 리드타임</b> <span style="color:#94a3b8">5영업일 · 재작업 1회 이하</span></span><span style="color:#64748b">측정 없음</span></div><div style="height:8px;background:#eef2f7;border-radius:4px;margin-top:4px"></div></div>';
+  h+='</div><div style="margin-top:10px;font-size:.76rem;color:#b45309">→ 4개 전부 충족 전에는 <b>대표 출연(Phase B) 착수 불가</b>입니다.</div>';
+  document.getElementById('yt-grad').innerHTML=h;
+}
+function renderYtSrc(){
+  var g={};
+  _yt.src.forEach(function(x){var k=x.롱폼_활용등급||'미판정';g[k]=g[k]||{row:0,n:0,sec:0};g[k].row++;g[k].n+=(+x.편수||1);g[k].sec+=(+x.길이_초||0);});
+  var COL={A:'#16a34a',B:'#2563eb',C:'#64748b',X:'#dc2626'};
+  var h='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  Object.keys(g).sort().forEach(function(k){var d=g[k];
+    h+='<div style="background:#fff;border:1px solid #e2e8f0;border-left:3px solid '+(COL[k]||'#94a3b8')+';border-radius:8px;padding:8px 12px;font-size:.76rem"><b style="color:'+(COL[k]||'#334155')+'">'+E(k)+'등급</b> · '+N(d.n)+'편'+(d.sec?' · '+Math.round(d.sec/60)+'분':'')+'</div>';});
+  h+='</div>';
+  if(!_yt.src.length)h='<div style="font-size:.78rem;color:#64748b">미발행 재료 데이터 없음</div>';
+  document.getElementById('yt-src').innerHTML=h;
+}
+window.ytFilter=function(f,el){_yt.f=f;document.querySelectorAll('#t13 .yt-f').forEach(function(b){b.classList.remove('active');});if(el)el.classList.add('active');renderYtList();};
+window.renderYtList=function(){
+  var q=(document.getElementById('yt-q')||{}).value||'';
+  var a=_yt.assets.filter(function(x){
+    if(q&&(x.제목||'').indexOf(q)<0)return false;
+    if(_yt.f==='b2b')return x.대상==='B2B';
+    if(_yt.f==='long')return x.형식==='롱폼';
+    if(_yt.f==='summer')return x.촬영시즌==='여름';
+    return true;});
+  if(_yt.f==='top')a=a.slice(0,60);
+  document.getElementById('yt-cnt').textContent=a.length+'편';
+  var SC={'확인완료':'#16a34a','변경있음':'#b45309','발행불가':'#dc2626'};
+  document.getElementById('yt-list').innerHTML=a.map(function(x){
+    var sm=x.현장실측||'미실측';
+    return '<tr style="border-top:1px solid #f1f5f9"><td style="padding:7px">'+E((x.제목||'').slice(0,70))+'</td>'
+    +'<td>'+E(x.형식||'')+'</td><td style="text-align:right;font-weight:700">'+N(x.조회수)+'</td>'
+    +'<td style="text-align:right">'+(x.길이_초?(x.길이_초>=60?Math.round(x.길이_초/60)+'분':x.길이_초+'초'):'')+'</td>'
+    +'<td>'+E(x.촬영시즌||'')+'</td><td>'+E(x.대상||'')+'</td>'
+    +'<td style="color:'+(SC[sm]||'#94a3b8')+'">'+E(sm)+'</td>'
+    +'<td>'+(x.영상id?'<a href="https://youtu.be/'+E(x.영상id)+'" target="_blank" style="color:#2563eb">열기</a>':'')+'</td></tr>';}).join('')
+    ||'<tr><td colspan="8" style="padding:12px;color:#64748b">해당 조건에 영상이 없습니다</td></tr>';
+};
 })();
 </script>
 

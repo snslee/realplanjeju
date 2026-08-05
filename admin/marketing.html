@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.12.1</title>
+<title>리얼플랜제주 마케팅 운영 v1.12.2</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -98,7 +98,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.12.1</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.12.2</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -3279,6 +3279,7 @@ function curState(){
 }
 window.schActions=function(){
   var box=document.getElementById('sch-act'); if(!box)return;
+  box.style.flexBasis=''; box.style.marginTop='';
   var id=curPlan(), st=curState();
   if(!id||st!=='초안'){box.innerHTML=st?'<span style="font-size:.78rem;color:#64748b">상태 '+esc(st)+' — 처리할 것 없음</span>':'';return;}
   box.innerHTML='<div style="display:flex;gap:6px;align-items:center">'
@@ -3317,6 +3318,7 @@ window.schRun=async function(mode){
     if(d&&d.ok===false){
       window._schForce=null;
       if(d.err==='slot_collision'){
+        box.style.flexBasis='100%'; box.style.marginTop='10px';
         var rows=(d['충돌']||[]).map(function(c){
           return '<li style="margin:3px 0">'+esc(c['사유'])+' · 공통 「'+esc(c['공통'])+'」 · '+c['간격일']+'일<br>'
             +'<span style="color:#7f1d1d">'+esc(c.a)+'</span><br><span style="color:#7f1d1d">'+esc(c.b)+'</span></li>';}).join('');

@@ -8241,7 +8241,7 @@ document.addEventListener('DOMContentLoaded',init);
       +'<div style="font-weight:700;margin-bottom:10px">원천 자료 업로드 (멱등 — 같은 파일 재업로드 안전)</div>'
       +'<div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">'
       +fld('원천 종류','<select id="au-src" style="'+inp()+'" onchange="document.getElementById(\'au-acc-w\').style.display=this.value===\'농협통장\'?\'\':\'none\'"><option>농협통장</option><option>IBK통장</option><option>농협카드</option><option>BC카드</option><option>세금계산서매출</option><option>세금계산서매입</option></select>')
-      +'<span id="au-acc-w">'+fld('계좌 (통장만)','<select id="au-acc" style="'+inp()+'">'+accOpt+'</select>')+'</span>'
+      +'<span id="au-acc-w">'+fld('계좌 (통장만 · 파일에서 자동판별)','<select id="au-acc" style="'+inp()+'">'+accOpt+'</select>')+'</span>'
       +fld('파일 (.xls/.xlsx 복수 가능)','<input type="file" id="au-file" multiple accept=".xls,.xlsx,image/png,image/jpeg,image/webp,application/pdf" style="font-size:12px"><!--RP-ACC-IMG-ACCEPT-->')
       +'<button class="acc-btn" onclick="accUpload()">업로드</button>'
       +'<button class="acc-btn ghost" onclick="accMatch()">자동 매칭 실행</button></div>'
@@ -8333,29 +8333,61 @@ document.addEventListener('DOMContentLoaded',init);
       accId=accSel.value;accNo=accSel.options[accSel.selectedIndex].dataset.no;
     }
     if(src==='IBK통장'){var ib=S.accs.filter(function(a){return a.은행==='IBK기업';})[0];if(ib){accId=ib.id;accNo=ib.계좌번호;}}
-    var all=[],reads=[];
-    Array.prototype.forEach.call(files,function(file){
-      reads.push(file.arrayBuffer().then(function(buf){
-        var wb=XLSX.read(buf,{type:'array'});
-        var rows=parseSource(src,wb,accId,accNo);
-        all=all.concat(rows);
-      }));
-    });
-    Promise.all(reads).then(function(){
-      if(!all.length){el('au-result').innerHTML='<span style="color:#b91c1c">파싱된 행이 없습니다 — 파일 형식을 확인하세요 (인터넷뱅킹/홈택스 원본 다운로드 파일이어야 합니다)</span>';return;}
-      var ins=0,dup=0;
-      (function send(i){
-        if(i*200>=all.length){
-          el('au-result').innerHTML='✅ 적재 '+ins+'건 · 중복 제외 '+dup+'건 (총 파싱 '+all.length+'건)';
-          stageList();return;
-        }
-        sbc().rpc('rpc_acc_bulk_stage',{p_rows:all.slice(i*200,(i+1)*200)}).then(function(r){
-          if(r.error){el('au-result').innerHTML='<span style="color:#b91c1c">적재 오류: '+esc(r.error.message)+'</span>';return;}
-          ins+=r.data['적재']||0;dup+=r.data['중복제외']||0;send(i+1);
+    /*RP-ACC-GATE v1.1 (2026-08-05) — ①파일지문 전송 ②파일 헤더 계좌 자동판별 ③게이트 판정 표시
+      배경: 선택한 계좌를 그대로 믿어서 7월 회사계좌 파일이 여행계좌로 28건 중복 적재됨(21,615,230원).
+      이제 파일당 순차 처리하고, 통장은 파일 안의 계좌번호를 정본으로 쓴다. */
+    var ins=0,dup=0,logs=[],fnames=[];
+    var flist=Array.prototype.slice.call(files);
+    el('au-result').innerHTML='⏳ 처리 중… (파일 '+flist.length+'건)';
+    (function nextFile(fi){
+      if(fi>=flist.length){
+        el('au-result').innerHTML='✅ 적재 '+ins+'건 · 중복 제외 '+dup+'건'+(logs.length?'<div style="margin-top:6px;line-height:1.7">'+logs.join('<br>')+'</div>':'');
+        stageList();return;
+      }
+      var file=flist[fi],fname=esc(file.name);
+      file.arrayBuffer().then(function(buf){
+        return crypto.subtle.digest('SHA-256',buf).then(function(hb){
+          var fp=Array.prototype.map.call(new Uint8Array(hb),function(b){return ('0'+b.toString(16)).slice(-2);}).join('').slice(0,32);
+          var wb=XLSX.read(buf,{type:'array'});
+          var uAccId=accId,uAccNo=accNo;
+          if(src==='농협통장'){
+            var det=accDetectNo(wb);
+            if(!det){logs.push('⛔ '+fname+' — 파일에서 계좌번호를 찾지 못했습니다 (인터넷뱅킹 원본 파일인지 확인)');return nextFile(fi+1);}
+            var hit=S.accs.filter(function(a){return String(a.계좌번호)===det;})[0];
+            if(!hit){logs.push('⛔ '+fname+' — 파일 계좌 '+esc(det)+' 는 등록된 계좌가 아닙니다');return nextFile(fi+1);}
+            if(hit.id!==accId)logs.push('⚠️ '+fname+' — 선택한 계좌와 다릅니다. <b>파일 기준 '+esc(hit.별칭)+' '+esc(det)+'</b> 로 적재합니다');
+            uAccId=hit.id;uAccNo=det;
+          }
+          var rows=parseSource(src,wb,uAccId,uAccNo);
+          if(!rows.length){logs.push('⛔ '+fname+' — 파싱된 행 0건 (원본 다운로드 파일이어야 합니다)');return nextFile(fi+1);}
+          (function send(i){
+            if(i*200>=rows.length){logs.push('✅ '+fname+' — '+rows.length+'건 처리');fnames.push(file.name);return nextFile(fi+1);}
+            var arg={p_rows:rows.slice(i*200,(i+1)*200),p_강제:false};
+            if(i===0)arg['p_파일지문']=fp;
+            sbc().rpc('rpc_acc_bulk_stage',arg).then(function(r){
+              if(r.error){logs.push('<span style="color:#b91c1c">⛔ '+fname+' 적재 오류: '+esc(r.error.message)+'</span>');return nextFile(fi+1);}
+              var d=r.data||{};
+              ins+=d['적재']||0;dup+=d['중복제외']||0;
+              if(d['판정']&&d['판정']!=='통과'){
+                var blocked=(d['판정']==='차단');
+                logs.push('<span style="color:'+(blocked?'#b91c1c':'#b45309')+'">'+(blocked?'⛔':'⚠️')+' '+fname+' — '+esc(d['판정'])+': '+esc(d['사유']||'')+'</span>');
+                if(blocked)return nextFile(fi+1);
+              }
+              send(i+1);
+            });
+          })(0);
         });
-      })(0);
-    }).catch(function(e){el('au-result').innerHTML='<span style="color:#b91c1c">파일 읽기 오류: '+esc(e.message||e)+'</span>';});
+      }).catch(function(e){logs.push('⛔ '+fname+' 읽기 오류: '+esc(e.message||e));nextFile(fi+1);});
+    })(0);
   };
+
+  /*RP-ACC-GATE 파일 헤더 계좌번호 추출 — acc-telegram-upload EF와 동일 규격(상위 12행 스캔)*/
+  function accDetectNo(wb){
+    var A=aoa(wb),head=[];
+    for(var i=0;i<Math.min(12,A.length);i++)head.push((A[i]||[]).map(function(x){return x==null?'':String(x);}).join('|'));
+    var m=head.join('\n').match(/(\d{3}-\d{4}-\d{4}-\d{2})/);
+    return m?m[1]:null;
+  }
 
   /* ---------- 파서 4종 (회계 통합설계서 §4 / D2a 파이썬 검증 로직과 동일) ---------- */
   function aoa(wb){return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false,defval:null});}

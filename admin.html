@@ -1018,6 +1018,18 @@ const QT_DEFAULTS = {
 };
 const QT_GOV_PAYMENT = "프로젝트 완료 후 7일 이내 전액 입금";
 const QT_PREFIX = {"행사이벤트":"EVENT","온라인마케팅":"MKT","마케팅교육":"EDU","국내여행":"TOUR"};
+/* v2.27(sql/060) — 견적 연도. KST 기준. 하드코딩 '2026' 전면 대체 */
+function QT_YEAR(){
+  try{ return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric'}).format(new Date()); }
+  catch(e){ return String(new Date().getFullYear()); }
+}
+/* 견적번호 표시용 — 번호에 이미 -vN 이 있으면 차수 배지를 중복해서 붙이지 않는다 */
+function qtNoWithVer(no, ver){
+  const s = no || '(번호없음)';
+  if(/-v[0-9]+$/.test(s)) return s;              /* sql/060 이후 = 번호 자체에 차수 포함 */
+  return (ver && ver > 1) ? (s + ' -v' + ver) : s;  /* 구 데이터 호환 */
+}
+window.QT_YEAR = QT_YEAR; window.qtNoWithVer = qtNoWithVer;
 /* v2.11 5-7: 비고 템플릿 4사업부 (자동 삽입 버튼 / 메모리 21차 정합) */
 const QT_NOTE_TEMPLATES = {
   "국내여행":"상기 일정은 현지사정·천재지변으로 인해 변경될 수 있습니다.\n※ 포함: 항공·숙박·식사·차량·가이드·보험\n※ 불포함: 음료·주류·개인경비\n※ 결제: 계약금 50% / 잔금 출발 7일 전 (또는 계약금 30% / 잔금 70% 협의)",
@@ -3817,6 +3829,8 @@ async function loadQuotationCreate(){
     payment:'', account:'', note:'', isGovernment:false,
     attachments:{co:false,port:false,biz:false,tour:false,women:false,merge:false},
     currentQuotationId:null,
+    /* v2.27(sql/060): 재견적 상태를 명시 초기화 — 잔류 시 엉뚱한 건에 -v 가 붙는다 */
+    parentId:null, parentBaseNo:null, currentQuotationNo:null,
     /* v2.11 묶음 5 */
     안_번호:1, 인원_성인:null, 인원_아동:null, 박일수:null, 비고_pdf노출:true,
     itemsByAn:{1:[], 2:[], 3:[]}
@@ -3834,6 +3848,7 @@ async function loadQuotationCreate(){
   if(state.qtCopySource){
     qtApplyCopySource(state.qtCopySource);
     state.qtCopySource = null;
+    state.qtCopyMode = null;   /* v2.27: 모드 잔류 방지 (다음 신규작성 오염 차단) */
   }
 }
 
@@ -5241,11 +5256,18 @@ function qtUpdateBuPreview(){
   const pvNo=$('#qt-pv-no');
   if(pvNo){
     const pre=state.qt.bu?QT_PREFIX[state.qt.bu]:'???';
-    /* v2.26-hotfix6: 실제 발송될 다음 번호 자동 조회 + 표시 */
-    pvNo.textContent = `Q-${pre}-2026-`;  /* fallback */
+    /* v2.27(sql/060): 연도 하드코딩 제거 + bu 미정의 변수 수정 */
+    const yr = QT_YEAR();
+    /* 재견적(-vN) 진행 중이면 채번 조회 대신 안내 표시 */
+    if(state.qt.parentId){
+      pvNo.textContent = (state.qt.parentBaseNo||('Q-'+pre+'-'+yr+'-'))+'-v(저장 시 자동)';
+      return;
+    }
+    pvNo.textContent = `Q-${pre}-${yr}-`;  /* fallback */
     (async () => {
       try {
-        const { data } = await sb.rpc('rpc_next_quotation_no', { _사업부: bu });
+        if(!state.qt.bu) return;
+        const { data } = await sb.rpc('rpc_next_quotation_no', { _사업부: state.qt.bu });
         if (data) pvNo.textContent = data;
       } catch(e) { console.warn('[rpc_next_quotation_no]', e); }
     })();
@@ -5383,8 +5405,11 @@ async function qtSaveDraft(){
       window.__qtSnapshot = JSON.parse(JSON.stringify(state.qt));
       console.warn('[v2.22] state.qt 자동 백업 완료 (window.__qtSnapshot)');
     } catch(_se){ console.warn('[v2.22 snapshot]', _se); }
-    const _msg = (e.message||e+'').replace(/duplicate key value violates unique constraint.*$/i,
-      '견적번호 채번 충돌 — 잠시 후 다시 [임시 저장] 클릭하세요 (입력값 자동 보존)');
+    /* v2.27(sql/060): 원문을 숨기지 않는다. 치환은 오진을 만든다(8/10 사고) */
+    let _msg = (e.message||e+'');
+    if(/duplicate key value violates unique constraint/i.test(_msg)){
+      _msg = '견적번호 중복 — 콘솔의 원문 오류를 확인하세요 (입력값은 window.__qtSnapshot 에 보존됨) / 원문: ' + _msg;
+    }
     toast('견적 저장 실패: '+_msg,'error');
   }
 }
@@ -5468,7 +5493,7 @@ async function qtSendQuotation(docType){
   const payload = {
     quotation_id: quotationId,
     doc_type: docType,
-    견적번호: state.qt.currentQuotationNo || (state.qt.bu ? ((isDelivery ? 'D-' : 'Q-') + (QT_PREFIX[state.qt.bu]||'???') + '-2026-???') : null),
+    견적번호: state.qt.currentQuotationNo || (state.qt.bu ? ((isDelivery ? 'D-' : 'Q-') + (QT_PREFIX[state.qt.bu]||'???') + '-' + QT_YEAR() + '-???') : null),
     사업부: state.qt.bu,
     제목: state.qt.title,
     수신자: {
@@ -5500,10 +5525,13 @@ async function qtSendQuotation(docType){
     pdf_base64: pdfBase64,
     pdf_filename: (function(){
       /* v2.25: 견적번호_고객사명_YYYYMMDD.pdf 표준 */
-      var num = (state.qt.견적번호 || '').replace(/^Q-/,'');
+      /* v2.27(sql/060): state.qt.견적번호 는 존재하지 않는 필드였다 → currentQuotationNo */
+      var num = (state.qt.currentQuotationNo || '').replace(/^Q-/,'');
       var prefix = isStatement ? 'T-' : isDelivery ? 'D-' : 'Q-';
       var docNum = prefix + (num || (quotationId||'preview'));
-      var cust = (state.qt.recipient && state.qt.recipient.company ? state.qt.recipient.company : '').replace(/[\\/:*?"<>|]/g,'_').trim() || '고객사미정';
+      /* v2.27: recipient 표준 키는 .co (.company 는 일부 경로에서만 세팅됨) */
+      var _rc = state.qt.recipient || {};
+      var cust = String(_rc.co || _rc.company || '').replace(/[\\/:*?"<>|]/g,'_').trim() || '고객사미정';
       var d = new Date();
       var ymd = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
       return docNum + '_' + cust + '_' + ymd + '.pdf';
@@ -5687,9 +5715,11 @@ async function qtGeneratePDF(silent, docType){
     doc.setFontSize(20);
     doc.text(docTitle, 105, titleY, {align:'center'});
     /* v2.8.0 셸 — DOM 참조 0건 / state.qt.currentQuotationNo 우선 (textContent null 근본 해결) */
+    /* v2.27(sql/060): 연도 하드코딩 '2026' 제거 → QT_YEAR() */
+    const _qnoFb = 'Q-'+QT_PREFIX[state.qt.bu]+'-'+QT_YEAR()+'-001';
     const qnoBase = state.qt.currentQuotationId
-      ? (state.qt.currentQuotationNo || ('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001'))
-      : ((await (async()=>{try{const {data}=await sb.rpc('rpc_next_quotation_no',{_사업부:state.qt.bu}); return data||('Q-'+QT_PREFIX[state.qt.bu]+'-2026-001');}catch(_e){return 'Q-'+QT_PREFIX[state.qt.bu]+'-2026-001';}})()));
+      ? (state.qt.currentQuotationNo || _qnoFb)
+      : ((await (async()=>{try{const {data}=await sb.rpc('rpc_next_quotation_no',{_사업부:state.qt.bu}); return data||_qnoFb;}catch(_e){return _qnoFb;}})()));
     const qno = (docType === 'statement') ? qnoBase.replace(/^Q-/, 'T-').replace(/\(가상\)/, '(거래명세서)') : (docType === 'delivery') ? qnoBase.replace(/^Q-/, 'D-').replace(/\(가상\)/, '(납품서)') : qnoBase;
     doc.setFontSize(10);
     doc.text(qno, 105, titleY+7, {align:'center'});
@@ -6107,10 +6137,10 @@ function qtRenderQuotationCards(){
 function qtBuildListCardHtml(it, isChild){
   const sent = it.발송일시 ? '발송 '+qtFormatYMD(it.발송일시) : '미발송';
   const indent = isChild ? 'margin-left:24px;border-left:3px solid var(--primary)' : '';
-  const verNum = (it.수정차수 && it.수정차수>1) ? ' -v'+it.수정차수 : '';
+  /* v2.27(sql/060): 번호에 -vN 이 이미 있으면 배지를 중복 부착하지 않는다 */
   return '<div class="qt-list-card" style="'+indent+'" onclick="location.hash=\'#quotation/'+it.id+'\'">'+
     '<div class="qt-list-card-head">'+
-      '<div class="qt-list-card-no">'+escapeHtml(it.견적번호||'(번호없음)')+verNum+'</div>'+
+      '<div class="qt-list-card-no">'+escapeHtml(qtNoWithVer(it.견적번호, it.수정차수))+'</div>'+
       '<div class="qt-list-card-status" style="'+qtStatusColor(it.상태)+'">'+escapeHtml(it.상태||'-')+'</div>'+
     '</div>'+
     '<div class="qt-list-card-body">'+
@@ -6171,8 +6201,8 @@ async function renderQuotationDetail(qid){
     }
     state.currentQuotationId = qid;
     state.qtDetailRow = r;
-    const verNum = (r.수정차수 && r.수정차수>1) ? ' -v'+r.수정차수 : '';
-    const t1 = $('#qt-detail-title'); if(t1) t1.textContent = '💰 ' + (r.견적번호||'견적 상세') + verNum;
+    /* v2.27(sql/060): -v 이중표기 방지 */
+    const t1 = $('#qt-detail-title'); if(t1) t1.textContent = '💰 ' + qtNoWithVer(r.견적번호, r.수정차수);
     const t2 = $('#qt-detail-sub');
     if(t2) t2.textContent = (r.제목||'(제목 없음)') + ' / ' + (r.사업부||'-') + ' / ' + (r.상태||'-');
 
@@ -6203,7 +6233,7 @@ async function renderQuotationDetail(qid){
       qtBuildChevronPath(r) +   /* v2.8.3 — 견적 상세 chevron path */
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+
         '<div style="'+sectStyle+'"><div style="'+sectTitleStyle+'">📌 개요</div><div class="dg-rows">'+
-          '<div class="dg-row"><span class="dg-label">견적번호</span><span class="dg-value" style="font-weight:600">'+escapeHtml(r.견적번호||'-')+verNum+'</span></div>'+
+          '<div class="dg-row"><span class="dg-label">견적번호</span><span class="dg-value" style="font-weight:600">'+escapeHtml(qtNoWithVer(r.견적번호, r.수정차수))+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">사업부</span><span class="dg-value">'+escapeHtml(r.사업부||'-')+'</span></div>'+
           '<div class="dg-row"><span class="dg-label">상태</span><span class="dg-value"><span style="'+qtStatusColor(r.상태)+';padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold">'+escapeHtml(r.상태||'-')+'</span></span></div>'+
           '<div class="dg-row"><span class="dg-label">제목</span><span class="dg-value">'+escapeHtml(r.제목||'-')+'</span></div>'+
@@ -6254,7 +6284,9 @@ async function renderQuotationDetail(qid){
         ((r.상태==='수락'||r.상태==='발송완료'||r.상태==='재발송') ? '<button class="qt-btn-secondary" onclick="qtSendFromDetail(\'statement\')">✉ 거래명세서 발송</button>' : '')+
         (r.상태!=='무효화' ? '<button class="qt-btn-secondary" style="border-color:#D63437;color:#D63437" onclick="qtVoidQuotation(\''+qid+'\')">🚫 무효화</button>' : '<span style="padding:10px 14px;color:#C62828;font-weight:600">🚫 무효화 견적</span>')+
         ((r.상태==='작성중'||r.상태==='발송완료'||r.상태==='재발송'||r.상태==='거절'||r.상태==='만료') ? '<button class="qt-btn-secondary" style="border-color:#2b5fb8;color:#0c447c" onclick="qtOpenEditModal(\''+qid+'\')">✏ 수정</button>' : '')+
-        '<button class="qt-btn-secondary" onclick="qtCopyQuotation(\''+qid+'\')">📋 복사하여 새 견적</button>'+
+        /* v2.27(sql/060): [복사] 1개 → 용도 2개로 분리 */
+        '<button class="qt-btn-secondary" onclick="qtReviseQuotation(\''+qid+'\')" title="같은 건의 다음 차수 견적. 번호는 -v2·v3… 로 이어지고 계약도 같은 계약을 갱신합니다">🔁 이 건 재견적 (-v2)</button>'+
+        '<button class="qt-btn-secondary" onclick="qtCopyQuotation(\''+qid+'\')" title="항목 구성만 가져와 완전히 새 견적을 만듭니다. 새 번호가 부여되고 이 건과 무관합니다">📋 새 견적으로 복사</button>'+
       '</div>';
   } catch(e){
     console.error('[renderQuotationDetail]',e);
@@ -6361,13 +6393,43 @@ async function qtVoidQuotation(qid){
   }
 }
 
-/* qtCopyQuotation — 복사하여 새 견적 진입 (qtCopySource 보관 후 #quotation/new) */
+/* ────────────────────────────────────────────────────────────────
+   v2.27(sql/060) — 「복사」 1개 버튼을 용도 2개로 분리
+   qtReviseQuotation : 같은 건의 재견적. 번호 -vN 승계 + 같은 계약 갱신
+   qtCopyQuotation   : 항목 구성만 재활용. 새 번호. 원본과 무관
+   ──────────────────────────────────────────────────────────────── */
+
+/* qtReviseQuotation — 같은 건의 다음 차수 견적(-vN) */
+function qtReviseQuotation(qid){
+  if(!qid)return;
+  const r = state.qtDetailRow;
+  if(!r){toast('원본 정보 부재','error');return;}
+  const base = String(r.견적번호||'').replace(/-v[0-9]+$/,'');
+  if(!confirm(
+    '[재견적] ' + base + ' 의 다음 차수 견적을 만듭니다.\n\n'
+    + '· 견적번호: ' + base + '-v(다음차수) 로 자동 부여\n'
+    + '· 계약: 같은 계약(' + base.replace(/^Q-/,'C-') + ')의 금액이 갱신됩니다\n'
+    + '  (단, 이미 서명·결제가 진행된 계약이면 수락 시 차단됩니다)\n\n'
+    + '진행할까요?')) return;
+  state.qtCopySource = r;
+  state.qtCopyMode = 'revise';
+  location.hash = '#quotation/new';
+}
+window.qtReviseQuotation = qtReviseQuotation;
+
+/* qtCopyQuotation — 항목 구성만 가져와 완전히 새 견적 (새 번호) */
 function qtCopyQuotation(qid){
   if(!qid)return;
   const r = state.qtDetailRow;
   if(!r){toast('원본 정보 부재','error');return;}
-  if(!confirm('이 견적을 복사하여 새 견적(-v2)을 생성하시겠습니까? 작성 페이지로 이동합니다.')) return;
+  if(!confirm(
+    '[새 견적으로 복사] 항목 구성만 가져와 완전히 새 견적을 만듭니다.\n\n'
+    + '· 견적번호: 새 번호가 부여됩니다 (원본 ' + (r.견적번호||'') + ' 과 무관)\n'
+    + '· 계약: 수락 시 새 계약이 생성됩니다\n\n'
+    + '같은 건의 금액을 올리는 추가견적이라면 [🔁 이 건 재견적] 을 쓰세요.\n\n'
+    + '진행할까요?')) return;
   state.qtCopySource = r;
+  state.qtCopyMode = 'new';
   location.hash = '#quotation/new';
 }
 
@@ -6375,9 +6437,11 @@ function qtCopyQuotation(qid){
 function qtApplyCopySource(r){
   if(!r)return;
   const opts = r.첨부_옵션 || {};
+  /* v2.27(sql/060): 재견적(revise) / 새 견적 복사(new) 분기 */
+  const _mode = state.qtCopyMode || 'new';
   state.qt.customerId = r.customer_id;
   state.qt.bu = r.사업부;
-  state.qt.title = (r.제목||'')+' (복사본)';
+  state.qt.title = (_mode === 'revise') ? (r.제목||'') : ((r.제목||'')+' (복사본)');
   state.qt.recipient = {
     co: r.수신_회사명||'', dept: r.수신_부서||'',
     name: r.수신_담당자||'', title: r.수신_직위||''
@@ -6436,7 +6500,14 @@ function qtApplyCopySource(r){
   state.qt.note = r['비고'] || '';
   state.qt.isGovernment = !!r.is_government;
   state.qt.attachments = r['첨부_옵션'] || {};
-  state.qt.parentId = r.id;
+  /* ★재견적일 때만 parent 를 건다. 새 견적 복사는 parent 없이 새 번호를 받는다 */
+  if(_mode === 'revise'){
+    state.qt.parentId     = r.id;
+    state.qt.parentBaseNo = String(r['견적번호']||'').replace(/-v[0-9]+$/,'');
+  } else {
+    state.qt.parentId     = null;
+    state.qt.parentBaseNo = null;
+  }
   // DOM 동기화
   const $ = (s)=>document.querySelector(s);
   const tit=$('#qt-title'); if(tit)tit.value=state.qt.title;
@@ -6466,7 +6537,9 @@ function qtApplyCopySource(r){
   qtRenderItems();
   qtUpdateAll();
   qtUpdateBuPreview();
-  toast('원본 데이터를 작성 페이지에 복사했습니다. 수정 후 [임시 저장] 또는 [발송]','success');
+  toast((_mode === 'revise')
+    ? ('재견적 모드 — ' + (state.qt.parentBaseNo||'') + '-v(다음차수)로 저장됩니다. 수정 후 [임시 저장] 또는 [발송]')
+    : '새 견적으로 복사 — 새 번호가 부여됩니다. 수정 후 [임시 저장] 또는 [발송]','success');
 }
 /* ============ /Phase 2a v2.0 영역 E ============ */
 /* ============ /Phase 2a v2.0 영역 B ============ */
@@ -6664,7 +6737,6 @@ async function loadCustomerQuotations(접수번호){
 function qtBuildCustomerCard(it, isChild, hideStep){
   const sent = it.발송일시 ? '발송 '+qtFormatYMD(it.발송일시) : '미발송';
   const indent = isChild ? 'margin-left:24px;border-left:3px solid var(--primary)' : '';
-  const verNum = (it.수정차수 && it.수정차수>1) ? ' -v'+it.수정차수 : '';
   const status = it.상태 || '-';
   const qid = it.id;
   // v2.8.0e — 견적서 재발송은 상세 화면 전용(중복 제거)
@@ -6697,7 +6769,7 @@ function qtBuildCustomerCard(it, isChild, hideStep){
 
   return '<div class="qt-list-card" style="'+indent+'" onclick="location.hash=\'#quotation/'+qid+'\'">'+
     '<div class="qt-list-card-head">'+
-      '<div class="qt-list-card-no">'+escapeHtml(it.견적번호||'(번호없음)')+verNum+'</div>'+
+      '<div class="qt-list-card-no">'+escapeHtml(qtNoWithVer(it.견적번호, it.수정차수))+'</div>'+
       '<div class="qt-list-card-status" style="'+qtStatusColor(status)+'">'+escapeHtml(status)+'</div>'+
     '</div>'+
     '<div class="qt-list-card-body">'+

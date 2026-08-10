@@ -1029,7 +1029,60 @@ function qtNoWithVer(no, ver){
   if(/-v[0-9]+$/.test(s)) return s;              /* sql/060 이후 = 번호 자체에 차수 포함 */
   return (ver && ver > 1) ? (s + ' -v' + ver) : s;  /* 구 데이터 호환 */
 }
+
+/* ────────────────────────────────────────────────────────────────
+   v2.28 — 차수 이력 계산기
+   원본을 '수락' 그대로 살려두는 운영 방침(2026-08-10 대표 결정)의 대가로
+   「어느 게 최신인지 / 뭐가 얼마 늘었는지」가 안 보인다. 그걸 여기서 만든다.
+   RPC 시그니처는 건드리지 않는다(회귀 위험 0) — 이미 내려오는 필드로만 계산.
+   ──────────────────────────────────────────────────────────────── */
+function qtBuildRevMap(items){
+  const byRoot = {};
+  (items||[]).forEach(it=>{
+    const root = it.parent_quotation_id || it.id;
+    (byRoot[root] = byRoot[root] || []).push(it);
+  });
+  const map = {};
+  Object.keys(byRoot).forEach(root=>{
+    const arr = byRoot[root].slice().sort((a,b)=>((a.수정차수||1)-(b.수정차수||1)));
+    arr.forEach((it,i)=>{
+      const prev = i>0 ? arr[i-1] : null;
+      map[it.id] = {
+        rootId : root,
+        차수   : it.수정차수 || 1,
+        총차수 : arr.length,
+        최신   : (i === arr.length-1),
+        다음   : (i < arr.length-1) ? arr[i+1] : null,
+        차액   : prev ? ((it.견적금액||0) - (prev.견적금액||0)) : null,
+        형제   : arr
+      };
+    });
+  });
+  return map;
+}
+function qtRevOf(id){ return (state.qtRevMap && state.qtRevMap[id]) || null; }
+
+/* 최신 / 대체됨 배지 */
+function qtVerBadge(id){
+  const rv = qtRevOf(id);
+  if(!rv || rv.총차수 <= 1) return '';
+  if(rv.최신){
+    return '<span style="background:#E3F2FD;color:#1565C0;padding:2px 7px;border-radius:4px;font-size:11px;margin-left:6px;font-weight:600">최신 '+rv.차수+'차</span>';
+  }
+  const nxt = rv.다음 ? (rv.다음.견적번호 || ('-v'+rv.다음.수정차수)) : '';
+  return '<span style="background:#ECEFF1;color:#546E7A;padding:2px 7px;border-radius:4px;font-size:11px;margin-left:6px">대체됨 → '+escapeHtml(nxt)+'</span>';
+}
+
+/* 직전 차수 대비 차액 */
+function qtDiffTag(id){
+  const rv = qtRevOf(id);
+  if(!rv || rv.차액 === null || rv.차액 === 0) return '';
+  const up = rv.차액 > 0;
+  return '<span style="color:'+(up?'#C62828':'#2E7D32')+';font-weight:600;font-size:12px;margin-left:6px">'
+       + (up?'+':'−') + Math.abs(rv.차액).toLocaleString('ko-KR') + '원</span>';
+}
 window.QT_YEAR = QT_YEAR; window.qtNoWithVer = qtNoWithVer;
+window.qtBuildRevMap = qtBuildRevMap; window.qtVerBadge = qtVerBadge; window.qtDiffTag = qtDiffTag;
 /* v2.11 5-7: 비고 템플릿 4사업부 (자동 삽입 버튼 / 메모리 21차 정합) */
 const QT_NOTE_TEMPLATES = {
   "국내여행":"상기 일정은 현지사정·천재지변으로 인해 변경될 수 있습니다.\n※ 포함: 항공·숙박·식사·차량·가이드·보험\n※ 불포함: 음료·주류·개인경비\n※ 결제: 계약금 50% / 잔금 출발 7일 전 (또는 계약금 30% / 잔금 70% 협의)",
@@ -6122,6 +6175,7 @@ function qtRenderQuotationCards(){
   }
   // 버전 트리 그룹핑 (1단 깊이)
   items.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+  state.qtRevMap = qtBuildRevMap(items);   /* v2.28 차수 이력 */
   const idMap = {};
   items.forEach(it=>{idMap[it.id]=it;});
   const heads = items.filter(it=>!it.parent_quotation_id || !idMap[it.parent_quotation_id]);
@@ -6140,14 +6194,14 @@ function qtBuildListCardHtml(it, isChild){
   /* v2.27(sql/060): 번호에 -vN 이 이미 있으면 배지를 중복 부착하지 않는다 */
   return '<div class="qt-list-card" style="'+indent+'" onclick="location.hash=\'#quotation/'+it.id+'\'">'+
     '<div class="qt-list-card-head">'+
-      '<div class="qt-list-card-no">'+escapeHtml(qtNoWithVer(it.견적번호, it.수정차수))+'</div>'+
+      '<div class="qt-list-card-no">'+escapeHtml(qtNoWithVer(it.견적번호, it.수정차수))+qtVerBadge(it.id)+'</div>'+
       '<div class="qt-list-card-status" style="'+qtStatusColor(it.상태)+'">'+escapeHtml(it.상태||'-')+'</div>'+
     '</div>'+
     '<div class="qt-list-card-body">'+
       '<div style="font-weight:600;color:var(--text)">'+escapeHtml(it.제목||'(제목 없음)')+'</div>'+
       '<div style="margin-top:4px;display:flex;gap:12px;flex-wrap:wrap">'+
         '<span>['+escapeHtml(it.사업부||'-')+']</span>'+
-        '<span style="color:var(--primary);font-weight:600">'+(it.견적금액||0).toLocaleString('ko-KR')+'원</span>'+
+        '<span style="color:var(--primary);font-weight:600">'+(it.견적금액||0).toLocaleString('ko-KR')+'원</span>'+qtDiffTag(it.id)+
         '<span>'+escapeHtml(sent)+'</span>'+
         '<span>작성: '+escapeHtml(it.작성자||'-')+'</span>'+
         '<span style="color:var(--text-muted)">생성 '+escapeHtml(qtFormatYMD(it.created_at))+'</span>'+
@@ -6227,7 +6281,15 @@ async function renderQuotationDetail(qid){
     const attChips = Object.keys(att).filter(k=>att[k]).map(k=>'<span class="qt-toggle on" style="cursor:default">'+escapeHtml(k)+'</span>').join(' ') || '<span style="color:var(--text-muted)">첨부 선택 없음</span>';
     const sectStyle = 'background:var(--bg-soft);border:1px solid var(--border-light);border-radius:var(--radius-md);padding:14px 18px';
     const sectTitleStyle = 'font-weight:bold;color:var(--primary);font-size:13px;margin-bottom:10px;border-bottom:1px solid var(--border-light);padding-bottom:6px';
-    const parentLine = r.parent_quotation_id ? ('<div class="dg-row"><span class="dg-label">원본 견적</span><span class="dg-value" style="font-family:monospace;font-size:11px">'+escapeHtml(r.parent_quotation_id)+' (이 견적은 -v'+((r.수정차수||0)+1)+')</span></div>') : '';
+    /* v2.28: uuid 원문 노출 + "-v(차수+1)" 오표기(2차인데 v3으로 찍힘) 수리 */
+    let parentLine = '';
+    if(r.parent_quotation_id){
+      const _rv = qtRevOf(r.id);
+      const _rootNo = (_rv && _rv.형제 && _rv.형제[0] && _rv.형제[0].견적번호)
+        || String(r.견적번호||'').replace(/-v[0-9]+$/,'');
+      parentLine = '<div class="dg-row"><span class="dg-label">원본 견적</span><span class="dg-value" style="font-weight:600">'
+        + escapeHtml(_rootNo) + ' <span style="color:#5F5E5A;font-weight:400">(이 견적은 ' + (r.수정차수||2) + '차)</span></span></div>';
+    }
 
     body.innerHTML =
       qtBuildChevronPath(r) +   /* v2.8.3 — 견적 상세 chevron path */
@@ -6287,13 +6349,73 @@ async function renderQuotationDetail(qid){
         /* v2.27(sql/060): [복사] 1개 → 용도 2개로 분리 */
         '<button class="qt-btn-secondary" onclick="qtReviseQuotation(\''+qid+'\')" title="같은 건의 다음 차수 견적. 번호는 -v2·v3… 로 이어지고 계약도 같은 계약을 갱신합니다">🔁 이 건 재견적 (-v2)</button>'+
         '<button class="qt-btn-secondary" onclick="qtCopyQuotation(\''+qid+'\')" title="항목 구성만 가져와 완전히 새 견적을 만듭니다. 새 번호가 부여되고 이 건과 무관합니다">📋 새 견적으로 복사</button>'+
-      '</div>';
+      '</div>'+
+      '<div id="qt-detail-revhist"></div>';   /* v2.28 차수 이력 (비동기 주입) */
+    qtRenderRevisionHistory(r);
   } catch(e){
     console.error('[renderQuotationDetail]',e);
     body.innerHTML = '<div class="qt-help" style="border-color:#D63437;color:#721C24;background:#F8D7DA">견적 상세 로드 실패: '+escapeHtml(e.message||String(e))+'</div>';
   }
 }
 
+
+/* ────────────────────────────────────────────────────────────────
+   v2.28 — 차수 이력 표
+   원본을 살려두는 운영 방침의 실효를 만드는 화면.
+   "무엇이 언제 얼마 늘었나"를 한 표에서 본다. 3차·4차가 붙어도 그대로 확장.
+   ──────────────────────────────────────────────────────────────── */
+async function qtRenderRevisionHistory(r){
+  const host = document.getElementById('qt-detail-revhist');
+  if(!host || !r) return;
+  try{
+    const cid = r.customer_id || (state.qtDetailRow && state.qtDetailRow.customer_id);
+    if(!cid) return;
+    const {data, error} = await sb.rpc('rpc_list_quotations', { _customer_id: cid });
+    if(error) throw error;
+    const all = Array.isArray(data) ? data : [];
+    state.qtRevMap = qtBuildRevMap(all);
+    const rv = qtRevOf(r.id);
+    if(!rv || rv.총차수 <= 1) return;            /* 차수가 1개뿐이면 표를 만들지 않는다 */
+
+    const rows = rv.형제.map((it,i)=>{
+      const prev = i>0 ? rv.형제[i-1] : null;
+      const diff = prev ? ((it.견적금액||0)-(prev.견적금액||0)) : null;
+      const isMe = (it.id === r.id);
+      const diffTxt = (diff===null) ? '<span style="color:var(--text-muted)">기준</span>'
+        : (diff===0 ? '<span style="color:var(--text-muted)">변동 없음</span>'
+        : '<span style="color:'+(diff>0?'#C62828':'#2E7D32')+';font-weight:600">'+(diff>0?'+':'−')+Math.abs(diff).toLocaleString('ko-KR')+'원</span>');
+      return '<tr style="'+(isMe?'background:#E3F2FD':'')+'">'
+        + '<td style="padding:6px 8px;text-align:center;font-weight:600">'+(it.수정차수||1)+'차</td>'
+        + '<td style="padding:6px 8px;font-weight:600">'+escapeHtml(it.견적번호||'-')+(isMe?' <span style="font-size:11px;color:#1565C0">← 지금 보는 견적</span>':'')+'</td>'
+        + '<td style="padding:6px 8px;text-align:right;font-weight:600">'+((it.견적금액||0).toLocaleString('ko-KR'))+'원</td>'
+        + '<td style="padding:6px 8px;text-align:right">'+diffTxt+'</td>'
+        + '<td style="padding:6px 8px;text-align:center"><span style="'+qtStatusColor(it.상태)+';padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold">'+escapeHtml(it.상태||'-')+'</span></td>'
+        + '<td style="padding:6px 8px;text-align:center;color:var(--text-muted);font-size:12px">'+(it.발송일시?qtFormatYMD(it.발송일시):'미발송')+'</td>'
+        + '<td style="padding:6px 8px;text-align:center">'+(isMe?'-':'<a href="#quotation/'+it.id+'" style="color:#2b5fb8;font-size:12px">열기</a>')+'</td>'
+        + '</tr>';
+    }).join('');
+
+    const first = rv.형제[0], last = rv.형제[rv.형제.length-1];
+    const total = (last.견적금액||0) - (first.견적금액||0);
+    const totalTxt = total===0 ? '변동 없음'
+      : ((total>0?'+':'−')+Math.abs(total).toLocaleString('ko-KR')+'원');
+
+    host.innerHTML =
+      '<div style="background:var(--bg-soft);border:1px solid var(--border-light);border-radius:var(--radius-md);padding:14px 18px;margin-top:18px">'
+      + '<div style="font-weight:bold;color:var(--primary);font-size:13px;margin-bottom:4px;border-bottom:1px solid var(--border-light);padding-bottom:6px">'
+      +   '🧾 차수 이력 (' + rv.총차수 + '차까지) — 최초 대비 <b>' + totalTxt + '</b>'
+      + '</div>'
+      + '<div style="font-size:11.5px;color:#5F5E5A;margin:6px 0 10px">원본은 계약 근거 보존을 위해 지우지 않습니다. 최신 차수가 실제 유효한 견적입니다.</div>'
+      + '<table style="width:100%;border-collapse:collapse;font-size:13px">'
+      +   '<thead><tr style="background:#EFEEEC">'
+      +     '<th style="padding:6px 8px">차수</th><th style="padding:6px 8px;text-align:left">견적번호</th>'
+      +     '<th style="padding:6px 8px;text-align:right">견적금액</th><th style="padding:6px 8px;text-align:right">직전 대비</th>'
+      +     '<th style="padding:6px 8px">상태</th><th style="padding:6px 8px">발송</th><th style="padding:6px 8px"></th>'
+      +   '</tr></thead><tbody>' + rows + '</tbody>'
+      + '</table></div>';
+  }catch(e){ console.warn('[qtRenderRevisionHistory]', e); }
+}
+window.qtRenderRevisionHistory = qtRenderRevisionHistory;
 
 /* v2.7-fix7: 견적 상세에서 발송 — state.qtDetailRow 데이터로 state.qt 채운 후 qtSendQuotation 호출 */
 async function qtSendFromDetail(docType){
@@ -6681,6 +6803,7 @@ async function loadCustomerQuotations(접수번호){
     let visibleItems = items.slice();
     if(!state.qtShowVoid) visibleItems = visibleItems.filter(it=>it.상태!=='무효화');
     if(!state.qtShowExpiredRejected) visibleItems = visibleItems.filter(it=>it.상태!=='만료'&&it.상태!=='거절');
+    state.qtRevMap = qtBuildRevMap(items);   /* v2.28 — 숨긴 건 포함 전체로 차수 계산 */
     const idMap = {};
     visibleItems.forEach(it=>{idMap[it.id]=it;});
     const heads = visibleItems.filter(it=>!it.parent_quotation_id || !idMap[it.parent_quotation_id]);
@@ -6769,14 +6892,14 @@ function qtBuildCustomerCard(it, isChild, hideStep){
 
   return '<div class="qt-list-card" style="'+indent+'" onclick="location.hash=\'#quotation/'+qid+'\'">'+
     '<div class="qt-list-card-head">'+
-      '<div class="qt-list-card-no">'+escapeHtml(qtNoWithVer(it.견적번호, it.수정차수))+'</div>'+
+      '<div class="qt-list-card-no">'+escapeHtml(qtNoWithVer(it.견적번호, it.수정차수))+qtVerBadge(it.id)+'</div>'+
       '<div class="qt-list-card-status" style="'+qtStatusColor(status)+'">'+escapeHtml(status)+'</div>'+
     '</div>'+
     '<div class="qt-list-card-body">'+
       '<div style="font-weight:600;color:var(--text)">'+escapeHtml(it.제목||'(제목 없음)')+'</div>'+
       '<div style="margin-top:4px;display:flex;gap:12px;flex-wrap:wrap">'+
         '<span>['+escapeHtml(it.사업부||'-')+']</span>'+
-        '<span style="color:var(--primary);font-weight:600">'+(it.견적금액||0).toLocaleString('ko-KR')+'원</span>'+
+        '<span style="color:var(--primary);font-weight:600">'+(it.견적금액||0).toLocaleString('ko-KR')+'원</span>'+qtDiffTag(it.id)+
         '<span>'+escapeHtml(sent)+'</span>'+
         '<span>작성: '+escapeHtml(it.작성자||'-')+'</span>'+
       '</div>'+
@@ -7796,7 +7919,8 @@ document.addEventListener('DOMContentLoaded',init);
 
     doc.setFontSize(13);doc.setTextColor(0,0,0);
     doc.text('계약번호 : '+(ct.계약번호||'-'),105,130,{align:'center'});
-    doc.text('체결일 : '+new Date().toLocaleDateString('ko-KR'),105,140,{align:'center'});
+    /* v2.28: 표지 체결일 = 출력한 날이 아니라 DB 체결일. 출력일과 섞이면 계약 효력 다툼 소지 */
+    doc.text('체결일 : '+(ct.체결일 || (ct.계약기간_시작||'-')),105,140,{align:'center'});
 
     doc.setFontSize(11);doc.setTextColor(43,95,184);
     doc.text('「'+gL+'」  '+gap.회사명,30,200);
@@ -7880,12 +8004,16 @@ document.addEventListener('DOMContentLoaded',init);
     doc.text('서  명  란',105,30,{align:'center'});
     doc.setFontSize(10);doc.setTextColor(0,0,0);
     doc.text('본 계약을 체결함에 있어 「'+gL+'」과 「'+eL+'」은 위 사항을 확인하고 서명·날인한다.',14,50);
-    doc.text('체결일자 : '+new Date().toLocaleDateString('ko-KR'),14,60);
+    /* v2.28: 여기가 오늘 날짜를 '체결일자'로 찍어 표지·서명란 체결일이 서로 달랐다.
+       계약일은 아래 한 곳(DB 체결일)만 쓰고, 이 줄은 '출력일'로 뜻을 바꾼다. */
+    doc.setFontSize(9);doc.setTextColor(120,120,120);
+    doc.text('(문서 출력일 : '+new Date().toLocaleDateString('ko-KR')+')',14,66);
+    doc.setFontSize(10);doc.setTextColor(0,0,0);
 
     var sy=110;
     /* v2.26: 의뢰인 서명란 5필드 표시 + 체결일 */
     doc.setFontSize(10);doc.setTextColor(0,0,0);
-    doc.text('체결일 : '+(evt.체결일||' '),105,55,{align:'center'});
+    doc.text('체결일 : '+(evt.체결일 || '(미정)'),105,55,{align:'center'});
     doc.setFontSize(12);doc.setTextColor(43,95,184);
     doc.text('「'+gL+'」',30,sy);doc.line(30,sy+3,90,sy+3);
     doc.setFontSize(10);doc.setTextColor(0,0,0);

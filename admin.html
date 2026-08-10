@@ -709,17 +709,46 @@ table.qt-items td.narrow input{text-align:right}
       <button onclick="wsLoad()" style="border:0;border-radius:8px;padding:7px 14px;background:#eef4ff;color:#2B62C4;font-weight:700;cursor:pointer">↻ 새로고침</button>
       <span style="font-size:11.5px;color:#98a3b8">IP 미저장 · 배포 시점부터 집계</span>
     </div>
-    <div id="ws-kpi" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0"></div>
+    <!-- RP-WEB v9 (2026-08-10): 마지막 수집시각 명시 — "언제까지 데이터인지"를 숫자로 못박는다 -->
+    <div id="ws-freshness" style="margin:12px 0 0;font-size:12.5px"></div>
+    <div id="ws-kpi" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0"></div>
     <div id="ws-ab" style="margin:-6px 0 12px"></div>
     <div id="ws-chart" style="margin:6px 0 18px"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-      <div><b style="font-size:13.5px">유입경로별</b><div id="ws-src"></div></div>
-      <div><b style="font-size:13.5px">유입 콘텐츠 TOP (블로그 UTM·페이지)</b><div id="ws-top"></div></div>
+
+    <!-- RP-WEB v9: 탭 네비게이션 -->
+    <div id="ws-tabs" style="display:flex;gap:6px;flex-wrap:wrap;border-bottom:2px solid #e3e9f4;margin:18px 0 0"></div>
+
+    <div class="ws-pane" data-pane="summary">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+        <div><b style="font-size:13.5px">유입경로별</b><div id="ws-src"></div></div>
+        <div><b style="font-size:13.5px">채널별 (블로그 UTM 정규화)</b><div id="ws-ch-mini"></div></div>
+      </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
-      <div><b style="font-size:13.5px">블로그 → 홈페이지 → 문의 (최근 7일)</b><div id="ws-conv"></div></div>
-      <div><b style="font-size:13.5px">유입경로별 문의 전환 (최근 30일)</b><div id="ws-conv2"></div></div>
-      <div style="grid-column:1 / -1"><b style="font-size:13.5px">구글 검색 유입 검색어 (최근 28일 · GSC)</b><div id="ws-gsc"></div></div>
+
+    <div class="ws-pane" data-pane="page" hidden>
+      <div style="margin-top:14px"><b style="font-size:13.5px">페이지별 조회</b>
+        <span style="font-size:11.5px;color:#98a3b8;margin-left:6px">/contact.html 과 /contact 는 같은 페이지로 합산합니다</span>
+        <div id="ws-page"></div></div>
+    </div>
+
+    <div class="ws-pane" data-pane="channel" hidden>
+      <div style="margin-top:14px"><b style="font-size:13.5px">채널별 유입</b>
+        <span style="font-size:11.5px;color:#98a3b8;margin-left:6px">UTM 표기가 여러 갈래여도 하나로 묶어 셉니다</span>
+        <div id="ws-ch"></div></div>
+    </div>
+
+    <div class="ws-pane" data-pane="post" hidden>
+      <div style="margin-top:14px"><b style="font-size:13.5px">블로그 글별 유입</b>
+        <span style="font-size:11.5px;color:#98a3b8;margin-left:6px">UTM 코드를 실제 글 제목으로 바꿔 보여줍니다</span>
+        <div id="ws-top"></div></div>
+    </div>
+
+    <div class="ws-pane" data-pane="conv" hidden>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+        <div><b style="font-size:13.5px">블로그 → 홈페이지 → 문의 (최근 7일)</b><div id="ws-conv"></div></div>
+        <div><b style="font-size:13.5px">유입경로별 문의 전환 (최근 30일)</b><div id="ws-conv2"></div></div>
+        <div style="grid-column:1 / -1"><b style="font-size:13.5px">구글 검색 유입 검색어 (최근 28일 · GSC)</b><div id="ws-gsc"></div></div>
+      </div>
     </div>
   </div>
 </section>
@@ -9064,56 +9093,250 @@ async function wsOpenEditor(site){
   }catch(e){alert('편집 창 열기 실패: '+e.message);}
 }
 function wsInit(){wsLoad();}
+/* ══════════════════════════════════════════════════════════════════════
+   RP-WEB v9 (2026-08-10) — 방문자 통계 가독성 개선 (대표 승인 1단계 9건)
+   해결한 것:
+     ① 축 라벨이 양끝 2개뿐이라 "7/12 이후 멈춤"으로 오독되던 문제
+     ② 0건인 날과 수집 끊긴 날이 구분 안 되던 문제
+     ③ utm_content 와 페이지를 한 표에 섞어 /(345)가 전부를 가리던 문제
+     ④ /contact.html 과 /contact 가 따로 집계되던 문제
+     ⑤ 같은 채널이 blA/블A네이버/naver 로 흩어져 합산 불가하던 문제
+     ⑥ utm_content 의 UUID 가 사람이 못 읽는 채로 노출되던 문제
+     ⑦ 세션(329) 과 페이지뷰(379) 단위가 섞여 있던 문제
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* 유입경로 표시명 */
+var WS_SRC={naver_blog:'네이버 블로그',tistory:'티스토리',naver_search:'네이버 검색',naver_etc:'네이버 기타',
+  google:'구글 검색',direct:'직접 방문',instagram:'인스타그램',youtube:'유튜브',facebook:'페이스북',
+  kakao:'카카오',daum:'다음',bing:'빙',old_homepage:'구 홈페이지',internal:'내부 이동',
+  internal_admin:'내부 테스트',etc:'기타',naver_place:'네이버 플레이스',threads:'쓰레드',
+  coursemap:'코스맵',blog:'블로그(채널 미상)','chatgpt.com':'ChatGPT'};
+
+/* ★UTM 별칭 사전 — 흩어진 표기를 하나로 묶는다.
+   실측된 표기: blA / 블A네이버 / naver / tistory / blB_tistory / tistory_blogA / tistory_blogB … */
+/* 슬롯 정본 표기(블A네이버)와 UTM 추론 표기(블A 네이버)가 갈라지지 않게 한 형태로 맞춘다 */
+function wsChNorm(x){
+  var v=String(x||'').trim();
+  var m=v.match(/^(블[ABC])\s*(네이버|티스토리)$/);
+  return m ? (m[1]+' '+m[2]) : v;
+}
+function wsChannelOf(v, slot){
+  /* 1순위: mk_blog_slots 의 채널 컬럼(정본). UTM 이 엉켜 있어도 이게 맞다 */
+  if(slot && slot.ch) return wsChNorm(slot.ch);
+  var src=String(v.utm_source||'').toLowerCase();
+  var med=String(v.utm_medium||'').toLowerCase();
+  var j=src+'|'+med;
+  /* 블로그 채널 판별 — 블A/블B/블C × 네이버/티스토리
+     실측 표기: blA · 블A네이버 · naver · tistory_blogA · blB_tistory · tistory_blogB */
+  /* ★비(非)블로그 채널을 먼저 가른다 — coursemap 처럼 medium 에 blA 가 들어가는 경우가 있어
+       블로그 판별을 먼저 돌리면 코스맵이 「블A (매체 미상)」으로 잘못 잡힌다 (2026-08-10 테스트에서 검출) */
+  if(/coursemap/.test(j)) return '코스맵';
+  if(/^ig$|instagram/.test(src)) return '인스타그램';
+  if(/threads/.test(src)) return '쓰레드';
+  if(/naver_place|place/.test(j)) return '네이버 플레이스';
+  if(/kakao/.test(j)) return '카카오톡 채널';
+  if(/karrot/.test(j)) return '당근';
+  if(/gbp/.test(j)) return '구글 비즈니스';
+
+  var ch=null, plat=null;
+  if(/bla|블a|bloga|blog_a/.test(j)) ch='블A';
+  else if(/blb|블b|blogb|blog_b/.test(j)) ch='블B';
+  else if(/blc|블c|blogc|blog_c/.test(j)) ch='블C';
+  if(/naver|네이버/.test(j)) plat='네이버';
+  else if(/tistory|티스토리/.test(j)) plat='티스토리';
+  if(ch&&plat) return ch+' '+plat;
+  if(ch) return ch+' (매체 미상)';
+  /* ★추측하지 않는다 — UTM 만으로 블A/B/C 를 못 가르면 「채널 미상」으로 남겨
+       2단계 UTM 표준화가 왜 필요한지 화면에 그대로 드러나게 한다 */
+  if(plat) return plat+' 블로그 (채널 미상)';
+  if(src) return src;
+  return null;   /* UTM 없음 = 채널 유입 아님 */
+}
+
+/* 페이지 정규화 — .html 제거·끝 슬래시 정리·메인 표기 */
+function wsPageOf(p){
+  var v=String(p||'').split('?')[0].split('#')[0].trim();
+  if(!v) return '(미기록)';
+  v=v.replace(/\.html?$/i,'');
+  if(v!=='/' ) v=v.replace(/\/+$/,'');
+  if(v===''||v==='/'||v==='/index') return '메인 (/)';
+  var NAME={'/contact':'문의하기','/about':'회사소개','/service':'서비스','/portfolio':'포트폴리오','/marketing':'마케팅·교육'};
+  return (NAME[v]||v)+'  '+'<span style="color:#98a3b8;font-size:11px">'+v+'</span>';
+}
+
+/* utm_content → 슬롯 조회키 (UUID 전체 / 앞 8자리 / 8자리_YYYYMMDD 모두 수용) */
+function wsSlotKey(t){
+  var v=String(t||'').trim(); if(!v) return null;
+  var m=v.match(/^([0-9a-f]{8})(?:-[0-9a-f-]+)?(?:_\d{8})?$/i);
+  return m? m[1].toLowerCase() : null;
+}
+
+/* 표 렌더 공통 */
+function wsTable(rows, total, opt){
+  opt=opt||{};
+  if(!rows.length) return '<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">'+(opt.empty||'데이터가 없습니다.')+'</div>';
+  var mx=rows[0][1]||1;
+  return '<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px">'
+    + rows.map(function(s){
+        var pct = total? Math.round(s[1]/total*100) : 0;
+        return '<tr>'
+          + '<td style="padding:6px 4px;border-bottom:1px solid #f0f3f9">'+s[0]
+          +   (s[2]?'<div style="color:#98a3b8;font-size:11px;margin-top:1px">'+s[2]+'</div>':'')
+          + '</td>'
+          + '<td style="width:88px;border-bottom:1px solid #f0f3f9;padding:6px 4px">'
+          +   '<div style="height:6px;background:#eef2fa;border-radius:3px;overflow:hidden"><div style="height:6px;width:'+Math.max(3,Math.round(s[1]/mx*100))+'%;background:#4A85F6"></div></div>'
+          + '</td>'
+          + '<td style="text-align:right;font-weight:800;border-bottom:1px solid #f0f3f9;width:44px">'+s[1]+'</td>'
+          + '<td style="text-align:right;color:#7a869c;border-bottom:1px solid #f0f3f9;width:46px">'+pct+'%</td>'
+          + '</tr>';
+      }).join('')
+    + '</table>';
+}
+
+/* 탭 */
+var WS_TAB='summary';
+function wsSetTab(t){
+  WS_TAB=t;
+  var TABS=[['summary','요약'],['page','페이지별'],['channel','채널별'],['post','블로그 글별'],['conv','전환']];
+  var el=document.getElementById('ws-tabs');
+  if(el) el.innerHTML=TABS.map(function(x){
+    var on=(x[0]===t);
+    return '<button onclick="wsSetTab(\''+x[0]+'\')" style="border:0;background:'+(on?'#4A85F6':'transparent')+';color:'+(on?'#fff':'#5a6478')+';font-weight:'+(on?'800':'600')+';font-size:13px;padding:9px 16px;border-radius:8px 8px 0 0;cursor:pointer">'+x[1]+'</button>';
+  }).join('');
+  document.querySelectorAll('.ws-pane').forEach(function(p){ p.hidden = (p.getAttribute('data-pane')!==t); });
+}
+window.wsSetTab=wsSetTab;
+
 async function wsLoad(){
   var days=+((document.getElementById('ws-days')||{}).value||30);
   var site=((document.getElementById('ws-site')||{}).value)||'ALL';
   var since=new Date(Date.now()-days*864e5).toISOString();
-  var q=window.sb.from('web_방문로그').select('방문_시각,유입_출처,사이트,디바이스,utm_content,페이지,세션_id').gte('방문_시각',since).order('방문_시각',{ascending:false}).limit(8000);
+  var q=window.sb.from('web_방문로그').select('방문_시각,유입_출처,사이트,디바이스,utm_source,utm_medium,utm_content,페이지,세션_id').gte('방문_시각',since).order('방문_시각',{ascending:false}).limit(8000);
   if(site!=='ALL')q=q.eq('사이트',site);
   var r=await q;
   var chart=document.getElementById('ws-chart');
   if(r.error){chart.innerHTML='<div style="color:#c0392b;font-size:13px">조회 실패: '+r.error.message+'</div>';return;}
-  wsRender(r.data||[],days);
+  /* RP-WEB v9: 슬롯 사전 — utm_content 코드를 실제 글 제목으로 바꾸기 위해 1회 조회 */
+  var slotMap={};
+  try{
+    var sl=await window.sb.from('mk_blog_slots').select('id,채널,발행일,핵심키워드,최종제목,네이버제목').limit(2000);
+    (sl.data||[]).forEach(function(x){
+      slotMap[String(x.id).slice(0,8).toLowerCase()]={
+        ch:x['채널']||null, kw:x['핵심키워드']||'', d:x['발행일']||'',
+        t:(x['최종제목']||x['네이버제목']||'').trim()
+      };
+    });
+  }catch(e){ console.warn('[ws slot map]',e); }
+  wsRender(r.data||[],days,slotMap);
   try{wsBlogLoad();}catch(e){}
 }
-function wsRender(rows,days){
-  var SRC={naver_blog:'네이버 블로그(블A·B·C)',tistory:'티스토리',naver_search:'네이버 검색',naver_etc:'네이버 기타',google:'구글',direct:'직접 방문',instagram:'인스타그램',youtube:'유튜브',facebook:'페이스북',kakao:'카카오',daum:'다음',bing:'빙',old_homepage:'구 홈페이지',internal:'내부 이동',internal_admin:'내부 테스트',etc:'기타'};
+
+function wsRender(rows,days,slotMap){
+  slotMap=slotMap||{};
   function kst(d){return new Date(d).toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'});}
+  function kstT(d){return new Date(d).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}
   var today=kst(new Date());
   rows=rows.filter(function(v){return v.유입_출처!=='internal_admin';});
-  var byDay={},byDayS={},sessSet={},bySrc={},byTop={},mob=0;
+
+  var byDay={},byDayS={},sessSet={},bySrc={},byTop={},byPage={},byCh={},mob=0,lastSeen=null;
   rows.forEach(function(v,i){
     var d=kst(v.방문_시각);byDay[d]=(byDay[d]||0)+1;
+    if(!lastSeen||new Date(v.방문_시각)>new Date(lastSeen)) lastSeen=v.방문_시각;
     var sid=v.세션_id||('r'+i);(byDayS[d]=byDayS[d]||{})[sid]=1;sessSet[sid]=1;
-    var s=v.유입_출처||'etc';bySrc[s]=(bySrc[s]||0)+1;
-    var t=v.utm_content||v.페이지||'';if(t)byTop[t]=(byTop[t]||0)+1;
+    bySrc[v.유입_출처||'etc']=(bySrc[v.유입_출처||'etc']||0)+1;
+    /* ④ 페이지 정규화 후 집계 */
+    var pg=wsPageOf(v.페이지);byPage[pg]=(byPage[pg]||0)+1;
+    /* ⑤⑥ 채널·글 — utm_content 를 슬롯 사전으로 해석 */
+    var slot=slotMap[wsSlotKey(v.utm_content)]||null;
+    var ch=wsChannelOf(v,slot); if(ch) byCh[ch]=(byCh[ch]||0)+1;
+    if(v.utm_content){
+      var key=slot? ('slot:'+wsSlotKey(v.utm_content)) : ('raw:'+v.utm_content);
+      byTop[key]=(byTop[key]||0)+1;
+    }
     if(v.디바이스==='mobile')mob++;
   });
+
   var total=Object.keys(sessSet).length,todayN=Object.keys(byDayS[today]||{}).length;
   var dk=Object.keys(byDay).sort();var span=days;
   if(dk.length){span=Math.max(1,Math.min(days,Math.round((new Date(today)-new Date(dk[0]))/864e5)+1));}
+
+  /* ① 마지막 수집시각 명시 — "7/12 이후 멈춤" 오독 원천 차단 */
+  var dates=[];for(var i=days-1;i>=0;i--){dates.push(kst(new Date(Date.now()-i*864e5)));}
+  var fresh=document.getElementById('ws-freshness');
+  if(fresh){
+    var stale = lastSeen ? Math.floor((Date.now()-new Date(lastSeen))/36e5) : null;
+    var badge = (stale===null) ? '<span style="background:#FFEBEE;color:#C62828;padding:2px 8px;border-radius:10px;font-weight:700">수집 없음</span>'
+      : (stale<24 ? '<span style="background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:10px;font-weight:700">정상 수집 중</span>'
+                  : '<span style="background:#FFF3E0;color:#E65100;padding:2px 8px;border-radius:10px;font-weight:700">'+Math.floor(stale/24)+'일째 신규 없음</span>');
+    fresh.innerHTML='<span style="color:#5a6478">기간 <b>'+dates[0]+' ~ '+dates[dates.length-1]+'</b>'
+      +'  ·  마지막 수집 <b>'+(lastSeen?kstT(lastSeen):'—')+'</b>  </span>'+badge;
+  }
+
   document.getElementById('ws-kpi').innerHTML=[
-    ['오늘 방문',todayN],['최근 '+days+'일(세션)',total],['일평균',total?Math.round(total/span*10)/10:0],['모바일 비율',rows.length?Math.round(mob/rows.length*100)+'%':'0%']
-  ].map(function(k){return '<div style="background:#f7faff;border:1px solid #e3e9f4;border-radius:10px;padding:14px;text-align:center"><div style="font-size:12px;color:#7a869c">'+k[0]+'</div><div style="font-size:22px;font-weight:900;color:#2B62C4">'+k[1]+'</div></div>';}).join('');
-  /* RP-WEB v8.3: A/B 요약칩 (전체 보기일 때만) */
+    ['오늘 방문','세션',todayN],['최근 '+days+'일','세션',total],
+    ['일평균','세션',total?Math.round(total/span*10)/10:0],
+    ['모바일 비율','페이지뷰 '+rows.length+'건 기준',rows.length?Math.round(mob/rows.length*100)+'%':'0%']
+  ].map(function(k){return '<div style="background:#f7faff;border:1px solid #e3e9f4;border-radius:10px;padding:14px;text-align:center"><div style="font-size:12px;color:#7a869c">'+k[0]+'</div><div style="font-size:22px;font-weight:900;color:#2B62C4">'+k[2]+'</div><div style="font-size:10.5px;color:#a6b0c2;margin-top:2px">'+k[1]+'</div></div>';}).join('');
+
+  /* ⑦ 사이트별 칩 — 페이지뷰 기준임을 명시 */
   var bySite={};rows.forEach(function(v){var st=v['사이트']||'?';bySite[st]=(bySite[st]||0)+1;});
   var siteSel=((document.getElementById('ws-site')||{}).value)||'ALL';
   var abEl=document.getElementById('ws-ab');
-  if(abEl){abEl.innerHTML=(siteSel==='ALL')?('<span style="font-size:12px;color:#7a869c;margin-right:4px">사이트별:</span><span style="display:inline-block;margin-right:6px;padding:3px 10px;border-radius:999px;background:#eef4ff;color:#2B62C4;font-weight:800;font-size:12px">A 여행·행사 '+(bySite['A']||0)+'건</span><span style="display:inline-block;padding:3px 10px;border-radius:999px;background:#eefaf2;color:#1e8e4e;font-weight:800;font-size:12px">B 마케팅·교육 '+(bySite['B']||0)+'건</span>'):'';}
-  var dates=[];for(var i=days-1;i>=0;i--){dates.push(kst(new Date(Date.now()-i*864e5)));}
+  if(abEl){abEl.innerHTML=(siteSel==='ALL')?('<span style="font-size:12px;color:#7a869c;margin-right:4px">사이트별(페이지뷰):</span><span style="display:inline-block;margin-right:6px;padding:3px 10px;border-radius:999px;background:#eef4ff;color:#2B62C4;font-weight:800;font-size:12px">A 여행·행사 '+(bySite['A']||0)+'</span><span style="display:inline-block;padding:3px 10px;border-radius:999px;background:#eefaf2;color:#1e8e4e;font-weight:800;font-size:12px">B 마케팅·교육 '+(bySite['B']||0)+'</span>'):'';}
+
+  /* ①②③ 차트 — 7일 눈금 · 오늘 강조 · 값 라벨 · 0건 명시 · 주말 음영 */
   var mx=1;dates.forEach(function(d){if((byDay[d]||0)>mx)mx=byDay[d];});
-  document.getElementById('ws-chart').innerHTML='<div style="display:flex;align-items:flex-end;gap:2px;height:120px;border-bottom:1px solid #e3e9f4;padding-bottom:2px">'
-    +dates.map(function(d){var v=byDay[d]||0;return '<div title="'+d+' · '+v+'명" style="flex:1;background:'+(v?'#4A85F6':'#eef2fa')+';height:'+Math.max(3,Math.round(v/mx*115))+'px;border-radius:3px 3px 0 0"></div>';}).join('')
-    +'</div><div style="display:flex;justify-content:space-between;font-size:10.5px;color:#98a3b8;margin-top:3px"><span>'+dates[0]+'</span><span>'+dates[dates.length-1]+'</span></div>';
-  var srcArr=Object.keys(bySrc).map(function(k){return [SRC[k]||k,bySrc[k]];}).sort(function(a,b){return b[1]-a[1];});
-  document.getElementById('ws-src').innerHTML=srcArr.length?'<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px">'
-    +srcArr.map(function(s){return '<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9">'+s[0]+'</td><td style="text-align:right;font-weight:800;border-bottom:1px solid #f0f3f9">'+s[1]+'</td><td style="text-align:right;color:#7a869c;border-bottom:1px solid #f0f3f9;width:52px">'+Math.round(s[1]/total*100)+'%</td></tr>';}).join('')+'</table>'
-    :'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">아직 데이터가 없습니다 — 배포 후 자동 집계됩니다.</div>';
-  var topArr=Object.keys(byTop).map(function(k){return [k,byTop[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,10);
-  document.getElementById('ws-top').innerHTML=topArr.length?'<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px">'
-    +topArr.map(function(s){return '<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9;word-break:break-all">'+s[0]+'</td><td style="text-align:right;font-weight:800;border-bottom:1px solid #f0f3f9;width:44px">'+s[1]+'</td></tr>';}).join('')+'</table>'
-    :'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">블로그 CTA에 UTM을 달면 글별 유입이 여기 잡힙니다.</div>';
+  var bars=dates.map(function(d,idx){
+    var v=byDay[d]||0, isToday=(d===today), dow=new Date(d+'T00:00:00+09:00').getDay(), wk=(dow===0||dow===6);
+    var h=v?Math.max(6,Math.round(v/mx*100)):0;
+    var col=isToday?'#1B4FA8':(v?'#4A85F6':'transparent');
+    return '<div title="'+d+' · '+v+'명" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:132px;'+(wk?'background:#fafbfe;':'')+'">'
+      + '<div style="font-size:9.5px;color:'+(v?'#5a6478':'#cfd6e4')+';font-weight:'+(isToday?'800':'600')+';margin-bottom:2px">'+(v||0)+'</div>'
+      + (v ? '<div style="width:100%;background:'+col+';height:'+h+'px;border-radius:3px 3px 0 0"></div>'
+           : '<div style="width:100%;border-top:1px dashed #dbe3f0;height:2px"></div>')
+      + '</div>';
+  }).join('');
+  var ticks=dates.map(function(d,idx){
+    var show=(idx===0)||(idx===dates.length-1)||((dates.length-1-idx)%7===0);
+    return '<div style="flex:1;text-align:center;font-size:9.5px;color:'+(d===today?'#1B4FA8':'#98a3b8')+';font-weight:'+(d===today?'800':'400')+'">'+(show?d.slice(5):'')+'</div>';
+  }).join('');
+  document.getElementById('ws-chart').innerHTML=
+     '<div style="display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid #e3e9f4">'+bars+'</div>'
+    +'<div style="display:flex;gap:2px;margin-top:3px">'+ticks+'</div>'
+    +'<div style="font-size:10.5px;color:#a6b0c2;margin-top:5px">점선 = 방문 0명 (수집 중단 아님) · 짙은 막대 = 오늘 · 회색 배경 = 주말</div>';
+
+  /* 유입경로별 */
+  var srcArr=Object.keys(bySrc).map(function(k){return [WS_SRC[k]||k,bySrc[k]];}).sort(function(a,b){return b[1]-a[1];});
+  document.getElementById('ws-src').innerHTML=wsTable(srcArr,rows.length,{empty:'아직 데이터가 없습니다 — 배포 후 자동 집계됩니다.'});
+
+  /* ⑤ 채널별 (정규화) */
+  var chArr=Object.keys(byCh).map(function(k){return [k,byCh[k]];}).sort(function(a,b){return b[1]-a[1];});
+  var chHtml=wsTable(chArr,rows.length,{empty:'UTM 이 붙은 유입이 아직 없습니다. 블로그·SNS 링크에 UTM 을 달면 여기 잡힙니다.'});
+  var chEl=document.getElementById('ws-ch'); if(chEl) chEl.innerHTML=chHtml;
+  var chMini=document.getElementById('ws-ch-mini'); if(chMini) chMini.innerHTML=chHtml;
+
+  /* ④ 페이지별 */
+  var pgArr=Object.keys(byPage).map(function(k){return [k,byPage[k]];}).sort(function(a,b){return b[1]-a[1];});
+  var pgEl=document.getElementById('ws-page'); if(pgEl) pgEl.innerHTML=wsTable(pgArr,rows.length,{});
+
+  /* ⑥ 블로그 글별 — UUID·코드를 제목으로 */
+  var topArr=Object.keys(byTop).map(function(k){
+    var n=byTop[k];
+    if(k.indexOf('slot:')===0){
+      var sl=slotMap[k.slice(5)]||{};
+      var title=sl.t||sl.kw||k.slice(5);
+      var sub=[sl.ch,sl.kw,sl.d].filter(Boolean).join(' · ');
+      return [title,n,sub];
+    }
+    var raw=k.slice(4);
+    var LBL={link_in_bio:'프로필 링크 (인스타·쓰레드)',samcheok:'삼척 코스맵'};
+    return [(LBL[raw]||raw),n,'UTM 코드 — 슬롯 매칭 안 됨'];
+  }).sort(function(a,b){return b[1]-a[1];}).slice(0,20);
+  document.getElementById('ws-top').innerHTML=wsTable(topArr,rows.length,{empty:'블로그 CTA 에 UTM 을 달면 글별 유입이 여기 잡힙니다.'});
+
+  if(document.getElementById('ws-tabs')) wsSetTab(WS_TAB);
 }
+
 /* RP-WEB v7 (2026-07-13): 블로그 채널 현황 + 유입검색어 + 전환 요약 */
 async function wsBlogLoad(){
   try{

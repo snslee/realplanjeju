@@ -9418,6 +9418,30 @@ async function wsDashSummary(){
   if(typeof _ld==='function'){window.loadDashboard=async function(){var r=await _ld.apply(this,arguments);wsDashSummary();return r;};}
   if((location.hash||'#dashboard').indexOf('dashboard')>-1)setTimeout(wsDashSummary,900);
 })();
+/* RP-INFLOW v1: 대시보드 유입→문의 전환표 (sql/065 v_inflow_funnel · 내부접속/구홈페이지 제외 · 표본부족 배지) */
+(function(){
+ async function inflowTable(){
+  try{
+   var el=document.getElementById('inflow-body'); if(!el||!window.sb) return;
+   var r=await window.sb.from('v_inflow_funnel').select('채널,세션,문의,전환율_pct,표본부족,집계시작일').limit(60);
+   if(r.error){ el.textContent='불러오기 실패: '+(r.error.message||''); return; }
+   var rows=(r.data||[]).filter(function(x){ return (x.세션||0)>0 || (x.문의||0)>0; });
+   if(!rows.length){ el.textContent='데이터 없음'; return; }
+   rows.sort(function(a,b){ return (b.문의-a.문의)||(b.세션-a.세션); });
+   var since=rows[0].집계시작일||'';
+   var h='<table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="color:#7a869c"><th style="padding:4px;text-align:left;font-weight:600">채널</th><th style="text-align:right;font-weight:600">세션</th><th style="text-align:right;font-weight:600">문의</th><th style="text-align:right;font-weight:600">전환율</th></tr>';
+   rows.forEach(function(x){
+    var hot=(x.문의||0)>0;
+    h+='<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9">'+(x.채널||'')+(x.표본부족?' <span style="font-size:10.5px;color:#c08a00;border:1px solid #e8d7a8;border-radius:4px;padding:0 4px">표본부족</span>':'')+'</td><td style="text-align:right;color:#7a869c;border-bottom:1px solid #f0f3f9">'+(x.세션||0)+'</td><td style="text-align:right;font-weight:700;color:'+(hot?'#2B62C4':'#98a3b8')+';border-bottom:1px solid #f0f3f9">'+(x.문의||0)+'</td><td style="text-align:right;font-weight:700;border-bottom:1px solid #f0f3f9">'+(x.전환율_pct!=null?x.전환율_pct+'%':'-')+'</td></tr>';
+   });
+   h+='</table><div style="font-size:11px;color:#98a3b8;margin-top:6px">'+since+' 이후 (방문로그 수집 시작일) · 문의 3건 미만은 표본부족 — 적은 표본으로 채널을 늘리거나 줄이지 않습니다</div>';
+   el.innerHTML=h;
+  }catch(e){}
+ }
+ var _ldIF=window.loadDashboard;
+ if(typeof _ldIF==='function'){ window.loadDashboard=async function(){ var r=await _ldIF.apply(this,arguments); inflowTable(); return r; }; }
+ if((location.hash||'#dashboard').indexOf('dashboard')>-1) setTimeout(inflowTable,1000);
+})();
 /* RP-SESSION-GUARD: UI는 로그인인데 실제 세션이 죽은 상태 자동 감지 → 재로그인 유도 */
 setTimeout(async function(){
   try{

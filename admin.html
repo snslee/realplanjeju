@@ -7722,6 +7722,13 @@ document.addEventListener('DOMContentLoaded',init);
   window.ecRender=ecRender;
 
   async function ecSendContract(contractId){
+    /* v2.29: 환불규정 공란 경고 — 행사 계약서 필수 조항. 취소·연기 분쟁의 유일한 근거다 */
+    try{
+      var _ck=(window.ecState&&window.ecState.contracts||[]).find(function(x){return x.id===contractId;})||{};
+      if(!String(_ck.환불규정||'').trim()){
+        if(!confirm('⚠ 환불(취소·연기) 규정이 비어 있습니다.\n\n행사 계약서 필수 조항이며, 고객이 취소했을 때 위약금을 청구할 근거가 사라집니다.\n\n이대로 발송할까요?')) return;
+      }
+    }catch(_e){ console.warn('[환불규정 체크]',_e); }
     /* v2.19 hook: pcOpenSendModal (jsPDF 4종 + 발송 모달 + 갑 매핑) */
     if(window.pcOpenSendModal){return window.pcOpenSendModal(contractId);}
     /* fallback (구버전) */
@@ -7966,8 +7973,15 @@ document.addEventListener('DOMContentLoaded',init);
     doc.setFontSize(10);
     doc.text('계약금액 : '+won(ct.계약금액),18,y);y+=7;
     doc.text('계약기간 : '+fmtD(ct.계약기간_시작)+'  ~  '+fmtD(ct.계약기간_종료),18,y);y+=7;
-    if(ct.계약금비율){
-      doc.text('계약금 / 잔금 비율 : '+(Number(ct.계약금비율)*100).toFixed(0)+'% / '+(Number(ct.잔금비율||0)*100).toFixed(0)+'%',18,y);y+=7;
+    /* v2.29: ①DB가 이미 % 단위인데 ×100 을 또 해서 50 → "5000%" 로 찍혔다
+              ②계약금 0%(후불 전액)면 if 가 거짓이 되어 결제조건이 통째로 안 찍혔다 */
+    if(ct.계약금비율!=null || ct.잔금비율!=null){
+      var _dep=Number(ct.계약금비율||0), _bal=Number(ct.잔금비율||0);
+      var _rt='계약금 / 잔금 비율 : '+_dep.toFixed(0)+'% / '+_bal.toFixed(0)+'%';
+      if(_dep===0) _rt+='   (계약금 없음 · 행사 종료 후 전액 청구)';
+      doc.text(_rt,18,y);y+=7;
+      doc.text('계약금 : '+won(Math.round((ct.계약금액||0)*_dep/100))
+             +'    /    잔금 : '+won(Math.round((ct.계약금액||0)*_bal/100)),18,y);y+=7;
     }
     if(ct.환불규정){
       y+=4;doc.text('환불 규정 :',18,y);y+=6;

@@ -721,8 +721,8 @@ table.qt-items td.narrow input{text-align:right}
 
     <div class="ws-pane" data-pane="summary">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
-        <div><b style="font-size:13.5px">유입경로별</b><div id="ws-src"></div></div>
-        <div><b style="font-size:13.5px">채널별 (블로그 UTM 정규화)</b><div id="ws-ch-mini"></div></div>
+        <!-- [2026-08-11 삭제] 유입경로별 — 대시보드 「유입 → 문의 전환」과 같은 목록이라 중복. 문의·전환율이 붙은 대시보드 표를 정본으로 씁니다 -->
+        <div style="grid-column:1 / -1"><b style="font-size:13.5px">채널별 (블로그 UTM 정규화)</b><span style="font-size:11.5px;color:#98a3b8;margin-left:6px">유입경로 전체와 문의 전환율은 대시보드에서 봅니다</span><div id="ws-ch-mini"></div></div>
       </div>
     </div>
 
@@ -9308,7 +9308,7 @@ function wsRender(rows,days,slotMap){
 
   /* 유입경로별 */
   var srcArr=Object.keys(bySrc).map(function(k){return [WS_SRC[k]||k,bySrc[k]];}).sort(function(a,b){return b[1]-a[1];});
-  document.getElementById('ws-src').innerHTML=wsTable(srcArr,rows.length,{empty:'아직 데이터가 없습니다 — 배포 후 자동 집계됩니다.'});
+  var _src=document.getElementById('ws-src'); if(_src)_src.innerHTML=wsTable(srcArr,rows.length,{empty:'아직 데이터가 없습니다 — 배포 후 자동 집계됩니다.'});
 
   /* ⑤ 채널별 (정규화) */
   var chArr=Object.keys(byCh).map(function(k){return [k,byCh[k]];}).sort(function(a,b){return b[1]-a[1];});

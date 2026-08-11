@@ -518,7 +518,7 @@ table.qt-items td.narrow input{text-align:right}
 <div class="kpi-card" data-kpi="top_bu"><div class="kpi-label">사업부 TOP</div><div class="kpi-value" style="font-size:18px;">-</div><div class="kpi-sub">문의 최다</div></div>
 </div>
 <!-- RP-WEB v3: 대시보드 홈페이지 방문 요약 (상세 = #website) -->
-<div id="inflow-box" style="background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:14px 18px;margin:14px 0"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><b style="font-size:13.5px">📥 유입 → 문의 전환</b><span style="font-size:11px;color:#98a3b8">내부접속·구홈페이지 제외</span></div><div id="inflow-body" style="font-size:12.5px;color:#98a3b8">불러오는 중…</div></div>
+<div id="inflow-box" style="background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:14px 18px;margin:14px 0"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><b style="font-size:13.5px">📥 유입 → 문의 전환</b><span style="font-size:11px;color:#98a3b8">내부접속·구홈페이지 제외</span></div><div id="inflow-body" style="font-size:12.5px;color:#98a3b8"><div style="height:13px;background:#eef2f8;border-radius:4px;margin:9px 0;width:92%"></div><div style="height:13px;background:#f3f6fb;border-radius:4px;margin:9px 0;width:78%"></div><div style="height:13px;background:#f7f9fc;border-radius:4px;margin:9px 0;width:60%"></div><div style="font-size:11px;color:#b6bfd0">유입·문의 데이터를 불러오는 중입니다…</div></div></div>
 <div id="ws-dash" style="background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:14px 18px;margin:14px 0;display:flex;gap:22px;align-items:center;flex-wrap:wrap">
 <b style="font-size:13.5px">🌐 홈페이지 방문</b>
 <span style="font-size:12.5px;color:#7a869c">오늘 <b id="wsd-today" style="color:#2B62C4;font-size:16px">-</b></span>
@@ -9414,8 +9414,9 @@ async function wsDashSummary(){
 /* RP-INFLOW v1: 대시보드 유입→문의 전환표 (sql/065 v_inflow_funnel · 내부접속/구홈페이지 제외 · 표본부족 배지) */
 (function(){
  async function inflowTable(){
+  if(inflowTable._done) return;
   try{
-   var el=document.getElementById('inflow-body'); if(!el) return; if(!window.sb){ if((inflowTable._n=(inflowTable._n||0)+1)<20){ setTimeout(inflowTable,700); } else { el.textContent='연결 대기 중입니다. 새로고침해 주세요.'; } return; }
+   var el=document.getElementById('inflow-body'); if(!el) return; if(!window.sb){ if((inflowTable._n=(inflowTable._n||0)+1)<60){ setTimeout(inflowTable,250); } else { el.textContent='연결 대기 중입니다. 새로고침해 주세요.'; } return; }
    var r=await window.sb.from('v_inflow_funnel').select('채널,세션,문의,전환율_pct,표본부족,집계시작일').limit(60);
    if(r.error){ el.textContent='불러오기 실패: '+(r.error.message||''); return; }
    var rows=(r.data||[]).filter(function(x){ return (x.세션||0)>0 || (x.문의||0)>0; });
@@ -9428,12 +9429,12 @@ async function wsDashSummary(){
     h+='<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9">'+(x.채널||'')+(x.표본부족?' <span style="font-size:10.5px;color:#c08a00;border:1px solid #e8d7a8;border-radius:4px;padding:0 4px">표본부족</span>':'')+'</td><td style="text-align:right;color:#7a869c;border-bottom:1px solid #f0f3f9">'+(x.세션||0)+'</td><td style="text-align:right;font-weight:700;color:'+(hot?'#2B62C4':'#98a3b8')+';border-bottom:1px solid #f0f3f9">'+(x.문의||0)+'</td><td style="text-align:right;font-weight:700;border-bottom:1px solid #f0f3f9">'+(x.전환율_pct!=null?x.전환율_pct+'%':'-')+'</td></tr>';
    });
    if(_hid.length){ var _hs=0; _hid.forEach(function(x){_hs+=(x.세션||0);}); h+='<tr><td colspan="4" style="padding:6px 4px;color:#98a3b8;font-size:11.5px">' +'· 표본부족 '+_hid.length+'개 채널 (세션 합 '+_hs+' · 문의 0) — ' +_hid.map(function(x){return x.채널;}).join(', ')+'</td></tr>'; } h+='</table><div style="font-size:11px;color:#98a3b8;margin-top:6px">'+since+' 이후 (방문로그 수집 시작일) · 문의 3건 미만은 표본부족 — 적은 표본으로 채널을 늘리거나 줄이지 않습니다</div>';
-   el.innerHTML=h;
+   el.innerHTML=h; inflowTable._done=true;
   }catch(e){}
  }
  var _ldIF=window.loadDashboard;
  if(typeof _ldIF==='function'){ window.loadDashboard=async function(){ var r=await _ldIF.apply(this,arguments); inflowTable(); return r; }; }
- if((location.hash||'#dashboard').indexOf('dashboard')>-1) setTimeout(inflowTable,1000);
+ if((location.hash||'#dashboard').indexOf('dashboard')>-1){ inflowTable(); document.addEventListener('DOMContentLoaded',inflowTable); window.addEventListener('load',inflowTable); }
 })();
 /* RP-SESSION-GUARD: UI는 로그인인데 실제 세션이 죽은 상태 자동 감지 → 재로그인 유도 */
 setTimeout(async function(){

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.12.2</title>
+<title>리얼플랜제주 마케팅 운영 v1.13.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -98,7 +98,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.12.2</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.13.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -313,7 +313,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 
     <div class="tab-panel" id="t4">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div><h2 style="font-size:1.2rem;font-weight:700">🔍 잠자는 거인</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">티스토리=노출·CTR(GSC) / 네이버=순위(mk_rank_tracker 정본 · 미진입 포함) — 최근 14일</p></div>
+        <div><h2 style="font-size:1.2rem;font-weight:700">🔍 잠자는 거인</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">티스토리=노출·CTR(GSC) / 네이버=순위(mk_rank_tracker 정본 · 미진입 포함) — <b>카드마다 기간이 다릅니다</b>. 각 카드 제목 옆 기준일을 보세요</p></div>
         <button onclick="loadGiants()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
       <div class="card" data-sec="📊 노출·CTR" ><div class="card-hdr"><h3>📊 채널별 노출·CTR 현황 <span style="font-weight:500;font-size:.72rem;color:#94a3b8" id="giants-window">최근 8일 누적</span></h3></div>
@@ -322,13 +322,24 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
           <tbody id="giants-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
         </div>
       </div>
-      <div class="card" data-sec="🏆 네이버 순위" ><div class="card-hdr"><h3>🏆 네이버 채널별 순위 현황 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">mk_rank_tracker 정본 · 키워드별 최신 측정 · 순위↓</span></h3></div><div class="card-body" style="padding:0;overflow-x:auto"><div style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;color:#166534;font-size:.72rem;padding:7px 11px">✅ 발행글 <b>핵심키워드 전량</b>을 네이버 블로그 검색에서 실측한 정본입니다(100위 내 미발견=<b>미진입</b>으로 카운트). 평균순위는 <b>진입분만</b>의 평균이라, 미진입 칸을 반드시 같이 보세요.</div><table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>평균순위<span style="font-weight:400;color:#94a3b8">(진입분)</span></th><th>추적 키워드</th><th>진입</th><th>미진입</th><th>top10 진입률</th><th>판정</th></tr></thead><tbody id="giants-naver-body"><tr><td colspan="8" class="loading">로딩 중...</td></tr></tbody></table></div></div>
-      <div class="card" data-sec="🕳️ 미커버 실검색어" ><div class="card-hdr"><h3>🕳️ 미커버 실검색어 TOP 20 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">v_uncovered_terms · 검색 유입은 있는데 우리 글(핵심키워드)이 없는 검색어</span></h3></div>
+      <div class="card" data-sec="🏆 네이버 순위" ><div class="card-hdr"><h3>🏆 네이버 채널별 순위 현황 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">mk_rank_tracker 정본 · 키워드별 최신 측정 · <span id="giants-naver-window">최근 14일</span></span></h3></div><div class="card-body" style="padding:0;overflow-x:auto"><div style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;color:#166534;font-size:.72rem;padding:7px 11px">✅ 발행글 <b>핵심키워드 전량</b>을 네이버 블로그 검색에서 실측한 정본입니다(100위 내 미발견=<b>미진입</b>으로 카운트). 평균순위는 <b>진입분만</b>의 평균이라, 미진입 칸을 반드시 같이 보세요. 신호등 판정은 <b>추적 시작 30일이 지난 키워드(성숙)</b>만 모수로 씁니다 — 어제 발행한 키워드는 무조건 미진입이라 판정을 영구 빨강으로 만듭니다.</div><table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>평균순위<span style="font-weight:400;color:#94a3b8">(진입분)</span></th><th>추적 키워드</th><th>진입</th><th>미진입</th><th>top10 진입률<span style="font-weight:400;color:#94a3b8">(추적/진입)</span></th><th>성숙<span style="font-weight:400;color:#94a3b8">(30일↑)</span></th><th>판정</th></tr></thead><tbody id="giants-naver-body"><tr><td colspan="9" class="loading">로딩 중...</td></tr></tbody></table></div></div>
+      <div class="card" data-sec="😴 잠자는 거인(순위 미확보)" ><div class="card-hdr"><h3>😴 잠자는 거인 — 검색 수요는 있는데 순위가 없는 키워드 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">v_sleeping_giants · 검색량 1,000↑ · mk_rank_tracker에 순위 0건</span></h3></div>
         <div class="card-body" style="padding:0;overflow-x:auto">
-          <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.72rem;padding:7px 11px">💡 슬롯 후보 원천입니다. 채택 전 <b>G15 5단 게이트</b>(충돌·SERP 의도)를 반드시 통과시키세요. 네이버분은 월간 유입분석 파일, 티스토리분은 GSC가 원천입니다.</div>
+          <div style="background:#eff6ff;border-bottom:1px solid #bfdbfe;color:#1e40af;font-size:.72rem;padding:7px 11px">💡 <b>후보일 뿐 채택안이 아닙니다.</b> 우리 전략은 저검색량 롱테일 선점이라 검색량이 크다는 이유로 채택하지 않습니다. 채택 전 <b>SERP 의도 · G15 자기잠식 · 금지키워드(국내여행 22종)</b>를 반드시 대조하세요. 시즌판정 「지금 착수」가 위로 옵니다.</div>
+          <table class="tbl"><thead><tr><th>시즌판정</th><th>키워드</th><th>카테고리</th><th>검색량</th><th>등급</th><th>시즌</th></tr></thead>
+          <tbody id="sleeping-body"><tr><td colspan="6" class="loading">로딩 중...</td></tr></tbody></table>
+        </div>
+      </div>
+      <div class="card" data-sec="🕳️ 미커버 실검색어" ><div class="card-hdr"><h3>🕳️ 미커버 실검색어 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">v_uncovered_terms · 검색 유입은 있는데 우리 글(핵심키워드)이 없는 검색어 · <span class="unc-window">최근 3개월</span></span></h3></div>
+        <div class="card-body" style="padding:0;overflow-x:auto">
+          <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.72rem;padding:7px 11px">💡 슬롯 후보 원천입니다. 채택 전 <b>G15 5단 게이트</b>(충돌·SERP 의도)를 반드시 통과시키세요. <b>네이버와 티스토리는 지표 축이 달라 표를 나눴습니다</b> — 네이버는 월간 유입분석 파일이라 노출 수가 없어 <b>유입비율</b>로, 티스토리는 GSC라 <b>노출</b>로 줄을 세웁니다. 종전에는 한 표에 섞여 클릭 0인 티스토리 채널이 화면에 아예 못 올라왔습니다.</div>
           <div id="unc-filters" style="display:flex;gap:6px;padding:8px 11px;border-bottom:1px solid #f1f5f9;flex-wrap:wrap"><button class="filter-btn active" onclick="filterUnc('전체',this)">전체</button><button class="filter-btn" onclick="filterUnc('블A',this)">블A</button><button class="filter-btn" onclick="filterUnc('블B',this)">블B</button><button class="filter-btn" onclick="filterUnc('블C',this)">블C</button></div>
-          <table class="tbl"><thead><tr><th>채널</th><th>실검색어</th><th>클릭합</th><th>노출합</th><th>유입비율합</th><th>평균순위</th><th>최근유입월</th></tr></thead>
-          <tbody id="uncovered-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
+          <div style="padding:9px 11px 3px;font-weight:700;font-size:.8rem;color:#334155">🟩 네이버 <span style="font-weight:400;color:#94a3b8;font-size:.72rem">월간 유입분석 · 유입비율 순 · TOP 20</span></div>
+          <table class="tbl"><thead><tr><th>채널</th><th>실검색어</th><th>유입비율합</th><th>클릭합</th><th>최근유입월</th></tr></thead>
+          <tbody id="unc-nv-body"><tr><td colspan="5" class="loading">로딩 중...</td></tr></tbody></table>
+          <div style="padding:13px 11px 3px;font-weight:700;font-size:.8rem;color:#334155;border-top:1px solid #f1f5f9">🟦 티스토리 <span style="font-weight:400;color:#94a3b8;font-size:.72rem">GSC · 노출 순 · TOP 20</span></div>
+          <table class="tbl"><thead><tr><th>채널</th><th>실검색어</th><th>노출합</th><th>클릭합</th><th>평균순위</th><th>최근유입월</th></tr></thead>
+          <tbody id="unc-ts-body"><tr><td colspan="6" class="loading">로딩 중...</td></tr></tbody></table>
         </div>
       </div>
       <div class="card" data-sec="💡 액션 가이드" ><div class="card-hdr"><h3>💡 액션 가이드</h3></div>
@@ -1080,8 +1091,14 @@ function renderPlanDrops(){
       '<td style="color:#b91c1c">'+(i.폐기사유||'')+'</td><td style="color:#94a3b8">'+JSON.stringify(i.근거||{}).slice(0,80)+'</td></tr>').join('')+'</tbody>';
 }
 async function planBadge(){
-  try{const {data}=await sb.from('mk_slot_plan').select('상태').eq('활성',true).eq('상태','초안').limit(1);
-    if(data&&data.length)document.getElementById('plan-badge').textContent='승인대기';}catch(e){}
+  try{const {data}=await sb.from('mk_slot_plan').select('id,계획월').eq('활성',true).eq('상태','초안').limit(1);
+    if(data&&data.length){
+      let txt='승인대기';
+      const m=String(data[0].계획월||'').slice(5,7).replace(/^0/,'');
+      try{const {count}=await sb.from('mk_slot_plan_item').select('id',{count:'exact',head:true}).eq('plan_id',data[0].id).eq('채택여부',true);
+        txt='승인대기 '+(m?m+'월 ':'')+((count??0)+'건');}catch(e2){}
+      document.getElementById('plan-badge').textContent=txt;
+    }}catch(e){}
 }
 setTimeout(planBadge,1200);
 
@@ -1254,7 +1271,8 @@ async function loadStats(){ loadFunnel();
   document.getElementById('naver-chart-loading').style.display='none';
   // v1.8.3 — 정본 교체: mk_rank_tracker(핵심키워드 전량). 미진입(순위 NULL)은 평균에서 제외하되 존재는 표에서 본다.
   let navRows=[];
-  try{ const _r=await sb.from('mk_rank_tracker').select('채널,순위,측정_일자').eq('검색_엔진','naver').not('순위','is',null).gte('측정_일자',since.slice(0,10)).limit(20000); navRows=_r.data||[]; }catch(e){ navRows=[]; }
+  // v1.13.0 A2 — 여기도 .limit(20000)이 1000행에서 잘린다(현재 887행이라 아직 안 걸렸을 뿐). 페이징 고정.
+  try{ let _f=0;for(;;){ const _r=await sb.from('mk_rank_tracker').select('채널,순위,측정_일자').eq('검색_엔진','naver').not('순위','is',null).gte('측정_일자',since.slice(0,10)).order('측정_일자',{ascending:true}).range(_f,_f+999); if(_r.error)throw _r.error; navRows=navRows.concat(_r.data||[]); if(!_r.data||_r.data.length<1000)break; _f+=1000; if(_f>60000)break; } }catch(e){ navRows=[]; }
   const navD=navRows,navChs=[...new Set(navD.map(r=>r.채널))].sort(),navByD={},navAgg={};
   const navDays=[...new Set(navD.map(r=>String(r.측정_일자||'').slice(5,10)))].filter(Boolean).sort().slice(-14);
   navD.forEach(r=>{const d=String(r.측정_일자||'').slice(5,10);const k=r.채널+'|'+d;if(!navAgg[k])navAgg[k]={s:0,n:0};navAgg[k].s+=Number(r.순위);navAgg[k].n++;});
@@ -1571,37 +1589,67 @@ window._rtLatest=function(rows){
   });
   return Object.values(best);
 };
-window._rtFetch=async function(days){
+// v1.13.0 A1 — .limit(20000)은 PostgREST max-rows(1000)에 막혀 무시된다.
+// 2026-08-12 실측: 14일 창 2,039행 중 1,000행만 도착했고 잘린 쪽이 최신(8/10·8/11)이라 표 전체가 옛 순위였다. 반드시 페이징으로 받는다.
+window._rtFetchRows=async function(days){
   const since=new Date(Date.now()-days*86400000).toISOString().slice(0,10);
-  const{data,error}=await sb.from('mk_rank_tracker').select('채널,키워드,순위,측정_일자').eq('검색_엔진','naver').gte('측정_일자',since).limit(20000);
-  if(error)throw error;
-  return window._rtLatest(data);
+  let all=[],f=0;const sz=1000;
+  for(;;){
+    const{data,error}=await sb.from('mk_rank_tracker').select('채널,키워드,순위,측정_일자').eq('검색_엔진','naver').gte('측정_일자',since).order('측정_일자',{ascending:true}).range(f,f+sz-1);
+    if(error)throw error;
+    all=all.concat(data||[]);
+    if(!data||data.length<sz)break;
+    f+=sz; if(f>60000)break;
+  }
+  return all;
 };
+window._rtFetch=async function(days){ return window._rtLatest(await window._rtFetchRows(days)); };
 // v1.9.1 — 순위 요약 단일 정본. KPI 카드·잠자는 거인 탭이 이 함수 하나만 읽는다(정합 보장).
+// v1.13.0 A6 — 35일치를 한 번에 받아 「추적 시작 30일 경과」(성숙) 여부까지 같이 판정한다.
+// 표시용 모집단은 종전대로 최근 14일 측정분이고, 신호등 판정만 성숙분으로 본다(신규 발행 키워드는 즉시 미진입이라 판정을 영구 빨강으로 만든다).
 window._rtSummary=async function(){
-  const latest=await window._rtFetch(14);
+  const rows=await window._rtFetchRows(35);
+  const cut14=new Date(Date.now()-14*86400000).toISOString().slice(0,10);
+  const cut30=new Date(Date.now()-30*86400000).toISOString().slice(0,10);
+  const first={};let asOf='';
+  rows.forEach(r=>{const k=(r.채널||'')+'||'+(r.키워드||'');const d=String(r.측정_일자||'');if(!first[k]||d<first[k])first[k]=d;if(d>asOf)asOf=d;});
+  const latest=window._rtLatest(rows.filter(r=>String(r.측정_일자||'')>=cut14));
   const byCh={};
-  latest.forEach(r=>{const k=r.ch;if(!k)return;if(!byCh[k])byCh[k]={kw:0,hit:0,miss:0,sum:0,top10:0};byCh[k].kw++;if(r.순위==null)byCh[k].miss++;else{byCh[k].hit++;byCh[k].sum+=r.순위;if(r.순위<=10)byCh[k].top10++;}});
+  latest.forEach(r=>{
+    const k=r.ch;if(!k)return;
+    if(!byCh[k])byCh[k]={kw:0,hit:0,miss:0,sum:0,top10:0,mkw:0,mhit:0,mmiss:0,msum:0,mtop10:0};
+    const a=byCh[k],mature=(first[(r.ch||'')+'||'+(r.kw||'')]||'9999-99-99')<=cut30;
+    a.kw++;if(mature)a.mkw++;
+    if(r.순위==null){a.miss++;if(mature)a.mmiss++;}
+    else{a.hit++;a.sum+=r.순위;if(r.순위<=10)a.top10++;
+      if(mature){a.mhit++;a.msum+=r.순위;if(r.순위<=10)a.mtop10++;}}
+  });
   let hit=0,miss=0,sum=0;Object.values(byCh).forEach(a=>{hit+=a.hit;miss+=a.miss;sum+=a.sum;});
-  return {byCh,overall:{avg:hit?sum/hit:null,hit,miss}};
+  return {byCh,asOf,overall:{avg:hit?sum/hit:null,hit,miss}};
 };
 async function loadGiantsNaver(){
   const nb=document.getElementById('giants-naver-body'); if(!nb)return;
-  let agg;
-  try{ agg=(await window._rtSummary()).byCh; }
-  catch(e){ nb.innerHTML='<tr><td colspan="8" style="color:#ef4444">로드 실패: '+(e.message||e)+'</td></tr>'; return; }
+  let sm;
+  try{ sm=await window._rtSummary(); }
+  catch(e){ nb.innerHTML='<tr><td colspan="9" style="color:#ef4444">로드 실패: '+(e.message||e)+'</td></tr>'; return; }
+  const agg=sm.byCh;
+  const _w=document.getElementById('giants-naver-window'); if(_w)_w.textContent='최근 14일 · 기준일 '+(sm.asOf||'-');
   const rows=Object.keys(agg).sort().map(ch=>{
     const a=agg[ch];
-    return {ch,kw:a.kw,hit:a.hit,miss:a.miss,r:a.hit>0?a.sum/a.hit:null,t10:a.kw>0?(a.top10/a.kw*100):0,missPct:a.kw>0?(a.miss/a.kw*100):0};
+    return {ch,kw:a.kw,hit:a.hit,miss:a.miss,r:a.hit>0?a.sum/a.hit:null,
+      t10:a.kw>0?(a.top10/a.kw*100):0, t10hit:a.hit>0?(a.top10/a.hit*100):0, top10:a.top10,
+      missPct:a.kw>0?(a.miss/a.kw*100):0,
+      mkw:a.mkw, mr:a.mhit>0?(a.msum/a.mhit):null, mMissPct:a.mkw>0?(a.mmiss/a.mkw*100):0};
   });
-  if(!rows.length){nb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:#94a3b8">네이버 순위 데이터 없음</td></tr>';return;}
-  // 판정: 평균순위와 미진입률을 함께 본다 — 미진입 절반이면 평균이 좋아도 우수가 아니다
+  if(!rows.length){nb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:#94a3b8">네이버 순위 데이터 없음</td></tr>';return;}
+  // v1.13.0 A6 — 판정 모수는 「추적 시작 30일 경과(성숙)」분만. 모수 5건 미만이면 판정하지 않는다.
   const judge=(r)=>{
-    if(r.r==null)return['🔴 즉시액션','#ef4444'];
-    if(r.missPct>=50)return['🔴 즉시액션','#ef4444'];
-    if(r.r<=10&&r.missPct<20)return['🔵 우수','#3b82f6'];
-    if(r.r<=20&&r.missPct<35)return['🟢 유지','#10b981'];
-    if(r.r<=40)return['🟡 개선필요','#f59e0b'];
+    if(r.mkw<5)return['⚪ 판정보류','#94a3b8'];
+    if(r.mr==null)return['🔴 즉시액션','#ef4444'];
+    if(r.mMissPct>=50)return['🔴 즉시액션','#ef4444'];
+    if(r.mr<=10&&r.mMissPct<20)return['🔵 우수','#3b82f6'];
+    if(r.mr<=20&&r.mMissPct<35)return['🟢 유지','#10b981'];
+    if(r.mr<=40)return['🟡 개선필요','#f59e0b'];
     return['🔴 즉시액션','#ef4444'];
   };
   nb.innerHTML=rows.map(r=>{
@@ -1612,26 +1660,41 @@ async function loadGiantsNaver(){
       +'<td>'+r.kw+'</td>'
       +'<td>'+r.hit+'</td>'
       +'<td style="font-weight:700;color:'+mc+'">'+r.miss+' <span style="font-weight:400;font-size:.72rem">('+r.missPct.toFixed(0)+'%)</span></td>'
-      +'<td>'+r.t10.toFixed(1)+'%</td>'
+      +'<td>'+r.t10.toFixed(1)+'% <span style="color:#94a3b8;font-size:.72rem">/ '+r.t10hit.toFixed(0)+'%</span> <span style="color:#cbd5e1;font-size:.7rem">('+r.top10+'건)</span></td>'
+      +'<td style="color:#64748b">'+r.mkw+'개'+(r.mkw<5?' <span style="color:#94a3b8;font-size:.7rem">모수부족</span>':(r.mr==null?'':' <span style="color:#94a3b8;font-size:.7rem">'+r.mr.toFixed(1)+'위·미진입'+r.mMissPct.toFixed(0)+'%</span>'))+'</td>'
       +'<td style="font-weight:700;color:'+j[1]+'">'+j[0]+'</td></tr>';
   }).join('');
 }
-window._uncAll=[];
+// v1.13.0 A4·A5 — 네이버(월간 유입분석·노출 없음)와 티스토리(GSC·노출 있음)를 한 표에서 정렬하면
+// 클릭 0인 티스토리 채널이 상위 60행 안에 못 들어와 채널 탭이 통째로 비었다. 표를 나누고 기간을 최근 3개월로 자른다.
+window._uncNv=[];window._uncTs=[];window._uncPfx='전체';
+function uncCut(){const d=new Date();d.setMonth(d.getMonth()-3);return d.toISOString().slice(0,8)+'01';}
 function renderUnc(pfx){
-  const tb=document.getElementById('uncovered-body'); if(!tb) return;
-  const rows=window._uncAll.filter(r=>pfx==='전체'||String(r.채널||'').indexOf(pfx)===0).slice(0,20);
-  if(!rows.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:14px">미커버 검색어 없음</td></tr>';return;}
-  tb.innerHTML=rows.map(r=>`<tr><td>${r.채널||''}</td><td style="font-weight:600">${r.실검색어||''}</td><td>${r.클릭합??0}</td><td>${r.노출합??0}</td><td>${r.유입비율합??''}</td><td>${r.평균순위??''}</td><td>${(r.최근유입월||'').slice(0,7)}</td></tr>`).join('');
+  if(pfx)window._uncPfx=pfx;
+  const p=window._uncPfx;
+  const f=arr=>arr.filter(r=>p==='전체'||String(r.채널||'').indexOf(p)===0).slice(0,20);
+  const nv=f(window._uncNv), ts=f(window._uncTs);
+  const t1=document.getElementById('unc-nv-body'), t2=document.getElementById('unc-ts-body');
+  const num=v=>(v==null||v==='')?'':(Math.round(Number(v)*10)/10);
+  if(t1)t1.innerHTML=nv.length?nv.map(r=>`<tr><td>${r.채널||''}</td><td style="font-weight:600">${r.실검색어||''}</td><td style="font-weight:700">${num(r.유입비율합)}</td><td>${r.클릭합??0}</td><td>${(r.최근유입월||'').slice(0,7)}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:14px">해당 없음</td></tr>';
+  if(t2)t2.innerHTML=ts.length?ts.map(r=>`<tr><td>${r.채널||''}</td><td style="font-weight:600">${r.실검색어||''}</td><td style="font-weight:700">${r.노출합??0}</td><td>${r.클릭합??0}</td><td>${num(r.평균순위)}</td><td>${(r.최근유입월||'').slice(0,7)}</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:14px">해당 없음</td></tr>';
 }
 function filterUnc(pfx,el){document.querySelectorAll('#unc-filters .filter-btn').forEach(b=>b.classList.remove('active'));if(el)el.classList.add('active');renderUnc(pfx);}
 async function loadUncovered(){
-  const tb=document.getElementById('uncovered-body'); if(!tb) return;
+  const tb=document.getElementById('unc-nv-body'); if(!tb) return;
+  const cut=uncCut();
+  document.querySelectorAll('.unc-window').forEach(e=>e.textContent='최근 3개월('+cut.slice(0,7)+'~)');
+  const SEL='채널,실검색어,클릭합,노출합,유입비율합,평균순위,최근유입월';
   try{
-    const {data,error}=await sb.from('v_uncovered_terms').select('채널,실검색어,클릭합,노출합,유입비율합,평균순위,최근유입월').limit(60);
-    if(error) throw error;
-    window._uncAll=data||[];
-    renderUnc('전체');
-  }catch(e){tb.innerHTML='<tr><td colspan="7" style="color:#dc2626;padding:12px">미커버 로드 실패: '+(e.message||e)+'</td></tr>';}
+    const [a,b]=await Promise.all([
+      sb.from('v_uncovered_terms').select(SEL).ilike('채널','%네이버%').gte('최근유입월',cut).order('유입비율합',{ascending:false}).order('클릭합',{ascending:false}).limit(120),
+      sb.from('v_uncovered_terms').select(SEL).ilike('채널','%티스토리%').gte('최근유입월',cut).order('노출합',{ascending:false}).order('클릭합',{ascending:false}).limit(120)
+    ]);
+    if(a.error) throw a.error; if(b.error) throw b.error;
+    window._uncNv=a.data||[]; window._uncTs=b.data||[];
+    renderUnc(window._uncPfx);
+  }catch(e){
+    const t2=document.getElementById('unc-ts-body'); if(t2)t2.innerHTML='';tb.innerHTML='<tr><td colspan="5" style="color:#dc2626;padding:12px">미커버 로드 실패: '+(e.message||e)+'</td></tr>';}
 }
 window._nvTerms=[];
 async function loadNvTerms(){
@@ -1678,7 +1741,20 @@ async function loadKeywordRadar(){
     ].join('');
   }catch(e){box.innerHTML='<div style="color:#dc2626">레이더 로드 실패: '+(e.message||e)+'</div>';}
 }
-async function loadGiants(){ loadUncovered(); loadGiantsNaver();
+// v1.13.0 A8 — DB에 v_sleeping_giants 뷰가 있는데 화면이 한 번도 안 읽고 있었다(이름만 잠자는 거인이었다).
+async function loadSleeping(){
+  const tb=document.getElementById('sleeping-body'); if(!tb)return;
+  try{
+    const {data,error}=await sb.from('v_sleeping_giants').select('키워드,카테고리,검색량,사업정합등급,시즌,시즌판정').order('검색량',{ascending:false}).limit(200);
+    if(error)throw error;
+    const pri={'지금 착수':0,'상시':1,'철 아님(대기)':2};
+    const rows=(data||[]).sort((x,y)=>(pri[x.시즌판정]??9)-(pri[y.시즌판정]??9)||(y.검색량||0)-(x.검색량||0)).slice(0,20);
+    if(!rows.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:14px">해당 없음</td></tr>';return;}
+    const col=j=>j==='지금 착수'?'#dc2626':(j==='상시'?'#0369a1':'#94a3b8');
+    tb.innerHTML=rows.map(r=>`<tr><td style="font-weight:700;color:${col(r.시즌판정)}">${r.시즌판정||''}</td><td style="font-weight:600">${r.키워드||''}</td><td>${r.카테고리||''}</td><td style="font-weight:700">${(r.검색량||0).toLocaleString()}</td><td>${r.사업정합등급||''}</td><td>${r.시즌||''}</td></tr>`).join('');
+  }catch(e){tb.innerHTML='<tr><td colspan="6" style="color:#dc2626;padding:12px">잠자는 거인 로드 실패: '+(e.message||e)+'</td></tr>';}
+}
+async function loadGiants(){ loadUncovered(); loadGiantsNaver(); loadSleeping();
   document.getElementById('giants-body').innerHTML='<tr><td colspan="6" class="loading">로딩 중...</td></tr>';
   const since=new Date(Date.now()-14*86400000).toISOString();
   let data;try{data=await fetchAllRows('채널,데이터_소스,노출_수,클릭_수,평균_순위,측정_일자',q=>q.eq('데이터_소스','gsc').gte('수집_시각',since));}catch(e){showToast('잠자는 거인 로드 실패');return;}

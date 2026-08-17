@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.13.0</title>
+<title>리얼플랜제주 마케팅 운영 v1.14.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -98,7 +98,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.13.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.14.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -243,12 +243,22 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <span style="color:#b91c1c;font-weight:400"> · 원본 URL·발행일·핵심키워드는 바꾸지 않습니다. 1~3위는 잠금입니다.</span>
       </div>
       <div class="filter-bar" id="rw2-steps" style="margin-bottom:10px">
-        <button class="filter-btn active" onclick="rwStep('q',this)">① 대상판</button>
-        <button class="filter-btn" onclick="rwStep('d',this)">② 진단판</button>
-        <button class="filter-btn" onclick="rwStep('w',this)">③ 초안판</button>
-        <button class="filter-btn" onclick="rwStep('p',this)">④ 반영판</button>
+        <button class="filter-btn active" onclick="rwStep('b',this)">⓪ 이번 주 편성</button>
+        <button class="filter-btn" onclick="rwStep('q',this)">① 대상 재고</button>
+        <button class="filter-btn" onclick="rwStep('d',this)">② 진단</button>
+        <button class="filter-btn" onclick="rwStep('w',this)">③ 초안</button>
+        <button class="filter-btn" onclick="rwStep('p',this)">④ 반영 점검</button>
+        <button class="filter-btn" onclick="rwStep('r',this)">⑤ 반영 결과</button>
       </div>
-      <div id="rw2-q">
+      <div id="rw2-b">
+        <div id="rw2-bsum" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.82rem;color:#1e3a8a"></div>
+        <div class="card"><div class="card-body" style="padding:0;overflow-x:auto">
+          <table class="tbl"><thead><tr><th>요일</th><th>순번</th><th>채널</th><th>순위</th><th>키워드</th><th>상태</th><th>대표님이 할 일</th><th>담당</th><th>확인</th></tr></thead>
+          <tbody id="rw2-bbody"><tr><td colspan="9" class="loading">로딩 중...</td></tr></tbody></table>
+        </div></div>
+        <div style="font-size:.75rem;color:#94a3b8;margin-top:8px">💡 행을 누르면 그 글의 <b>라이브 보완 체크리스트</b>가 펼쳐집니다 · 🔒 = 라이브 보완이 남아 반영 잠김</div>
+      </div>
+      <div id="rw2-q" style="display:none">
         <div class="filter-bar" style="margin-bottom:10px">
           <button class="filter-btn active" onclick="rwFilter('t1',this)">① 상단 밀어올리기 4~10위</button>
           <button class="filter-btn" onclick="rwFilter('t2',this)">② 1페이지 진입 11~30위</button>
@@ -265,6 +275,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <div id="rw2-d" style="display:none"></div>
       <div id="rw2-w" style="display:none"></div>
       <div id="rw2-p" style="display:none"></div>
+      <div id="rw2-r" style="display:none"></div>
     </div>
     <div class="tab-panel" id="t3">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
@@ -1271,7 +1282,7 @@ async function loadStats(){ loadFunnel();
   document.getElementById('naver-chart-loading').style.display='none';
   // v1.8.3 — 정본 교체: mk_rank_tracker(핵심키워드 전량). 미진입(순위 NULL)은 평균에서 제외하되 존재는 표에서 본다.
   let navRows=[];
-  // v1.13.0 A2 — 여기도 .limit(20000)이 1000행에서 잘린다(현재 887행이라 아직 안 걸렸을 뿐). 페이징 고정.
+  // v1.14.0 A2 — 여기도 .limit(20000)이 1000행에서 잘린다(현재 887행이라 아직 안 걸렸을 뿐). 페이징 고정.
   try{ let _f=0;for(;;){ const _r=await sb.from('mk_rank_tracker').select('채널,순위,측정_일자').eq('검색_엔진','naver').not('순위','is',null).gte('측정_일자',since.slice(0,10)).order('측정_일자',{ascending:true}).range(_f,_f+999); if(_r.error)throw _r.error; navRows=navRows.concat(_r.data||[]); if(!_r.data||_r.data.length<1000)break; _f+=1000; if(_f>60000)break; } }catch(e){ navRows=[]; }
   const navD=navRows,navChs=[...new Set(navD.map(r=>r.채널))].sort(),navByD={},navAgg={};
   const navDays=[...new Set(navD.map(r=>String(r.측정_일자||'').slice(5,10)))].filter(Boolean).sort().slice(-14);
@@ -1589,7 +1600,7 @@ window._rtLatest=function(rows){
   });
   return Object.values(best);
 };
-// v1.13.0 A1 — .limit(20000)은 PostgREST max-rows(1000)에 막혀 무시된다.
+// v1.14.0 A1 — .limit(20000)은 PostgREST max-rows(1000)에 막혀 무시된다.
 // 2026-08-12 실측: 14일 창 2,039행 중 1,000행만 도착했고 잘린 쪽이 최신(8/10·8/11)이라 표 전체가 옛 순위였다. 반드시 페이징으로 받는다.
 window._rtFetchRows=async function(days){
   const since=new Date(Date.now()-days*86400000).toISOString().slice(0,10);
@@ -1605,7 +1616,7 @@ window._rtFetchRows=async function(days){
 };
 window._rtFetch=async function(days){ return window._rtLatest(await window._rtFetchRows(days)); };
 // v1.9.1 — 순위 요약 단일 정본. KPI 카드·잠자는 거인 탭이 이 함수 하나만 읽는다(정합 보장).
-// v1.13.0 A6 — 35일치를 한 번에 받아 「추적 시작 30일 경과」(성숙) 여부까지 같이 판정한다.
+// v1.14.0 A6 — 35일치를 한 번에 받아 「추적 시작 30일 경과」(성숙) 여부까지 같이 판정한다.
 // 표시용 모집단은 종전대로 최근 14일 측정분이고, 신호등 판정만 성숙분으로 본다(신규 발행 키워드는 즉시 미진입이라 판정을 영구 빨강으로 만든다).
 window._rtSummary=async function(){
   const rows=await window._rtFetchRows(35);
@@ -1642,7 +1653,7 @@ async function loadGiantsNaver(){
       mkw:a.mkw, mr:a.mhit>0?(a.msum/a.mhit):null, mMissPct:a.mkw>0?(a.mmiss/a.mkw*100):0};
   });
   if(!rows.length){nb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:#94a3b8">네이버 순위 데이터 없음</td></tr>';return;}
-  // v1.13.0 A6 — 판정 모수는 「추적 시작 30일 경과(성숙)」분만. 모수 5건 미만이면 판정하지 않는다.
+  // v1.14.0 A6 — 판정 모수는 「추적 시작 30일 경과(성숙)」분만. 모수 5건 미만이면 판정하지 않는다.
   const judge=(r)=>{
     if(r.mkw<5)return['⚪ 판정보류','#94a3b8'];
     if(r.mr==null)return['🔴 즉시액션','#ef4444'];
@@ -1665,7 +1676,7 @@ async function loadGiantsNaver(){
       +'<td style="font-weight:700;color:'+j[1]+'">'+j[0]+'</td></tr>';
   }).join('');
 }
-// v1.13.0 A4·A5 — 네이버(월간 유입분석·노출 없음)와 티스토리(GSC·노출 있음)를 한 표에서 정렬하면
+// v1.14.0 A4·A5 — 네이버(월간 유입분석·노출 없음)와 티스토리(GSC·노출 있음)를 한 표에서 정렬하면
 // 클릭 0인 티스토리 채널이 상위 60행 안에 못 들어와 채널 탭이 통째로 비었다. 표를 나누고 기간을 최근 3개월로 자른다.
 window._uncNv=[];window._uncTs=[];window._uncPfx='전체';
 function uncCut(){const d=new Date();d.setMonth(d.getMonth()-3);return d.toISOString().slice(0,8)+'01';}
@@ -1741,7 +1752,7 @@ async function loadKeywordRadar(){
     ].join('');
   }catch(e){box.innerHTML='<div style="color:#dc2626">레이더 로드 실패: '+(e.message||e)+'</div>';}
 }
-// v1.13.0 A8 — DB에 v_sleeping_giants 뷰가 있는데 화면이 한 번도 안 읽고 있었다(이름만 잠자는 거인이었다).
+// v1.14.0 A8 — DB에 v_sleeping_giants 뷰가 있는데 화면이 한 번도 안 읽고 있었다(이름만 잠자는 거인이었다).
 async function loadSleeping(){
   const tb=document.getElementById('sleeping-body'); if(!tb)return;
   try{
@@ -2596,9 +2607,159 @@ async function loadRewriteTab(){
   try{
     const{data,error}=await sb.from('v_rewrite_queue').select('*');
     if(error)throw error;
-    RW.rows=data||[]; renderRwQueue(); rwPick();
+    RW.rows=data||[]; renderRwQueue(); rwPick(); loadRwBoard();
   }catch(e){tb.innerHTML='<tr><td colspan="10" style="color:#dc2626;padding:12px">리라이트 대상 로드 실패: '+rwEsc(e.message||e)+'</td></tr>';}
 }
+/* ══ ⓪ 이번 주 편성판 (2026-08-17 대표 승인) ══════════════════════════
+   v_rewrite_board — 자동 편성된 주 6편을 블A-1/블B-1/블C-1 한 줄씩 보여준다.
+   행을 펼치면 그 글의 라이브 보완 체크리스트(초안보관소에서 이관)가 나온다.
+   ══════════════════════════════════════════════════════════════════ */
+var RWB={rows:[],open:{},fx:{}};
+function rwbEsc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+async function loadRwBoard(){
+  var tb=document.getElementById('rw2-bbody'); if(!tb)return;
+  tb.innerHTML='<tr><td colspan="9" class="loading">로딩 중...</td></tr>';
+  try{
+    var from=new Date(Date.now()-14*864e5).toISOString().slice(0,10);
+    const{data,error}=await sb.from('v_rewrite_board').select('*').gte('발행일',from).neq('슬롯상태','halted').order('발행일');
+    if(error)throw error;
+    RWB.rows=data||[]; renderRwBoard();
+  }catch(e){tb.innerHTML='<tr><td colspan="9" style="color:#dc2626;padding:12px">편성판 로드 실패: '+rwbEsc(e.message||e)+'</td></tr>';}
+}
+function rwbBadge(t){
+  var m={'✅':'#f1f5f9|#475569','🔴':'#fee2e2|#991b1b','🔵':'#dbeafe|#1e40af','🟢':'#dcfce7|#166534',
+         '🟡':'#fef3c7|#92400e','🟠':'#ffedd5|#9a3412','🔒':'#f8fafc|#94a3b8','⏸':'#f1f5f9|#64748b'};
+  var k=String(t||'').slice(0,2), c=m[String(t||'').charAt(0)]||m[k]||'#f1f5f9|#475569';
+  for(var key in m){ if(String(t||'').indexOf(key)===0){c=m[key];break;} }
+  var p=c.split('|');
+  return '<span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:.71rem;font-weight:700;white-space:nowrap;background:'+p[0]+';color:'+p[1]+'">'+rwbEsc(t)+'</span>';
+}
+function renderRwBoard(){
+  var tb=document.getElementById('rw2-bbody'), sum=document.getElementById('rw2-bsum'); if(!tb)return;
+  var l=RWB.rows;
+  if(sum){
+    var wait=l.filter(function(r){return String(r.배지||'').indexOf('✅')!==0;}).length;
+    var late=l.filter(function(r){return String(r.배지||'').indexOf('🔴')===0;}).length;
+    var fx=l.reduce(function(a,r){return a+(r.보완_대기||0);},0);
+    var bad=l.filter(function(r){return r.요일정합!=='정상';}).length;
+    sum.innerHTML='편성 <b>'+l.length+'건</b> · 진행 대기 <b>'+wait+'건</b>'
+      +(late?' · <span style="color:#b91c1c;font-weight:800">🔴 지연 '+late+'건</span>':'')
+      +(fx?' · <span style="color:#9a3412;font-weight:800">🔧 라이브 보완 '+fx+'건</span>':'')
+      +(bad?' · <span style="color:#b45309">⚠️ 요일 오배정 '+bad+'건</span>':'')
+      +' <span style="color:#64748b">· 금=네이버 블A·블B·블C / 토=티스토리 블A·블B·블C</span>';
+  }
+  if(!l.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:#94a3b8;padding:14px">편성 없음</td></tr>';return;}
+  var html='', lastDay='';
+  l.forEach(function(r,i){
+    if(r.요일!==lastDay){lastDay=r.요일;
+      html+='<tr style="background:#f8fafc"><td colspan="9" style="font-weight:800;font-size:.78rem;color:#334155;padding:7px 12px">'+rwbEsc(r.요일)
+        +(r.요일정합!=='정상'?' <span style="color:#b45309;font-weight:700">'+rwbEsc(r.요일정합)+'</span>':'')+'</td></tr>';}
+    var lock=(r.보완_대기||0)>0;
+    html+='<tr style="cursor:pointer" onclick="rwbToggle(\''+r.슬롯_id+'\')">'
+      +'<td style="font-size:.72rem;color:#94a3b8">'+(r.보완_전체?('🔧'+(r.보완_대기||0)+'/'+r.보완_전체):'')+'</td>'
+      +'<td><span style="font-weight:800;font-size:.76rem;border-radius:6px;padding:3px 7px;background:'
+        +(r.채널군==='블A'?'#ecfdf5;color:#047857':(r.채널군==='블B'?'#eff6ff;color:#1d4ed8':'#fdf4ff;color:#a21caf'))+'">'+rwbEsc(r.순번)+'</span></td>'
+      +'<td style="font-size:.76rem">'+rwbEsc(r.채널)+'</td>'
+      +'<td style="font-weight:700;color:'+(r.순위==null?'#cbd5e1':(r.순위<=3?'#94a3b8':(r.순위<=10?'#dc2626':'#b45309')))+'">'+(r.순위==null?'-':r.순위)+'</td>'
+      +'<td>'+rwbEsc(r.핵심키워드)+(r.회차?' <span style="font-size:.64rem;color:#7e22ce">_r'+r.회차+'</span>':'')+'</td>'
+      +'<td>'+rwbBadge(r.배지)+(r.경과일!=null?'<div style="font-size:.66rem;color:#94a3b8;margin-top:2px">D+'+r.경과일+'</div>':'')+'</td>'
+      +'<td style="font-size:.78rem;font-weight:600;color:'+(String(r.배지||'').indexOf('✅')===0?'#94a3b8':'#1e293b')+'">'+rwbEsc(r.할일)+(lock?' <span title="라이브 보완이 남아 반영이 잠겨 있습니다">🔒</span>':'')+'</td>'
+      +'<td style="font-size:.7rem;color:#64748b">'+rwbEsc(r.담당)+'</td>'
+      +'<td onclick="event.stopPropagation()">'
+        +(r.원본_url?'<a href="'+rwbEsc(r.원본_url)+'" target="_blank" class="btn-sm btn-copy" style="text-decoration:none">🔗 원본</a> ':'')
+        +(r.초안_id?'<button class="btn-sm btn-approve" onclick="openDraftReader(\''+r.초안_id+'\')">📝 초안</button>':'')
+      +'</td></tr>';
+    html+='<tr id="rwbfx-'+r.슬롯_id+'" style="display:none"><td colspan="9" style="background:#fff7ed;padding:0"><div id="rwbfxin-'+r.슬롯_id+'" style="padding:12px 16px"></div></td></tr>';
+  });
+  tb.innerHTML=html;
+}
+async function rwbToggle(slotId){
+  var tr=document.getElementById('rwbfx-'+slotId), box=document.getElementById('rwbfxin-'+slotId);
+  if(!tr)return;
+  if(tr.style.display!=='none'){tr.style.display='none';return;}
+  tr.style.display='';
+  var r=RWB.rows.filter(function(x){return x.슬롯_id===slotId;})[0];
+  if(!r||!r.초안_id){box.innerHTML='<div style="color:#9a3412;font-size:.82rem">보강본 초안이 아직 없습니다. 채팅에 <b>「'+rwbEsc(r?r.채널:'')+' 리라이트 진행」</b>이라고 주시면 초안을 올립니다.</div>';return;}
+  box.innerHTML='<div class="loading" style="padding:14px">라이브 보완 불러오는 중...</div>';
+  try{
+    const{data}=await sb.from('mk_blog_drafts').select('id,제목,자가검증_결과,발행_url').eq('id',r.초안_id).maybeSingle();
+    var fx=(data&&data.자가검증_결과&&data.자가검증_결과.라이브보완)||[];
+    if(!fx.length){box.innerHTML='<div style="font-size:.82rem;color:#65a30d">✅ 라이브 보완 항목 없음 — 본문 교체만 하면 됩니다.</div>'
+      +'<div style="margin-top:6px;font-size:.78rem;color:#78350f">제목: '+rwbEsc(data?data.제목:'')+'</div>';return;}
+    var wait=fx.filter(function(f){return f.상태!=='완료';}).length;
+    var h='<div style="font-weight:800;color:#9a3412;font-size:.86rem;margin-bottom:6px">🔧 라이브 보완 — 실제 글에 반영할 것 (대기 '+wait+' / 전체 '+fx.length+')</div>';
+    var byOwner={};
+    fx.forEach(function(f,i){var o=f.담당||f.실행자||'대표';(byOwner[o]=byOwner[o]||[]).push({f:f,i:i});});
+    Object.keys(byOwner).forEach(function(o){
+      h+='<div style="margin:8px 0 4px;font-size:.78rem;font-weight:700;color:'+(o.indexOf('클로드')>=0?'#1d4ed8':'#92400e')+'">'
+        +(o.indexOf('클로드')>=0?'🤖 ':'🧑 ')+rwbEsc(o)+' — '+byOwner[o].filter(function(x){return x.f.상태!=='완료';}).length+'건 대기</div>';
+      byOwner[o].forEach(function(x){
+        var f=x.f, done=(f.상태==='완료');
+        h+='<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-top:0.5px dashed #fde68a;font-size:.82rem">'
+          +'<span style="flex-shrink:0;margin-top:2px">'+(done?'✅':'☐')+'</span>'
+          +'<div style="flex:1;min-width:0"><b>'+rwbEsc(f.항목)+'</b> · 위치: '+rwbEsc(f.위치)
+          +(f.파일?'<div style="font-size:.72rem;color:#7c2d12;margin-top:2px">📎 '+rwbEsc(f.파일)+'</div>':'')
+          +(f.캡션?'<div style="font-size:.72rem;color:#78350f">캡션: '+rwbEsc(f.캡션)+'</div>':'')
+          +((f.복사문구||f.지시문||f.내용)?'<div style="background:#fff;border:0.5px solid #fde68a;border-radius:6px;padding:6px 9px;margin-top:4px;color:#334155;white-space:pre-wrap">'+rwbEsc(f.복사문구||f.지시문||f.내용)+'</div>':'')
+          +'</div>'
+          +(done?'':'<span style="flex-shrink:0;display:flex;gap:4px"><button class="btn-sm btn-copy" onclick="event.stopPropagation();copyLiveFix(\''+r.초안_id+'\','+x.i+',this)">📋 복사</button>'
+             +'<button class="btn-sm btn-approve" onclick="event.stopPropagation();rwbDone(\''+r.초안_id+'\','+x.i+',\''+slotId+'\')">✅ 완료</button></span>')
+          +'</div>';
+      });
+    });
+    if(wait>0)h+='<div style="margin-top:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;font-size:.78rem;color:#991b1b"><b>🔒 반영 잠김</b> — 위 '+wait+'건을 모두 완료해야 「반영 완료 처리」가 됩니다(rpc_rewrite_publish 차단).</div>';
+    else h+='<div style="margin-top:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;font-size:.78rem;color:#166534"><b>✅ 보완 전건 완료</b> — 반영 완료 처리가 가능합니다.</div>';
+    box.innerHTML=h;
+  }catch(e){box.innerHTML='<div style="color:#dc2626;font-size:.82rem">불러오기 실패: '+rwbEsc(e.message||e)+'</div>';}
+}
+async function rwbDone(draftId,idx,slotId){
+  try{
+    const{data}=await sb.from('mk_blog_drafts').select('자가검증_결과').eq('id',draftId).maybeSingle();
+    var sv=data&&data.자가검증_결과||{}; if(!Array.isArray(sv.라이브보완))return;
+    sv.라이브보완[idx].상태='완료'; sv.라이브보완[idx].완료일=new Date().toISOString().slice(0,10);
+    const{error}=await sb.from('mk_blog_drafts').update({자가검증_결과:sv}).eq('id',draftId);
+    if(error)throw error;
+    showToast('✅ 보완 완료 처리');
+    var tr=document.getElementById('rwbfx-'+slotId); if(tr)tr.style.display='none';
+    await loadRwBoard(); rwbToggle(slotId);
+  }catch(e){showToast('처리 실패: '+(e.message||e));}
+}
+
+/* ══ ⑤ 반영 결과판 — v_rewrite_effect ══ */
+async function loadRwResult(){
+  var box=document.getElementById('rw2-r'); if(!box)return;
+  box.innerHTML='<div class="loading" style="padding:26px">불러오는 중...</div>';
+  try{
+    const{data,error}=await sb.from('v_rewrite_effect').select('*');
+    if(error)throw error;
+    var l=data||[];
+    if(!l.length){box.innerHTML='<div style="padding:24px;text-align:center;color:#94a3b8">반영된 리라이트가 아직 없습니다.</div>';return;}
+    var up=l.filter(function(r){return String(r.판정||'').indexOf('📈')===0;}).length;
+    var dn=l.filter(function(r){return String(r.판정||'').indexOf('📉')===0;}).length;
+    var h='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.82rem;color:#14532d">'
+      +'반영 <b>'+l.length+'건</b> · 📈 상승 <b>'+up+'</b> · 📉 하락 <b>'+dn+'</b> · 나머지 보합·대기'
+      +' <span style="color:#4d7c0f">· 「효과 없음」은 다음 회차 후보에서 빼고 키워드 교체로 넘깁니다</span></div>';
+    h+='<div class="card"><div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr>'
+      +'<th>반영일</th><th>채널</th><th>키워드</th><th>회차</th><th>반영 전</th><th>D+7</th><th>D+14</th><th>현재</th><th>변동</th><th>판정</th><th>라이브</th></tr></thead><tbody>';
+    l.forEach(function(r){
+      var v=r.변동;
+      h+='<tr><td style="font-size:.76rem">'+rwbEsc(r.반영일||'-')+'</td>'
+        +'<td style="font-size:.75rem">'+rwbEsc(r.채널)+'</td>'
+        +'<td>'+rwbEsc(r.핵심키워드)+'</td>'
+        +'<td style="font-size:.72rem;color:#7e22ce">_r'+(r.회차||2)+'</td>'
+        +'<td>'+(r.전_순위==null?'-':r.전_순위+'위')+'</td>'
+        +'<td>'+(r.D7_순위==null?'<span style="color:#cbd5e1">-</span>':r.D7_순위+'위')+'</td>'
+        +'<td>'+(r.D14_순위==null?'<span style="color:#cbd5e1">-</span>':r.D14_순위+'위')+'</td>'
+        +'<td>'+(r.현재_순위==null?'<span style="color:#cbd5e1">-</span>':'<b>'+r.현재_순위+'위</b>')+'</td>'
+        +'<td style="font-weight:800;color:'+(v>0?'#16a34a':(v<0?'#dc2626':'#94a3b8'))+'">'+(v==null?'-':(v>0?'▲'+v:(v<0?'▼'+Math.abs(v):'0')))+'</td>'
+        +'<td style="font-size:.76rem">'+rwbEsc(r.판정)+'</td>'
+        +'<td>'+(r.원본_url?'<a href="'+rwbEsc(r.원본_url)+'" target="_blank" class="btn-sm btn-copy" style="text-decoration:none">🔗</a>':'')+'</td></tr>';
+    });
+    h+='</tbody></table></div></div>';
+    box.innerHTML=h;
+  }catch(e){box.innerHTML='<div style="color:#dc2626;padding:14px">반영 결과 로드 실패: '+rwbEsc(e.message||e)+'</div>';}
+}
+
 function rwPick(){
   var el=document.getElementById('rw2-pick'); if(!el)return;
   var pool=RW.rows.filter(function(r){return !r.잠금&&r.진행!=='진행중'&&r.상업;});
@@ -2627,7 +2788,7 @@ function renderRwQueue(){
     var act=r.잠금?'<span style="color:#94a3b8;font-size:.72rem">🔒 손대지 않음</span>'
       :(r.진행==='진행중'?'<span style="color:#b45309;font-size:.72rem;font-weight:700">⏳ 진행중'+(r.착수_경과일!=null?' D+'+r.착수_경과일+(r.착수_경과일>14?' 🔥':''):'')+'</span>'
       :(r.진행==='완료'?'<span style="color:#16a34a;font-size:.72rem;font-weight:700">✅ 완료</span>'
-      :'<button class="btn-sm btn-copy" style="font-size:.7rem" onclick="rwStart('+i+')">착수하기</button>'));
+      :'<button class="btn-sm btn-copy" style="font-size:.7rem" onclick="rwStart('+i+')">진단 보기</button>'));
     return '<tr'+(r.잠금?' style="background:#f8fafc;color:#94a3b8"':'')+'>'
       +'<td style="font-weight:800">'+r.우선점수+'</td>'
       +'<td style="font-size:.75rem">'+rwEsc(r.채널)+'</td>'
@@ -2642,11 +2803,13 @@ function renderRwQueue(){
   }).join('');
 }
 function rwStep(s,b){
-  ['q','d','w','p'].forEach(function(k){var e=document.getElementById('rw2-'+k);if(e)e.style.display=(k===s?'':'none');});
+  ['b','q','d','w','p','r'].forEach(function(k){var e=document.getElementById('rw2-'+k);if(e)e.style.display=(k===s?'':'none');});
   document.querySelectorAll('#rw2-steps .filter-btn').forEach(function(x){x.classList.remove('active');});
   if(b)b.classList.add('active');
+  if(s==='b')loadRwBoard();
   if(s==='w')renderRwWrite();
   if(s==='p')renderRwPublish();
+  if(s==='r')loadRwResult();
 }
 function rwStepBtn(i){var b=document.querySelectorAll('#rw2-steps .filter-btn')[i];if(b)b.click();}
 

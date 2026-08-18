@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.16.0</title>
+<title>리얼플랜제주 마케팅 운영 v1.16.1</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -204,7 +204,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.16.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.16.1</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -2804,7 +2804,7 @@ function renderRwBoard(){
       +'<td style="font-size:.7rem;color:#64748b">'+rwbEsc(r.담당)+'</td>'
       +'<td onclick="event.stopPropagation()">'
         +(r.원본_url?'<a href="'+rwbEsc(r.원본_url)+'" target="_blank" class="btn-sm btn-copy" style="text-decoration:none">🔗 원본</a> ':'')
-        +(r.초안_id?'<button class="btn-sm btn-approve" onclick="openDraftReader(\''+r.초안_id+'\')">📝 초안</button>':'')
+        +(r.초안_id?'<button class="btn-sm btn-approve" onclick="rwbOpenFix(\''+r.슬롯_id+'\')">✎ 보완</button>':'')
       +'</td></tr>';
     html+='<tr id="rwbfx-'+r.슬롯_id+'" style="display:none"><td colspan="9" style="background:#fff7ed;padding:0"><div id="rwbfxin-'+r.슬롯_id+'" style="padding:12px 16px"></div></td></tr>';
   });
@@ -2860,6 +2860,22 @@ async function rwbDone(draftId,idx,slotId){
     var tr=document.getElementById('rwbfx-'+slotId); if(tr)tr.style.display='none';
     await loadRwBoard(); rwbToggle(slotId);
   }catch(e){showToast('처리 실패: '+(e.message||e));}
+}
+/* ★v1.16.1 — ⓪ 편성판 「초안」 버튼이 죽어 있던 것 수리.
+   openDraftReader()는 초안보관소(t2)의 #drafts-reader 에 그린다. 리라이트 탭(t15)에서
+   부르면 그림은 t2 DOM에 그려지고 화면은 그대로라 「아무 일도 안 일어난다」.
+   이제 그 슬롯을 RW.sel 로 잡아 ③ 보완 판을 직접 연다. */
+function rwbOpenFix(slotId){
+  var r=(RWB.rows||[]).filter(function(x){return x.슬롯_id===slotId;})[0];
+  if(!r){showToast('편성 행을 찾지 못했습니다');return;}
+  if(!r.초안_id){showToast('보강본 초안이 아직 없습니다');return;}
+  var q=(RW.rows||[]).filter(function(x){return x.리라이트_초안_id===r.초안_id;})[0];
+  RW.sel = q || {채널:r.채널, 순위:r.순위, 핵심키워드:r.핵심키워드,
+                 외부_url:r.원본_url, 리라이트_초안_id:r.초안_id,
+                 다음_회차:r.회차||2, 진행:null};
+  RW.diag=null; RW.draft=null;
+  rwStepBtn(3);
+  renderRwWrite();
 }
 
 /* ══ ⑤ 반영 결과판 — v_rewrite_effect ══ */

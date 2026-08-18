@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.14.0</title>
+<title>리얼플랜제주 마케팅 운영 v1.15.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -98,7 +98,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.14.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.15.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -552,6 +552,14 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div><h2 style="font-size:1.2rem;font-weight:700">🔑 키워드·인사이트</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">로컬 13개월 통계 적재 · rpc_blog_brief 허브</p></div>
         <button onclick="loadKeywordInsight()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
+      <div id="ki-subtab" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="filter-btn active" onclick="kiTab('overview',this)">📊 개요</button>
+        <button class="filter-btn" onclick="kiTab('4gate',this)">✅ 4박자 게이트</button>
+        <button class="filter-btn" onclick="kiTab('intent',this)">🤖 AI 의도판정</button>
+        <button class="filter-btn" onclick="kiTab('quest',this)">💬 고객 질문</button>
+        <button class="filter-btn" onclick="kiTab('rev',this)">💰 매출 귀속</button>
+      </div>
+      <div id="ki-overview" class="ki-panel">
       <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:14px">ℹ️ 키워드 풀은 전부 <b>참고용(활성 off)</b>입니다. STAGE 0에서 rpc_blog_brief가 채널·주제·시즌에 맞는 키워드·상위글·오디언스를 자동 반환합니다.</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:16px" id="ki-kpi"></div>
       <div class="card" style="margin:0 0 16px"><div class="card-hdr"><h3>📡 키워드 레이더 상태 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">검색량 신선도 · 실검색어 매칭률 · 방문자 수집</span></h3></div>
@@ -564,7 +572,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
           <button class="filter-btn" data-ch="블B네이버" onclick="renderNvTerms('블B네이버')">블B</button>
           <button class="filter-btn" data-ch="블C네이버" onclick="renderNvTerms('블C네이버')">블C</button>
         </div></div>
-        <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.72rem;padding:7px 11px">💡 네이버는 온디맨드 수집(쿠키 40분 만료). <b id="nv-term-date">-</b> 기준. 우리 글이 없는 검색어는 🕳️ 표시 → 슬롯 후보.</div>
+        <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.72rem;padding:7px 11px">💡 네이버 실검색어는 <b>자동 수집기가 없습니다</b>(쿠키 40분 만료). 대표님이 직접 백필한 <b id="nv-term-date">-</b> 기준 데이터입니다. 우리 글이 없는 검색어는 🕳️ 표시 → 슬롯 후보.</div>
         <div class="card-body" style="padding:0;overflow-x:auto">
           <table class="tbl"><thead><tr><th>채널</th><th>실검색어</th><th>유입</th><th>비율%</th><th>커버</th></tr></thead>
           <tbody id="nv-term-body"><tr><td colspan="5" class="loading">로딩 중...</td></tr></tbody></table>
@@ -591,6 +599,86 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
       <div class="card" style="margin:16px 0 0"><div class="card-hdr"><h3>🎯 티스토리 주제 적합도 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">의도 키워드 vs 실제 유입 검색어(GSC)</span></h3></div>
         <div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>판정</th><th>의도 키워드</th><th>실제 top 검색어</th><th>노출</th></tr></thead><tbody id="ki-drift"><tr><td colspan="4" class="loading">로딩 중...</td></tr></tbody></table></div>
+      </div>
+      </div><!--/ki-overview-->
+
+      <div id="ki-4gate" class="ki-panel" style="display:none">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:12px">✅ <b>채택 4박자</b> — ①검색량 100↑ ②G15 자기잠식 차단 0 ③SERP 실측 ④AI 3엔진 고객의도 5↑. <b>넷을 다 통과해야</b> 슬롯에 넣습니다. 정본은 realplan-keyword 스킬 GATE_4.md.</div>
+        <div id="kg-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+          <button class="filter-btn kg-bu active" onclick="kgSetBu('전체',this)">전체</button>
+          <button class="filter-btn kg-bu" onclick="kgSetBu('블A',this)">블A 여행</button>
+          <button class="filter-btn kg-bu" onclick="kgSetBu('블B',this)">블B 행사</button>
+          <button class="filter-btn kg-bu" onclick="kgSetBu('블C',this)">블C 마케팅</button>
+          <span style="border-left:1px solid #e2e8f0;margin:0 4px;height:18px"></span>
+          <button class="filter-btn kg-st active" onclick="kgSetSt('전체',this)">전체</button>
+          <button class="filter-btn kg-st" onclick="kgSetSt('통과',this)">✅ 4박자 통과</button>
+          <button class="filter-btn kg-st" onclick="kgSetSt('즉시',this)">①즉시신규</button>
+          <button class="filter-btn kg-st" onclick="kgSetSt('미판정',this)">G4 미판정</button>
+          <button class="filter-btn kg-st" onclick="kgSetSt('차단',this)">⛔ G15 차단</button>
+          <input id="kg-q" placeholder="키워드 검색" oninput="_kgPage=1;renderKw4gate()" style="border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;font-size:.8rem;min-width:150px">
+        </div>
+        <div class="card" style="margin:0"><div class="card-body" style="padding:0;overflow-x:auto">
+          <table class="tbl"><thead><tr><th>사업부</th><th>축</th><th>키워드</th><th>검색량</th><th>G1</th><th>G2</th><th>G3</th><th>G4</th><th>4박자</th><th>기회점수</th><th>액션</th><th>커버</th></tr></thead>
+          <tbody id="kg-body"><tr><td colspan="12" class="loading">로딩 중...</td></tr></tbody></table>
+        </div></div>
+        <div id="kg-pager" style="margin-top:10px;text-align:center"></div>
+      </div>
+
+      <div id="ki-intent" class="ki-panel" style="display:none">
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:12px">🤖 <b>AI 3엔진(OpenAI·Perplexity·Gemini) 고객의도 판정</b> — 상위 10건 중 <b>발주 고객이 쓴 문서가 몇 건</b>인지를 셉니다. 육안은 관대합니다: 2026-08-18 실증으로 「AI활용교육」(육안 △ → AI 1/10)·「챗GPT강사」(육안 ✅ → 2/10)가 뒤집혔습니다. <b>형제 키워드에 논리를 복사하지 않습니다</b>(기공식 ✅ / 개소식·준공식 ⛔).</div>
+        <div id="kn-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+          <button class="filter-btn kn-bu active" onclick="knSetBu('전체',this)">전체</button>
+          <button class="filter-btn kn-bu" onclick="knSetBu('블A',this)">블A</button>
+          <button class="filter-btn kn-bu" onclick="knSetBu('블B',this)">블B</button>
+          <button class="filter-btn kn-bu" onclick="knSetBu('블C',this)">블C</button>
+        </div>
+        <div class="card" style="margin:0"><div class="card-body" style="padding:0;overflow-x:auto">
+          <table class="tbl"><thead><tr><th>사업부</th><th>축</th><th>키워드</th><th>검색량</th><th>고객의도</th><th>의도유형</th><th>판정</th><th>판정 사유</th><th>검증일</th><th>슬롯</th></tr></thead>
+          <tbody id="kn-body"><tr><td colspan="10" class="loading">로딩 중...</td></tr></tbody></table>
+        </div></div>
+      </div>
+
+      <div id="ki-quest" class="ki-panel" style="display:none">
+        <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:12px">💬 <b>고객이 실제로 쓴 문장</b>(지식인 원문). 검색어가 아니라 <b>문장</b>이라 AI답변엔진(문의 유입 1위)과 스마트블록의 재료입니다. <b>커버 🕳️</b>는 그 질문을 다루는 우리 글이 아직 없다는 뜻 — 슬롯 후보입니다.</div>
+        <div id="kq-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+          <button class="filter-btn kq-bu active" onclick="kqSetBu('전체',this)">전체</button>
+          <button class="filter-btn kq-bu" onclick="kqSetBu('국내여행',this)">국내여행</button>
+          <button class="filter-btn kq-bu" onclick="kqSetBu('행사이벤트',this)">행사·이벤트</button>
+          <button class="filter-btn kq-bu" onclick="kqSetBu('온라인마케팅',this)">온라인마케팅</button>
+          <button class="filter-btn kq-bu" onclick="kqSetBu('마케팅교육',this)">마케팅교육</button>
+          <span style="border-left:1px solid #e2e8f0;margin:0 4px;height:18px"></span>
+          <button class="filter-btn kq-cv" onclick="kqSetCv('미커버',this)">🕳️ 미커버만</button>
+          <button class="filter-btn kq-cv active" onclick="kqSetCv('전체',this)">전체</button>
+          <input id="kq-q" placeholder="질문 검색" oninput="_kqPage=1;renderKwQuest()" style="border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;font-size:.8rem;min-width:150px">
+        </div>
+        <div class="card" style="margin:0"><div class="card-body" style="padding:0;overflow-x:auto">
+          <table class="tbl"><thead><tr><th>사업부</th><th>검색질의</th><th>질문 제목</th><th>답변수</th><th>수집일</th><th>커버</th><th>원문</th></tr></thead>
+          <tbody id="kq-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
+        </div></div>
+        <div id="kq-pager" style="margin-top:10px;text-align:center"></div>
+      </div>
+
+      <div id="ki-rev" class="ki-panel" style="display:none">
+        <div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:12px">💰 <b>키워드가 매출까지 갔는지</b>만 봅니다. 검색량 자랑이 목적이 아닙니다 — <b>문의 0건</b>이면 순위가 높아도 밭을 잘못 고른 겁니다. ★기회큐의 평균순위는 GSC 노출순위지 블로그 순위가 아니므로, 여기 <b>최고순위</b>는 mk_blog_publish_log 실측값입니다.</div>
+        <div id="kr-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+          <button class="filter-btn kr-bu active" onclick="krSetBu('전체',this)">전체</button>
+          <button class="filter-btn kr-bu" onclick="krSetBu('블A',this)">블A</button>
+          <button class="filter-btn kr-bu" onclick="krSetBu('블B',this)">블B</button>
+          <button class="filter-btn kr-bu" onclick="krSetBu('블C',this)">블C</button>
+          <span style="border-left:1px solid #e2e8f0;margin:0 4px;height:18px"></span>
+          <button class="filter-btn kr-st" onclick="krSetSt('문의',this)">💰 문의 발생분</button>
+          <button class="filter-btn kr-st" onclick="krSetSt('헛수고',this)">⚠️ 1페이지인데 문의 0</button>
+          <button class="filter-btn kr-st active" onclick="krSetSt('전체',this)">전체</button>
+        </div>
+        <div class="card" style="margin:0"><div class="card-body" style="padding:0;overflow-x:auto">
+          <table class="tbl"><thead><tr><th>사업부</th><th>채널</th><th>키워드</th><th>발행수</th><th>최초발행</th><th>최고순위</th><th>유입클릭</th><th>유입비율%</th><th>문의수</th></tr></thead>
+          <tbody id="kr-body"><tr><td colspan="9" class="loading">로딩 중...</td></tr></tbody></table>
+        </div></div>
+        <div id="kr-pager" style="margin-top:10px;text-align:center"></div>
       </div>
     </div>
     <div class="tab-panel" id="t14">
@@ -1119,8 +1207,10 @@ async function loadKeywordInsight(){ loadKeywordRadar(); loadNvTerms();
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}).eq('출처','연관키워드DB'),
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}).eq('출처','naver_유입검색어')]);
   const{count:tp}=await sb.from('mk_top_posts').select('*',{count:'exact',head:true});
-  const kpi=[['키워드 풀 총',tot.count],['연관키워드DB',yk.count],['유입검색어',ui.count],['상위글',tp]];
-  document.getElementById('ki-kpi').innerHTML=kpi.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+((k[1]||0).toLocaleString())+'</div></div>').join('');
+  const kpi=[['키워드 풀 총',tot.count],['연관키워드DB',yk.count],['유입검색어(풀 등재분)',ui.count],['상위글',tp]];
+  /* v1.15.0 D — 「3,766 유입검색어」(mk_keyword_pool)와 「8,445 실유입 원장」(mk_inflow_keywords)은 다른 숫자다. 나란히 둔다. */
+  document.getElementById('ki-kpi').innerHTML=kpi.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+((k[1]||0).toLocaleString())+'</div></div>').join('')
+    +'<div class="kpi-card"><div class="kpi-label">실유입 원장 <span style="color:#94a3b8;font-weight:400">mk_inflow_keywords</span></div><div class="kpi-value" id="ki-kpi-inflow">…</div></div>';
   const{data:top}=await sb.from('mk_top_posts').select('채널,측정월,지표,순위,제목,조회수')/*RP-KI-METRIC-SEL*/.order('측정월',{ascending:false}).order('순위',{ascending:true}).limit(900);
   window._kiTop=top||[]; renderKiTop(window._kiCh||'전체');
   let facts=[],fr=0;const PG=1000;
@@ -1732,25 +1822,33 @@ function renderNvTerms(ch){
   if(!rows.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:14px">데이터 없음 — 쿠키 온디맨드 백필 필요</td></tr>';return;}
   tb.innerHTML=rows.map(r=>`<tr><td>${(r.채널||'').replace('네이버','')}</td><td style="font-weight:600">${r.키워드||''}</td><td>${r.클릭_수??0}</td><td>${r.유입비율??''}</td><td>${r.covered?'<span style="color:#059669">✓</span>':'<span style="color:#d97706">🕳️</span>'}</td></tr>`).join('');
 }
+// v1.15.0 B1·B2 — 「매칭률 0%」와 「로딩 중 멈춤」은 계산식 문제가 아니라 v_keyword_match 쿼리 타임아웃이었다.
+// anon 실측 HTTP 500 / 57014 statement timeout(4.4초) × 화면이 2번 호출 = 확정 실패.
+// rpc_kw_radar()가 MATERIALIZED CTE로 publish_log를 1회만 읽고(4.4s→2.1s) 4타일 값을 1회 호출로 준다.
+// 실패해도 다시는 「로딩 중」으로 위장하지 않고 사유를 빨갛게 띄운다.
 async function loadKeywordRadar(){
   const box=document.getElementById('ki-radar'); if(!box) return;
   const tile=(label,val,sub,color)=>`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px"><div style="font-size:.72rem;color:#64748b">${label}</div><div style="font-size:1.3rem;font-weight:800;color:${color||'#0f172a'}">${val}</div><div style="font-size:.7rem;color:#94a3b8">${sub||''}</div></div>`;
+  box.innerHTML='<div class="loading">레이더 계산 중... (실검색어 8천여 건 대조라 3~5초 걸립니다)</div>';
   try{
-    const today=new Date();const d7=new Date(today.getTime()-7*864e5).toISOString().slice(0,10);
-    const [fresh,tot,match,vis]=await Promise.all([
-      sb.from('mk_keywords').select('id',{count:'exact',head:true}).gte('검증일',d7),
-      sb.from('v_keyword_match').select('실검색어',{count:'exact',head:true}),
-      sb.from('v_keyword_match').select('실검색어',{count:'exact',head:true}).not('매칭키워드','is',null),
-      sb.from('mk_metrics').select('측정_일자').eq('데이터_소스','naver_visitor').order('측정_일자',{ascending:false}).limit(1)
-    ]);
-    const rate=tot.count?((match.count||0)/tot.count*100).toFixed(1):'0';
+    const {data,error}=await sb.rpc('rpc_kw_radar');
+    if(error) throw error;
+    if(!data) throw new Error('rpc_kw_radar가 빈 값을 반환했습니다');
+    window._kwRadar=data;
+    const rate=Number(data.match_rate||0);
+    const days=d=>{ if(!d) return null; return Math.floor((Date.now()-new Date(d).getTime())/86400000); };
+    const vd=days(data.visitor_last), cd=days(data.creator_last);
     box.innerHTML=[
-      tile('검색량 7일 내 갱신',(fresh.count??0)+'건','searchad-volume-rotate · 일 100건 로테이션'),
-      tile('실검색어 매칭률',rate+'%',(match.count||0)+' / '+(tot.count||0)+'행 · v_keyword_match',rate<20?'#dc2626':(rate<50?'#d97706':'#059669')),
-      tile('미커버 원천','v_uncovered_terms','잠자는 거인 탭 하단 TOP20'),
-      tile('네이버 방문자 수집',(vis.data&&vis.data[0]?vis.data[0].측정_일자:'-'),'fn_collect_naver_visitors · 매일 00:35')
+      tile('검색량 7일 내 갱신',(data.fresh7??0).toLocaleString()+'건','searchad-volume-rotate · 일 100건 로테이션'),
+      tile('실검색어 매칭률',rate.toFixed(1)+'%',(data.match_hit||0).toLocaleString()+' / '+(data.match_total||0).toLocaleString()+'행 · 우리 글이 잡은 비율',rate<20?'#dc2626':(rate<50?'#d97706':'#059669')),
+      tile('네이버 방문자 수집',(data.visitor_last||'-'),vd==null?'fn_collect_naver_visitors · 매일 00:35':(vd<=2?'정상 · '+vd+'일 전':'⚠️ '+vd+'일 경과'),vd!=null&&vd>3?'#dc2626':'#0f172a'),
+      tile('네이버 실검색어 백필',(data.creator_last||'없음'),cd==null?'수동 백필':(cd>30?'🔴 '+cd+'일 경과 — 수동 백필 필요':'🟢 '+cd+'일 전'),cd!=null&&cd>30?'#dc2626':(cd!=null&&cd>14?'#d97706':'#059669'))
     ].join('');
-  }catch(e){box.innerHTML='<div style="color:#dc2626">레이더 로드 실패: '+(e.message||e)+'</div>';}
+    const it=document.getElementById('ki-kpi-inflow');
+    if(it) it.textContent=(data.inflow_total||0).toLocaleString();
+  }catch(e){
+    box.innerHTML='<div style="grid-column:1/-1;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:12px;font-size:.8rem"><b>레이더 로드 실패</b> — '+(e.message||e)+'<div style="font-size:.72rem;margin-top:4px;color:#b91c1c">rpc_kw_radar() 호출 실패입니다. 「로딩 중」으로 멈춰 보이면 이 자리에 사유가 뜹니다.</div></div>';
+  }
 }
 // v1.14.0 A8 — DB에 v_sleeping_giants 뷰가 있는데 화면이 한 번도 안 읽고 있었다(이름만 잠자는 거인이었다).
 async function loadSleeping(){
@@ -3561,6 +3659,234 @@ document.addEventListener('change',function(e){
   if(e.target&&e.target.id==='plan-sel')setTimeout(schActions,900);
 },true);
 })();
+</script>
+
+<script>
+/* ===== v1.15.0 키워드·인사이트 뷰 4종 탭 =====
+   정본: realplan-keyword 스킬 · 뷰 v_kw_4gate / v_kw_ai_intent / v_kw_question_mine / v_kw_revenue_attrib
+   ★PostgREST는 .limit() 없이도 1000행에서 잘린다 — kwFetchAll()이 range 루프로 전량을 받는다. */
+function kwE(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function kwN(v){return (v==null||v==='')?'-':Number(v).toLocaleString();}
+function kwTick(b){return b===true?'<span style="color:#059669;font-weight:700">✅</span>':(b===false?'<span style="color:#dc2626">⛔</span>':'<span style="color:#94a3b8">–</span>');}
+function kwKpi(l,v,sub,col){return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px"><div style="font-size:.72rem;color:#64748b">'+l+'</div><div style="font-size:1.35rem;font-weight:800;color:'+(col||'#0f172a')+'">'+v+'</div><div style="font-size:.7rem;color:#94a3b8">'+(sub||'')+'</div></div>';}
+async function kwFetchAll(view,sel,ordCol,asc){
+  var out=[],fr=0,PG=1000;
+  while(true){
+    var q=sb.from(view).select(sel);
+    if(ordCol)q=q.order(ordCol,{ascending:!!asc,nullsFirst:false});
+    var r=await q.range(fr,fr+PG-1);
+    if(r.error)throw r.error;
+    var d=r.data||[]; out=out.concat(d);
+    if(d.length<PG)break; fr+=PG;
+    if(fr>20000)break;
+  }
+  return out;
+}
+function kwPager(id,total,page,per,fn){
+  var el=document.getElementById(id); if(!el)return;
+  var last=Math.max(1,Math.ceil(total/per));
+  if(total<=per){el.innerHTML='<span style="font-size:.75rem;color:#94a3b8">'+total.toLocaleString()+'건</span>';return;}
+  var b=function(p,t,on){return '<button class="filter-btn'+(on?' active':'')+'" style="min-width:34px" onclick="'+fn+'('+p+')">'+t+'</button>';};
+  var h=b(Math.max(1,page-1),'‹',false);
+  var s=Math.max(1,page-2),e=Math.min(last,s+4); s=Math.max(1,e-4);
+  for(var i=s;i<=e;i++)h+=b(i,i,i===page);
+  h+=b(Math.min(last,page+1),'›',false);
+  el.innerHTML='<div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;align-items:center">'+h+'<span style="font-size:.75rem;color:#94a3b8;margin-left:8px">'+total.toLocaleString()+'건 · '+page+'/'+last+'쪽</span></div>';
+}
+/* --- 하위탭 --- */
+function kiTab(k,el){
+  var m={overview:'ki-overview','4gate':'ki-4gate',intent:'ki-intent',quest:'ki-quest',rev:'ki-rev'};
+  Object.keys(m).forEach(function(x){var d=document.getElementById(m[x]); if(d)d.style.display=(x===k?'':'none');});
+  document.querySelectorAll('#ki-subtab .filter-btn').forEach(function(b){b.classList.remove('active');});
+  if(el)el.classList.add('active');
+  if(k==='4gate'&&!window._kg)loadKw4gate();
+  if(k==='intent'&&!window._kn)loadKwIntent();
+  if(k==='quest'&&!window._kq)loadKwQuest();
+  if(k==='rev'&&!window._kr)loadKwRev();
+}
+/* --- ① 4박자 게이트 --- */
+var _kgBu='전체',_kgSt='전체',_kgPage=1,_KGP=60;
+function kgSetBu(v,el){_kgBu=v;_kgPage=1;document.querySelectorAll('.kg-bu').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');renderKw4gate();}
+function kgSetSt(v,el){_kgSt=v;_kgPage=1;document.querySelectorAll('.kg-st').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');renderKw4gate();}
+function kgGo(p){_kgPage=p;renderKw4gate();}
+async function loadKw4gate(){
+  var tb=document.getElementById('kg-body'); if(!tb)return;
+  tb.innerHTML='<tr><td colspan="12" class="loading">로딩 중...</td></tr>';
+  try{
+    window._kg=await kwFetchAll('v_kw_4gate','사업부,축,키워드,검색량,G1_검색량,G2_G15통과,G3_SERP실측,G4_AI고객의도,4박자통과,기회점수,액션,커버,유입비율합','기회점수',false);
+    var d=window._kg;
+    var pass=d.filter(function(x){return x['4박자통과']}).length;
+    var blocked=d.filter(function(x){return x.G2_G15통과===false}).length;
+    var nojudge=d.filter(function(x){return x.G4_AI고객의도==null}).length;
+    document.getElementById('kg-kpi').innerHTML=
+      kwKpi('대상 키워드',d.length.toLocaleString()+'건','v_kw_4gate')
+     +kwKpi('4박자 통과',pass+'건','넷 다 통과 = 슬롯 가능',pass?'#059669':'#dc2626')
+     +kwKpi('G15 자기잠식 차단',blocked.toLocaleString()+'건','★차단은 의도를 안 본다 — 사람이 본다','#dc2626')
+     +kwKpi('G4 AI 미판정',nojudge.toLocaleString()+'건','keyword-research EF로 8개씩','#d97706');
+    renderKw4gate();
+  }catch(e){tb.innerHTML='<tr><td colspan="12" style="color:#dc2626;padding:12px">4박자 로드 실패: '+kwE(e.message||e)+'</td></tr>';}
+}
+function renderKw4gate(){
+  var tb=document.getElementById('kg-body'); if(!tb||!window._kg)return;
+  var q=(document.getElementById('kg-q')||{}).value||'';
+  var rows=window._kg.filter(function(x){
+    if(_kgBu!=='전체'&&x.사업부!==_kgBu)return false;
+    if(_kgSt==='통과'&&!x['4박자통과'])return false;
+    if(_kgSt==='즉시'&&String(x.액션||'').indexOf('즉시')<0)return false;
+    if(_kgSt==='미판정'&&x.G4_AI고객의도!=null)return false;
+    if(_kgSt==='차단'&&x.G2_G15통과!==false)return false;
+    if(q&&String(x.키워드||'').indexOf(q)<0)return false;
+    return true;
+  });
+  var tot=rows.length,st=(_kgPage-1)*_KGP;
+  var page=rows.slice(st,st+_KGP);
+  tb.innerHTML=page.length?page.map(function(x){
+    var g4=x.G4_AI고객의도;
+    var g4h=g4==null?'<span style="color:#94a3b8">미판정</span>':'<b style="color:'+(g4>=5?'#059669':'#dc2626')+'">'+g4+'/10</b>';
+    var ok=x['4박자통과'];
+    return '<tr'+(ok?' style="background:#f0fdf4"':'')+'>'
+      +'<td>'+kwE(x.사업부)+'</td><td style="font-size:.74rem;color:#64748b">'+kwE(x.축)+'</td>'
+      +'<td style="font-weight:600">'+kwE(x.키워드)+'</td><td>'+kwN(x.검색량)+'</td>'
+      +'<td style="text-align:center">'+kwTick(x.G1_검색량)+'</td>'
+      +'<td style="text-align:center">'+kwTick(x.G2_G15통과)+'</td>'
+      +'<td style="text-align:center">'+kwTick(x.G3_SERP실측)+'</td>'
+      +'<td style="text-align:center">'+g4h+'</td>'
+      +'<td style="text-align:center;font-weight:700">'+(ok?'<span style="color:#059669">✅</span>':'<span style="color:#cbd5e1">–</span>')+'</td>'
+      +'<td>'+(x.기회점수==null?'-':x.기회점수)+'</td>'
+      +'<td style="font-size:.74rem">'+kwE(x.액션)+'</td>'
+      +'<td style="text-align:center">'+(x.커버?'<span style="color:#059669">✓</span>':'<span style="color:#d97706">🕳️</span>')+'</td></tr>';
+  }).join(''):'<tr><td colspan="12" style="text-align:center;color:#94a3b8;padding:14px">해당 없음</td></tr>';
+  kwPager('kg-pager',tot,_kgPage,_KGP,'kgGo');
+}
+/* --- ② AI 의도판정 --- */
+var _knBu='전체';
+function knSetBu(v,el){_knBu=v;document.querySelectorAll('.kn-bu').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');renderKwIntent();}
+async function loadKwIntent(){
+  var tb=document.getElementById('kn-body'); if(!tb)return;
+  tb.innerHTML='<tr><td colspan="10" class="loading">로딩 중...</td></tr>';
+  try{
+    window._kn=await kwFetchAll('v_kw_ai_intent','사업부,축,키워드,검색량,고객의도_건수,표본,의도유형,판정,판정사유,검증출처,검증일,슬롯사용중','검증일',false);
+    var d=window._kn;
+    var ok=d.filter(function(x){return (x.고객의도_건수||0)>=5}).length;
+    var no=d.filter(function(x){return String(x.판정||'').indexOf('배제')>=0}).length;
+    var used=d.filter(function(x){return x.슬롯사용중}).length;
+    document.getElementById('kn-kpi').innerHTML=
+      kwKpi('판정 완료',d.length+'건','mk_keyword_serp_intent')
+     +kwKpi('고객의도 5↑ 통과',ok+'건','G4 통과선','#059669')
+     +kwKpi('❌ 배제',no+'건','다시 꺼내지 않는다','#dc2626')
+     +kwKpi('슬롯 사용 중',used+'건','편성 반영분');
+    renderKwIntent();
+  }catch(e){tb.innerHTML='<tr><td colspan="10" style="color:#dc2626;padding:12px">AI 판정 로드 실패: '+kwE(e.message||e)+'</td></tr>';}
+}
+function renderKwIntent(){
+  var tb=document.getElementById('kn-body'); if(!tb||!window._kn)return;
+  var rows=window._kn.filter(function(x){return _knBu==='전체'||x.사업부===_knBu;});
+  tb.innerHTML=rows.length?rows.map(function(x){
+    var n=x.고객의도_건수,sm=x.표본||10;
+    var col=(n>=5)?'#059669':(n>=3?'#d97706':'#dc2626');
+    var bad=String(x.판정||'').indexOf('배제')>=0;
+    return '<tr'+(bad?' style="background:#fef2f2"':'')+'>'
+      +'<td>'+kwE(x.사업부)+'</td><td style="font-size:.74rem;color:#64748b">'+kwE(x.축)+'</td>'
+      +'<td style="font-weight:600">'+kwE(x.키워드)+'</td><td>'+kwN(x.검색량)+'</td>'
+      +'<td style="text-align:center;font-weight:700;color:'+col+'">'+(n==null?'-':n+'/'+sm)+'</td>'
+      +'<td style="font-size:.74rem">'+kwE(x.의도유형)+'</td>'
+      +'<td style="font-weight:600">'+kwE(x.판정)+'</td>'
+      +'<td style="font-size:.74rem;color:#475569;line-height:1.5;max-width:420px">'+kwE(x.판정사유)+'<div style="color:#94a3b8;font-size:.68rem;margin-top:2px">'+kwE(x.검증출처)+'</div></td>'
+      +'<td style="font-size:.74rem">'+kwE(x.검증일)+'</td>'
+      +'<td style="text-align:center">'+(x.슬롯사용중?'<span style="color:#2563eb">●</span>':'<span style="color:#cbd5e1">○</span>')+'</td></tr>';
+  }).join(''):'<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:14px">해당 없음</td></tr>';
+}
+/* --- ③ 고객 질문 (3,831건 · 페이지네이션 필수) --- */
+var _kqBu='전체',_kqCv='전체',_kqPage=1,_KQP=50;
+function kqSetBu(v,el){_kqBu=v;_kqPage=1;document.querySelectorAll('.kq-bu').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');renderKwQuest();}
+function kqSetCv(v,el){_kqCv=v;_kqPage=1;document.querySelectorAll('.kq-cv').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');renderKwQuest();}
+function kqGo(p){_kqPage=p;renderKwQuest();}
+async function loadKwQuest(){
+  var tb=document.getElementById('kq-body'); if(!tb)return;
+  tb.innerHTML='<tr><td colspan="7" class="loading">3,800건 이상이라 여러 번 나눠 받는 중...</td></tr>';
+  try{
+    window._kq=await kwFetchAll('v_kw_question_mine','사업부,검색질의,질문제목,링크,수집일,답변수,처리상태,커버','수집일',false);
+    var d=window._kq;
+    var unc=d.filter(function(x){return !x.커버}).length;
+    var fresh=d.filter(function(x){return (x.답변수||0)<=2}).length;
+    document.getElementById('kq-kpi').innerHTML=
+      kwKpi('수집 질문',d.length.toLocaleString()+'건','mk_questions · 매일 수집')
+     +kwKpi('🕳️ 미커버',unc.toLocaleString()+'건','우리 글이 없는 질문 = 슬롯 후보','#d97706')
+     +kwKpi('답변 2건 이하',fresh.toLocaleString()+'건','아직 아무도 제대로 답 안 한 질문','#059669')
+     +kwKpi('사업부 구분',(new Set(d.map(function(x){return x.사업부}))).size+'종','');
+    renderKwQuest();
+  }catch(e){tb.innerHTML='<tr><td colspan="7" style="color:#dc2626;padding:12px">고객 질문 로드 실패: '+kwE(e.message||e)+'</td></tr>';}
+}
+function renderKwQuest(){
+  var tb=document.getElementById('kq-body'); if(!tb||!window._kq)return;
+  var q=(document.getElementById('kq-q')||{}).value||'';
+  var rows=window._kq.filter(function(x){
+    if(_kqBu!=='전체'&&String(x.사업부||'').indexOf(_kqBu)<0)return false;
+    if(_kqCv==='미커버'&&x.커버)return false;
+    if(q&&String(x.질문제목||'').indexOf(q)<0&&String(x.검색질의||'').indexOf(q)<0)return false;
+    return true;
+  });
+  var tot=rows.length,st=(_kqPage-1)*_KQP;
+  tb.innerHTML=rows.length?rows.slice(st,st+_KQP).map(function(x){
+    return '<tr>'
+      +'<td style="font-size:.74rem">'+kwE(x.사업부)+'</td>'
+      +'<td style="font-size:.76rem;color:#2563eb">'+kwE(x.검색질의)+'</td>'
+      +'<td style="line-height:1.5;max-width:520px">'+kwE(x.질문제목)+'</td>'
+      +'<td style="text-align:center'+((x.답변수||0)<=2?';color:#059669;font-weight:700':'')+'">'+(x.답변수==null?'-':x.답변수)+'</td>'
+      +'<td style="font-size:.74rem">'+kwE(x.수집일)+'</td>'
+      +'<td style="text-align:center">'+(x.커버?'<span style="color:#059669">✓</span>':'<span style="color:#d97706">🕳️</span>')+'</td>'
+      +'<td>'+(x.링크?'<a href="'+kwE(x.링크)+'" target="_blank" style="color:#2563eb;font-size:.74rem">열기</a>':'-')+'</td></tr>';
+  }).join(''):'<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:14px">해당 없음</td></tr>';
+  kwPager('kq-pager',tot,_kqPage,_KQP,'kqGo');
+}
+/* --- ④ 매출 귀속 --- */
+var _krBu='전체',_krSt='전체',_krPage=1,_KRP=60;
+function krSetBu(v,el){_krBu=v;_krPage=1;document.querySelectorAll('.kr-bu').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');renderKwRev();}
+function krSetSt(v,el){_krSt=v;_krPage=1;document.querySelectorAll('.kr-st').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');renderKwRev();}
+function krGo(p){_krPage=p;renderKwRev();}
+async function loadKwRev(){
+  var tb=document.getElementById('kr-body'); if(!tb)return;
+  tb.innerHTML='<tr><td colspan="9" class="loading">로딩 중...</td></tr>';
+  try{
+    window._kr=await kwFetchAll('v_kw_revenue_attrib','키워드,사업부,채널,발행수,최초발행,최고순위,유입클릭,유입비율,문의수','문의수',false);
+    var d=window._kr;
+    var deal=d.filter(function(x){return (x.문의수||0)>0}).length;
+    var top10=d.filter(function(x){return x.최고순위!=null&&x.최고순위<=10});
+    var waste=top10.filter(function(x){return (x.문의수||0)===0}).length;
+    var clicks=d.reduce(function(a,x){return a+(Number(x.유입클릭)||0)},0);
+    document.getElementById('kr-kpi').innerHTML=
+      kwKpi('발행 키워드',d.length.toLocaleString()+'건','v_kw_revenue_attrib')
+     +kwKpi('문의로 이어진 키워드',deal+'건','여기가 매출축',deal?'#059669':'#dc2626')
+     +kwKpi('1페이지인데 문의 0',waste+'건','순위는 잡았는데 밭이 틀렸다','#dc2626')
+     +kwKpi('총 유입클릭',clicks.toLocaleString(),'');
+    renderKwRev();
+  }catch(e){tb.innerHTML='<tr><td colspan="9" style="color:#dc2626;padding:12px">매출 귀속 로드 실패: '+kwE(e.message||e)+'</td></tr>';}
+}
+function renderKwRev(){
+  var tb=document.getElementById('kr-body'); if(!tb||!window._kr)return;
+  var rows=window._kr.filter(function(x){
+    if(_krBu!=='전체'&&x.사업부!==_krBu)return false;
+    if(_krSt==='문의'&&(x.문의수||0)===0)return false;
+    if(_krSt==='헛수고'&&!(x.최고순위!=null&&x.최고순위<=10&&(x.문의수||0)===0))return false;
+    return true;
+  });
+  var tot=rows.length,st=(_krPage-1)*_KRP;
+  tb.innerHTML=rows.length?rows.slice(st,st+_KRP).map(function(x){
+    var r=x.최고순위,deal=(x.문의수||0)>0;
+    var rc=r==null?'#94a3b8':(r<=10?'#059669':(r<=30?'#d97706':'#dc2626'));
+    return '<tr'+(deal?' style="background:#f0fdf4"':'')+'>'
+      +'<td style="font-size:.74rem">'+kwE(x.사업부)+'</td>'
+      +'<td style="font-size:.74rem;color:#64748b">'+kwE(x.채널)+'</td>'
+      +'<td style="font-weight:600">'+kwE(x.키워드)+'</td>'
+      +'<td style="text-align:center">'+kwN(x.발행수)+'</td>'
+      +'<td style="font-size:.74rem">'+kwE(x.최초발행)+'</td>'
+      +'<td style="text-align:center;font-weight:700;color:'+rc+'">'+(r==null?'-':r+'위')+'</td>'
+      +'<td style="text-align:center">'+kwN(x.유입클릭)+'</td>'
+      +'<td style="text-align:center">'+(x.유입비율==null?'-':x.유입비율)+'</td>'
+      +'<td style="text-align:center;font-weight:800;color:'+(deal?'#059669':'#cbd5e1')+'">'+(x.문의수||0)+'</td></tr>';
+  }).join(''):'<tr><td colspan="9" style="text-align:center;color:#94a3b8;padding:14px">해당 없음</td></tr>';
+  kwPager('kr-pager',tot,_krPage,_KRP,'krGo');
+}
 </script>
 
 </body>

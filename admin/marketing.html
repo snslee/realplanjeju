@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.15.0</title>
+<title>리얼플랜제주 마케팅 운영 v1.16.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -81,6 +81,112 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 .sec-off{display:none!important}
 [data-sec],.card,details{scroll-margin-top:calc(var(--hdr) + 58px)}
 </style>
+<style id="rwfx-css">
+/* ══ 리라이트 ③ 보완 — 화면설계 v3 이식 (2026-08-18 · v1.16.0) ═══════════
+   정본 realplan-identity · 상태색은 채움이 아니라 테두리 · 좌측보더 카드 금지
+   이모지 금지 · raw hex 금지(아래 토큰만 씀)                              */
+.rwfx{--blue:#4A85F6;--blue-d:#2B62C4;--blue-s:#7FB2F0;
+  --bg:#F5F8FD;--surface:#FFFFFF;--line:#E6ECF5;--ink:#222B3A;--mut:#7C8698;
+  --danger:#C0392B;--warn:#E67E22;--ok:#1E7A46;--warn-border:#F0D5AE;--ok-border:#BFE3CD;
+  --ph:#DCE3ED;--ph-ink:#8C97A8;
+  --s05:4px;--s1:8px;--s2:16px;--s3:24px;--s4:32px;--r:12px;--r-s:8px;--r-pill:20px;
+  --f-h2:1.02rem;--f-h3:.92rem;--f-b:.88rem;--f-s:.78rem;--f-xs:.71rem;--lh:1.55;
+  --ease:180ms cubic-bezier(.4,0,.2,1);
+  color:var(--ink);font-size:var(--f-b);line-height:var(--lh)}
+.rwfx .sp{flex:1}
+.rwfx .pill{display:inline-flex;align-items:center;border-radius:var(--r-pill);padding:3px 10px;
+  font-size:var(--f-xs);font-weight:700;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink);white-space:nowrap;margin:2px 4px 2px 0}
+.rwfx .pill.ok{border-color:var(--ok-border);color:var(--ok)}
+.rwfx .pill.dgr{border-color:var(--danger);color:var(--danger)}
+.rwfx .pill.b{border-color:var(--blue-s);color:var(--blue-d)}
+.rwfx .pill.wn{border-color:var(--warn-border);color:var(--warn)}
+.rwfx .fbtn{font-family:inherit;font-size:var(--f-xs);font-weight:700;border-radius:var(--r-s);
+  padding:6px 12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  cursor:pointer;transition:background var(--ease),border-color var(--ease)}
+.rwfx .fbtn:hover{background:var(--bg);border-color:var(--blue-s)}
+.rwfx .fbtn.p{background:var(--blue);border-color:var(--blue);color:var(--surface)}
+.rwfx .fbtn.p:hover{background:var(--blue-d);border-color:var(--blue-d)}
+.rwfx .fbtn.big{padding:10px 20px;font-size:var(--f-s)}
+.rwfx .fbtn:disabled{opacity:.45;cursor:not-allowed}
+/* 순위 체인 */
+.rwfx .chain{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:var(--s2) var(--s3);margin-bottom:var(--s2)}
+.rwfx .chain-h{font-size:var(--f-h3);font-weight:800;margin-bottom:var(--s1)}
+.rwfx .hop{display:flex;gap:var(--s1);align-items:stretch;flex-wrap:wrap}
+.rwfx .node{flex:1;min-width:8rem;border:1px solid var(--line);border-radius:var(--r-s);
+  padding:var(--s2);text-align:center}
+.rwfx .node.now{border-color:var(--blue)}
+.rwfx .node.wait{border-style:dashed;color:var(--mut)}
+.rwfx .node.dead{border-color:var(--danger)}
+.rwfx .node-k{font-size:var(--f-xs);color:var(--mut);font-weight:700}
+.rwfx .node-v{font-size:1.15rem;font-weight:800;margin-top:var(--s05)}
+.rwfx .node-s{font-size:var(--f-xs);color:var(--mut);margin-top:var(--s05);line-height:1.4}
+.rwfx .chev{display:flex;align-items:center;color:var(--mut);font-weight:800}
+.rwfx .rankin{font-family:inherit;font-size:1.1rem;font-weight:800;width:4rem;text-align:center;
+  border:1px solid var(--blue);border-radius:var(--r-s);padding:4px;color:var(--ink)}
+.rwfx .verdict{margin-top:var(--s2);border:1px solid var(--line);border-radius:var(--r-s);
+  padding:var(--s2);font-size:var(--f-s)}
+.rwfx .verdict.hold{border-color:var(--danger);color:var(--danger)}
+.rwfx .verdict.fix{border-color:var(--ok-border);color:var(--ok)}
+.rwfx .verdict.retitle{border-color:var(--warn-border);color:var(--warn)}
+.rwfx .warnline{font-size:var(--f-xs);color:var(--danger);margin-top:var(--s1);line-height:1.5}
+/* 작업량 요약 */
+.rwfx .plan{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:var(--s2) var(--s3);margin-bottom:var(--s2)}
+.rwfx .plan-h{font-size:var(--f-h3);font-weight:800;margin-bottom:var(--s1)}
+.rwfx .steps{display:flex;gap:var(--s1);flex-wrap:wrap;align-items:center}
+.rwfx .step{display:flex;align-items:center;gap:var(--s1);border:1px solid var(--line);
+  border-radius:var(--r-pill);padding:5px 14px;font-size:var(--f-s);font-weight:700;
+  background:var(--surface);cursor:pointer;color:var(--ink);
+  transition:border-color var(--ease),color var(--ease)}
+.rwfx .step:hover{border-color:var(--blue-s);color:var(--blue-d)}
+.rwfx .step[data-done="1"]{border-color:var(--ok-border);color:var(--ok)}
+.rwfx .step .k{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:800}
+.rwfx .arrow{color:var(--mut);font-size:var(--f-s)}
+.rwfx .hint{font-size:var(--f-xs);color:var(--mut);margin-top:var(--s1);line-height:1.5}
+/* 문서·구간 */
+.rwfx .doc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--s4)}
+.rwfx .keep{color:var(--mut);padding:var(--s2) 0;border-top:1px dashed var(--line);
+  border-bottom:1px dashed var(--line);font-size:var(--f-s);text-align:center;margin:var(--s2) 0}
+.rwfx .seg{border:1px solid var(--blue-s);border-radius:var(--r);margin:var(--s3) 0;overflow:hidden;
+  scroll-margin-top:calc(var(--hdr) + 58px)}
+.rwfx .seg[data-done="1"]{border-color:var(--ok-border)}
+.rwfx .seg-h{display:flex;align-items:center;gap:var(--s1);flex-wrap:wrap;padding:var(--s2);
+  border-bottom:1px solid var(--line);background:var(--bg)}
+.rwfx .seg-k{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:var(--f-s);
+  font-weight:800;color:var(--blue-d);border:1px solid var(--blue-s);border-radius:var(--r-pill);padding:2px 10px}
+.rwfx .seg[data-done="1"] .seg-k{color:var(--ok);border-color:var(--ok-border)}
+.rwfx .seg-t{font-size:var(--f-h3);font-weight:800}
+.rwfx .seg-m{padding:var(--s2);border-bottom:1px solid var(--line);font-size:var(--f-s);color:var(--mut)}
+.rwfx .seg-m b{color:var(--ink)}
+.rwfx .seg-p{padding:var(--s3);font-size:.94rem;max-height:46vh;overflow-y:auto}
+.rwfx .seg-p h2{font-size:var(--f-h2);font-weight:800;margin:var(--s3) 0 var(--s1)}
+.rwfx .seg-p h2:first-child{margin-top:0}
+.rwfx .seg-p p{margin:var(--s1) 0}
+.rwfx .seg-p table{border-collapse:collapse;width:100%;margin:var(--s1) 0;font-size:var(--f-s)}
+.rwfx .seg-p th,.rwfx .seg-p td{border:1px solid var(--line);padding:6px 10px;text-align:left}
+.rwfx .seg-p th{background:var(--bg);font-weight:700;color:var(--blue-d)}
+.rwfx .seg-p a{color:var(--blue-d)}
+.rwfx .seg-f{padding:var(--s2);border-top:1px solid var(--line);display:flex;gap:var(--s1);
+  align-items:center;flex-wrap:wrap}
+.rwfx .new{color:var(--danger);border-bottom:2px solid var(--danger);font-weight:700}
+.rwfx .gone{color:var(--danger);text-decoration:line-through;font-weight:400}
+.rwfx .legend{font-size:var(--f-xs);color:var(--mut);display:flex;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s1)}
+.rwfx .legend i{font-style:normal}
+.rwfx .legend .sw-new{color:var(--danger);border-bottom:2px solid var(--danger);font-weight:700}
+.rwfx .legend .sw-gone{color:var(--danger);text-decoration:line-through}
+/* 사진 */
+.rwfx .ph{display:flex;gap:var(--s2);padding:var(--s2);border-top:1px solid var(--line);align-items:flex-start}
+.rwfx .ph-t{width:40px;height:40px;border-radius:var(--r-s);border:1px solid var(--line);
+  background:var(--ph);color:var(--ph-ink);display:flex;align-items:center;justify-content:center;
+  flex:0 0 auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:var(--f-xs);font-weight:800}
+.rwfx .ph-b{flex:1;min-width:0}
+.rwfx .ph-n{font-size:var(--f-s);font-weight:700;word-break:break-all}
+.rwfx .ph-l{font-size:var(--f-xs);color:var(--mut);margin-top:var(--s05)}
+.rwfx .done-bar{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:var(--s3);margin-top:var(--s2);text-align:center}
+</style>
 </head>
 <body>
 <div id="login-screen">
@@ -98,7 +204,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.15.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.16.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -216,17 +322,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn" onclick="filterDrafts('approved',this)">✅ 승인</button>
         <button class="filter-btn" onclick="filterDrafts('published',this)">🚀 발행</button>
         <button class="filter-btn" onclick="filterDrafts('rejected',this)">❌ 반려</button>
-        <button class="filter-btn" id="livefix-btn" style="border-color:#fdba74;color:#9a3412" onclick="filterDrafts('livefix',this)">🔧 라이브 보완</button>
+        <button class="filter-btn" id="livefix-btn" style="border-color:#fdba74;color:#9a3412" onclick="gotoRewriteFix()" title="라이브 보완은 리라이트 탭 ③ 보완으로 흡수했습니다 (v1.16.0)">🔧 라이브 보완 → 리라이트 ③</button>
       </div>
-      <div id="livefix-panel" style="display:none;margin-bottom:14px"></div>
       <div id="drafts-board" style="border:0.5px solid #e2e8f0;border-radius:12px;background:#fff;max-height:72vh;overflow-y:auto"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div>
       <div id="drafts-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin:12px 0"></div>
       <div id="drafts-reader" style="margin-top:14px"></div>
-      <div class="card" data-sec="🔁 리라이트" style="margin:14px 0 18px;border:1px solid #fecaca">
-        <div class="card-hdr"><h3>🔁 리라이트 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">— 전용 탭으로 이관했습니다 (v1.9.6)</span></h3></div>
-        <div style="padding:12px 14px;font-size:.82rem;color:#475569">순위가 붙은 글을 밀어 올리는 작업은 대상 → 진단 → 초안 → 반영 4단으로 왼쪽 <b>🔁 리라이트</b> 탭에서 진행합니다.
-          <button class="btn-sm btn-copy" style="margin-left:8px" onclick="document.querySelectorAll('.nav-item').forEach(function(n){if(n.title==='리라이트')n.click();})">🔁 리라이트 탭 열기</button></div>
-      </div>
     </div>
     <!-- ══ 리라이트 탭 (2026-08-04 대표 승인 · 권장번들 D+G+H) ══════════════
          REWRITE.md 정본 4~30위 · 1~3위 잠금 · 원본 슬롯 UTM _rN · 미디어 매트릭스
@@ -246,7 +346,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn active" onclick="rwStep('b',this)">⓪ 이번 주 편성</button>
         <button class="filter-btn" onclick="rwStep('q',this)">① 대상 재고</button>
         <button class="filter-btn" onclick="rwStep('d',this)">② 진단</button>
-        <button class="filter-btn" onclick="rwStep('w',this)">③ 초안</button>
+        <button class="filter-btn" onclick="rwStep('w',this)">③ 보완</button>
         <button class="filter-btn" onclick="rwStep('p',this)">④ 반영 점검</button>
         <button class="filter-btn" onclick="rwStep('r',this)">⑤ 반영 결과</button>
       </div>
@@ -273,7 +373,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div id="rw2-pager" style="font-size:.78rem;color:#94a3b8;text-align:center;margin-top:10px"></div>
       </div>
       <div id="rw2-d" style="display:none"></div>
-      <div id="rw2-w" style="display:none"></div>
+      <div id="rw2-w" class="rwfx" style="display:none"></div>
       <div id="rw2-p" style="display:none"></div>
       <div id="rw2-r" style="display:none"></div>
     </div>
@@ -552,14 +652,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div><h2 style="font-size:1.2rem;font-weight:700">🔑 키워드·인사이트</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">로컬 13개월 통계 적재 · rpc_blog_brief 허브</p></div>
         <button onclick="loadKeywordInsight()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
-      <div id="ki-subtab" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
-        <button class="filter-btn active" onclick="kiTab('overview',this)">📊 개요</button>
-        <button class="filter-btn" onclick="kiTab('4gate',this)">✅ 4박자 게이트</button>
-        <button class="filter-btn" onclick="kiTab('intent',this)">🤖 AI 의도판정</button>
-        <button class="filter-btn" onclick="kiTab('quest',this)">💬 고객 질문</button>
-        <button class="filter-btn" onclick="kiTab('rev',this)">💰 매출 귀속</button>
-      </div>
-      <div id="ki-overview" class="ki-panel">
       <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:14px">ℹ️ 키워드 풀은 전부 <b>참고용(활성 off)</b>입니다. STAGE 0에서 rpc_blog_brief가 채널·주제·시즌에 맞는 키워드·상위글·오디언스를 자동 반환합니다.</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:16px" id="ki-kpi"></div>
       <div class="card" style="margin:0 0 16px"><div class="card-hdr"><h3>📡 키워드 레이더 상태 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">검색량 신선도 · 실검색어 매칭률 · 방문자 수집</span></h3></div>
@@ -572,7 +664,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
           <button class="filter-btn" data-ch="블B네이버" onclick="renderNvTerms('블B네이버')">블B</button>
           <button class="filter-btn" data-ch="블C네이버" onclick="renderNvTerms('블C네이버')">블C</button>
         </div></div>
-        <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.72rem;padding:7px 11px">💡 네이버 실검색어는 <b>자동 수집기가 없습니다</b>(쿠키 40분 만료). 대표님이 직접 백필한 <b id="nv-term-date">-</b> 기준 데이터입니다. 우리 글이 없는 검색어는 🕳️ 표시 → 슬롯 후보.</div>
+        <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.72rem;padding:7px 11px">💡 네이버는 온디맨드 수집(쿠키 40분 만료). <b id="nv-term-date">-</b> 기준. 우리 글이 없는 검색어는 🕳️ 표시 → 슬롯 후보.</div>
         <div class="card-body" style="padding:0;overflow-x:auto">
           <table class="tbl"><thead><tr><th>채널</th><th>실검색어</th><th>유입</th><th>비율%</th><th>커버</th></tr></thead>
           <tbody id="nv-term-body"><tr><td colspan="5" class="loading">로딩 중...</td></tr></tbody></table>
@@ -599,86 +691,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
       <div class="card" style="margin:16px 0 0"><div class="card-hdr"><h3>🎯 티스토리 주제 적합도 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">의도 키워드 vs 실제 유입 검색어(GSC)</span></h3></div>
         <div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>판정</th><th>의도 키워드</th><th>실제 top 검색어</th><th>노출</th></tr></thead><tbody id="ki-drift"><tr><td colspan="4" class="loading">로딩 중...</td></tr></tbody></table></div>
-      </div>
-      </div><!--/ki-overview-->
-
-      <div id="ki-4gate" class="ki-panel" style="display:none">
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:12px">✅ <b>채택 4박자</b> — ①검색량 100↑ ②G15 자기잠식 차단 0 ③SERP 실측 ④AI 3엔진 고객의도 5↑. <b>넷을 다 통과해야</b> 슬롯에 넣습니다. 정본은 realplan-keyword 스킬 GATE_4.md.</div>
-        <div id="kg-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px"></div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
-          <button class="filter-btn kg-bu active" onclick="kgSetBu('전체',this)">전체</button>
-          <button class="filter-btn kg-bu" onclick="kgSetBu('블A',this)">블A 여행</button>
-          <button class="filter-btn kg-bu" onclick="kgSetBu('블B',this)">블B 행사</button>
-          <button class="filter-btn kg-bu" onclick="kgSetBu('블C',this)">블C 마케팅</button>
-          <span style="border-left:1px solid #e2e8f0;margin:0 4px;height:18px"></span>
-          <button class="filter-btn kg-st active" onclick="kgSetSt('전체',this)">전체</button>
-          <button class="filter-btn kg-st" onclick="kgSetSt('통과',this)">✅ 4박자 통과</button>
-          <button class="filter-btn kg-st" onclick="kgSetSt('즉시',this)">①즉시신규</button>
-          <button class="filter-btn kg-st" onclick="kgSetSt('미판정',this)">G4 미판정</button>
-          <button class="filter-btn kg-st" onclick="kgSetSt('차단',this)">⛔ G15 차단</button>
-          <input id="kg-q" placeholder="키워드 검색" oninput="_kgPage=1;renderKw4gate()" style="border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;font-size:.8rem;min-width:150px">
-        </div>
-        <div class="card" style="margin:0"><div class="card-body" style="padding:0;overflow-x:auto">
-          <table class="tbl"><thead><tr><th>사업부</th><th>축</th><th>키워드</th><th>검색량</th><th>G1</th><th>G2</th><th>G3</th><th>G4</th><th>4박자</th><th>기회점수</th><th>액션</th><th>커버</th></tr></thead>
-          <tbody id="kg-body"><tr><td colspan="12" class="loading">로딩 중...</td></tr></tbody></table>
-        </div></div>
-        <div id="kg-pager" style="margin-top:10px;text-align:center"></div>
-      </div>
-
-      <div id="ki-intent" class="ki-panel" style="display:none">
-        <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:12px">🤖 <b>AI 3엔진(OpenAI·Perplexity·Gemini) 고객의도 판정</b> — 상위 10건 중 <b>발주 고객이 쓴 문서가 몇 건</b>인지를 셉니다. 육안은 관대합니다: 2026-08-18 실증으로 「AI활용교육」(육안 △ → AI 1/10)·「챗GPT강사」(육안 ✅ → 2/10)가 뒤집혔습니다. <b>형제 키워드에 논리를 복사하지 않습니다</b>(기공식 ✅ / 개소식·준공식 ⛔).</div>
-        <div id="kn-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px"></div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
-          <button class="filter-btn kn-bu active" onclick="knSetBu('전체',this)">전체</button>
-          <button class="filter-btn kn-bu" onclick="knSetBu('블A',this)">블A</button>
-          <button class="filter-btn kn-bu" onclick="knSetBu('블B',this)">블B</button>
-          <button class="filter-btn kn-bu" onclick="knSetBu('블C',this)">블C</button>
-        </div>
-        <div class="card" style="margin:0"><div class="card-body" style="padding:0;overflow-x:auto">
-          <table class="tbl"><thead><tr><th>사업부</th><th>축</th><th>키워드</th><th>검색량</th><th>고객의도</th><th>의도유형</th><th>판정</th><th>판정 사유</th><th>검증일</th><th>슬롯</th></tr></thead>
-          <tbody id="kn-body"><tr><td colspan="10" class="loading">로딩 중...</td></tr></tbody></table>
-        </div></div>
-      </div>
-
-      <div id="ki-quest" class="ki-panel" style="display:none">
-        <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:12px">💬 <b>고객이 실제로 쓴 문장</b>(지식인 원문). 검색어가 아니라 <b>문장</b>이라 AI답변엔진(문의 유입 1위)과 스마트블록의 재료입니다. <b>커버 🕳️</b>는 그 질문을 다루는 우리 글이 아직 없다는 뜻 — 슬롯 후보입니다.</div>
-        <div id="kq-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px"></div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
-          <button class="filter-btn kq-bu active" onclick="kqSetBu('전체',this)">전체</button>
-          <button class="filter-btn kq-bu" onclick="kqSetBu('국내여행',this)">국내여행</button>
-          <button class="filter-btn kq-bu" onclick="kqSetBu('행사이벤트',this)">행사·이벤트</button>
-          <button class="filter-btn kq-bu" onclick="kqSetBu('온라인마케팅',this)">온라인마케팅</button>
-          <button class="filter-btn kq-bu" onclick="kqSetBu('마케팅교육',this)">마케팅교육</button>
-          <span style="border-left:1px solid #e2e8f0;margin:0 4px;height:18px"></span>
-          <button class="filter-btn kq-cv" onclick="kqSetCv('미커버',this)">🕳️ 미커버만</button>
-          <button class="filter-btn kq-cv active" onclick="kqSetCv('전체',this)">전체</button>
-          <input id="kq-q" placeholder="질문 검색" oninput="_kqPage=1;renderKwQuest()" style="border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;font-size:.8rem;min-width:150px">
-        </div>
-        <div class="card" style="margin:0"><div class="card-body" style="padding:0;overflow-x:auto">
-          <table class="tbl"><thead><tr><th>사업부</th><th>검색질의</th><th>질문 제목</th><th>답변수</th><th>수집일</th><th>커버</th><th>원문</th></tr></thead>
-          <tbody id="kq-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
-        </div></div>
-        <div id="kq-pager" style="margin-top:10px;text-align:center"></div>
-      </div>
-
-      <div id="ki-rev" class="ki-panel" style="display:none">
-        <div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:12px">💰 <b>키워드가 매출까지 갔는지</b>만 봅니다. 검색량 자랑이 목적이 아닙니다 — <b>문의 0건</b>이면 순위가 높아도 밭을 잘못 고른 겁니다. ★기회큐의 평균순위는 GSC 노출순위지 블로그 순위가 아니므로, 여기 <b>최고순위</b>는 mk_blog_publish_log 실측값입니다.</div>
-        <div id="kr-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px"></div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
-          <button class="filter-btn kr-bu active" onclick="krSetBu('전체',this)">전체</button>
-          <button class="filter-btn kr-bu" onclick="krSetBu('블A',this)">블A</button>
-          <button class="filter-btn kr-bu" onclick="krSetBu('블B',this)">블B</button>
-          <button class="filter-btn kr-bu" onclick="krSetBu('블C',this)">블C</button>
-          <span style="border-left:1px solid #e2e8f0;margin:0 4px;height:18px"></span>
-          <button class="filter-btn kr-st" onclick="krSetSt('문의',this)">💰 문의 발생분</button>
-          <button class="filter-btn kr-st" onclick="krSetSt('헛수고',this)">⚠️ 1페이지인데 문의 0</button>
-          <button class="filter-btn kr-st active" onclick="krSetSt('전체',this)">전체</button>
-        </div>
-        <div class="card" style="margin:0"><div class="card-body" style="padding:0;overflow-x:auto">
-          <table class="tbl"><thead><tr><th>사업부</th><th>채널</th><th>키워드</th><th>발행수</th><th>최초발행</th><th>최고순위</th><th>유입클릭</th><th>유입비율%</th><th>문의수</th></tr></thead>
-          <tbody id="kr-body"><tr><td colspan="9" class="loading">로딩 중...</td></tr></tbody></table>
-        </div></div>
-        <div id="kr-pager" style="margin-top:10px;text-align:center"></div>
       </div>
     </div>
     <div class="tab-panel" id="t14">
@@ -1207,10 +1219,8 @@ async function loadKeywordInsight(){ loadKeywordRadar(); loadNvTerms();
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}).eq('출처','연관키워드DB'),
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}).eq('출처','naver_유입검색어')]);
   const{count:tp}=await sb.from('mk_top_posts').select('*',{count:'exact',head:true});
-  const kpi=[['키워드 풀 총',tot.count],['연관키워드DB',yk.count],['유입검색어(풀 등재분)',ui.count],['상위글',tp]];
-  /* v1.15.0 D — 「3,766 유입검색어」(mk_keyword_pool)와 「8,445 실유입 원장」(mk_inflow_keywords)은 다른 숫자다. 나란히 둔다. */
-  document.getElementById('ki-kpi').innerHTML=kpi.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+((k[1]||0).toLocaleString())+'</div></div>').join('')
-    +'<div class="kpi-card"><div class="kpi-label">실유입 원장 <span style="color:#94a3b8;font-weight:400">mk_inflow_keywords</span></div><div class="kpi-value" id="ki-kpi-inflow">…</div></div>';
+  const kpi=[['키워드 풀 총',tot.count],['연관키워드DB',yk.count],['유입검색어',ui.count],['상위글',tp]];
+  document.getElementById('ki-kpi').innerHTML=kpi.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+((k[1]||0).toLocaleString())+'</div></div>').join('');
   const{data:top}=await sb.from('mk_top_posts').select('채널,측정월,지표,순위,제목,조회수')/*RP-KI-METRIC-SEL*/.order('측정월',{ascending:false}).order('순위',{ascending:true}).limit(900);
   window._kiTop=top||[]; renderKiTop(window._kiCh||'전체');
   let facts=[],fr=0;const PG=1000;
@@ -1372,7 +1382,7 @@ async function loadStats(){ loadFunnel();
   document.getElementById('naver-chart-loading').style.display='none';
   // v1.8.3 — 정본 교체: mk_rank_tracker(핵심키워드 전량). 미진입(순위 NULL)은 평균에서 제외하되 존재는 표에서 본다.
   let navRows=[];
-  // v1.14.0 A2 — 여기도 .limit(20000)이 1000행에서 잘린다(현재 887행이라 아직 안 걸렸을 뿐). 페이징 고정.
+  // v1.15.0 A2 — 여기도 .limit(20000)이 1000행에서 잘린다(현재 887행이라 아직 안 걸렸을 뿐). 페이징 고정.
   try{ let _f=0;for(;;){ const _r=await sb.from('mk_rank_tracker').select('채널,순위,측정_일자').eq('검색_엔진','naver').not('순위','is',null).gte('측정_일자',since.slice(0,10)).order('측정_일자',{ascending:true}).range(_f,_f+999); if(_r.error)throw _r.error; navRows=navRows.concat(_r.data||[]); if(!_r.data||_r.data.length<1000)break; _f+=1000; if(_f>60000)break; } }catch(e){ navRows=[]; }
   const navD=navRows,navChs=[...new Set(navD.map(r=>r.채널))].sort(),navByD={},navAgg={};
   const navDays=[...new Set(navD.map(r=>String(r.측정_일자||'').slice(5,10)))].filter(Boolean).sort().slice(-14);
@@ -1403,7 +1413,7 @@ async function loadNaverMonthly(clrs){
 async function loadDrafts(){
   document.getElementById('drafts-board').innerHTML='<div class="loading" style="padding:30px;text-align:center">로딩 중...</div>';
   const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형,슬롯_id,라이브보완:자가검증_결과->라이브보완,리라이트_원본url').order('발행일',{ascending:false,nullsFirst:false}).order('생성일',{ascending:false}).limit(100);
-  if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];window.allDrafts=allDrafts;window._draftBySlot={};allDrafts.forEach(function(d){if(d.슬롯_id)window._draftBySlot[d.슬롯_id]=d.id;});try{const{data:lf}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형,슬롯_id,라이브보완:자가검증_결과->라이브보완,리라이트_원본url').not('자가검증_결과->라이브보완','is',null).limit(100);(lf||[]).forEach(r=>{if(!allDrafts.some(d=>d.id===r.id))allDrafts.push(r);});}catch(e){}updateLiveFixBtn();if(window._draftFilter==='livefix'){showLiveFixView();}else{renderDrafts(allDrafts);}
+  if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];window.allDrafts=allDrafts;window._draftBySlot={};allDrafts.forEach(function(d){if(d.슬롯_id)window._draftBySlot[d.슬롯_id]=d.id;});try{const{data:lf}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형,슬롯_id,라이브보완:자가검증_결과->라이브보완,리라이트_원본url').not('자가검증_결과->라이브보완','is',null).limit(100);(lf||[]).forEach(r=>{if(!allDrafts.some(d=>d.id===r.id))allDrafts.push(r);});}catch(e){}updateLiveFixBtn();renderDrafts(allDrafts);
 }
 let _draftPage=1,_winPage=1,_slotMonth=0,_statPage=1,_nvPage=1,_rankPage=1,_rankMonth=0,_rankJ='all'; const DRAFT_PER=10,WIN_PER=10,STAT_PER=20,NV_PER=20,RANK_PER=15;
 function pagerHTML(pg,pages,total,fn){ if(pages<=1)return '<span style="font-size:.78rem;color:#94a3b8">총 '+total+'건</span>'; let h=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.max(1,pg-1)})">‹</button>`; for(let i=1;i<=pages;i++){if(i===1||i===pages||Math.abs(i-pg)<=2){h+=`<button class="btn-sm btn-copy" style="${i===pg?'background:#2563eb;color:#fff;border-color:#2563eb':''}" onclick="${fn}(${i})">${i}</button>`;}else if(Math.abs(i-pg)===3){h+='<span style="padding:4px;color:#94a3b8">…</span>';}} h+=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.min(pages,pg+1)})">›</button><span style="align-self:center;font-size:.78rem;color:#94a3b8;margin-left:10px">${pg}/${pages} · 총 ${total}건</span>`; return h; }
@@ -1422,35 +1432,9 @@ function rewriteBadge(d){
        + 'style="background:#fff7ed;color:#c2410c;padding:3px 9px;border-radius:8px;text-decoration:none;font-weight:700">'
        + '🔁 원본 글 열기</a>';
 }
-function renderLiveFixPanel(list){
-  const box=document.getElementById('livefix-panel'); if(!box)return;
-  const rows=(list||[]).filter(r=>Array.isArray(r.라이브보완)&&r.라이브보완.length);
-  const pending=rows.reduce((a,r)=>a+r.라이브보완.filter(f=>f.상태!=='완료').length,0);
-  if(!rows.length){box.style.display='none';box.innerHTML='';return;}
-  box.style.display='block';
-  const esc2=t=>String(t||'').replace(/</g,'&lt;');
-  box.innerHTML=`<div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:12px;padding:16px 18px">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><span style="font-size:1.05rem;font-weight:800;color:#9a3412">🔧 라이브 보완 — 발행 후 실제 글에 반영할 문장</span><span style="font-size:.78rem;background:#ffedd5;color:#9a3412;padding:2px 10px;border-radius:9px;font-weight:700">대기 ${pending}건</span></div>
-    <div style="font-size:.78rem;color:#92400e;margin-bottom:10px">실행 Claude=자동 처리 · 실행 대표=문장 복사 → 발행된 글에 붙여넣기 → ✅완료 클릭. 반영 여부는 발행 감지 때 자동 대조됩니다.</div>
-    ${rows.slice().sort((a,b)=>((b.라이브보완.some(f=>f.상태!=='완료')?1:0)-(a.라이브보완.some(f=>f.상태!=='완료')?1:0))).map(r=>{
-      const wait=r.라이브보완.filter(f=>f.상태!=='완료').length;
-      return `<div style="background:#fff;border:0.5px solid #fde68a;border-radius:10px;padding:12px 14px;margin-bottom:8px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer" onclick="openDraftReader('${r.id}')">
-        <span style="font-size:.7rem;background:#e0e7ff;color:#3730a3;padding:2px 7px;border-radius:9px">${esc2(r.채널)}</span>
-        <b style="font-size:.88rem;color:#1e293b">${esc2(r.제목)}</b>
-        <span style="font-size:.72rem;color:${wait?'#b45309':'#16a34a'};font-weight:700">${wait?('대기 '+wait):'전부 완료'}</span>
-        ${r.발행_url?`<a href="${r.발행_url}" target="_blank" onclick="event.stopPropagation()" style="font-size:.72rem;color:#2563eb">🔗 발행글 열기</a>`:'<span style="font-size:.7rem;color:#94a3b8">(발행 전)</span>'}
-        <button class="btn-sm btn-copy" style="margin-left:auto" onclick="event.stopPropagation();toggleLiveFixBody('${r.id}',this)">📄 본문 위치 보기</button>
-      </div>
-      ${r.라이브보완.map((f,i)=>({f:f,i:i})).sort((a,b)=>((a.f.상태==='완료'?1:0)-(b.f.상태==='완료'?1:0))||(b.i-a.i)).map(({f,i})=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-top:0.5px dashed #fde68a;font-size:.83rem">
-        <span style="flex-shrink:0;font-size:.7rem;background:${f.실행자&&f.실행자.includes('Claude')?'#dbeafe':'#fef3c7'};color:${f.실행자&&f.실행자.includes('Claude')?'#1d4ed8':'#92400e'};padding:2px 7px;border-radius:8px;margin-top:2px">${esc2(f.실행자||'대표')}</span>
-        <div style="flex:1;min-width:0"><b>${esc2(f.항목)}</b> · 위치: ${esc2(f.위치)}${f.복사문구&&f.지시문?(' · '+esc2(f.지시문)):''}<div style="background:#f8fafc;border-radius:6px;padding:5px 8px;margin-top:3px;color:#334155;white-space:pre-wrap">${esc2(f.복사문구||f.지시문)}</div></div>
-        ${f.상태==='완료'?'<span style="flex-shrink:0;color:#16a34a;font-weight:700;font-size:.78rem;margin-top:2px">✅ 완료</span>':`<span style="flex-shrink:0;display:flex;gap:4px"><button class="btn-sm btn-copy" onclick="event.stopPropagation();copyLiveFix('${r.id}',${i},this)">📋 복사</button><button class="btn-sm btn-approve" onclick="event.stopPropagation();markLiveFixDone('${r.id}',${i})">✅ 완료</button></span>`}
-      </div>`).join('')}
-      <div id="lfbody-${r.id}" style="display:none"></div>
-    </div>`;}).join('')}
-  </div>`;
-}
+/* v1.16.0 — renderLiveFixPanel / toggleLiveFixBody 삭제.
+   라이브 보완 뷰는 리라이트 탭 ③ 보완이 정본이다(2026-08-18 대표 지시).
+   highlightLiveFix / fmtBodyFix 는 초안 리더가 계속 쓰므로 남긴다. */
 
 /* 라이브보완 — 본문 내 빨간 표시 (지시문이 본문에 있으면 그 자리, 없으면 위치의 "앵커" 뒤에 삽입 시뮬레이션) */
 function highlightLiveFix(body,fixArr){
@@ -1477,20 +1461,6 @@ function fmtBodyFix(t,fixArr){
   }).replace(/⟦\/FIX⟧/g,'</span>');
   if(h.missing.length){html='<div style="background:#fef2f2;border:0.5px solid #fecaca;border-radius:6px;padding:6px 9px;margin-bottom:8px;font-size:.78rem;color:#b91c1c">⚠ 위치 자동표시 실패 '+h.missing.map(function(i){return '보완'+(i+1);}).join('·')+' — 상단 지시문의 위치 설명을 참고하세요</div>'+html;}
   return html;
-}
-async function toggleLiveFixBody(id,btn){
-  var el=document.getElementById('lfbody-'+id);if(!el)return;
-  if(el.style.display!=='none'&&el.dataset.loaded){el.style.display='none';if(btn)btn.textContent='📄 본문 위치 보기';return;}
-  if(!el.dataset.loaded){
-    el.style.display='block';el.innerHTML='<div style="padding:10px;color:#94a3b8;font-size:.8rem">본문 불러오는 중...</div>';
-    var r=await sb.from('mk_blog_drafts').select('본문_네이버,본문_티스토리,자가검증_결과').eq('id',id).maybeSingle();
-    var data=r&&r.data;if(!data){el.innerHTML='<div style="padding:10px;color:#b91c1c;font-size:.8rem">로드 실패</div>';return;}
-    var fix=(data.자가검증_결과&&Array.isArray(data.자가검증_결과.라이브보완))?data.자가검증_결과.라이브보완:[];
-    var body=data.본문_네이버||data.본문_티스토리||'';
-    el.innerHTML='<div style="font-size:.72rem;color:#92400e;margin:6px 0 4px">🔴 빨간 문장 = 라이브 보완 삽입 위치 (🔧 배지=대기 · ✔ 배지=반영완료)</div><div style="max-height:50vh;overflow-y:auto;background:#fff;border:0.5px solid #fde68a;border-radius:8px;padding:12px 16px;font-size:.88rem;color:#1e293b">'+fmtBodyFix(body,fix)+'</div>';
-    el.dataset.loaded='1';
-  }
-  el.style.display='block';if(btn)btn.textContent='📄 본문 닫기';
 }
 async function copyLiveFix(id,i,btn){
   const r=(allDrafts||[]).find(x=>x.id===id); const f=r&&Array.isArray(r.라이브보완)?r.라이브보완[i]:null;
@@ -1526,15 +1496,16 @@ function renderDrafts(list){
     </div>`;}).join('');
 }
 function filterDrafts(s,b){document.querySelectorAll('#draft-filters .filter-btn').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');window._draftFilter=s;
-  const board=document.getElementById('drafts-board'),pager=document.getElementById('drafts-pager'),panel=document.getElementById('livefix-panel');
-  if(s==='livefix'){showLiveFixView();return;}
-  if(panel)panel.style.display='none'; if(board)board.style.display=''; if(pager)pager.style.display='';
+  const board=document.getElementById('drafts-board'),pager=document.getElementById('drafts-pager');
+  if(board)board.style.display=''; if(pager)pager.style.display='';
   renderDrafts(s==='all'?allDrafts:allDrafts.filter(r=>r.상태===s));}
-function showLiveFixView(){
-  const board=document.getElementById('drafts-board'),pager=document.getElementById('drafts-pager'),panel=document.getElementById('livefix-panel');
-  if(board)board.style.display='none'; if(pager)pager.style.display='none';
-  renderLiveFixPanel(allDrafts); if(panel&&panel.innerHTML==='')panel.innerHTML='<div style="text-align:center;padding:30px;color:#94a3b8;background:#fff;border:0.5px solid #e2e8f0;border-radius:12px">라이브 보완 대기 건 없음</div>',panel.style.display='block';}
-function updateLiveFixBtn(){const b=document.getElementById('livefix-btn');if(!b)return;const n=(allDrafts||[]).reduce((a,r)=>a+((Array.isArray(r.라이브보완)?r.라이브보완.filter(f=>f.상태!=='완료').length:0)),0);b.innerHTML='🔧 라이브 보완'+(n?` <span style="background:#ea580c;color:#fff;border-radius:8px;padding:0 6px;font-size:.72rem;font-weight:800">${n}</span>`:'');}
+/* v1.16.0 — 「라이브 보완」 뷰는 리라이트 탭 ③ 보완으로 흡수했다.
+   같은 일을 두 화면에서 하면 어느 쪽이 정본인지 매번 헷갈린다(2026-08-18 대표 지시). */
+function gotoRewriteFix(){
+  document.querySelectorAll('.nav-item').forEach(function(n){if(n.title==='리라이트')n.click();});
+  setTimeout(function(){if(typeof rwStepBtn==='function')rwStepBtn(3);},350);
+}
+function updateLiveFixBtn(){const b=document.getElementById('livefix-btn');if(!b)return;const n=(allDrafts||[]).reduce((a,r)=>a+((Array.isArray(r.라이브보완)?r.라이브보완.filter(f=>f.상태!=='완료').length:0)),0);b.innerHTML='🔧 라이브 보완 → 리라이트 ③'+(n?` <span style="background:#ea580c;color:#fff;border-radius:8px;padding:0 6px;font-size:.72rem;font-weight:800">${n}</span>`:'');}
 async function approveDraft(id){const{error}=await sb.from('mk_blog_drafts').update({상태:'approved',승인일:new Date().toISOString()}).eq('id',id);if(error){showToast('승인 실패');return;}showToast('✅ 승인 완료');loadDrafts();}
 function openReject(id){rejectTargetId=id;document.getElementById('reject-reason').value='';document.getElementById('reject-modal').classList.add('open');}
 function closeModal(){document.getElementById('reject-modal').classList.remove('open');rejectTargetId=null;}
@@ -1690,7 +1661,7 @@ window._rtLatest=function(rows){
   });
   return Object.values(best);
 };
-// v1.14.0 A1 — .limit(20000)은 PostgREST max-rows(1000)에 막혀 무시된다.
+// v1.15.0 A1 — .limit(20000)은 PostgREST max-rows(1000)에 막혀 무시된다.
 // 2026-08-12 실측: 14일 창 2,039행 중 1,000행만 도착했고 잘린 쪽이 최신(8/10·8/11)이라 표 전체가 옛 순위였다. 반드시 페이징으로 받는다.
 window._rtFetchRows=async function(days){
   const since=new Date(Date.now()-days*86400000).toISOString().slice(0,10);
@@ -1706,7 +1677,7 @@ window._rtFetchRows=async function(days){
 };
 window._rtFetch=async function(days){ return window._rtLatest(await window._rtFetchRows(days)); };
 // v1.9.1 — 순위 요약 단일 정본. KPI 카드·잠자는 거인 탭이 이 함수 하나만 읽는다(정합 보장).
-// v1.14.0 A6 — 35일치를 한 번에 받아 「추적 시작 30일 경과」(성숙) 여부까지 같이 판정한다.
+// v1.15.0 A6 — 35일치를 한 번에 받아 「추적 시작 30일 경과」(성숙) 여부까지 같이 판정한다.
 // 표시용 모집단은 종전대로 최근 14일 측정분이고, 신호등 판정만 성숙분으로 본다(신규 발행 키워드는 즉시 미진입이라 판정을 영구 빨강으로 만든다).
 window._rtSummary=async function(){
   const rows=await window._rtFetchRows(35);
@@ -1743,7 +1714,7 @@ async function loadGiantsNaver(){
       mkw:a.mkw, mr:a.mhit>0?(a.msum/a.mhit):null, mMissPct:a.mkw>0?(a.mmiss/a.mkw*100):0};
   });
   if(!rows.length){nb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:#94a3b8">네이버 순위 데이터 없음</td></tr>';return;}
-  // v1.14.0 A6 — 판정 모수는 「추적 시작 30일 경과(성숙)」분만. 모수 5건 미만이면 판정하지 않는다.
+  // v1.15.0 A6 — 판정 모수는 「추적 시작 30일 경과(성숙)」분만. 모수 5건 미만이면 판정하지 않는다.
   const judge=(r)=>{
     if(r.mkw<5)return['⚪ 판정보류','#94a3b8'];
     if(r.mr==null)return['🔴 즉시액션','#ef4444'];
@@ -1766,7 +1737,7 @@ async function loadGiantsNaver(){
       +'<td style="font-weight:700;color:'+j[1]+'">'+j[0]+'</td></tr>';
   }).join('');
 }
-// v1.14.0 A4·A5 — 네이버(월간 유입분석·노출 없음)와 티스토리(GSC·노출 있음)를 한 표에서 정렬하면
+// v1.15.0 A4·A5 — 네이버(월간 유입분석·노출 없음)와 티스토리(GSC·노출 있음)를 한 표에서 정렬하면
 // 클릭 0인 티스토리 채널이 상위 60행 안에 못 들어와 채널 탭이 통째로 비었다. 표를 나누고 기간을 최근 3개월로 자른다.
 window._uncNv=[];window._uncTs=[];window._uncPfx='전체';
 function uncCut(){const d=new Date();d.setMonth(d.getMonth()-3);return d.toISOString().slice(0,8)+'01';}
@@ -1822,35 +1793,27 @@ function renderNvTerms(ch){
   if(!rows.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:14px">데이터 없음 — 쿠키 온디맨드 백필 필요</td></tr>';return;}
   tb.innerHTML=rows.map(r=>`<tr><td>${(r.채널||'').replace('네이버','')}</td><td style="font-weight:600">${r.키워드||''}</td><td>${r.클릭_수??0}</td><td>${r.유입비율??''}</td><td>${r.covered?'<span style="color:#059669">✓</span>':'<span style="color:#d97706">🕳️</span>'}</td></tr>`).join('');
 }
-// v1.15.0 B1·B2 — 「매칭률 0%」와 「로딩 중 멈춤」은 계산식 문제가 아니라 v_keyword_match 쿼리 타임아웃이었다.
-// anon 실측 HTTP 500 / 57014 statement timeout(4.4초) × 화면이 2번 호출 = 확정 실패.
-// rpc_kw_radar()가 MATERIALIZED CTE로 publish_log를 1회만 읽고(4.4s→2.1s) 4타일 값을 1회 호출로 준다.
-// 실패해도 다시는 「로딩 중」으로 위장하지 않고 사유를 빨갛게 띄운다.
 async function loadKeywordRadar(){
   const box=document.getElementById('ki-radar'); if(!box) return;
   const tile=(label,val,sub,color)=>`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px"><div style="font-size:.72rem;color:#64748b">${label}</div><div style="font-size:1.3rem;font-weight:800;color:${color||'#0f172a'}">${val}</div><div style="font-size:.7rem;color:#94a3b8">${sub||''}</div></div>`;
-  box.innerHTML='<div class="loading">레이더 계산 중... (실검색어 8천여 건 대조라 3~5초 걸립니다)</div>';
   try{
-    const {data,error}=await sb.rpc('rpc_kw_radar');
-    if(error) throw error;
-    if(!data) throw new Error('rpc_kw_radar가 빈 값을 반환했습니다');
-    window._kwRadar=data;
-    const rate=Number(data.match_rate||0);
-    const days=d=>{ if(!d) return null; return Math.floor((Date.now()-new Date(d).getTime())/86400000); };
-    const vd=days(data.visitor_last), cd=days(data.creator_last);
+    const today=new Date();const d7=new Date(today.getTime()-7*864e5).toISOString().slice(0,10);
+    const [fresh,tot,match,vis]=await Promise.all([
+      sb.from('mk_keywords').select('id',{count:'exact',head:true}).gte('검증일',d7),
+      sb.from('v_keyword_match').select('실검색어',{count:'exact',head:true}),
+      sb.from('v_keyword_match').select('실검색어',{count:'exact',head:true}).not('매칭키워드','is',null),
+      sb.from('mk_metrics').select('측정_일자').eq('데이터_소스','naver_visitor').order('측정_일자',{ascending:false}).limit(1)
+    ]);
+    const rate=tot.count?((match.count||0)/tot.count*100).toFixed(1):'0';
     box.innerHTML=[
-      tile('검색량 7일 내 갱신',(data.fresh7??0).toLocaleString()+'건','searchad-volume-rotate · 일 100건 로테이션'),
-      tile('실검색어 매칭률',rate.toFixed(1)+'%',(data.match_hit||0).toLocaleString()+' / '+(data.match_total||0).toLocaleString()+'행 · 우리 글이 잡은 비율',rate<20?'#dc2626':(rate<50?'#d97706':'#059669')),
-      tile('네이버 방문자 수집',(data.visitor_last||'-'),vd==null?'fn_collect_naver_visitors · 매일 00:35':(vd<=2?'정상 · '+vd+'일 전':'⚠️ '+vd+'일 경과'),vd!=null&&vd>3?'#dc2626':'#0f172a'),
-      tile('네이버 실검색어 백필',(data.creator_last||'없음'),cd==null?'수동 백필':(cd>30?'🔴 '+cd+'일 경과 — 수동 백필 필요':'🟢 '+cd+'일 전'),cd!=null&&cd>30?'#dc2626':(cd!=null&&cd>14?'#d97706':'#059669'))
+      tile('검색량 7일 내 갱신',(fresh.count??0)+'건','searchad-volume-rotate · 일 100건 로테이션'),
+      tile('실검색어 매칭률',rate+'%',(match.count||0)+' / '+(tot.count||0)+'행 · v_keyword_match',rate<20?'#dc2626':(rate<50?'#d97706':'#059669')),
+      tile('미커버 원천','v_uncovered_terms','잠자는 거인 탭 하단 TOP20'),
+      tile('네이버 방문자 수집',(vis.data&&vis.data[0]?vis.data[0].측정_일자:'-'),'fn_collect_naver_visitors · 매일 00:35')
     ].join('');
-    const it=document.getElementById('ki-kpi-inflow');
-    if(it) it.textContent=(data.inflow_total||0).toLocaleString();
-  }catch(e){
-    box.innerHTML='<div style="grid-column:1/-1;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:12px;font-size:.8rem"><b>레이더 로드 실패</b> — '+(e.message||e)+'<div style="font-size:.72rem;margin-top:4px;color:#b91c1c">rpc_kw_radar() 호출 실패입니다. 「로딩 중」으로 멈춰 보이면 이 자리에 사유가 뜹니다.</div></div>';
-  }
+  }catch(e){box.innerHTML='<div style="color:#dc2626">레이더 로드 실패: '+(e.message||e)+'</div>';}
 }
-// v1.14.0 A8 — DB에 v_sleeping_giants 뷰가 있는데 화면이 한 번도 안 읽고 있었다(이름만 잠자는 거인이었다).
+// v1.15.0 A8 — DB에 v_sleeping_giants 뷰가 있는데 화면이 한 번도 안 읽고 있었다(이름만 잠자는 거인이었다).
 async function loadSleeping(){
   const tb=document.getElementById('sleeping-body'); if(!tb)return;
   try{
@@ -2354,17 +2317,22 @@ window._vcRows=window._vcRows||[];window._rgRows=window._rgRows||[];window._rgDo
 function _cpB(t){var d=/변경금지/.test(t||''),w=/확인필요/.test(t||'');return '<span style="font-size:.62rem;font-weight:800;padding:1px 7px;border-radius:6px;background:'+(d?'#fef2f2':(w?'#fffbeb':'#f0fdf4'))+';color:'+(d?'#b91c1c':(w?'#b45309':'#166534'))+'">'+(d?'변경금지':(w?'확인필요':'변경가능'))+'</span>';}
 function _esc2(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function _tyB(t){var M={'정보성':['#d1fae5','#065f46','📗 정보성'],'B2B임박':['#fee2e2','#991b1b','🔴 B2B임박'],'B2B선제':['#fef9c3','#78350f','🟡 B2B선제'],'예고':['#ede9fe','#5b21b6','🔔 예고'],'블A':['#dbeafe','#1e40af','🅰 블A'],'블B':['#ffedd5','#9a3412','🅱 블B'],'블C':['#f3e8ff','#6b21a8','🅲 블C']};var m=M[String(t||'')];if(!m)return t?('<span style="font-size:.66rem;color:#94a3b8;font-weight:700">'+_esc2(t)+'</span>'):'<span style="font-size:.63rem;font-weight:800;background:#f1f5f9;color:#94a3b8;padding:1px 7px;border-radius:7px">유형 미지정</span>';return '<span style="background:'+m[0]+';color:'+m[1]+';padding:1px 8px;border-radius:8px;font-size:.66rem;font-weight:800;white-space:nowrap">'+m[2]+'</span>';}
-function _useB(u){var M={'사용됨':['#dcfce7','#166534','✅ 사용됨'],'후보선정':['#fef3c7','#b45309','⏳ 배정됨'],'미대조':['#f1f5f9','#64748b','⚪ 미사용'],'대체됨':['#ede9fe','#5b21b6','♻ 대체됨'],'기준':['#e0f2fe','#075985','📌 기준']};var m=M[String(u||'')]||['#f1f5f9','#64748b',String(u||'-')];return '<span style="background:'+m[0]+';color:'+m[1]+';font-size:.63rem;font-weight:800;padding:1px 7px;border-radius:6px;white-space:nowrap">'+m[2]+'</span>';}
+function _useB(u){var M={'사용됨':['#dcfce7','#166534','✅ 사용됨'],'후보선정':['#fef3c7','#b45309','⏳ 배정됨'],'미대조':['#f1f5f9','#64748b','⚪ 미사용'],'배제':['#f5f3ff','#5b21b6','🚫 배제'],'대체됨':['#ede9fe','#5b21b6','♻ 대체됨'],'기준':['#e0f2fe','#075985','📌 기준']};var m=M[String(u||'')]||['#f1f5f9','#64748b',String(u||'-')];return '<span style="background:'+m[0]+';color:'+m[1]+';font-size:.63rem;font-weight:800;padding:1px 7px;border-radius:6px;white-space:nowrap">'+m[2]+'</span>';}
 function _chB(c){c=String(c||'');var col=c.indexOf('티스토리')>=0?['#ffedd5','#9a3412']:(c.indexOf('네이버')>=0?['#dcfce7','#166534']:['#f1f5f9','#475569']);return '<span style="background:'+col[0]+';color:'+col[1]+';font-size:.64rem;font-weight:800;padding:1px 8px;border-radius:8px;white-space:nowrap">'+_esc2(c||'-')+'</span>';}
 function _normPath(p){p=String(p||'').trim();if(!p)return '';var lead=(p.slice(0,2)==='\\\\')?'\\\\':'';var body=p.slice(lead.length).replace(/\\{2,}/g,'\\').replace(/\//g,'\\');return lead+body;}
 function _extPhoto(r){var s=String(r.출처||'');return !(/^자사/.test(s)||/^자체제작/.test(s)||/^coursemap/i.test(s));}
 function _clBan(r){var t=String(r.저작권유형||'확인필요');return t==='공공누리3(변경금지)'||t==='공공누리4(변경금지)'||t==='확인필요';}
 /* ── 사진 창고 (패싯) ───────────────────────────────── */
-var _VF=['사업부','자산종류','장면','사용여부','저작권유형','지역_도','시즌','파일명_상태'];
-var _VFL={'사업부':'사업부','자산종류':'자산종류','장면':'장면','사용여부':'사용여부','저작권유형':'저작권','지역_도':'지역','시즌':'시즌','파일명_상태':'파일명'};
+var _VF=['사업부','자산종류','사용여부','가용등급','확인','장면','저작권유형','지역_도','시즌','파일명_상태'];
+var _VFL={'사업부':'사업부','자산종류':'자산종류','장면':'장면','사용여부':'사용여부','가용등급':'가용등급','확인':'확인','저작권유형':'저작권','지역_도':'지역','시즌':'시즌','파일명_상태':'파일명'};
 async function loadVault(force){var el=document.getElementById('asgP1');
  if(!window._vtLoaded||force){if(el&&!window._vtRows)el.innerHTML='<div style="padding:18px;color:#94a3b8;font-size:.8rem">사진 창고 불러오는 중…</div>';
-  var r=await sb.from('mk_photo_assets').select('id,파일명,폴더,사업부,자산종류,장면,사용여부,저작권유형,지역_도,지역_시군,장소명,시즌,촬영일,용도구분,로컬경로,제안_파일명,파일명_상태,초상권플래그,배정_슬롯_id,배정_채널,배정_위치,배정_캡션,배정_글url,유사군_id,재사용_횟수,최근사용일,출처').order('촬영일',{ascending:false,nullsFirst:false}).limit(6000);
+  var r=await sb.from('mk_photo_assets').select('id,파일명,폴더,사업부,자산종류,장면,사용여부,저작권유형,지역_도,지역_시군,장소명,시즌,촬영일,용도구분,로컬경로,제안_파일명,파일명_상태,초상권플래그,배정_슬롯_id,배정_채널,배정_위치,배정_캡션,배정_글url,유사군_id,재사용_횟수,최근사용일,출처,모자이크_판정,콜라주_원본_ids').order('촬영일',{ascending:false,nullsFirst:false}).limit(6000);
+  /* ★2026-08-18: 가용등급·육안확인은 jsonb 안에 있어 패싯이 못 본다 → 파생 필드로 꺼낸다.
+     안전만 재고 가용(쓸 수 있는가)을 안 재면 재고를 조용히 태운다. */
+  (r.data||[]).forEach(function(x){var j=x.모자이크_판정||{};
+    x.가용등급=j['가용등급']||(x.모자이크_경로?'미판정':'해당없음');
+    x.확인=(j['육안확인필요']===true||j['육안확인필요']==='true')?'👁 육안확인':'';});
   if(r.error){if(el)el.innerHTML='<div style="padding:18px;color:#b91c1c;font-size:.8rem">사진 창고 로드 실패: '+_esc2(r.error.message)+'</div>';return;}
   window._vtRows=r.data||[];window._vtLoaded=true;window._vtSel=window._vtSel||{};window._vtPage=1;}
  renderVault();}
@@ -2428,7 +2396,8 @@ function renderVault(){var el=document.getElementById('asgP1');if(!el)return;var
      h+='<div style="font-size:.7rem;color:#94a3b8;text-decoration:line-through;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+_esc2(r.파일명)+'</div>';
      h+='<div style="font-size:.76rem;font-weight:700;color:#0f172a;margin-top:1px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">⤷ '+_esc2(r.제안_파일명)+_rnB(r.파일명_상태)+'</div>';
    } else {
-     h+='<div style="font-size:.76rem;font-weight:700;display:flex;gap:5px;align-items:center;flex-wrap:wrap"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%">'+_esc2(r.장소명||r.파일명)+'</span>'+_useB(r.사용여부)+(ban?'<span style="background:#fef2f2;color:#b91c1c;font-size:.61rem;font-weight:800;padding:1px 6px;border-radius:5px">⛔ 변경금지</span>':'')+(r.초상권플래그?'<span style="background:#fff1f2;color:#be123c;font-size:.61rem;font-weight:800;padding:1px 6px;border-radius:5px">👤</span>':'')+'</div>';
+     var _na=(r.가용등급==='불가'), _ey=!!r.확인, _cl=(r.자산종류==='사진'&&(r.재사용_횟수||0)>0&&!(window._clSrc&&window._clSrc[r.id]));
+     h+='<div style="font-size:.76rem;font-weight:700;display:flex;gap:5px;align-items:center;flex-wrap:wrap"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%">'+_esc2(r.장소명||r.파일명)+'</span>'+_useB(r.사용여부)+(ban?'<span style="background:#fef2f2;color:#b91c1c;font-size:.61rem;font-weight:800;padding:1px 6px;border-radius:5px">⛔ 변경금지</span>':'')+(r.초상권플래그?'<span style="background:#fff1f2;color:#be123c;font-size:.61rem;font-weight:800;padding:1px 6px;border-radius:5px">👤</span>':'')+(_na?'<span style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;font-size:.61rem;font-weight:800;padding:1px 6px;border-radius:5px" title="전체흐림 — 현수막·기관명까지 뭉개져 못 씀">⛔ 가용불가</span>':'')+(_ey?'<span style="background:#ffedd5;color:#9a3412;border:1px solid #fdba74;font-size:.61rem;font-weight:800;padding:1px 6px;border-radius:5px">👁 육안확인</span>':'')+(_cl?'<span style="background:#fef9c3;color:#854d0e;border:1px solid #fde047;font-size:.61rem;font-weight:800;padding:1px 6px;border-radius:5px" title="재사용 사진은 콜라주로 변형해야 한다(G21 v5)">🧩 콜라주필요</span>':'')+'</div>';
      h+='<div style="font-size:.66rem;color:#94a3b8;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+_esc2(r.파일명)+'</div>';
    }
    h+='<div style="font-size:.65rem;color:#64748b;margin-top:3px;display:flex;gap:5px;flex-wrap:wrap">';
@@ -2474,11 +2443,43 @@ h+=bc+'<div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;b
 arr.forEach(function(r,i){var chg=(r.파일명!==r.제안_파일명);
  h+='<div style="display:flex;gap:10px;align-items:center;padding:9px 13px;'+(i?'border-top:1px solid #f1f5f9':'')+'"><div style="flex:1;min-width:0"><div style="font-size:.72rem;color:#94a3b8;text-decoration:'+(chg?'line-through':'none')+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+_esc2(r.파일명)+'</div><div style="font-size:.77rem;font-weight:700;color:'+(chg?'#0f172a':'#94a3b8')+';margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">'+(chg?'⤷ ':'')+_esc2(r.제안_파일명)+_rnB(r.파일명_상태)+'</div></div><div style="display:flex;gap:4px;white-space:nowrap"><button class="filter-btn" style="font-size:.66rem;background:#16a34a;color:#fff;border-color:#16a34a" onclick="rnSet(\'row\',\''+r.id+'\',\'승인\')">승인</button><button class="filter-btn" style="font-size:.66rem" onclick="rnSet(\'row\',\''+r.id+'\',\'보류\')">보류</button><button class="filter-btn" style="font-size:.66rem" data-path="'+_esc2(r.로컬경로)+'" onclick="_openLoc(this)">📂</button></div></div>';});
 h+='</div>';el.innerHTML=h;}
-async function loadCollage(force){var el=document.getElementById('asgP5');if(!window._clLoaded||force){if(el&&!window._clRows)el.innerHTML='<div style="padding:18px;color:#94a3b8;font-size:.8rem">콜라주 사진 불러오는 중…</div>';var r=await sb.from('mk_photo_assets').select('id,파일명,폴더,사업부,사용여부,저작권유형,출처,초상권플래그,유사군_id,대표컷,재사용_횟수,최근사용일,로컬경로,배정_채널,배정_글url,배정일,배정_슬롯_id,슬롯:mk_blog_slots(발행일,슬롯유형,핵심키워드,최종제목)').eq('용도구분','콜라주전용').order('폴더').limit(2000);if(r.error){if(el)el.innerHTML='<div style="padding:18px;color:#b91c1c;font-size:.8rem">콜라주 사진 로드 실패: '+_esc2(r.error.message)+'</div>';return;}window._clRows=r.data||[];window._clLoaded=true;}renderCollage();}
+/* ★2026-08-18 교체 — 전에는 `용도구분='콜라주전용'`(재료 사진 506장)만 불러서
+   정작 콜라주 산출물 58건이 화면 어디에도 없었다. 이름만 같고 다른 것이다.
+   ①산출물(자산종류=콜라주) ②재료(용도구분=콜라주전용) 두 벌을 따로 싣는다. */
+async function loadCollage(force){var el=document.getElementById('asgP5');
+  if(!window._clLoaded||force){
+    if(el&&!window._clRows)el.innerHTML='<div style="padding:18px;color:#94a3b8;font-size:.8rem">콜라주 불러오는 중…</div>';
+    var SEL='id,파일명,폴더,사업부,자산종류,사용여부,저작권유형,출처,초상권플래그,유사군_id,대표컷,재사용_횟수,최근사용일,로컬경로,배정_채널,배정_글url,배정일,배정_슬롯_id,콜라주_원본_ids,모자이크_판정';
+    var ro=await sb.from('mk_photo_assets').select(SEL).in('자산종류',['콜라주','현지참고콜라주']).order('파일명').limit(2000);
+    var rm=await sb.from('mk_photo_assets').select(SEL).eq('용도구분','콜라주전용').order('폴더').limit(2000);
+    if(ro.error||rm.error){if(el)el.innerHTML='<div style="padding:18px;color:#b91c1c;font-size:.8rem">콜라주 로드 실패: '+_esc2((ro.error||rm.error).message)+'</div>';return;}
+    window._clOut=ro.data||[]; window._clRows=rm.data||[]; window._clCnt=window._clOut.length; window._clLoaded=true;
+  }
+  renderCollageOut(); renderCollage();
+}
+/* 산출물 목록 — 원본 연결 여부를 여기서만 볼 수 있다(연결이 없으면 G21 위반을 기계로 못 센다). */
+function renderCollageOut(){
+  var el=document.getElementById('asgP5'); if(!el)return;
+  var rows=window._clOut||[]; var linked=rows.filter(function(r){return r.콜라주_원본_ids&&r.콜라주_원본_ids.length;}).length;
+  var h='<div style="background:#faf5ff;border:1.5px solid #d8b4fe;border-radius:12px;padding:12px 14px;margin-bottom:12px">'
+   +'<div style="font-weight:800;color:#6b21a8;margin-bottom:8px">🧩 콜라주 산출물 '+rows.length+'건 <span style="font-weight:500;font-size:.74rem;color:#64748b">· 원본 연결 '+linked+' / '+rows.length+'</span></div>'
+   +'<div style="background:#fff;border:1px solid #e9d5ff;border-radius:10px;overflow:auto;max-height:420px"><table style="width:100%;border-collapse:collapse;font-size:.76rem">'
+   +'<thead><tr style="background:#faf5ff;color:#6b21a8"><th style="text-align:left;padding:7px 9px">파일명</th><th style="padding:7px 9px">사업부</th><th style="padding:7px 9px">사용</th><th style="padding:7px 9px">원본연결</th><th style="padding:7px 9px">위치</th></tr></thead><tbody>';
+  h+=rows.map(function(r){
+    var lk=(r.콜라주_원본_ids&&r.콜라주_원본_ids.length);
+    return '<tr style="border-top:1px solid #f5f3ff"><td style="padding:6px 9px">'+_esc2(r.파일명)+'</td>'
+      +'<td style="padding:6px 9px;text-align:center">'+_esc2(r.사업부||'-')+'</td>'
+      +'<td style="padding:6px 9px;text-align:center">'+_useB(r.사용여부)+'</td>'
+      +'<td style="padding:6px 9px;text-align:center">'+(lk?'<span style="background:#e0f2fe;color:#075985;font-size:.66rem;font-weight:800;padding:1px 7px;border-radius:5px">원본 '+r.콜라주_원본_ids.length+'장</span>':'<span style="background:#fef9c3;color:#854d0e;font-size:.66rem;font-weight:800;padding:1px 7px;border-radius:5px">🔗 미연결</span>')+'</td>'
+      +'<td style="padding:6px 9px;text-align:center"><button class="filter-btn" style="font-size:.68rem" data-path="'+_esc2(r.로컬경로)+'" onclick="_openLoc(this)">📂</button></td></tr>';
+  }).join('')||'<tr><td colspan="5" style="padding:14px;color:#94a3b8">콜라주 산출물이 없습니다</td></tr>';
+  h+='</tbody></table></div></div><div id="cl-mat"></div>';
+  el.innerHTML=h;
+}
 function clGo(bu,fd){window._clBu=(bu===''?null:(bu||null));window._clFd=(fd===''?null:(fd||null));renderCollage();}
 function clFilter(v){window._clF=v;renderCollage();}
 function _clShort(f){f=String(f||'');var p=f.split('/');return p.length>2?('…/'+p.slice(-2).join('/')):f;}
-function renderCollage(){var el=document.getElementById('asgP5');if(!el)return;var rows=window._clRows||[];
+function renderCollage(){var el=document.getElementById('cl-mat')||document.getElementById('asgP5');if(!el)return;var rows=window._clRows||[];
 if(!rows.length){el.innerHTML='<div style="font-size:.82rem;color:#94a3b8;padding:20px;text-align:center;border:1px dashed #cbd5e1;border-radius:10px">콜라주 전용 사진이 없습니다</div>';return;}
 var F=window._clF||'all';
 var cntBy=function(fn){return rows.filter(fn).length;};
@@ -2520,7 +2521,7 @@ el.innerHTML=h;}
 function _openLoc(el){var p=_normPath(el.getAttribute('data-path')||'');if(!p){if(window.showToast)showToast('경로가 비어 있습니다');return;}try{navigator.clipboard.writeText(p);}catch(e){}if(window.showToast)showToast('경로 복사됨');location.href='rpfolder:'+encodeURIComponent(p);}
 async function loadPhotoCounts(){try{var a=await sb.from('vd_courses').select('id',{count:'exact',head:true});var b=await sb.from('mk_photo_assets').select('id',{count:'exact',head:true}).or('폴더.like.지역별여행%,폴더.like.코스맵%');var c=await sb.from('mk_photo_assets').select('id',{count:'exact',head:true});var d=await sb.from('mk_photo_assets').select('id',{count:'exact',head:true}).eq('용도구분','콜라주전용');window._vcCnt=a.count||0;window._rgCnt=b.count||0;window._ldCnt=c.count||0;window._clCnt=d.count||0;var st=function(id,v){var e=document.getElementById(id);if(e)e.textContent=Number(v||0).toLocaleString();};st('nb_cnt1',window._ldCnt);st('nb_cnt3',window._vcCnt);}catch(e){console.error('photoCounts',e);}}
 async function loadCourses(force){if(!window._vcLoaded||force){var r=await sb.from('vd_courses').select('*').order('지역_도');if(r.error){var e=document.getElementById('asgP3');if(e)e.innerHTML='<div style="padding:18px;color:#b91c1c;font-size:.8rem">코스 로드 실패: '+_esc2(r.error.message)+'</div>';return;}window._vcRows=r.data||[];window._vcLoaded=true;}renderCourses();}
-async function loadRegional(force){if(!window._rgLoaded||force){var r=await sb.from('mk_photo_assets').select('id,파일명,폴더,지역_도,지역_시군,장소명,저작권유형,출처,사용여부,로컬경로,시즌,자산종류').or('폴더.like.지역별여행%,폴더.like.코스맵%').order('지역_도');if(r.error){var e=document.getElementById('asgP4');if(e)e.innerHTML='<div style="padding:18px;color:#b91c1c;font-size:.8rem">지역별 사진 로드 실패: '+_esc2(r.error.message)+'</div>';return;}window._rgRows=r.data||[];window._rgLoaded=true;}renderRegional();}
+async function loadRegional(force){if(!window._rgLoaded||force){window._rgCnt=window._rgCnt||'-';var r=await sb.from('mk_photo_assets').select('id,파일명,폴더,지역_도,지역_시군,장소명,저작권유형,출처,사용여부,로컬경로,시즌,자산종류').or('폴더.like.지역별여행%,폴더.like.코스맵%').order('지역_도');if(r.error){var e=document.getElementById('asgP4');if(e)e.innerHTML='<div style="padding:18px;color:#b91c1c;font-size:.8rem">지역별 사진 로드 실패: '+_esc2(r.error.message)+'</div>';return;}window._rgRows=r.data||[];window._rgCnt=window._rgRows.length;window._rgLoaded=true;}renderRegional();}
 async function vcSaveUrl(id,which){var el=document.getElementById('vcu_'+which+'_'+id);if(!el)return;var v=(el.value||'').trim();var patch={};patch[which==='n'?'네이버_url':'티스토리_url']=v||null;var r=await sb.from('vd_courses').update(patch).eq('id',id);if(r.error){alert('저장 실패: '+r.error.message);return;}if(window.showToast)showToast('저장됨');await loadCourses(true);}
 function vcToggle(id){var e=document.getElementById('vcbox_'+id);if(!e)return;var on=e.style.display==='none';e.style.display=on?'block':'none';var b=document.getElementById('vcbtn_'+id);if(b)b.textContent=on?'🔗 발행 주소 닫기':'🔗 발행 주소';}
 function renderCourses(){var el=document.getElementById('asgP3');if(!el)return;var rows=window._vcRows||[];if(!rows.length){el.innerHTML='<div style="font-size:.82rem;color:#94a3b8;padding:20px;text-align:center;border:1px dashed #cbd5e1;border-radius:10px">등록된 여행코스가 없습니다</div>';return;}
@@ -2566,7 +2567,8 @@ var h=bc+'<div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidde
 arr.forEach(function(r,i){var cm=(r.자산종류==='코스맵');
  h+='<div style="display:flex;gap:10px;align-items:center;padding:8px 13px;'+(i?'border-top:1px solid #f1f5f9':'')+'"><div style="width:34px;height:34px;border-radius:8px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:.95rem;background:'+(cm?'#0ea5e9':'#3b82f6')+';color:#fff">'+(cm?'🗺️':'🏞️')+'</div><div style="flex:1;min-width:0"><div style="font-size:.77rem;font-weight:700">'+_esc2(r.장소명||r.파일명)+' '+_cpB(r.저작권유형)+(cm?' <span style="font-size:.62rem;font-weight:800;background:#e0f2fe;color:#075985;padding:1px 7px;border-radius:6px">코스맵</span>':'')+'</div><div style="font-size:.68rem;color:#94a3b8;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+_esc2(r.파일명)+' · '+_esc2(r.출처||'-')+' · '+_esc2(r.사용여부||'')+'</div></div><button class="filter-btn" style="font-size:.7rem;flex:0 0 auto" data-path="'+_esc2(r.로컬경로)+'" onclick="_openLoc(this)">📂 위치</button></div>';});
 h+='</div>';el.innerHTML=h;}
-function asgTab(i){window._asgTab=i;var ids={'0':'asgP0','1':'asgP1','3':'asgP3'};Object.keys(ids).forEach(function(k){var e=document.getElementById(ids[k]);if(e)e.style.display=(k===i?'block':'none');});var lz=document.getElementById('lg-zone');if(lz)lz.style.display=(i==='9'?'block':'none');var cr=document.getElementById('asgChips');if(cr)cr.style.display=(i==='0'?'flex':'none');if(i==='1'){loadVault();}if(i==='3'){loadCourses();}['0','1','3'].forEach(function(k){var x=document.getElementById('nb_'+k);if(x){x.style.background=(k===i?'#7c3aed':'#fff');x.style.color=(k===i?'#fff':'#475569');}});}
+/* ★2026-08-18: 패널 asgP4(지역별)·asgP5(콜라주)는 만들어져 있었는데 이 맵에 없어 열리지 않았다. */
+function asgTab(i){window._asgTab=i;var ids={'0':'asgP0','1':'asgP1','3':'asgP3','4':'asgP4','5':'asgP5'};Object.keys(ids).forEach(function(k){var e=document.getElementById(ids[k]);if(e)e.style.display=(k===i?'block':'none');});var lz=document.getElementById('lg-zone');if(lz)lz.style.display=(i==='9'?'block':'none');var cr=document.getElementById('asgChips');if(cr)cr.style.display=(i==='0'?'flex':'none');if(i==='1'){loadVault();}if(i==='3'){loadCourses();}if(i==='4'){loadRegional();}if(i==='5'){loadCollage();}['0','1','3','4','5'].forEach(function(k){var x=document.getElementById('nb_'+k);if(x){x.style.background=(k===i?'#7c3aed':'#fff');x.style.color=(k===i?'#fff':'#475569');}});}
 function asgDiv(x){window._asgDv=x;['A','B','C'].forEach(function(k){var e=document.getElementById('dv_'+k);if(e)e.style.display=(k===x?'block':'none');var b=document.getElementById('db_'+k);if(b){b.style.background=(k===x?'#f5f3ff':'#fff');b.style.color=(k===x?'#5b21b6':'#475569');b.style.borderColor=(k===x?'#ddd6fe':'#e2e8f0');}});}
 function renderAssignBoard(){
   var anchor=document.getElementById('pf-kpi');if(!anchor)return;
@@ -2628,7 +2630,7 @@ function renderAssignBoard(){
     if(!gs.length)out='<div style="font-size:.82rem;color:#94a3b8;padding:20px;text-align:center;border:1px dashed #cbd5e1;border-radius:10px">'+(_view==='past'?'지난 글에 배정된 사진이 없습니다':(_view==='all'?'배정된 사진이 없습니다':'발행 예정 글에 삽입 대기 사진이 없습니다 ✅'))+'</div>';
     return out;};
   var h='<div style="background:#fff;border:1.5px solid #93c5fd;border-radius:12px;padding:14px 16px;margin-bottom:14px">';
-  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'+_navBtn('0','📌 오늘 할 일',_wait.length,true)+_navBtn('1','🗂 사진 창고',(window._ldCnt||0).toLocaleString(),false)+_navBtn('3','🗺 여행코스',(window._vcCnt||(window._vcRows||[]).length||'-'),false)+'</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'+_navBtn('0','📌 오늘 할 일',_wait.length,true)+_navBtn('1','🗂 사진 창고',(window._ldCnt||0).toLocaleString(),false)+_navBtn('5','🧩 콜라주',(window._clCnt||'-'),false)+_navBtn('3','🗺 여행코스',(window._vcCnt||(window._vcRows||[]).length||'-'),false)+_navBtn('4','🌏 지역별',(window._rgCnt||'-'),false)+'</div>';
   var lb=(window._asgTab==='1')?['최근 발송','지난 발송','전체']:['발행 예정','지난 글','전체'];
   h+='<div id="asgChips" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">'+_chip('week',lb[0])+_chip('past',lb[1])+_chip('all',lb[2])+'</div>';
   h+='<div id="asgP0">';
@@ -2705,8 +2707,45 @@ async function loadRewriteTab(){
   try{
     const{data,error}=await sb.from('v_rewrite_queue').select('*');
     if(error)throw error;
-    RW.rows=data||[]; renderRwQueue(); rwPick(); loadRwBoard();
+    RW.rows=data||[]; renderRwQueue(); rwPick(); loadRwBoard(); loadRwMedia();
   }catch(e){tb.innerHTML='<tr><td colspan="10" style="color:#dc2626;padding:12px">리라이트 대상 로드 실패: '+rwEsc(e.message||e)+'</td></tr>';}
+}
+/* ★2026-08-18 신설 — 리라이트 슬롯에 배정된 미디어를 화면에 띄운다.
+   연결은 원래부터 있었다(슬롯 15개·미디어 35건). 리라이트 탭이 v_rewrite_queue 하나만 봐서
+   「전체흐림으로 못 쓰게 된 사진이 리라이트 글에 배정돼 있는 것」을 아무도 못 보고 있었다.
+   기존 뷰(7단 CTE)는 건드리지 않고 v_rewrite_media 집계 뷰를 따로 만들어 붙인다. */
+async function loadRwMedia(){
+  var tb=document.getElementById('rw2-body'); if(!tb)return;
+  var host=document.getElementById('rw-media-panel');
+  if(!host){
+    var anchor=tb.closest('table')||tb.parentNode;
+    host=document.createElement('div'); host.id='rw-media-panel';
+    anchor.parentNode.insertBefore(host,anchor);
+  }
+  try{
+    var r=await sb.from('v_rewrite_media').select('*');
+    if(r.error)throw r.error;
+    var rows=r.data||[];
+    var bad=rows.filter(function(x){return (x.가용불가||0)>0||(x.삽입대기||0)>0||(x.콜라주필요||0)>0;});
+    var tot=rows.reduce(function(a,b){return a+(+b.배정미디어||0);},0);
+    if(!rows.length){host.innerHTML='';return;}
+    var h='<div style="background:#f0f9ff;border:1.5px solid #7dd3fc;border-radius:12px;padding:12px 15px;margin-bottom:12px">'
+      +'<div style="font-weight:800;color:#0369a1;margin-bottom:6px">🖼 리라이트 배정 미디어 — 슬롯 '+rows.length+'개 · '+tot+'건</div>';
+    if(!bad.length){
+      h+='<div style="font-size:.78rem;color:#166534">문제 없음 ✅</div>';
+    }else{
+      h+=bad.map(function(x){
+        var b='';
+        if(x.가용불가>0)b+='<span style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;font-size:.65rem;font-weight:800;padding:1px 7px;border-radius:5px;margin-left:5px">⛔ 가용불가 '+x.가용불가+'</span>';
+        if(x.삽입대기>0)b+='<span style="background:#ffedd5;color:#9a3412;border:1px solid #fdba74;font-size:.65rem;font-weight:800;padding:1px 7px;border-radius:5px;margin-left:5px">⏳ 삽입대기 '+x.삽입대기+'</span>';
+        if(x.콜라주필요>0)b+='<span style="background:#fef9c3;color:#854d0e;border:1px solid #fde047;font-size:.65rem;font-weight:800;padding:1px 7px;border-radius:5px;margin-left:5px">🧩 콜라주필요 '+x.콜라주필요+'</span>';
+        return '<div style="font-size:.77rem;color:#334155;padding:4px 0;border-top:1px solid #e0f2fe">'
+          +'<b>'+rwEsc(x.채널||'')+'</b> · '+rwEsc(x.핵심키워드||'')+' <span style="color:#94a3b8">('+rwEsc(String(x.발행일||''))+')</span>'
+          +' <span style="color:#64748b">미디어 '+(x.배정미디어||0)+' — 실사진 '+(x.실사진||0)+' · 콜라주 '+(x.콜라주||0)+' · 제작물 '+(x.제작물||0)+'</span>'+b+'</div>';
+      }).join('');
+    }
+    h+='</div>'; host.innerHTML=h;
+  }catch(e){host.innerHTML='<div style="font-size:.76rem;color:#b91c1c;padding:8px">리라이트 미디어 로드 실패: '+rwEsc(e.message||e)+'</div>';}
 }
 /* ══ ⓪ 이번 주 편성판 (2026-08-17 대표 승인) ══════════════════════════
    v_rewrite_board — 자동 편성된 주 6편을 블A-1/블B-1/블C-1 한 줄씩 보여준다.
@@ -2796,7 +2835,7 @@ async function rwbToggle(slotId){
         h+='<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-top:0.5px dashed #fde68a;font-size:.82rem">'
           +'<span style="flex-shrink:0;margin-top:2px">'+(done?'✅':'☐')+'</span>'
           +'<div style="flex:1;min-width:0"><b>'+rwbEsc(f.항목)+'</b> · 위치: '+rwbEsc(f.위치)
-          +(f.파일?'<div style="font-size:.72rem;color:#7c2d12;margin-top:2px">📎 '+rwbEsc(f.파일)+'</div>':'')
+          +((f.파일경로||f.파일)?'<div style="font-size:.72rem;color:#7c2d12;margin-top:2px">📎 '+rwbEsc(f.파일경로||f.파일)+'</div>':'')
           +(f.캡션?'<div style="font-size:.72rem;color:#78350f">캡션: '+rwbEsc(f.캡션)+'</div>':'')
           +((f.복사문구||f.지시문||f.내용)?'<div style="background:#fff;border:0.5px solid #fde68a;border-radius:6px;padding:6px 9px;margin-top:4px;color:#334155;white-space:pre-wrap">'+rwbEsc(f.복사문구||f.지시문||f.내용)+'</div>':'')
           +'</div>'
@@ -2836,18 +2875,31 @@ async function loadRwResult(){
     var dn=l.filter(function(r){return String(r.판정||'').indexOf('📉')===0;}).length;
     var h='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.82rem;color:#14532d">'
       +'반영 <b>'+l.length+'건</b> · 📈 상승 <b>'+up+'</b> · 📉 하락 <b>'+dn+'</b> · 나머지 보합·대기'
-      +' <span style="color:#4d7c0f">· 「효과 없음」은 다음 회차 후보에서 빼고 키워드 교체로 넘깁니다</span></div>';
+      +' <span style="color:#4d7c0f">· 「효과 없음」은 다음 회차 후보에서 빼고 키워드 교체로 넘깁니다</span>'
+      +'<div style="margin-top:6px;font-size:.76rem;color:#b91c1c">자동 순위 측정이 2026-08-07부터 3채널 동시에 멈춰 있습니다. '
+      +'기한이 지났는데 빈칸인 곳은 「순위 없음」이 아니라 <b>측정 불가</b>입니다. 채널마다 재는 자가 다르니 측정 출처를 같이 보세요'
+      +'(네이버=mk_rank_tracker 실측 / 티스토리=GSC 평균순위 — 두 값을 한 줄에서 비교하지 않습니다).</div></div>';
     h+='<div class="card"><div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr>'
-      +'<th>반영일</th><th>채널</th><th>키워드</th><th>회차</th><th>반영 전</th><th>D+7</th><th>D+14</th><th>현재</th><th>변동</th><th>판정</th><th>라이브</th></tr></thead><tbody>';
+      +'<th>반영일</th><th>채널</th><th>키워드</th><th>회차</th><th>측정 출처</th><th>반영 전</th><th>D+7</th><th>D+14</th><th>현재</th><th>변동</th><th>판정</th><th>라이브</th></tr></thead><tbody>';
+    /* v1.16.0 — 빈칸을 「순위 없음」으로 읽으면 판정이 통째로 틀어진다.
+       기한이 지났는데 값이 없으면 「측정 불가」로 못 박는다(자동 측정 2026-08-07 정지). */
+    var _mt=function(val,due){
+      if(val!=null)return val+'위';
+      if(!due)return '<span style="color:#cbd5e1">-</span>';
+      if(due>new Date().toISOString().slice(0,10))return '<span style="color:#94a3b8;font-size:.72rem">'+due.slice(5)+' 예정</span>';
+      return '<span style="color:#b91c1c;font-size:.72rem;border:1px solid #fecaca;border-radius:8px;padding:1px 6px">측정 불가</span>';
+    };
+    var _dd=function(base,n){if(!base)return null;var d=new Date(String(base).slice(0,10)+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);};
     l.forEach(function(r){
       var v=r.변동;
       h+='<tr><td style="font-size:.76rem">'+rwbEsc(r.반영일||'-')+'</td>'
         +'<td style="font-size:.75rem">'+rwbEsc(r.채널)+'</td>'
         +'<td>'+rwbEsc(r.핵심키워드)+'</td>'
         +'<td style="font-size:.72rem;color:#7e22ce">_r'+(r.회차||2)+'</td>'
+        +'<td style="font-size:.7rem;color:#64748b">'+rwbEsc(r.측정_출처||'-')+'</td>'
         +'<td>'+(r.전_순위==null?'-':r.전_순위+'위')+'</td>'
-        +'<td>'+(r.D7_순위==null?'<span style="color:#cbd5e1">-</span>':r.D7_순위+'위')+'</td>'
-        +'<td>'+(r.D14_순위==null?'<span style="color:#cbd5e1">-</span>':r.D14_순위+'위')+'</td>'
+        +'<td>'+_mt(r.D7_순위,_dd(r.반영일,7))+'</td>'
+        +'<td>'+_mt(r.D14_순위,_dd(r.반영일,14))+'</td>'
         +'<td>'+(r.현재_순위==null?'<span style="color:#cbd5e1">-</span>':'<b>'+r.현재_순위+'위</b>')+'</td>'
         +'<td style="font-weight:800;color:'+(v>0?'#16a34a':(v<0?'#dc2626':'#94a3b8'))+'">'+(v==null?'-':(v>0?'▲'+v:(v<0?'▼'+Math.abs(v):'0')))+'</td>'
         +'<td style="font-size:.76rem">'+rwbEsc(r.판정)+'</td>'
@@ -2914,7 +2966,7 @@ function rwStepBtn(i){var b=document.querySelectorAll('#rw2-steps .filter-btn')[
 /* ── ② 진단판 — RW-1 결손 6항 ── */
 async function rwStart(i){
   var r=RW.rows[i]; if(!r)return; RW.sel=r; RW.diag=null; RW.draft=null;
-  rwStepBtn(1);
+  rwStepBtn(2); /* v1.16.0 off-by-one 수리 — ⓪ 편성판이 앞에 붙으면서 인덱스가 한 칸씩 밀려 있었다 */
   var box=document.getElementById('rw2-d');
   box.innerHTML='<div class="loading" style="padding:26px;text-align:center">원본 실측 중...</div>';
   try{
@@ -2959,7 +3011,7 @@ function renderRwDiag(){
    +'<div style="margin-top:10px;font-size:.78rem;color:#475569">원본 슬롯 <code>'+rwEsc(String(d.원본_슬롯_id||'-')).slice(0,8)+'…</code> · UTM 은 <b>'+rwEsc(String(d.원본_슬롯_id||'-')).slice(0,8)+'…_r'+r.다음_회차+'</b> 로 붙습니다(리라이트 슬롯 아님).</div>'
    +'<div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">'
    +'<button class="btn-sm btn-copy" onclick="rwCopyBrief()">📋 클로드에게 넘길 착수 지시문 복사</button>'
-   +'<button class="btn-sm btn-approve" onclick="rwStepBtn(2)">③ 초안판으로 →</button></div>'
+   +'<button class="btn-sm btn-approve" onclick="rwStepBtn(3)">③ 보완판으로 →</button></div>'
    +'</div></div>';
 }
 async function rwCopyBrief(){
@@ -2972,44 +3024,304 @@ async function rwCopyBrief(){
   showToast('착수 지시문 복사 완료');
 }
 
-/* ── ③ 초안판 — 대표가 직접 수정·저장 ── */
+/* ══════════════════════════════════════════════════════════════════════
+   ③ 보완 — 화면설계 v3 이식 (2026-08-18 · v1.16.0 · 방1)
+   설계 정본: D:\리얼플랜\반영본\20260818_리라이트_보완_화면설계_v3.html
+   바뀐 것 — 좌측 보완 목록을 없애고 본문 하나로 둔다. 보완 10건을 한 건씩
+   붙이지 않고 붙는 자리가 붙어 있는 것끼리 「구간」으로 묶어 통째로 갈아끼운다.
+   손동작 22회 → 10회.
+   ★순위 띠는 출처·측정일을 반드시 병기하고, 자동 측정이 죽은 2026-08-07
+    이후 구간은 「측정 불가」로 표시한다. 빈칸을 「순위 없음」으로 읽으면
+    반영 판정이 통째로 틀어진다(exec_20260818_rewrite_rank_chain §1).
+   ══════════════════════════════════════════════════════════════════════ */
+var RANK_DEAD_FROM='2026-08-07';   /* 이 날부터 3채널 동시에 순위값이 87→16건으로 죽었다 */
+
+function rwToday(){return new Date().toISOString().slice(0,10);}
+function rwDday(base,n){if(!base)return null;var d=new Date(String(base).slice(0,10)+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function rwIsNaver(){return String((RW.draft&&RW.draft.채널)||(RW.sel&&RW.sel.채널)||'').indexOf('네이버')>=0;}
+function rwFxList(){var d=RW.draft;var a=d&&d.자가검증_결과&&d.자가검증_결과.라이브보완;return Array.isArray(a)?a:[];}
+function rwSegs(){return rwFxList().map(function(f,i){return{f:f,i:i};}).filter(function(x){return x.f.구간;});}
+
+/* ── 아주 작은 마크다운 (표·H2·링크만) ── */
+function rwfxMd(t){
+  var out=[],L=String(t==null?'':t).split('\n'),i=0;
+  while(i<L.length){var l=L[i];
+    if(/^\s*\|/.test(l)){var rows=[];while(i<L.length&&/^\s*\|/.test(L[i])){rows.push(L[i]);i++;}
+      var c=function(r){return r.trim().replace(/^\||\|$/g,'').split('|').map(function(x){return x.trim();});};
+      out.push('<table><thead><tr>'+c(rows[0]).map(function(x){return '<th>'+x+'</th>';}).join('')+'</tr></thead><tbody>'
+        +rows.slice(2).map(function(r){return '<tr>'+c(r).map(function(x){return '<td>'+x+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table>');continue;}
+    if(/^#{1,3}\s/.test(l)){out.push('<h2>'+l.replace(/^#{1,3}\s/,'')+'</h2>');i++;continue;}
+    if(l.trim()===''){i++;continue;}
+    out.push('<p>'+l.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>')+'</p>');i++;}
+  return out.join('');
+}
+/* 구간 안에서 신규분만 빨간 글자+밑줄. 배경 채움은 쓰지 않는다(정본 규칙) */
+function rwfxPaint(f){
+  var t=rwEsc(f.복사문구||f.지시문||'');
+  var nw=f.신규;
+  if(nw===true||nw==='ALL'||(Array.isArray(nw)&&nw[0]==='ALL')){
+    return '<div class="new" style="display:block;border-bottom:0">'+rwfxMd(t)+'</div>';
+  }
+  if(Array.isArray(nw)){
+    nw.forEach(function(s){var e=rwEsc(String(s)).trim();if(e&&t.indexOf(e)>=0){t=t.replace(e,'\u2e22N\u2e23'+e+'\u2e22/N\u2e23');}});
+  }
+  var h=rwfxMd(t);
+  if(f.삭제){h=h.replace('<p>','<p><span class="gone">'+rwEsc(f.삭제)+'</span><br>');}
+  return h.replace(/\u2e22N\u2e23/g,'<span class="new">').replace(/\u2e22\/N\u2e23/g,'</span>');
+}
+
+/* ── 순위 띠 — 원본 → 반영 직전 실측 → 반영 → D+7 → D+14 → 판정 ── */
+async function rwLoadChain(){
+  var r=RW.sel, d=RW.draft; RW.chain={원본:{},효과:null};
+  if(!r)return;
+  RW.chain.원본={값:r.순위,출처:'개발자 API(mk_rank_tracker)',측정일:null};
+  try{
+    var q=await sb.from('mk_rank_tracker').select('측정_일자,순위,검색_엔진')
+      .eq('키워드',r.핵심키워드).eq('채널',r.채널).not('순위','is',null)
+      .order('측정_일자',{ascending:false}).limit(1);
+    var t=(q.data||[])[0];
+    if(t){RW.chain.원본.측정일=String(t.측정_일자).slice(0,10);
+          if(t.검색_엔진)RW.chain.원본.출처=rwEsc(t.검색_엔진)+' 개발자 API';}
+  }catch(e){}
+  if(d&&d.id){
+    try{var q2=await sb.from('v_rewrite_effect').select('*').eq('초안_id',d.id).maybeSingle();
+        RW.chain.효과=q2.data||null;}catch(e){}
+  }
+}
+function rwDeadPill(){return '<span class="pill dgr">측정 불가</span>';}
+function rwChainHTML(){
+  var r=RW.sel, d=RW.draft, c=RW.chain||{}, o=c.원본||{}, ef=c.효과||{};
+  var nv=rwIsNaver();
+  var 출처=ef.측정_출처||(nv?o.출처:'GSC 평균순위');
+  var 죽음=(!o.측정일)||(o.측정일>=RANK_DEAD_FROM);
+  var 실측=(d&&d.자가검증_결과&&d.자가검증_결과.반영전_실측)||null;
+  var 손값=(실측&&실측.순위!=null)?실측.순위:(d&&d.반영전_순위!=null?d.반영전_순위:null);
+  var 반영일=ef.반영일||(d&&d.리라이트_반영일)||null;
+  var d7=반영일?rwDday(반영일,7):null, d14=반영일?rwDday(반영일,14):null, tod=rwToday();
+
+  function node(k,v,s,cls){return '<div class="node'+(cls?' '+cls:'')+'"><div class="node-k">'+k+'</div>'
+    +'<div class="node-v">'+v+'</div><div class="node-s">'+s+'</div></div>';}
+  function chev(){return '<div class="chev">&rsaquo;</div>';}
+  function 미래(due,val,label){
+    if(val!=null)return node(label,val+'위','실측 '+due+'<br>출처 '+rwEsc(출처),'');
+    if(!반영일)return node(label,'&mdash;','반영일이 정해지면<br>날짜가 잡힙니다','wait');
+    if(due>tod)return node(label,'&mdash;',due+' 예정<br>아직 이릅니다','wait');
+    return node(label,rwDeadPill(),due+' 지났는데 값이 없습니다<br>대표님 눈으로 세어 주세요','dead');
+  }
+  var h='<div class="chain"><div class="chain-h">순위 체인 — 원본에서 반영 후까지</div><div class="hop">';
+  h+=node('원본 순위',(o.값==null?'&mdash;':o.값+'위'),
+      (죽음?rwDeadPill()+'<br>':'')+'참고값 · '+rwEsc(출처)+'<br>'
+      +(o.측정일?('마지막 실측 '+o.측정일):'실측 기록 없음'),죽음?'dead':'');
+  h+=chev();
+  h+='<div class="node'+(손값!=null?' now':'')+'" id="rw2-node-live"><div class="node-k">반영 직전 실측 — 정본</div>'
+    +'<div class="node-v"><input class="rankin" id="rw2-rk" inputmode="numeric" placeholder="?" value="'+(손값==null?'':손값)+'" oninput="rwJudge()"> 위</div>'
+    +'<div class="node-s">대표님이 네이버에서 직접 세어 보신 값'
+    +(실측&&실측.측정일?('<br>기록 '+rwEsc(실측.측정일)):'')
+    +'<br><button class="fbtn" style="margin-top:4px" onclick="rwSaveMeasured()">이 값으로 기록</button></div></div>';
+  h+=chev();
+  h+=node('반영',(반영일?반영일.slice(5):'&mdash;'),(반영일?'반영 완료':'구간 전건 완료 후<br>자동 기록'),반영일?'':'wait');
+  h+=chev()+미래(d7,ef.D7_순위,'D+7');
+  h+=chev()+미래(d14,ef.D14_순위,'D+14');
+  h+=chev()+node('판정',(ef.판정?rwEsc(ef.판정):'&mdash;'),(ef.변동==null?'2계단 이상 오르면 상승':'변동 '+(ef.변동>0?'▲'+ef.변동:(ef.변동<0?'▼'+Math.abs(ef.변동):'0'))),ef.판정?'':'wait');
+  h+='</div><div class="verdict" id="rw2-vd"></div>'
+    +'<div class="warnline">자동 순위 측정이 '+RANK_DEAD_FROM+'부터 3채널 동시에 멈춰 있습니다(개발자 API가 무관한 글을 상위에 올리는 상태). '
+    +'그래서 위 원본 순위는 <b>참고값</b>이고, <b>반영 직전과 D+7 두 번만</b> 대표님이 눈으로 세어 주시면 그 값이 정본이 됩니다. '
+    +'빈칸은 「순위 없음」이 아니라 「못 쟀음」입니다.</div></div>';
+  return h;
+}
+function rwJudge(){
+  var el=document.getElementById('rw2-vd'), inp=document.getElementById('rw2-rk');
+  if(!el||!inp)return;
+  var n=String(inp.value||'').trim(), v=parseInt(n,10);
+  var box=document.getElementById('rw2-node-live');
+  if(!n||isNaN(v)||v<1){el.className='verdict';
+    el.textContent='반영 직전 순위를 넣으면 이 글을 어떻게 처리할지 정해집니다. 네이버에서 그 키워드로 검색해 우리 글이 몇 번째인지 세어 보세요.';
+    if(box)box.classList.remove('now');rwGateDone();return;}
+  if(box)box.classList.add('now');
+  if(v<=3){el.className='verdict hold';
+    el.innerHTML='<b>'+v+'위 — 오늘 반영하지 않습니다.</b> 1~3위는 건드리면 손해입니다. 아래 구간은 그대로 두고 다음 회차로 미룹니다.';}
+  else if(v<=10){el.className='verdict fix';
+    el.innerHTML='<b>'+v+'위 — 제목 고정, 본문만 보강합니다.</b> 아래 구간을 그대로 진행하시면 됩니다 (RW-4-0).';}
+  else{el.className='verdict retitle';
+    el.innerHTML='<b>'+v+'위 — 제목도 바꿔야 합니다.</b> 첫 구간에 제목 교체가 추가로 들어갑니다. 이 값을 채팅에 알려주시면 제목안을 올립니다.';}
+  rwGateDone();
+}
+async function rwSaveMeasured(){
+  var d=RW.draft; if(!d){showToast('초안이 없습니다');return;}
+  var v=parseInt(String((document.getElementById('rw2-rk')||{}).value||'').trim(),10);
+  if(isNaN(v)||v<1){showToast('순위를 숫자로 넣어주세요');return;}
+  try{
+    var sv=d.자가검증_결과||{};
+    sv.반영전_실측={순위:v,측정일:rwToday(),출처:'대표 육안 실측(네이버 SERP)'};
+    const{error}=await sb.from('mk_blog_drafts').update({반영전_순위:v,자가검증_결과:sv}).eq('id',d.id);
+    if(error)throw error;
+    d.반영전_순위=v; d.자가검증_결과=sv;
+    showToast('반영 직전 순위 '+v+'위 기록 — 이 값이 판정 정본입니다');
+    await renderRwWrite();
+  }catch(e){showToast('기록 실패: '+(e.message||e));}
+}
+
+/* ── ③ 보완 본체 ── */
 async function renderRwWrite(){
   var box=document.getElementById('rw2-w'), r=RW.sel; if(!box)return;
   if(!r){box.innerHTML='<div style="padding:14px;color:#94a3b8">① 대상판에서 글을 먼저 고르세요.</div>';return;}
   if(!r.리라이트_초안_id){
     box.innerHTML='<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:16px 18px">'
       +'<div style="font-weight:800;color:#92400e;margin-bottom:6px">보강본이 아직 없습니다</div>'
-      +'<div style="font-size:.84rem;color:#78350f">② 진단판의 <b>착수 지시문</b>을 복사해 클로드에게 주시면, 보강본 전문을 이 자리에 초안으로 올립니다.<br>'
-      +'적재되면 여기서 <b>직접 고치고 저장</b>하실 수 있습니다.</div></div>';return;
+      +'<div style="font-size:.84rem;color:#78350f">② 진단판의 <b>착수 지시문</b>을 복사해 클로드에게 주시면, 보강본과 구간 보완을 이 자리에 올립니다.</div></div>';return;
   }
-  box.innerHTML='<div class="loading" style="padding:26px;text-align:center">초안 불러오는 중...</div>';
+  box.innerHTML='<div class="loading" style="padding:26px;text-align:center">보완 불러오는 중...</div>';
   try{
-    const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,제목,본문_네이버,본문_티스토리,상태,자가검증_점수,글자수_네이버,글자수_티스토리,리라이트_회차,원본_슬롯_id').eq('id',r.리라이트_초안_id).maybeSingle();
+    const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,제목,본문_네이버,본문_티스토리,상태,자가검증_점수,자가검증_결과,글자수_네이버,글자수_티스토리,리라이트_회차,원본_슬롯_id,반영전_순위,리라이트_반영일,발행_url').eq('id',r.리라이트_초안_id).maybeSingle();
     if(error)throw error;
-    RW.draft=data; renderRwEditor();
-  }catch(e){box.innerHTML='<div style="color:#dc2626;padding:14px">초안 로드 실패: '+rwEsc(e.message||e)+'</div>';}
+    RW.draft=data;
+    await rwLoadChain();
+    renderRwFix();
+  }catch(e){box.innerHTML='<div style="color:#dc2626;padding:14px">보완 로드 실패: '+rwEsc(e.message||e)+'</div>';}
 }
-function rwIsNaver(){return String((RW.draft&&RW.draft.채널)||(RW.sel&&RW.sel.채널)||'').indexOf('네이버')>=0;}
-function renderRwEditor(){
+function renderRwFix(){
   var box=document.getElementById('rw2-w'), d=RW.draft, r=RW.sel; if(!box||!d)return;
+  var segs=rwSegs(), fx=rwFxList();
+  var h='';
+  /* 머리 */
+  h+='<div class="plan"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+    +'<div><div style="font-size:1.15rem;font-weight:800">리라이트 · 보완</div>'
+    +'<div class="hint" style="margin-top:2px">'+rwEsc(d.제목||'')+'</div></div><div class="sp"></div>'
+    +'<span class="pill b">'+rwEsc(d.채널||'')+'</span>'
+    +'<span class="pill">_r'+(d.리라이트_회차||2)+'</span>'
+    +'<span class="pill '+((d.자가검증_점수!=null&&d.자가검증_점수>=90)?'ok':'wn')+'">게이트 '+(d.자가검증_점수==null?'-':d.자가검증_점수)+'</span>'
+    +(r&&r.외부_url?'<a class="fbtn" href="'+rwEsc(r.외부_url)+'" target="_blank" rel="noopener" style="text-decoration:none">라이브 글 열기</a>':'')
+    +'</div></div>';
+  /* 순위 띠 */
+  h+=rwChainHTML();
+
+  if(!segs.length){
+    /* 구간이 아직 없다 — 레거시 항목형 보완을 그대로 보여준다(초안보관소에서 흡수) */
+    h+='<div class="plan"><div class="plan-h">보완 항목 — 구간으로 묶이기 전 상태</div>';
+    if(!fx.length){
+      h+='<div class="hint">이 글에는 보완 항목이 없습니다. 본문 교체만 하면 됩니다. '
+        +'구간으로 묶어 받으시려면 채팅에 <b>「'+rwEsc(d.채널||'')+' 보완 데이터 적재 진행」</b>이라고 주세요.</div>';
+    }else{
+      h+='<div class="hint">아직 구간(A·B·C·D)으로 묶이지 않아 한 건씩 붙이셔야 합니다. '
+        +'채팅에 <b>「'+rwEsc(d.채널||'')+' 보완 데이터 적재 진행」</b>이라고 주시면 구간형으로 바꿔 올립니다.</div>';
+      h+=fx.map(function(f,i){
+        var done=(f.상태==='완료');
+        return '<div class="seg" data-done="'+(done?1:0)+'" style="margin:var(--s2) 0">'
+          +'<div class="seg-h"><span class="seg-k">'+(i+1)+'</span><span class="seg-t">'+rwEsc(f.항목||'')+'</span>'
+          +'<div class="sp"></div><span class="pill">'+rwEsc(f.담당||f.실행자||'대표')+'</span></div>'
+          +'<div class="seg-m">붙일 자리 · <b>'+rwEsc(f.위치||'-')+'</b>'
+          +((f.파일경로||f.파일)?'<div class="ph-l">파일 · '+rwEsc(f.파일경로||f.파일)+'</div>':'')
+          +(f.캡션?'<div class="ph-l">캡션 · '+rwEsc(f.캡션)+'</div>':'')+'</div>'
+          +'<div class="seg-p">'+rwfxMd(rwEsc(f.복사문구||f.지시문||f.내용||''))+'</div>'
+          +'<div class="seg-f"><button class="fbtn p" onclick="rwFxCopy('+i+')">복사</button><div class="sp"></div>'
+          +(done?'<span class="pill ok">완료</span>':'<button class="fbtn p" onclick="rwFxDone('+i+',this)">이 항목 반영했습니다</button>')
+          +'</div></div>';
+      }).join('');
+    }
+    h+='</div>';
+  }else{
+    /* 구간형 — 본문 하나, 위에서 아래로 한 번만 훑는다 */
+    var 사진수=segs.reduce(function(a,x){return a+((Array.isArray(x.f.사진)?x.f.사진.length:0));},0);
+    h+='<div class="plan"><div class="plan-h">오늘 하실 일 — 복사·붙여넣기 '+segs.length+'회'+(사진수?(' + 사진 '+사진수+'장'):'')+'</div><div class="steps">';
+    h+=segs.map(function(x,n){
+      return (n?'<span class="arrow">&rsaquo;</span>':'')
+        +'<button class="step" id="rw2-st-'+x.f.구간+'" data-done="'+(x.f.상태==='완료'?1:0)+'" onclick="rwSegJump(\''+x.f.구간+'\')">'
+        +'<span class="k">'+rwEsc(x.f.구간)+'</span><span>'+rwEsc(x.f.항목||'')+'</span></button>';
+    }).join('');
+    h+='</div><div class="hint">보완을 한 건씩 붙이지 않습니다. 붙는 자리가 붙어 있는 것끼리 묶어 <b>구간 통째로</b> 갈아끼웁니다. '
+      +'구간 안에서 <span class="new">빨간 밑줄</span>이 새로 들어가는 부분이고, 나머지는 지금 라이브에 있는 글 그대로입니다.</div></div>';
+
+    h+='<div class="doc"><div style="font-size:var(--f-h2);font-weight:800">'+rwEsc(d.제목||'')+'</div>';
+    segs.forEach(function(x,n){
+      var f=x.f, done=(f.상태==='완료');
+      if(f.앞구간설명)h+='<div class="keep">'+rwEsc(f.앞구간설명)+'</div>';
+      h+='<div class="seg" id="rw2-seg-'+f.구간+'" data-done="'+(done?1:0)+'">'
+        +'<div class="seg-h"><span class="seg-k">'+rwEsc(f.구간)+'</span>'
+        +'<span class="seg-t">'+rwEsc(f.항목||'')+'</span><div class="sp"></div>'
+        +(f.지시문?'<span class="pill b">'+rwEsc(f.지시문)+'</span>':'')+'</div>'
+        +'<div class="seg-m">붙일 자리 · <b>'+rwEsc(f.위치||'-')+'</b>'
+        +(f.주의?'<br>'+rwEsc(f.주의):'')
+        +'<div class="legend"><i class="sw-new">빨간 밑줄</i> 새로 들어가는 부분'
+        +(f.삭제?'<i class="sw-gone">취소선</i> 지우는 문장':'')+'</div></div>'
+        +'<div class="seg-p">'+rwfxPaint(f)+'</div>';
+      (Array.isArray(f.사진)?f.사진:[]).forEach(function(p,pi){
+        h+='<div class="ph"><div class="ph-t">'+rwEsc(p.번호||(f.구간+'-'+(pi+1)))+'</div><div class="ph-b">'
+          +'<div class="ph-n">'+rwEsc(p.파일경로||p.파일||'')+'</div>'
+          +(p.위치?'<div class="ph-l">넣을 자리 · '+rwEsc(p.위치)+'</div>':'')
+          +(p.캡션?'<div class="ph-l">캡션 · '+rwEsc(p.캡션)+'</div>':'')
+          +'</div><div style="display:flex;flex-direction:column;gap:4px">'
+          +'<button class="fbtn" onclick="rwFxCopyPhoto('+x.i+','+pi+',\'f\')">경로</button>'
+          +'<button class="fbtn" onclick="rwFxCopyPhoto('+x.i+','+pi+',\'c\')">캡션</button></div></div>';
+      });
+      h+='<div class="seg-f"><button class="fbtn p big" onclick="rwFxCopy('+x.i+')">이 구간 통째로 복사</button><div class="sp"></div>'
+        +'<button class="fbtn'+(done?'':' p')+'" onclick="rwFxDone('+x.i+',this)">'+(done?'되돌리기':'이 구간 반영했습니다')+'</button></div></div>';
+      if(f.뒤구간설명)h+='<div class="keep">'+rwEsc(f.뒤구간설명)+'</div>';
+    });
+    h+='</div>';
+    h+='<div class="done-bar"><button class="fbtn p big" id="rw2-pubbtn" disabled onclick="rwPublish(false)">반영 완료 — 반영일·직전 순위 기록</button>'
+      +'<div class="hint" id="rw2-pubnote"></div></div>';
+  }
+  /* 원문 직접 편집 — 접어둔다. 구간이 정본이고 원문 편집은 예외 경로다 */
   var nv=rwIsNaver(), body=nv?(d.본문_네이버||''):(d.본문_티스토리||'');
-  box.innerHTML='<div class="card"><div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px">'
-   +'<h3>③ 초안 — 대표님이 직접 고치는 자리</h3>'
-   +'<span style="font-size:.74rem;color:#64748b">'+rwEsc(d.채널)+' · '+rwEsc(d.상태)+' · 점수 '+(d.자가검증_점수==null?'-':d.자가검증_점수)+'</span></div>'
-   +'<div style="padding:12px 16px">'
-   +'<div style="font-weight:700;font-size:.92rem;margin-bottom:8px">'+rwEsc(d.제목||'')+'</div>'
-   +'<div style="font-size:.75rem;color:#64748b;margin-bottom:6px">원본 대비 자수 <b id="rw2-len">'+body.length.toLocaleString()+'</b>자 · '
-   +'<a href="'+rwEsc(r?r.외부_url:'#')+'" target="_blank">🔗 원본 글 열기</a> — 기존 H2·이미지는 지우지 않고 <b>추가</b>합니다</div>'
-   +'<textarea id="rw2-body-edit" oninput="var e=document.getElementById(\'rw2-len\');if(e)e.textContent=this.value.length.toLocaleString();" '
-   +'style="width:100%;height:46vh;font-size:.86rem;line-height:1.65;padding:12px;border:1px solid #cbd5e1;border-radius:10px;font-family:inherit">'+rwEsc(body)+'</textarea>'
-   +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">'
-   +'<button class="btn-sm btn-approve" onclick="rwSaveBody()">💾 저장</button>'
-   +'<button class="btn-sm btn-copy" onclick="rwRecheck()">🔍 게이트 재검사</button><button class="btn-sm btn-copy" onclick="rwToneCheck()">🎨 톤만 보기</button>'
-   +'<button class="btn-sm btn-copy" onclick="rwCopyBody(this)">📋 본문 전체 복사</button>'
-   +(d.상태==='draft'?'<button class="btn-sm btn-approve" onclick="approveDraft(\''+d.id+'\')">✅ 승인</button><button class="btn-sm btn-reject" onclick="openReject(\''+d.id+'\')">❌ 반려</button>':'')
-   +'<button class="btn-sm btn-copy" onclick="rwStepBtn(3)">④ 반영판으로 →</button></div>'
-   +'<div id="rw2-check" style="margin-top:12px"></div>'
-   +'</div></div>';
+  h+='<details style="margin-top:var(--s2)"'+(segs.length?'':' open')+'>'
+    +'<summary style="cursor:pointer;font-size:var(--f-s);font-weight:700;color:var(--blue-d);padding:var(--s1) 0">원문 직접 편집 — 보강본 전문을 손보실 때만 펼치세요</summary>'
+    +'<div class="plan" style="margin-top:var(--s1)">'
+    +'<div class="hint" style="margin:0 0 8px">자수 <b id="rw2-len">'+body.length.toLocaleString()+'</b>자 · 기존 H2·이미지는 지우지 않고 <b>추가</b>합니다</div>'
+    +'<textarea id="rw2-body-edit" oninput="var e=document.getElementById(\'rw2-len\');if(e)e.textContent=this.value.length.toLocaleString();" '
+    +'style="width:100%;height:40vh;font-size:.86rem;line-height:1.65;padding:12px;border:1px solid var(--line);border-radius:10px;font-family:inherit">'+rwEsc(body)+'</textarea>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">'
+    +'<button class="fbtn p" onclick="rwSaveBody()">저장</button>'
+    +'<button class="fbtn" onclick="rwRecheck()">게이트 재검사</button>'
+    +'<button class="fbtn" onclick="rwToneCheck()">톤만 보기</button>'
+    +'<button class="fbtn" onclick="rwCopyBody(this)">본문 전체 복사</button>'
+    +(d.상태==='draft'?'<button class="fbtn p" onclick="approveDraft(\''+d.id+'\')">승인</button><button class="fbtn" onclick="openReject(\''+d.id+'\')">반려</button>':'')
+    +'<button class="fbtn" onclick="rwStepBtn(4)">④ 반영 점검으로 &rarr;</button></div>'
+    +'<div id="rw2-check" style="margin-top:12px"></div></div></details>';
+  box.innerHTML=h;
+  rwJudge();
+  rwGateDone();
+}
+function rwSegJump(k){var e=document.getElementById('rw2-seg-'+k);if(e)e.scrollIntoView({block:'start',behavior:'smooth'});}
+function rwGateDone(){
+  var b=document.getElementById('rw2-pubbtn'), note=document.getElementById('rw2-pubnote');
+  if(!b)return;
+  var segs=rwSegs(), all=segs.length>0&&segs.every(function(x){return x.f.상태==='완료';});
+  var 실측=parseInt(String((document.getElementById('rw2-rk')||{}).value||'').trim(),10);
+  var 손기록=!isNaN(실측)&&실측>=1;
+  b.disabled=!(all&&손기록);
+  if(note)note.textContent=!all?'남은 구간을 끝내면 반영 완료가 열립니다.'
+    :(!손기록?'반영 직전 순위를 넣고 「이 값으로 기록」을 눌러야 완료가 열립니다. 자동 측정이 죽어 있어 이 값이 유일한 정본입니다.'
+            :'구간 전건 반영 완료. 완료를 찍으면 반영일과 직전 순위가 스냅샷으로 남습니다.');
+}
+async function rwFxCopyText(s,label){
+  try{await navigator.clipboard.writeText(s);}catch(e){
+    var a=document.createElement('textarea');a.value=s;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();}
+  showToast((label||'구간')+' 복사 — '+String(s).length.toLocaleString()+'자');
+}
+function rwFxCopy(i){var f=rwFxList()[i];if(!f){showToast('항목 없음');return;}rwFxCopyText(f.복사문구||f.지시문||f.내용||'',(f.구간||'')+' 구간');}
+function rwFxCopyPhoto(i,pi,kind){
+  var f=rwFxList()[i], p=f&&Array.isArray(f.사진)?f.사진[pi]:null; if(!p)return;
+  rwFxCopyText(kind==='c'?(p.캡션||''):(p.파일경로||p.파일||''),kind==='c'?'캡션':'경로');
+}
+async function rwFxDone(i,el){
+  var d=RW.draft; if(!d)return;
+  try{
+    const{data}=await sb.from('mk_blog_drafts').select('자가검증_결과').eq('id',d.id).maybeSingle();
+    var sv=(data&&data.자가검증_결과)||{}; if(!Array.isArray(sv.라이브보완)){showToast('보완 데이터 없음');return;}
+    var now=(sv.라이브보완[i].상태!=='완료');
+    sv.라이브보완[i].상태=now?'완료':'대기';
+    if(now)sv.라이브보완[i].완료일=rwToday(); else delete sv.라이브보완[i].완료일;
+    const{error}=await sb.from('mk_blog_drafts').update({자가검증_결과:sv}).eq('id',d.id);
+    if(error)throw error;
+    d.자가검증_결과=sv;
+    showToast(now?'구간 반영 완료':'되돌렸습니다');
+    var seg=document.getElementById('rw2-seg-'+(sv.라이브보완[i].구간||''));
+    var st=document.getElementById('rw2-st-'+(sv.라이브보완[i].구간||''));
+    if(seg)seg.dataset.done=now?'1':'0';
+    if(st)st.dataset.done=now?'1':'0';
+    if(el){el.textContent=now?'되돌리기':'이 구간 반영했습니다';el.className='fbtn'+(now?'':' p');}
+    rwGateDone();
+  }catch(e){showToast('처리 실패: '+(e.message||e));}
 }
 async function rwSaveBody(quiet){
   var d=RW.draft; if(!d)return;
@@ -3091,11 +3403,17 @@ async function renderRwPublish(){
      +'<table class="tbl"><thead><tr><th>미디어</th><th>요구</th><th>배정</th><th>판정</th></tr></thead><tbody>'
      +'<tr><td>실사진(G19)</td><td>'+need['실사진']+'</td><td>'+got['실사진']+'</td><td>'+(got['실사진']>=need['실사진']?'✅':'❌')+'</td></tr>'
      +'<tr><td>제작물(G21) — '+rwEsc(need['제작물종류']||'')+'</td><td>'+need['제작물']+'</td><td>'+got['제작물']+'</td><td>'+(got['제작물']>=need['제작물']?'✅':'❌')+'</td></tr>'
-     +'<tr><td>영상 <span style="font-size:.66rem;background:#fef3c7;color:#78350f;padding:1px 6px;border-radius:6px">권장</span>'+(nv?'':' (티스토리는 2026-02-23 업로드 폐지)')+'</td><td>'+(need['영상_권장']||0)+'</td><td>'+got['영상']+'</td><td>'+(got['영상']>=(need['영상_권장']||0)?'✅':'<span style="color:#b45309">➖ 권장 미달</span>')+'</td></tr>'
+     /* v1.16.0 수리 — 구필드 영상_권장은 v4.2에 없다. 요구.영상(건수) + 요구.영상정책(문구)이 정본이다 */
+     +'<tr><td>영상'+(nv?'':' (티스토리는 2026-02-23 업로드 폐지)')+'<div style="font-size:.7rem;color:#64748b">'+rwEsc(need['영상정책']||'')+'</div></td><td>'+(need['영상']||0)+'</td><td>'+(got['영상']||0)+'</td><td>'+((got['영상']||0)>=(need['영상']||0)?'✅':'<span style="color:#b45309">➖ 정책 확인</span>')+'</td></tr>'
      +'</tbody></table>'
+     /* v1.16.0 수리 — 구필드 미사용재고 → 배정가능재고 */
      +(bad.length?'<div style="margin-top:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 13px;font-size:.82rem;color:#7f1d1d">'
-        +'<b>미달 — 라이브 반영 전에 채웁니다.</b> 미사용 실사진 재고 '+(got['미사용재고']||0)+'장이 남아 있습니다(새로 만들기 전에 재고 먼저).<ul style="margin:6px 0 0 16px">'
+        +'<b>미달 — 라이브 반영 전에 채웁니다.</b> 배정 가능한 실사진 재고 '+(got['배정가능재고']||0)+'장이 남아 있습니다(새로 만들기 전에 재고 먼저).<ul style="margin:6px 0 0 16px">'
         +bad.map(function(x){return '<li>'+rwEsc(x)+'</li>';}).join('')+'</ul></div>':'')
+     +(((data.권장미달||[]).length)?'<div style="margin-top:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:9px 12px;font-size:.8rem;color:#78350f">'
+        +'<b>권장 미달 — 막지는 않습니다</b><ul style="margin:5px 0 0 16px">'+(data.권장미달||[]).map(function(x){return '<li>'+rwEsc(x)+'</li>';}).join('')+'</ul></div>':'')
+     +(((got['초상권미판정잠김']||0)>0||(got['화면미표시자산']||0)>0)?'<div style="margin-top:8px;font-size:.78rem;color:#b45309">'
+        +'초상권 미판정 잠김 '+(got['초상권미판정잠김']||0)+'건 · 화면 미표시 자산 '+(got['화면미표시자산']||0)+'건 — 미디어 관리에서 먼저 풉니다</div>':'')
      +'<div style="margin-top:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:11px 14px;font-size:.82rem;color:#1e3a8a">'
      +'<b>라이브 반영 분담</b><table class="tbl" style="margin-top:6px"><thead><tr><th>채널</th><th>텍스트</th><th>이미지·영상</th></tr></thead><tbody>'
      +'<tr><td>네이버</td><td>대표 직접</td><td>대표 직접</td></tr>'
@@ -3158,7 +3476,32 @@ function card(t,v,sub){return '<div style="background:#fff;border:1px solid #e2e
 function copy(txt){try{navigator.clipboard.writeText(txt);}catch(e){}}
 window.mdCopy=function(s){copy(s);};
 
+/* ★2026-08-18 신설 — 탭마다 자기 숫자를 본다. 전에는 4탭이 같은 카드 5개를 봤다. */
+window.mdKpi=function(tab){
+  var k=document.getElementById('md-kpi'); if(!k)return;
+  var c=_md.cnt||{}, d=_md.designs||[], st=_md.stock||[];
+  if(tab==='photo'){
+    k.innerHTML=card('📷 실사진',(c.사진||0)+'장','대장 정본 mk_photo_assets')
+      +card('📦 미사용',(c.미사용||0)+'장','사용여부 기준')
+      +card('⏳ 삽입 대기',(c.대기||0)+'장','후보선정 · 오늘 할 일')
+      +card('✅ 삽입 완료',(c.사용||0)+'장','사용됨')
+      +card('🧩 콜라주',(c.콜라주||0)+'건','산출물 · 재료 아님')
+      +card('⛔ 가용 불가',(c.불가||0)+'장','전체흐림 — 못 씀')
+      +card('👁 육안 확인',(c.육안||0)+'장','기계로 못 가름');
+  }else if(tab==='bgm'){
+    k.innerHTML=card('🎵 보유 BGM',_md.bgm.length+'곡','6분류 실측')
+      +card('🗂 분류','6종','활력·진행·여행·설명·의전·홍보');
+  }else if(tab==='design'){
+    k.innerHTML=card('📐 설계·제작물',(c.설계||0)+'건','코스맵·배치도·큐시트·카드')
+      +card('🧩 콜라주',(c.콜라주||0)+'건','블로그 본문용');
+  }else{
+    k.innerHTML=card('🎬 완성 영상',d.length+'편','v2 '+d.filter(function(x){return x.버전==='v2';}).length+' · v1 '+d.filter(function(x){return x.버전==='v1';}).length)
+      +card('🎥 현장영상',st.length+'개',Math.round(_md.secs||0)+'초 · 앰비언스 원천')
+      +card('💵 누적 지출','$'+(d.reduce(function(a,b){return a+(+b.지출_금액_usd||0);},0)).toFixed(2),'재고 우선 원칙');
+  }
+};
 window.mediaTab=function(k,el){
+  window._mdTab=k; if(window.mdKpi)window.mdKpi(k);
   ['video','photo','bgm','design'].forEach(function(x){
     var p=document.getElementById('md-'+x); if(p)p.style.display=(x===k?'':'none');});
   document.querySelectorAll('#t14 .md-t').forEach(function(b){b.classList.remove('active');});
@@ -3174,17 +3517,22 @@ window.mediaInit=async function(force){
     var r2=await sb.from('mk_bgm_library').select('*').order('분류').order('활력점수',{ascending:false});
     var r3=await sb.from('mk_photo_assets').select('파일명,로컬경로,사업부,장면,자산종류,길이_초,영상_규격,영상_메타,크기,사용여부,최근사용일').eq('자산종류','현장영상').order('파일명');
     var r4=await sb.from('mk_photo_assets').select('id',{count:'exact',head:true}).eq('자산종류','사진');
-    var r5=await sb.from('mk_photo_assets').select('id',{count:'exact',head:true}).eq('자산종류','사진').or('재사용_횟수.is.null,재사용_횟수.eq.0');
+    /* ★2026-08-18 수리: 미사용을 재사용_횟수로 세면 「한 번 쓴 사진」도 미사용으로 잡힌다(2,837 vs 실제 2,693).
+       사용여부(미사용·후보선정·사용됨·배제)가 정본이다. */
+    var r5=await sb.from('mk_photo_assets').select('id',{count:'exact',head:true}).eq('자산종류','사진').eq('사용여부','미사용');
+    var r6=await sb.from('mk_photo_assets').select('id',{count:'exact',head:true}).eq('자산종류','사진').eq('사용여부','후보선정');
+    var r7=await sb.from('mk_photo_assets').select('id',{count:'exact',head:true}).eq('자산종류','사진').eq('사용여부','사용됨');
+    var r8=await sb.from('mk_photo_assets').select('id',{count:'exact',head:true}).in('자산종류',['콜라주','현지참고콜라주']);
+    var r9=await sb.from('mk_photo_assets').select('id',{count:'exact',head:true}).eq('자산종류','사진').eq('모자이크_판정->>가용등급','불가');
+    var r10=await sb.from('mk_photo_assets').select('id',{count:'exact',head:true}).eq('모자이크_판정->>육안확인필요','true');
+    var r11=await sb.from('mk_photo_assets').select('id',{count:'exact',head:true}).in('자산종류',['코스맵','단체코스맵','배치도','큐시트','자료카드','성과카드','자가진단카드']);
+    _md.cnt={사진:r4.count||0,미사용:r5.count||0,대기:r6.count||0,사용:r7.count||0,
+             콜라주:r8.count||0,불가:r9.count||0,육안:r10.count||0,설계:r11.count||0};
     if(r1.error)throw r1.error; if(r2.error)throw r2.error; if(r3.error)throw r3.error;
     _md.designs=r1.data||[]; _md.bgm=r2.data||[]; _md.stock=r3.data||[];
     var secs=_md.stock.reduce(function(a,b){return a+(+b.길이_초||0);},0);
-    var k=document.getElementById('md-kpi');
-    if(k)k.innerHTML=
-      card('🎬 완성 영상',_md.designs.length+'편','v2 '+_md.designs.filter(function(d){return d.버전==='v2';}).length+' · v1 '+_md.designs.filter(function(d){return d.버전==='v1';}).length)
-     +card('🎥 현장영상',_md.stock.length+'개',Math.round(secs)+'초 · 앰비언스 원천')
-     +card('📷 실사진',(r4.count||0)+'장','미사용 '+(r5.count||0)+'장')
-     +card('🎵 보유 BGM',_md.bgm.length+'곡','6분류 실측')
-     +card('💵 누적 지출','$'+(_md.designs.reduce(function(a,b){return a+(+b.지출_금액_usd||0);},0)).toFixed(2),'재고 우선 원칙');
+    _md.secs=secs;
+    window.mdKpi(window._mdTab||'video');
     renderVideos(); renderStock(); renderBgm(); renderDesigns();
   }catch(e){
     var b=document.getElementById('md-video-list');
@@ -3659,234 +4007,6 @@ document.addEventListener('change',function(e){
   if(e.target&&e.target.id==='plan-sel')setTimeout(schActions,900);
 },true);
 })();
-</script>
-
-<script>
-/* ===== v1.15.0 키워드·인사이트 뷰 4종 탭 =====
-   정본: realplan-keyword 스킬 · 뷰 v_kw_4gate / v_kw_ai_intent / v_kw_question_mine / v_kw_revenue_attrib
-   ★PostgREST는 .limit() 없이도 1000행에서 잘린다 — kwFetchAll()이 range 루프로 전량을 받는다. */
-function kwE(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function kwN(v){return (v==null||v==='')?'-':Number(v).toLocaleString();}
-function kwTick(b){return b===true?'<span style="color:#059669;font-weight:700">✅</span>':(b===false?'<span style="color:#dc2626">⛔</span>':'<span style="color:#94a3b8">–</span>');}
-function kwKpi(l,v,sub,col){return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px"><div style="font-size:.72rem;color:#64748b">'+l+'</div><div style="font-size:1.35rem;font-weight:800;color:'+(col||'#0f172a')+'">'+v+'</div><div style="font-size:.7rem;color:#94a3b8">'+(sub||'')+'</div></div>';}
-async function kwFetchAll(view,sel,ordCol,asc){
-  var out=[],fr=0,PG=1000;
-  while(true){
-    var q=sb.from(view).select(sel);
-    if(ordCol)q=q.order(ordCol,{ascending:!!asc,nullsFirst:false});
-    var r=await q.range(fr,fr+PG-1);
-    if(r.error)throw r.error;
-    var d=r.data||[]; out=out.concat(d);
-    if(d.length<PG)break; fr+=PG;
-    if(fr>20000)break;
-  }
-  return out;
-}
-function kwPager(id,total,page,per,fn){
-  var el=document.getElementById(id); if(!el)return;
-  var last=Math.max(1,Math.ceil(total/per));
-  if(total<=per){el.innerHTML='<span style="font-size:.75rem;color:#94a3b8">'+total.toLocaleString()+'건</span>';return;}
-  var b=function(p,t,on){return '<button class="filter-btn'+(on?' active':'')+'" style="min-width:34px" onclick="'+fn+'('+p+')">'+t+'</button>';};
-  var h=b(Math.max(1,page-1),'‹',false);
-  var s=Math.max(1,page-2),e=Math.min(last,s+4); s=Math.max(1,e-4);
-  for(var i=s;i<=e;i++)h+=b(i,i,i===page);
-  h+=b(Math.min(last,page+1),'›',false);
-  el.innerHTML='<div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;align-items:center">'+h+'<span style="font-size:.75rem;color:#94a3b8;margin-left:8px">'+total.toLocaleString()+'건 · '+page+'/'+last+'쪽</span></div>';
-}
-/* --- 하위탭 --- */
-function kiTab(k,el){
-  var m={overview:'ki-overview','4gate':'ki-4gate',intent:'ki-intent',quest:'ki-quest',rev:'ki-rev'};
-  Object.keys(m).forEach(function(x){var d=document.getElementById(m[x]); if(d)d.style.display=(x===k?'':'none');});
-  document.querySelectorAll('#ki-subtab .filter-btn').forEach(function(b){b.classList.remove('active');});
-  if(el)el.classList.add('active');
-  if(k==='4gate'&&!window._kg)loadKw4gate();
-  if(k==='intent'&&!window._kn)loadKwIntent();
-  if(k==='quest'&&!window._kq)loadKwQuest();
-  if(k==='rev'&&!window._kr)loadKwRev();
-}
-/* --- ① 4박자 게이트 --- */
-var _kgBu='전체',_kgSt='전체',_kgPage=1,_KGP=60;
-function kgSetBu(v,el){_kgBu=v;_kgPage=1;document.querySelectorAll('.kg-bu').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');renderKw4gate();}
-function kgSetSt(v,el){_kgSt=v;_kgPage=1;document.querySelectorAll('.kg-st').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');renderKw4gate();}
-function kgGo(p){_kgPage=p;renderKw4gate();}
-async function loadKw4gate(){
-  var tb=document.getElementById('kg-body'); if(!tb)return;
-  tb.innerHTML='<tr><td colspan="12" class="loading">로딩 중...</td></tr>';
-  try{
-    window._kg=await kwFetchAll('v_kw_4gate','사업부,축,키워드,검색량,G1_검색량,G2_G15통과,G3_SERP실측,G4_AI고객의도,4박자통과,기회점수,액션,커버,유입비율합','기회점수',false);
-    var d=window._kg;
-    var pass=d.filter(function(x){return x['4박자통과']}).length;
-    var blocked=d.filter(function(x){return x.G2_G15통과===false}).length;
-    var nojudge=d.filter(function(x){return x.G4_AI고객의도==null}).length;
-    document.getElementById('kg-kpi').innerHTML=
-      kwKpi('대상 키워드',d.length.toLocaleString()+'건','v_kw_4gate')
-     +kwKpi('4박자 통과',pass+'건','넷 다 통과 = 슬롯 가능',pass?'#059669':'#dc2626')
-     +kwKpi('G15 자기잠식 차단',blocked.toLocaleString()+'건','★차단은 의도를 안 본다 — 사람이 본다','#dc2626')
-     +kwKpi('G4 AI 미판정',nojudge.toLocaleString()+'건','keyword-research EF로 8개씩','#d97706');
-    renderKw4gate();
-  }catch(e){tb.innerHTML='<tr><td colspan="12" style="color:#dc2626;padding:12px">4박자 로드 실패: '+kwE(e.message||e)+'</td></tr>';}
-}
-function renderKw4gate(){
-  var tb=document.getElementById('kg-body'); if(!tb||!window._kg)return;
-  var q=(document.getElementById('kg-q')||{}).value||'';
-  var rows=window._kg.filter(function(x){
-    if(_kgBu!=='전체'&&x.사업부!==_kgBu)return false;
-    if(_kgSt==='통과'&&!x['4박자통과'])return false;
-    if(_kgSt==='즉시'&&String(x.액션||'').indexOf('즉시')<0)return false;
-    if(_kgSt==='미판정'&&x.G4_AI고객의도!=null)return false;
-    if(_kgSt==='차단'&&x.G2_G15통과!==false)return false;
-    if(q&&String(x.키워드||'').indexOf(q)<0)return false;
-    return true;
-  });
-  var tot=rows.length,st=(_kgPage-1)*_KGP;
-  var page=rows.slice(st,st+_KGP);
-  tb.innerHTML=page.length?page.map(function(x){
-    var g4=x.G4_AI고객의도;
-    var g4h=g4==null?'<span style="color:#94a3b8">미판정</span>':'<b style="color:'+(g4>=5?'#059669':'#dc2626')+'">'+g4+'/10</b>';
-    var ok=x['4박자통과'];
-    return '<tr'+(ok?' style="background:#f0fdf4"':'')+'>'
-      +'<td>'+kwE(x.사업부)+'</td><td style="font-size:.74rem;color:#64748b">'+kwE(x.축)+'</td>'
-      +'<td style="font-weight:600">'+kwE(x.키워드)+'</td><td>'+kwN(x.검색량)+'</td>'
-      +'<td style="text-align:center">'+kwTick(x.G1_검색량)+'</td>'
-      +'<td style="text-align:center">'+kwTick(x.G2_G15통과)+'</td>'
-      +'<td style="text-align:center">'+kwTick(x.G3_SERP실측)+'</td>'
-      +'<td style="text-align:center">'+g4h+'</td>'
-      +'<td style="text-align:center;font-weight:700">'+(ok?'<span style="color:#059669">✅</span>':'<span style="color:#cbd5e1">–</span>')+'</td>'
-      +'<td>'+(x.기회점수==null?'-':x.기회점수)+'</td>'
-      +'<td style="font-size:.74rem">'+kwE(x.액션)+'</td>'
-      +'<td style="text-align:center">'+(x.커버?'<span style="color:#059669">✓</span>':'<span style="color:#d97706">🕳️</span>')+'</td></tr>';
-  }).join(''):'<tr><td colspan="12" style="text-align:center;color:#94a3b8;padding:14px">해당 없음</td></tr>';
-  kwPager('kg-pager',tot,_kgPage,_KGP,'kgGo');
-}
-/* --- ② AI 의도판정 --- */
-var _knBu='전체';
-function knSetBu(v,el){_knBu=v;document.querySelectorAll('.kn-bu').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');renderKwIntent();}
-async function loadKwIntent(){
-  var tb=document.getElementById('kn-body'); if(!tb)return;
-  tb.innerHTML='<tr><td colspan="10" class="loading">로딩 중...</td></tr>';
-  try{
-    window._kn=await kwFetchAll('v_kw_ai_intent','사업부,축,키워드,검색량,고객의도_건수,표본,의도유형,판정,판정사유,검증출처,검증일,슬롯사용중','검증일',false);
-    var d=window._kn;
-    var ok=d.filter(function(x){return (x.고객의도_건수||0)>=5}).length;
-    var no=d.filter(function(x){return String(x.판정||'').indexOf('배제')>=0}).length;
-    var used=d.filter(function(x){return x.슬롯사용중}).length;
-    document.getElementById('kn-kpi').innerHTML=
-      kwKpi('판정 완료',d.length+'건','mk_keyword_serp_intent')
-     +kwKpi('고객의도 5↑ 통과',ok+'건','G4 통과선','#059669')
-     +kwKpi('❌ 배제',no+'건','다시 꺼내지 않는다','#dc2626')
-     +kwKpi('슬롯 사용 중',used+'건','편성 반영분');
-    renderKwIntent();
-  }catch(e){tb.innerHTML='<tr><td colspan="10" style="color:#dc2626;padding:12px">AI 판정 로드 실패: '+kwE(e.message||e)+'</td></tr>';}
-}
-function renderKwIntent(){
-  var tb=document.getElementById('kn-body'); if(!tb||!window._kn)return;
-  var rows=window._kn.filter(function(x){return _knBu==='전체'||x.사업부===_knBu;});
-  tb.innerHTML=rows.length?rows.map(function(x){
-    var n=x.고객의도_건수,sm=x.표본||10;
-    var col=(n>=5)?'#059669':(n>=3?'#d97706':'#dc2626');
-    var bad=String(x.판정||'').indexOf('배제')>=0;
-    return '<tr'+(bad?' style="background:#fef2f2"':'')+'>'
-      +'<td>'+kwE(x.사업부)+'</td><td style="font-size:.74rem;color:#64748b">'+kwE(x.축)+'</td>'
-      +'<td style="font-weight:600">'+kwE(x.키워드)+'</td><td>'+kwN(x.검색량)+'</td>'
-      +'<td style="text-align:center;font-weight:700;color:'+col+'">'+(n==null?'-':n+'/'+sm)+'</td>'
-      +'<td style="font-size:.74rem">'+kwE(x.의도유형)+'</td>'
-      +'<td style="font-weight:600">'+kwE(x.판정)+'</td>'
-      +'<td style="font-size:.74rem;color:#475569;line-height:1.5;max-width:420px">'+kwE(x.판정사유)+'<div style="color:#94a3b8;font-size:.68rem;margin-top:2px">'+kwE(x.검증출처)+'</div></td>'
-      +'<td style="font-size:.74rem">'+kwE(x.검증일)+'</td>'
-      +'<td style="text-align:center">'+(x.슬롯사용중?'<span style="color:#2563eb">●</span>':'<span style="color:#cbd5e1">○</span>')+'</td></tr>';
-  }).join(''):'<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:14px">해당 없음</td></tr>';
-}
-/* --- ③ 고객 질문 (3,831건 · 페이지네이션 필수) --- */
-var _kqBu='전체',_kqCv='전체',_kqPage=1,_KQP=50;
-function kqSetBu(v,el){_kqBu=v;_kqPage=1;document.querySelectorAll('.kq-bu').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');renderKwQuest();}
-function kqSetCv(v,el){_kqCv=v;_kqPage=1;document.querySelectorAll('.kq-cv').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');renderKwQuest();}
-function kqGo(p){_kqPage=p;renderKwQuest();}
-async function loadKwQuest(){
-  var tb=document.getElementById('kq-body'); if(!tb)return;
-  tb.innerHTML='<tr><td colspan="7" class="loading">3,800건 이상이라 여러 번 나눠 받는 중...</td></tr>';
-  try{
-    window._kq=await kwFetchAll('v_kw_question_mine','사업부,검색질의,질문제목,링크,수집일,답변수,처리상태,커버','수집일',false);
-    var d=window._kq;
-    var unc=d.filter(function(x){return !x.커버}).length;
-    var fresh=d.filter(function(x){return (x.답변수||0)<=2}).length;
-    document.getElementById('kq-kpi').innerHTML=
-      kwKpi('수집 질문',d.length.toLocaleString()+'건','mk_questions · 매일 수집')
-     +kwKpi('🕳️ 미커버',unc.toLocaleString()+'건','우리 글이 없는 질문 = 슬롯 후보','#d97706')
-     +kwKpi('답변 2건 이하',fresh.toLocaleString()+'건','아직 아무도 제대로 답 안 한 질문','#059669')
-     +kwKpi('사업부 구분',(new Set(d.map(function(x){return x.사업부}))).size+'종','');
-    renderKwQuest();
-  }catch(e){tb.innerHTML='<tr><td colspan="7" style="color:#dc2626;padding:12px">고객 질문 로드 실패: '+kwE(e.message||e)+'</td></tr>';}
-}
-function renderKwQuest(){
-  var tb=document.getElementById('kq-body'); if(!tb||!window._kq)return;
-  var q=(document.getElementById('kq-q')||{}).value||'';
-  var rows=window._kq.filter(function(x){
-    if(_kqBu!=='전체'&&String(x.사업부||'').indexOf(_kqBu)<0)return false;
-    if(_kqCv==='미커버'&&x.커버)return false;
-    if(q&&String(x.질문제목||'').indexOf(q)<0&&String(x.검색질의||'').indexOf(q)<0)return false;
-    return true;
-  });
-  var tot=rows.length,st=(_kqPage-1)*_KQP;
-  tb.innerHTML=rows.length?rows.slice(st,st+_KQP).map(function(x){
-    return '<tr>'
-      +'<td style="font-size:.74rem">'+kwE(x.사업부)+'</td>'
-      +'<td style="font-size:.76rem;color:#2563eb">'+kwE(x.검색질의)+'</td>'
-      +'<td style="line-height:1.5;max-width:520px">'+kwE(x.질문제목)+'</td>'
-      +'<td style="text-align:center'+((x.답변수||0)<=2?';color:#059669;font-weight:700':'')+'">'+(x.답변수==null?'-':x.답변수)+'</td>'
-      +'<td style="font-size:.74rem">'+kwE(x.수집일)+'</td>'
-      +'<td style="text-align:center">'+(x.커버?'<span style="color:#059669">✓</span>':'<span style="color:#d97706">🕳️</span>')+'</td>'
-      +'<td>'+(x.링크?'<a href="'+kwE(x.링크)+'" target="_blank" style="color:#2563eb;font-size:.74rem">열기</a>':'-')+'</td></tr>';
-  }).join(''):'<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:14px">해당 없음</td></tr>';
-  kwPager('kq-pager',tot,_kqPage,_KQP,'kqGo');
-}
-/* --- ④ 매출 귀속 --- */
-var _krBu='전체',_krSt='전체',_krPage=1,_KRP=60;
-function krSetBu(v,el){_krBu=v;_krPage=1;document.querySelectorAll('.kr-bu').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');renderKwRev();}
-function krSetSt(v,el){_krSt=v;_krPage=1;document.querySelectorAll('.kr-st').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active');renderKwRev();}
-function krGo(p){_krPage=p;renderKwRev();}
-async function loadKwRev(){
-  var tb=document.getElementById('kr-body'); if(!tb)return;
-  tb.innerHTML='<tr><td colspan="9" class="loading">로딩 중...</td></tr>';
-  try{
-    window._kr=await kwFetchAll('v_kw_revenue_attrib','키워드,사업부,채널,발행수,최초발행,최고순위,유입클릭,유입비율,문의수','문의수',false);
-    var d=window._kr;
-    var deal=d.filter(function(x){return (x.문의수||0)>0}).length;
-    var top10=d.filter(function(x){return x.최고순위!=null&&x.최고순위<=10});
-    var waste=top10.filter(function(x){return (x.문의수||0)===0}).length;
-    var clicks=d.reduce(function(a,x){return a+(Number(x.유입클릭)||0)},0);
-    document.getElementById('kr-kpi').innerHTML=
-      kwKpi('발행 키워드',d.length.toLocaleString()+'건','v_kw_revenue_attrib')
-     +kwKpi('문의로 이어진 키워드',deal+'건','여기가 매출축',deal?'#059669':'#dc2626')
-     +kwKpi('1페이지인데 문의 0',waste+'건','순위는 잡았는데 밭이 틀렸다','#dc2626')
-     +kwKpi('총 유입클릭',clicks.toLocaleString(),'');
-    renderKwRev();
-  }catch(e){tb.innerHTML='<tr><td colspan="9" style="color:#dc2626;padding:12px">매출 귀속 로드 실패: '+kwE(e.message||e)+'</td></tr>';}
-}
-function renderKwRev(){
-  var tb=document.getElementById('kr-body'); if(!tb||!window._kr)return;
-  var rows=window._kr.filter(function(x){
-    if(_krBu!=='전체'&&x.사업부!==_krBu)return false;
-    if(_krSt==='문의'&&(x.문의수||0)===0)return false;
-    if(_krSt==='헛수고'&&!(x.최고순위!=null&&x.최고순위<=10&&(x.문의수||0)===0))return false;
-    return true;
-  });
-  var tot=rows.length,st=(_krPage-1)*_KRP;
-  tb.innerHTML=rows.length?rows.slice(st,st+_KRP).map(function(x){
-    var r=x.최고순위,deal=(x.문의수||0)>0;
-    var rc=r==null?'#94a3b8':(r<=10?'#059669':(r<=30?'#d97706':'#dc2626'));
-    return '<tr'+(deal?' style="background:#f0fdf4"':'')+'>'
-      +'<td style="font-size:.74rem">'+kwE(x.사업부)+'</td>'
-      +'<td style="font-size:.74rem;color:#64748b">'+kwE(x.채널)+'</td>'
-      +'<td style="font-weight:600">'+kwE(x.키워드)+'</td>'
-      +'<td style="text-align:center">'+kwN(x.발행수)+'</td>'
-      +'<td style="font-size:.74rem">'+kwE(x.최초발행)+'</td>'
-      +'<td style="text-align:center;font-weight:700;color:'+rc+'">'+(r==null?'-':r+'위')+'</td>'
-      +'<td style="text-align:center">'+kwN(x.유입클릭)+'</td>'
-      +'<td style="text-align:center">'+(x.유입비율==null?'-':x.유입비율)+'</td>'
-      +'<td style="text-align:center;font-weight:800;color:'+(deal?'#059669':'#cbd5e1')+'">'+(x.문의수||0)+'</td></tr>';
-  }).join(''):'<tr><td colspan="9" style="text-align:center;color:#94a3b8;padding:14px">해당 없음</td></tr>';
-  kwPager('kr-pager',tot,_krPage,_KRP,'krGo');
-}
 </script>
 
 </body>

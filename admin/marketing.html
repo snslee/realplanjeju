@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.16.1</title>
+<title>리얼플랜제주 마케팅 운영 v1.17.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -204,7 +204,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.16.1</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.17.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -433,7 +433,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
           <tbody id="giants-body"><tr><td colspan="7" class="loading">로딩 중...</td></tr></tbody></table>
         </div>
       </div>
-      <div class="card" data-sec="🏆 네이버 순위" ><div class="card-hdr"><h3>🏆 네이버 채널별 순위 현황 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">mk_rank_tracker 정본 · 키워드별 최신 측정 · <span id="giants-naver-window">최근 14일</span></span></h3></div><div class="card-body" style="padding:0;overflow-x:auto"><div style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;color:#166534;font-size:.72rem;padding:7px 11px">✅ 발행글 <b>핵심키워드 전량</b>을 네이버 블로그 검색에서 실측한 정본입니다(100위 내 미발견=<b>미진입</b>으로 카운트). 평균순위는 <b>진입분만</b>의 평균이라, 미진입 칸을 반드시 같이 보세요. 신호등 판정은 <b>추적 시작 30일이 지난 키워드(성숙)</b>만 모수로 씁니다 — 어제 발행한 키워드는 무조건 미진입이라 판정을 영구 빨강으로 만듭니다.</div><table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>평균순위<span style="font-weight:400;color:#94a3b8">(진입분)</span></th><th>추적 키워드</th><th>진입</th><th>미진입</th><th>top10 진입률<span style="font-weight:400;color:#94a3b8">(추적/진입)</span></th><th>성숙<span style="font-weight:400;color:#94a3b8">(30일↑)</span></th><th>판정</th></tr></thead><tbody id="giants-naver-body"><tr><td colspan="9" class="loading">로딩 중...</td></tr></tbody></table></div></div>
+      <div class="card" data-sec="🏆 네이버 순위" ><div class="card-hdr"><h3>🏆 네이버 채널별 순위 현황 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">mk_rank_tracker 정본 · 키워드별 최신 측정 · <span id="giants-naver-window">최근 14일</span></span></h3></div><div class="card-body" style="padding:0;overflow-x:auto"><div style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;color:#166534;font-size:.72rem;padding:7px 11px">✅ 발행글 <b>핵심키워드 전량</b>을 네이버 블로그 검색에서 실측한 정본입니다(100위 내 미발견=<b>미진입</b>으로 카운트). 평균순위는 <b>진입분만</b>의 평균이라, 미진입 칸을 반드시 같이 보세요. 신호등 판정은 <b>추적 시작 30일이 지난 키워드(성숙)</b>만 모수로 씁니다 — 어제 발행한 키워드는 무조건 미진입이라 판정을 영구 빨강으로 만듭니다.<br>⚠️ <b>모수가 「추적 키워드」입니다.</b> 「상위노출 진입」 탭은 <b>발행글 D+7 시점</b>이 모수라 같은 채널도 숫자가 크게 다릅니다(실측 8/18 블C네이버 9.3위 ↔ 50.1위 — 둘 다 맞는 값입니다).</div><table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>평균순위<span style="font-weight:400;color:#94a3b8">(진입분)</span></th><th>추적 키워드</th><th>진입</th><th>미진입</th><th>top10 진입률<span style="font-weight:400;color:#94a3b8">(추적/진입)</span></th><th>성숙<span style="font-weight:400;color:#94a3b8">(30일↑)</span></th><th>판정</th></tr></thead><tbody id="giants-naver-body"><tr><td colspan="9" class="loading">로딩 중...</td></tr></tbody></table></div></div>
       <div class="card" data-sec="😴 잠자는 거인(순위 미확보)" ><div class="card-hdr"><h3>😴 잠자는 거인 — 검색 수요는 있는데 순위가 없는 키워드 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">v_sleeping_giants · 검색량 1,000↑ · mk_rank_tracker에 순위 0건</span></h3></div>
         <div class="card-body" style="padding:0;overflow-x:auto">
           <div style="background:#eff6ff;border-bottom:1px solid #bfdbfe;color:#1e40af;font-size:.72rem;padding:7px 11px">💡 <b>후보일 뿐 채택안이 아닙니다.</b> 우리 전략은 저검색량 롱테일 선점이라 검색량이 크다는 이유로 채택하지 않습니다. 채택 전 <b>SERP 의도 · G15 자기잠식 · 금지키워드(국내여행 22종)</b>를 반드시 대조하세요. 시즌판정 「지금 착수」가 위로 옵니다.</div>
@@ -469,7 +469,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px 16px;margin-bottom:18px" data-sec="🎯 성과 진단">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-          <div><div style="font-weight:800;font-size:1.02rem">🎯 채널 성과 진단</div><div style="font-size:.78rem;color:#166534">우리 글 D+7 실성과 (mk_blog_publish_log 실시간 집계)</div></div>
+          <div><div style="font-weight:800;font-size:1.02rem">🎯 채널 성과 진단</div><div style="font-size:.78rem;color:#166534">우리 글 <b>D+7 시점</b> 실성과 (mk_blog_publish_log 실시간 집계) · <span style="color:#b45309">「현재 순위」가 아닙니다 — 지금 1페이지 글 수는 피드백·보완 탭</span></div></div>
           <button class="filter-btn" onclick="loadChannelDiagnosis()">🔄</button>
         </div>
         <div style="background:#fff;border:0.5px solid #bbf7d0;border-radius:10px;padding:10px 12px;margin-bottom:12px">
@@ -955,7 +955,7 @@ async function loadGrowthSignal(){
     // v1.8.5 — ⑨조회수 신설. 8축에 매출과 가장 가까운 지표(네이버 조회수)가 없었다. 칩에 증감율까지 표기한다.
     var chips=''; for(var i=0;i<ax.length;i++){ var nm=ax[i][0]; var o=ax[i][1]; if(!o){o={};}
       // v1.8.6 — ⑨는 조회수 총량이 아니라 「문의로 이어지는 힘」. 칩에 병목 수치를 직접 띄운다.
-      var ext=''; if(nm==='⑨전환정합'&&o['UTM규격률']!=null){ext='<span style="color:#64748b;font-weight:400"> UTM '+o['UTM규격률']+'% · 블로그경유 '+(o['블로그경유_30일']!=null?o['블로그경유_30일']:'-')+'</span>';}
+      var ext=''; if(nm==='⑨전환정합'&&o['UTM규격률']!=null){ext='<span style="color:#64748b;font-weight:400"> UTM '+o['UTM규격률']+'% · 블로그경유 30일 '+(o['블로그경유_30일']!=null?o['블로그경유_30일']:'-')+'</span>';}
       chips=chips+'<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid #e2e8f0;border-radius:16px;font-size:12px;margin:2px;background:#fff"><b style="color:'+col(o['신호'])+'">'+dot(o['신호'])+' '+nm+'</b>'+ext+'</span>'; }
     var t=d['종합'];
     el.innerHTML='<div style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid '+col(t)+';border-radius:10px;padding:12px 16px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:15px">🌱 성장 정합 신호등</b><b style="color:'+col(t)+'">종합 '+t+'</b><span style="margin-left:auto;font-size:12px;color:#64748b">매출 제외 · 블로그·SNS 성장 · 매일 09시 텔레그램</span></div><div style="margin-top:8px">'+chips+'</div></div>';
@@ -1833,10 +1833,14 @@ async function loadGiants(){ loadUncovered(); loadGiantsNaver(); loadSleeping();
   // ★v1.8.4 과다집계 교정 — 각 행이 이미 8일 누적치다. 14일치를 더하면 같은 노출을 14번 센다.
   var _ld=(data||[]).reduce(function(m,r){var d=String(r.측정_일자||'').slice(0,10);return d>m?d:m;},'');
   data=(data||[]).filter(function(r){return String(r.측정_일자||'').slice(0,10)===_ld;});
-  var _gl=document.getElementById('giants-window'); if(_gl)_gl.textContent='최근 8일 누적 · 기준일 '+(_ld||'-');
+  var _gl=document.getElementById('giants-window'); if(_gl)_gl.textContent='최근 8일 누적 · 기준일 '+(_ld||'-')+' · 평균순위=노출 가중(GSC 정의)';
   // 채널+소스 기준 집계
-  const byCS={};(data||[]).forEach(r=>{const k=r.채널+'||'+(r.데이터_소스||'gsc');if(!byCS[k])byCS[k]={ch:r.채널,src:r.데이터_소스||'gsc',n:0,c:0,sr:0,sn:0};byCS[k].n+=(r.노출_수||0);byCS[k].c+=(r.클릭_수||0);if(r.평균_순위){byCS[k].sr+=Number(r.평균_순위);byCS[k].sn++;}});
-  const rows=Object.values(byCS).map(v=>({ch:v.ch,src:v.src,n:v.n,c:v.c,ctr:v.n>0?(v.c/v.n*100):0,r:v.sn>0?v.sr/v.sn:null})).sort((a,b)=>b.n-a.n);
+  // ★v1.17.0 정합교정 — 티스토리 평균순위를 단순평균에서 「노출 가중평균」으로 바꾼다.
+  //   GSC average position 정의가 노출 가중이고, 단순평균은 노출 3짜리 키워드와 200짜리를 똑같이 센다.
+  //   실측(8/15): 단순 블B 10.3·블C 11.3 → 가중 블B 7.2·블C 13.7 로 두 채널 순서가 뒤집혔다.
+  //   네이버(naver_search)는 노출_수가 없으므로 종전대로 단순평균을 쓴다.
+  const byCS={};(data||[]).forEach(r=>{const k=r.채널+'||'+(r.데이터_소스||'gsc');if(!byCS[k])byCS[k]={ch:r.채널,src:r.데이터_소스||'gsc',n:0,c:0,sr:0,sn:0,wr:0,wn:0};byCS[k].n+=(r.노출_수||0);byCS[k].c+=(r.클릭_수||0);if(r.평균_순위){byCS[k].sr+=Number(r.평균_순위);byCS[k].sn++;if(r.노출_수){byCS[k].wr+=Number(r.평균_순위)*Number(r.노출_수);byCS[k].wn+=Number(r.노출_수);}}});
+  const rows=Object.values(byCS).map(v=>({ch:v.ch,src:v.src,n:v.n,c:v.c,ctr:v.n>0?(v.c/v.n*100):0,r:(v.src==='gsc'&&v.wn>0)?(v.wr/v.wn):(v.sn>0?v.sr/v.sn:null)})).sort((a,b)=>b.n-a.n);
   const srcLabel={'gsc':'티스토리','naver_search':'네이버'};
   const tbody=document.getElementById('giants-body');
   if(!rows.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">데이터 없음</td></tr>';return;}
@@ -2006,14 +2010,23 @@ let allWinning=[];
 async function loadWinning(){
   const box=document.getElementById('winning-board'); if(!box)return;
   box.innerHTML='<div class="loading" style="padding:20px;text-align:center">로딩 중...</div>';
-  const{data,error}=await sb.from('mk_winning_posts').select('id,채널,제목,핵심키워드,외부_url,최고순위,글자수,본문_수집상태,출처,생성일,발행일').eq('활성',true).order('발행일',{ascending:false,nullsFirst:false}).order('생성일',{ascending:false}).limit(400);
+  // ★v1.17.0 정합교정 — 종전 .limit(400). DB 활성 618건이라 218건이 화면에 아예 없었는데
+  //   머리글은 「총 400건」으로 떠서 전량으로 오독됐다. 1,000행씩 페이징해 전량을 받는다.
+  let data=[],error=null;
+  for(let _f=0;;_f+=1000){
+    const q=await sb.from('mk_winning_posts').select('id,채널,제목,핵심키워드,외부_url,최고순위,글자수,본문_수집상태,출처,생성일,발행일').eq('활성',true).order('발행일',{ascending:false,nullsFirst:false}).order('생성일',{ascending:false}).range(_f,_f+999);
+    if(q.error){error=q.error;break;}
+    data=data.concat(q.data||[]);
+    if(!q.data||q.data.length<1000)break;
+    if(_f>=20000)break;
+  }
   if(error){box.innerHTML='<div style="padding:20px;text-align:center;color:#ef4444">로드 실패: '+error.message+'</div>';return;}
   allWinning=data||[]; renderWinning(allWinning);
 }
 function renderWinning(list){
   const box=document.getElementById('winning-board'); if(!box)return;
   if(!list.length){box.innerHTML='<div style="text-align:center;padding:24px;color:#94a3b8">상위노출 글 없음</div>';return;}
-  box.innerHTML='<div style="font-size:.72rem;color:#92400e;padding:8px 14px;border-bottom:0.5px solid #fde68a">총 '+list.length+'건 · 본문보유 '+list.filter(r=>r.본문_수집상태==='collected').length+'건</div>'+(function(){window._winView=list;const _wp=Math.max(1,Math.ceil(list.length/WIN_PER));if(_winPage>_wp)_winPage=1;const pe=document.getElementById('winning-pager');if(pe)pe.innerHTML=pagerHTML(_winPage,_wp,list.length,'gotoWinPage');return list.slice((_winPage-1)*WIN_PER,_winPage*WIN_PER);})().map((r,i)=>{
+  box.innerHTML='<div style="font-size:.72rem;color:#92400e;padding:8px 14px;border-bottom:0.5px solid #fde68a">총 '+list.length+'건 · 본문보유 '+list.filter(r=>r.본문_수집상태==='collected'||r.본문_수집상태==='완료').length+'건'+(allWinning.length&&list.length!==allWinning.length?' <span style="color:#b45309">(활성 '+allWinning.length+'건 중 필터 적용)</span>':'')+'</div>'+(function(){window._winView=list;const _wp=Math.max(1,Math.ceil(list.length/WIN_PER));if(_winPage>_wp)_winPage=1;const pe=document.getElementById('winning-pager');if(pe)pe.innerHTML=pagerHTML(_winPage,_wp,list.length,'gotoWinPage');return list.slice((_winPage-1)*WIN_PER,_winPage*WIN_PER);})().map((r,i)=>{
     const rk=r.최고순위==null?'-':Math.round(r.최고순위);
     const rkc=rk==='-'?'#cbd5e1':rk<=5?'#b45309':rk<=10?'#a16207':'#94a3b8';
     const has=r.본문_수집상태==='collected';
@@ -2669,7 +2682,7 @@ function renderDraftPhotoPanel(){
 /* 퍼널 v1.0 (2026-07-31 승인분) — 목적: 플랫폼→유입→문의→계약 */
 async function loadFunnel(){try{
   const{data}=await sb.rpc('rpc_funnel_kpi');if(!data)return;
-  const seg=[['노출(최근집계)',data['노출_최근8일']],['클릭',data['클릭_최근8일']],['방문 28일',data['방문_28일']],['블로그유입',data['블로그유입_28일']],['문의 30일',data['문의_30일']],['귀속',data['문의귀속_30일']],['견적 90일',data['견적_90일']],['계약',data['계약_90일']]];
+  const seg=[['노출(최근집계)',data['노출_최근8일']],['클릭',data['클릭_최근8일']],['방문 28일',data['방문_28일']],['블로그유입 28일',data['블로그유입_28일']],['문의 30일',data['문의_30일']],['귀속',data['문의귀속_30일']],['견적 90일',data['견적_90일']],['계약',data['계약_90일']]];
   document.getElementById('fs-cells').innerHTML=seg.map((s,i)=>'<span style="background:#f1f5f9;border-radius:8px;padding:4px 10px"><b>'+((s[1]??0).toLocaleString())+'</b> '+s[0]+'</span>'+(i<seg.length-1?'<span style="color:#cbd5e1">→</span>':'')).join('');
   var t=document.getElementById('fs-time');if(t)t.textContent='· '+String(data['기준시각']||'').slice(0,16).replace('T',' ');
   var chm=data['채널유입_28일']||{};var chTxt=['place','kakao','gbp','karrot','threads'].map(function(k){var v=chm[k]||chm['naver_place']&&k==='place'||0;return k+' <b>'+(chm[k]||0)+'</b>';}).join(' · ');

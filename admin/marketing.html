@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.17.0</title>
+<title>리얼플랜제주 마케팅 운영 v1.18.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -204,7 +204,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.17.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.18.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -3084,10 +3084,46 @@ function rwfxMd(t){
     out.push('<p>'+l.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>')+'</p>');i++;}
   return out.join('');
 }
+/* ★v1.18.0 — 적재 스키마 정합 교정 (정본: exec_20260818_blBC_fix_load_done §3)
+   v1.16.0 이식본이 v3 프로토타입의 임시 키(신규·삭제·파일경로)를 보고 있어서
+   실물 키(신규분·지울문장·사진[].지시문·하위[])를 하나도 못 읽었다.
+   실측 결과 블B 4/4 구간·블C 5/6 구간이 빈칸이거나 하이라이트 0개로 떴다.
+   ★복사문구가 null인 구간이 있다(블C 구간 C = 하위 2건). null이면 하위를 렌더한다.
+   ★구간 지시문은 짧은 설명이고 사진의 지시문은 절대경로다 — 같은 이름, 다른 뜻. */
+function rwfxNew(f){var n=f.신규분||f.신규;return Array.isArray(n)?n:(n?[n]:[]);}
+function rwfxGone(f){return f.지울문장||f.삭제||'';}
+function rwfxPhotoPath(p){return (p&&(p.지시문||p.파일경로||p.파일))||'';}
+function rwfxSubs(f){return Array.isArray(f.하위)?f.하위:[];}
+function rwfxPasteCount(segs){return segs.reduce(function(a,x){
+  var n=rwfxSubs(x.f).length;return a+(n?n:((String(x.f.복사문구||'')).trim()?1:0));},0);}
+/* 구간 본문 — 복사문구가 없으면 하위[]를 문단별로 렌더한다 */
+function rwfxSegBody(f,i){
+  var subs=rwfxSubs(f);
+  if(subs.length){
+    return subs.map(function(sb,si){
+      var h=rwfxMd(rwEsc(String(sb.복사문구||'')));
+      if(sb.지울문장){h=h.replace('<p>','<p><span class="gone">'+rwEsc(sb.지울문장)+'</span><br>');}
+      var no=rwEsc(sb.번호||((f.구간||'')+'-'+(si+1)));
+      return '<div class="seg-m" style="border-top:1px solid var(--line)"><b>'+no+'</b> 붙일 자리 · <b>'
+        +rwEsc(sb.위치||'-')+'</b>'
+        +(sb.지울문장?'<div class="legend"><i class="sw-gone">취소선</i> 지우는 문장</div>':'')+'</div>'
+        +'<div class="seg-p">'+h+'</div>'
+        +'<div class="seg-f"><button class="fbtn p" onclick="rwFxCopySub('+i+','+si+')">'+no+' 문단 복사</button></div>';
+    }).join('');
+  }
+  var b=rwfxPaint(f);
+  if(!b)return '<div class="seg-p"><span style="color:var(--mut)">복사할 문장이 아직 없습니다. 채팅에 「보완 데이터 적재 진행」이라고 주세요.</span></div>';
+  return '<div class="seg-p">'+b+'</div>';
+}
+function rwFxCopySub(i,si){
+  var f=rwFxList()[i], sb=f&&rwfxSubs(f)[si]; if(!sb){showToast('문단 없음');return;}
+  rwFxCopyText(String(sb.복사문구||''),(f.구간||'')+'-'+(si+1)+' 문단');
+}
 /* 구간 안에서 신규분만 빨간 글자+밑줄. 배경 채움은 쓰지 않는다(정본 규칙) */
 function rwfxPaint(f){
-  var t=rwEsc(f.복사문구||f.지시문||'');
-  var nw=f.신규;
+  var t=rwEsc(String(f.복사문구||''));
+  if(!t.trim())return '';
+  var nw=rwfxNew(f);
   if(nw===true||nw==='ALL'||(Array.isArray(nw)&&nw[0]==='ALL')){
     return '<div class="new" style="display:block;border-bottom:0">'+rwfxMd(t)+'</div>';
   }
@@ -3095,7 +3131,8 @@ function rwfxPaint(f){
     nw.forEach(function(s){var e=rwEsc(String(s)).trim();if(e&&t.indexOf(e)>=0){t=t.replace(e,'\u2e22N\u2e23'+e+'\u2e22/N\u2e23');}});
   }
   var h=rwfxMd(t);
-  if(f.삭제){h=h.replace('<p>','<p><span class="gone">'+rwEsc(f.삭제)+'</span><br>');}
+  var _g=rwfxGone(f);
+  if(_g){h=h.replace('<p>','<p><span class="gone">'+rwEsc(_g)+'</span><br>');}
   return h.replace(/\u2e22N\u2e23/g,'<span class="new">').replace(/\u2e22\/N\u2e23/g,'</span>');
 }
 
@@ -3251,7 +3288,7 @@ function renderRwFix(){
   }else{
     /* 구간형 — 본문 하나, 위에서 아래로 한 번만 훑는다 */
     var 사진수=segs.reduce(function(a,x){return a+((Array.isArray(x.f.사진)?x.f.사진.length:0));},0);
-    h+='<div class="plan"><div class="plan-h">오늘 하실 일 — 복사·붙여넣기 '+segs.length+'회'+(사진수?(' + 사진 '+사진수+'장'):'')+'</div><div class="steps">';
+    h+='<div class="plan"><div class="plan-h">오늘 하실 일 — 복사·붙여넣기 '+rwfxPasteCount(segs)+'회'+(사진수?(' + 사진 '+사진수+'장'):'')+' · 완료 체크 '+segs.length+'번</div><div class="steps">';
     h+=segs.map(function(x,n){
       return (n?'<span class="arrow">&rsaquo;</span>':'')
         +'<button class="step" id="rw2-st-'+x.f.구간+'" data-done="'+(x.f.상태==='완료'?1:0)+'" onclick="rwSegJump(\''+x.f.구간+'\')">'
@@ -3267,24 +3304,31 @@ function renderRwFix(){
       h+='<div class="seg" id="rw2-seg-'+f.구간+'" data-done="'+(done?1:0)+'">'
         +'<div class="seg-h"><span class="seg-k">'+rwEsc(f.구간)+'</span>'
         +'<span class="seg-t">'+rwEsc(f.항목||'')+'</span><div class="sp"></div>'
-        +(f.지시문?'<span class="pill b">'+rwEsc(f.지시문)+'</span>':'')+'</div>'
-        +'<div class="seg-m">붙일 자리 · <b>'+rwEsc(f.위치||'-')+'</b>'
+        +'<span class="pill '+(f.유형==='제목'?'dgr':'b')+'">'+rwEsc(f.유형||'구간교체')+'</span>'
+        +(f.포함건수?'<span class="pill">보완 '+rwEsc(f.포함건수)+'건</span>':'')+'</div>'
+        +'<div class="seg-m">'
+        +(f.지시문?'<div style="color:var(--ink);margin-bottom:6px">'+rwEsc(f.지시문)+'</div>':'')
+        +'붙일 자리 · <b>'+rwEsc(f.위치||'-')+'</b>'
         +(f.주의?'<br>'+rwEsc(f.주의):'')
+        +(f.유형==='제목'?'<div class="warnline">제목은 <b>네이버 글 제목란</b>을 바꿉니다. 본문 맨 윗줄에 제목이 한 번 더 적혀 있으면 그것도 같이 바꿉니다. <b>(리라이트) 프리픽스는 넣지 않습니다.</b></div>':'')
         +'<div class="legend"><i class="sw-new">빨간 밑줄</i> 새로 들어가는 부분'
-        +(f.삭제?'<i class="sw-gone">취소선</i> 지우는 문장':'')+'</div></div>'
-        +'<div class="seg-p">'+rwfxPaint(f)+'</div>';
+        +(rwfxGone(f)?'<i class="sw-gone">취소선</i> 지우는 문장':'')+'</div></div>'
+        +rwfxSegBody(f,x.i);
       (Array.isArray(f.사진)?f.사진:[]).forEach(function(p,pi){
         h+='<div class="ph"><div class="ph-t">'+rwEsc(p.번호||(f.구간+'-'+(pi+1)))+'</div><div class="ph-b">'
-          +'<div class="ph-n">'+rwEsc(p.파일경로||p.파일||'')+'</div>'
+          +'<div class="ph-n">'+rwEsc(rwfxPhotoPath(p))+'</div>'
           +(p.위치?'<div class="ph-l">넣을 자리 · '+rwEsc(p.위치)+'</div>':'')
           +(p.캡션?'<div class="ph-l">캡션 · '+rwEsc(p.캡션)+'</div>':'')
           +'</div><div style="display:flex;flex-direction:column;gap:4px">'
           +'<button class="fbtn" onclick="rwFxCopyPhoto('+x.i+','+pi+',\'f\')">경로</button>'
           +'<button class="fbtn" onclick="rwFxCopyPhoto('+x.i+','+pi+',\'c\')">캡션</button></div></div>';
       });
-      h+='<div class="seg-f"><button class="fbtn p big" onclick="rwFxCopy('+x.i+')">이 구간 통째로 복사</button><div class="sp"></div>'
+      h+='<div class="seg-f">'
+        +(rwfxSubs(f).length?'':'<button class="fbtn p big" onclick="rwFxCopy('+x.i+')">'+(f.유형==='제목'?'제목 복사':'이 구간 통째로 복사')+'</button>')
+        +'<div class="sp"></div>'
         +'<button class="fbtn'+(done?'':' p')+'" onclick="rwFxDone('+x.i+',this)">'+(done?'되돌리기':'이 구간 반영했습니다')+'</button></div></div>';
       if(f.뒤구간설명)h+='<div class="keep">'+rwEsc(f.뒤구간설명)+'</div>';
+      else if(n<segs.length-1)h+='<div class="keep">그 사이 본문 — 손대지 않습니다</div>';
     });
     h+='</div>';
     h+='<div class="done-bar"><button class="fbtn p big" id="rw2-pubbtn" disabled onclick="rwPublish(false)">반영 완료 — 반영일·직전 순위 기록</button>'
@@ -3327,10 +3371,13 @@ async function rwFxCopyText(s,label){
     var a=document.createElement('textarea');a.value=s;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();}
   showToast((label||'구간')+' 복사 — '+String(s).length.toLocaleString()+'자');
 }
-function rwFxCopy(i){var f=rwFxList()[i];if(!f){showToast('항목 없음');return;}rwFxCopyText(f.복사문구||f.지시문||f.내용||'',(f.구간||'')+' 구간');}
+function rwFxCopy(i){var f=rwFxList()[i];if(!f){showToast('항목 없음');return;}
+  var sv=String(f.복사문구||f.내용||'');
+  if(!sv.trim()){showToast('이 구간은 문단별로 복사합니다');return;}
+  rwFxCopyText(sv,(f.구간||'')+' 구간');}
 function rwFxCopyPhoto(i,pi,kind){
   var f=rwFxList()[i], p=f&&Array.isArray(f.사진)?f.사진[pi]:null; if(!p)return;
-  rwFxCopyText(kind==='c'?(p.캡션||''):(p.파일경로||p.파일||''),kind==='c'?'캡션':'경로');
+  rwFxCopyText(kind==='c'?(p.캡션||''):rwfxPhotoPath(p),kind==='c'?'캡션':'경로');
 }
 async function rwFxDone(i,el){
   var d=RW.draft; if(!d)return;

@@ -82,8 +82,8 @@
 <!-- 0. 성장 스코어보드: 이 6개 숫자가 "블로그가 크고 있는가"의 전부 -->
 <div id="reconcile"></div>
 <div class="kpis" id="kpi">
-  <div class="kpi info"><div class="t">🏆 상위노출(1페이지) 글</div><div class="v load">…</div><div class="c">네이버·티스토리 1~10위 진입 글 수 — 성장의 출발점</div></div>
-  <div class="kpi info"><div class="t">📈 티스토리 검색성과 7일</div><div class="v load">…</div><div class="c">구글 노출·클릭(GSC) — 전주 대비 화살표</div></div>
+  <div class="kpi info"><div class="t">🏆 상위노출(1페이지) 글</div><div class="v load">…</div><div class="c"><b>현재순위 기준</b> 1~10위 글 수 — 「상위노출 진입」 탭은 <b>D+7 시점</b>이라 숫자가 다릅니다</div></div>
+  <div class="kpi info"><div class="t">📈 티스토리 검색성과 (8일 누적)</div><div class="v load">…</div><div class="c">구글 노출·클릭(GSC) · <b>1행=8일 누적치라 합산하지 않습니다</b> — 7일 전 같은 창과 비교</div></div>
   <div class="kpi info"><div class="t">🔗 블로그발 홈페이지 방문 30일</div><div class="v load">…</div><div class="c">글 속 CTA·UTM 링크를 타고 넘어온 수 — 매출 다리 1단</div></div>
   <div class="kpi info"><div class="t">📩 블로그발 문의 누적</div><div class="v load">…</div><div class="c">문의 귀속(utm=blog) — 최종 KPI, 매출 다리 2단</div></div>
   <div class="kpi info"><div class="t">💰 매출 키워드</div><div class="v load">…</div><div class="c">B2B 키워드 1페이지 수 / 리퍼브리시 대기</div></div>
@@ -138,7 +138,7 @@ async function loadReconcile(){
   const dot=s=>s==='RED'?'🔴':s==='AMBER'?'🟡':'🟢';
   const chip=(n,o)=>`<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--line);border-radius:16px;font-size:13px;margin:2px;background:#fff"><b style="color:${col(o['신호'])}">${dot(o['신호'])} ${n}</b></span>`;
   const t=data['종합'],f=data['①피드백정합'],g=data['②역제안정합'],r=data['③순위정합'],m=data['④슬롯매출정합'],l=data['⑤라이브보완'];
-  el.innerHTML=`<div style="background:var(--card);border:1px solid var(--line);border-left:4px solid ${col(t)};border-radius:10px;padding:12px 16px;margin:0 0 14px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:15px">🩺 데이터 정합 신호등</b><b style="color:${col(t)}">종합 ${t}</b><span class="sub" style="margin-left:auto">전수 대사 · 주간 자동점검(월 07:30)</span></div><div style="margin-top:8px">${chip('피드백',f)}${chip('역제안',g)}${chip('순위',r)}${chip('슬롯매출',m)}${chip('라이브보완',l)}</div><div class="sub" style="margin-top:6px;font-size:12px">① 미표식 ${f['감시규칙_미표식']} · 완료조치일누락 ${f['완료_조치일누락']} · 중복 ${f['중복']} ｜ ② 적체 ${g['제안_14일적체']} · 중복 ${g['중복']} ｜ ③ 중복측정 ${r['중복측정']} ｜ ④ 고아 ${m['고아_metrics']} · 중복 ${m['중복_metrics']} · 측정대기 ${m['측정대기_참고']} ｜ ⑤ 라이브보완 ${l['발행완료_게이트미달_14일']}</div></div>`;
+  el.innerHTML=`<div style="background:var(--card);border:1px solid var(--line);border-left:4px solid ${col(t)};border-radius:10px;padding:12px 16px;margin:0 0 14px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:15px">🩺 데이터 정합 신호등</b><b style="color:${col(t)}">종합 ${t}</b><span class="sub" style="margin-left:auto">전수 대사 · 주간 자동점검(월 07:30)</span></div><div style="margin-top:8px">${chip('피드백',f)}${chip('역제안',g)}${chip('순위',r)}${chip('슬롯매출',m)}${chip('라이브보완',l)}</div><div class="sub" style="margin-top:6px;font-size:12px">① 미표식 ${f['감시규칙_미표식']} · 완료조치일누락 ${f['완료_조치일누락']} · 중복 ${f['중복']} ｜ ② 적체 ${g['제안_14일적체']} · 중복 ${g['중복']} · 반영완료 조치일누락 ${g['반영완료_조치일누락']} ｜ ③ 중복측정 ${r['중복측정']} ｜ ④ 고아 ${m['고아_metrics']} · 중복 ${m['중복_metrics']} · 측정대기 ${m['측정대기_참고']} ｜ ⑤ 라이브보완 ${l['발행완료_게이트미달_14일']}</div></div>`;
  }catch(e){ const el=document.getElementById('reconcile'); if(el) el.innerHTML='<div class="load">정합 신호등 오류</div>'; }
 }
 loadReconcile();
@@ -182,10 +182,24 @@ async function load(){
   sb.from('mk_blog_drafts').select('발행일,생성일,채널,핵심키워드,제목,품질지표,상태').not('품질지표','is',null).gte('생성일',d28.toISOString()).order('생성일',{ascending:false}),
   sb.from('mk_draft_feedback').select('발생일,결함코드,결함분류,심각도,상태,조치내용,조치일,재발방지규칙,채널').order('발생일',{ascending:false}).limit(200),
   sb.from('v_open_defects').select('*'),
-  sb.from('v_revenue_keyword_growth').select('*').not('최근순위','is',null).order('최근순위').limit(14),
+  sb.from('v_revenue_keyword_growth').select('*').not('최근순위','is',null).order('최근순위').limit(300),
   sb.from('mk_improvement_suggestions').select('제안일,출처,채널,격차요약,제안내용,상태').eq('상태','제안').order('제안일',{ascending:false}).limit(100),
   sb.from('mk_blog_publish_log').select('채널,진입판정').in('진입판정',['✅1~5위','⚠️6~10위']),
-  sb.from('mk_metrics').select('노출_수,클릭_수,측정_일자').eq('데이터_소스','gsc').gte('측정_일자',ymd(d14)),
+  /* ★v1.1 정합교정(2026-08-18) — 종전: gte(측정_일자,d14) 후 7일 합산.
+     두 겹으로 틀렸다 ①Supabase 기본 1,000행 상한에 잘려 14일 중 496행 유실(전주 2,073→724)
+     ②blog-stats-collector는 GSC를 「8일 구간」으로 받아 그 누적치를 측정_일자 한 행에 넣는다.
+     7일을 더하면 같은 노출을 최대 7번 센다(화면 1,640 vs 정본 284 = 5.8배).
+     → 최신 측정일 1세트 vs 7일 전 1세트만 비교한다(대시보드 v1.8.4와 동일 정본). */
+  (async function(){
+   const L=await sb.from('mk_metrics').select('측정_일자').eq('데이터_소스','gsc').order('측정_일자',{ascending:false}).limit(1);
+   if(L.error) return {error:L.error};
+   if(!L.data||!L.data.length) return {error:{message:'GSC 적재 없음'}};
+   const last=String(L.data[0]['측정_일자']).slice(0,10);
+   const pd=new Date(last+'T00:00:00');pd.setDate(pd.getDate()-7);const prev=ymd(pd);
+   const A=await sb.from('mk_metrics').select('노출_수,클릭_수,측정_일자').eq('데이터_소스','gsc').in('측정_일자',[last,prev]).limit(2000);
+   if(A.error) return {error:A.error};
+   return {data:A.data||[],last:last,prev:prev};
+  })(),
   sb.from('web_방문로그').select('utm_source,유입_출처').gte('방문_시각',d30.toISOString()),
   sb.from('mk_inquiry_attribution').select('utm_source'),
   sb.from('mk_growth_missions').select('*').order('순번')
@@ -206,12 +220,13 @@ async function load(){
   if(pub&&!pub.error){const rows=pub.data||[];const nv=rows.filter(r=>(r.채널||'').includes('네이버')).length;const ts=rows.filter(r=>(r.채널||'').includes('티스토리')).length;
    kpiSet(0,'네 '+nv+' <small>·</small> 티 '+ts+'<small>편</small>', (nv+ts)>0?'good':'warn');}
   else kpiSet(0,'–');
-  if(met&&!met.error){const rows=met.data||[];const cut=ymd(d7);
-   const s7=rows.filter(r=>r.측정_일자>=cut), sPrev=rows.filter(r=>r.측정_일자<cut);
+  if(met&&!met.error){const rows=met.data||[];
    const sum=(a,k)=>a.reduce((x,r)=>x+(r[k]||0),0);
-   const n7=sum(s7,'노출_수'),c7=sum(s7,'클릭_수'),nP=sum(sPrev,'노출_수');
-   const ar=n7>nP?'⬆':(n7<nP?'⬇':'→');
-   kpiSet(1,'노출 '+n7.toLocaleString()+' '+ar+'<br><small>클릭 '+c7.toLocaleString()+' (전주 노출 '+nP.toLocaleString()+')</small>', n7>=nP?'good':'warn');}
+   const dof=r=>String(r['측정_일자']||'').slice(0,10);
+   const cur=rows.filter(r=>dof(r)===met.last), pv=rows.filter(r=>dof(r)===met.prev);
+   const n7=sum(cur,'노출_수'),c7=sum(cur,'클릭_수'),nP=sum(pv,'노출_수');
+   const ar=!pv.length?'→':(n7>nP?'⬆':(n7<nP?'⬇':'→'));
+   kpiSet(1,'노출 '+n7.toLocaleString()+' '+ar+'<br><small>클릭 '+c7.toLocaleString()+' · 기준일 '+met.last+' (7일 전 '+(pv.length?nP.toLocaleString():'측정없음')+')</small>', (!pv.length||n7>=nP)?'good':'warn');}
   else kpiSet(1,'–');
   if(vis&&!vis.error){const rows=vis.data||[];
    const n=rows.filter(r=>r.utm_source==='blog'||['naver_blog','tistory'].includes(r.유입_출처)).length;
@@ -276,7 +291,10 @@ async function load(){
 
  // ── ③(구⑥) 매출 키워드 ──
  (function(){
-  document.getElementById('c6').innerHTML=tbl(ranks,[
+  /* ★v1.1 — 종전 limit(14)라 리퍼브 후보가 뒤로 밀려 잘렸다(실제 5건→화면 2건).
+     집계는 전량(limit 300)으로 하고 표만 상위 14행을 보여준다. */
+  const _rkNote=ranks.length>14?'<div class="sub" style="font-size:12px;margin-bottom:4px">순위 보유 '+ranks.length+'건 중 상위 14건 표시 · 위 KPI(1p '+page1.length+' / 리퍼브 '+refurb.length+')는 전량 집계</div>':'';
+  document.getElementById('c6').innerHTML=_rkNote+tbl(ranks.slice(0,14),[
    {h:'키워드',k:'핵심키워드'},{h:'채널',k:'채널'},{h:'순위',f:r=>'<b>'+esc(r.최근순위)+'위</b>'},
    {h:'상태',f:r=>r.최근순위<=10?'<span class="b b1">1페이지</span>':(r.최근순위<=20?'<span class="b b5">2페이지</span>':'<span class="b b3">리퍼브리시 후보</span>')}]);
  })();

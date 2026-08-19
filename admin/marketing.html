@@ -1146,7 +1146,55 @@ function secReveal(el){
   var nav=p.querySelector(':scope > .sec-nav');if(!nav||!nav._groups)return;
   for(var i=0;i<nav._groups.length;i++){var g=nav._groups[i];for(var j=0;j<g.els.length;j++){if(g.els[j]===el||g.els[j].contains(el)){if(nav._cur!==i&&nav._cur!==-1)_secApply(nav,i);return;}}}
 }
-function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');setTimeout(buildSecNavs,400);if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2'){loadDrafts();loadRewritePriority();}if(id==='t15')loadRewriteTab();if(id==='t3')loadSlots();if(id==='tsch')schOpen();if(id==='tplan')loadSlotPlan();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6'){loadAlgo();loadSkillRules();}if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();if(id==='t12'){var fbf=document.getElementById('fb-frame');if(fbf&&!fbf.getAttribute('src'))fbf.setAttribute('src','/blog.html');loadFunnelRecon();}}
+function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelectorAll('.mob-item').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');setTimeout(buildSecNavs,400);if(id==='t1'){loadStats();loadNaverManual();}if(id==='t2'){loadDrafts();loadRewritePriority();}if(id==='t15')loadRewriteTab();if(id==='t3')loadSlots();if(id==='tsch')schOpen();if(id==='tplan')loadSlotPlan();if(id==='t4')loadGiants();if(id==='t5'){loadRankEntries();loadWinning();loadChannelDiagnosis();}if(id==='t6'){loadAlgo();loadSkillRules();}if(id==='t7')initCalendar();if(id==='t8')loadKeywordInsight();if(id==='t9')loadAutogenJobs();if(id==='t10')loadPortfolio();if(id==='t11')loadFacts();if(id==='t12'){var fbf=document.getElementById('fb-frame');if(fbf&&!fbf.getAttribute('src'))fbf.setAttribute('src','/blog.html');loadFunnelRecon();}if(id==='tcs')loadCS();}
+
+/* ══ 고객소통 받은편지함 — 2026-08-19 신설 ══════════════════════════════
+   정본은 v_cs_inbox 하나다(읽기 전용). 화면에서 상태를 바꾸지 않는다.
+   ★지표는 건수가 아니라 최장 미응답 시간이다 — 건수는 12로 조용한데 실제 문제가 15일인 적이 있었다. */
+function csDur(h){h=Number(h)||0;return h>=24?(Math.floor(h/24)+'일 '+(h%24)+'시간'):(h+'시간');}
+function csTile(t,v,c){return '<div style="flex:1;min-width:150px;border:1px solid '+c+';border-radius:10px;padding:14px 16px;background:#fff"><div style="font-size:.72rem;color:#64748b">'+t+'</div><div style="font-size:1.45rem;font-weight:700;color:'+c+';margin-top:2px">'+v+'</div></div>';}
+async function loadCS(){
+  var box=document.getElementById('cs-list'), kpi=document.getElementById('cs-kpi');
+  if(!box) return;
+  box.innerHTML='<p style="color:#94a3b8;font-size:.85rem">불러오는 중…</p>';
+  var res=await sb.from('v_cs_inbox').select('*').order('경과시간',{ascending:false});
+  if(res.error){box.innerHTML='<p style="color:#dc2626;font-size:.85rem">조회 실패: '+esc(res.error.message)+'</p>';return;}
+  var rows=res.data||[];
+  var over=rows.filter(function(r){return r.경과시간>r.sla시간;});
+  var mx=rows.length?Math.max.apply(null,rows.map(function(r){return r.경과시간||0;})):0;
+  kpi.innerHTML=csTile('최장 미응답',csDur(mx),mx>0?'#dc2626':'#16a34a')
+    +csTile('기준 초과',over.length+'건',over.length?'#dc2626':'#16a34a')
+    +csTile('전체 대기',rows.length+'건','#334155');
+  csBadgePaint(rows);
+  if(!rows.length){box.innerHTML='<p style="color:#16a34a;font-size:.9rem">대기 중인 건이 없습니다.</p>';return;}
+  var grp={};rows.forEach(function(r){(grp[r.구분]=grp[r.구분]||[]).push(r);});
+  var h='';
+  Object.keys(grp).forEach(function(k){
+    var g=grp[k], go=g.filter(function(r){return r.경과시간>r.sla시간;}).length;
+    h+='<h3 style="font-size:.95rem;font-weight:700;margin:20px 0 8px">'+esc(k)+' <span style="color:#94a3b8;font-weight:400">'+g.length+'건</span>'+(go?' <span style="color:#dc2626;font-weight:400">· 초과 '+go+'</span>':'')+'</h3>';
+    h+='<table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">경과</th><th style="padding:8px">사업부</th><th style="padding:8px">내용</th><th style="padding:8px">할 일</th><th style="padding:8px">링크</th></tr></thead><tbody>';
+    g.forEach(function(r){
+      var o=r.경과시간>r.sla시간;
+      h+='<tr style="border-top:1px solid #e2e8f0'+(o?';background:#fef2f2':'')+'">'
+       +'<td style="padding:8px;white-space:nowrap;font-weight:700;color:'+(o?'#dc2626':'#334155')+'">'+csDur(r.경과시간)+(o?' ⚠':'')+'<div style="font-size:.68rem;font-weight:400;color:#94a3b8">기준 '+r.sla시간+'시간</div></td>'
+       +'<td style="padding:8px;white-space:nowrap">'+esc(r.사업부||'-')+'</td>'
+       +'<td style="padding:8px">'+esc(r.내용||'')+'</td>'
+       +'<td style="padding:8px;color:#475569">'+esc(r.할일||'')+'</td>'
+       +'<td style="padding:8px;white-space:nowrap">'+(r.링크?'<a href="'+esc(r.링크)+'" target="_blank" rel="noopener" style="color:#2563eb">열기</a>':'-')+'</td></tr>';
+    });
+    h+='</tbody></table>';
+  });
+  box.innerHTML=h;
+}
+function csBadgePaint(rows){
+  var b=document.getElementById('cs-badge'); if(!b) return;
+  var n=(rows||[]).filter(function(r){return r.경과시간>r.sla시간;}).length;
+  b.textContent=n?String(n):'';
+}
+async function csBadgeRefresh(){
+  try{var r=await sb.from('v_cs_inbox').select('경과시간,sla시간');if(!r.error)csBadgePaint(r.data);}catch(e){}
+}
+setTimeout(csBadgeRefresh,3500);setInterval(csBadgeRefresh,300000);
 
 /* ══ 편성안 (0기 slot-planner) — 2026-08-04 신설 ══════════════════════════
    읽기 전용이다. 승인·반려는 rpc_slot_plan_approve/reject 만 쓰고 anon으로 직접

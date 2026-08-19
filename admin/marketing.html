@@ -235,6 +235,20 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
   </nav>
   <!-- mobile-nav 제거: 사이드바 아이콘 축소형으로 통일(A안 v1.8.1) — 전 탭 모바일 접근 -->
   <main class="main">
+    <!-- ══ 고객소통 받은편지함 — 2026-08-19 신설 ══════════════════════════
+         v_cs_inbox 를 그대로 그린다. 이 탭의 지표는 발송 건수가 아니라 미응답 시간이다.
+         방을 분리한 기준이 「블로그냐 SNS냐」가 아니라 「답을 기다리는 사람이 있느냐」이기 때문. -->
+    <div class="tab-panel" id="tcs">
+      <div style="margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div>
+          <h2 style="font-size:1.2rem;font-weight:700">📮 고객소통 받은편지함</h2>
+          <p style="font-size:.78rem;color:#64748b;margin-top:4px">답을 기다리는 사람이 있는 일만 모읍니다. 지표는 건수가 아니라 <b>미응답 시간</b>입니다.</p>
+        </div>
+        <button onclick="loadCS()" style="padding:7px 14px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font-size:.8rem;cursor:pointer">새로고침</button>
+      </div>
+      <div id="cs-kpi" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px"></div>
+      <div id="cs-list"></div>
+    </div>
     <div class="tab-panel active" id="t1">
       <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div><h2 style="font-size:1.2rem;font-weight:700">📊 통계 대시보드</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">최근 7일 / mk_metrics</p></div>

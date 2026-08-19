@@ -1151,6 +1151,9 @@ function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.c
 /* ══ 고객소통 받은편지함 — 2026-08-19 신설 ══════════════════════════════
    정본은 v_cs_inbox 하나다(읽기 전용). 화면에서 상태를 바꾸지 않는다.
    ★지표는 건수가 아니라 최장 미응답 시간이다 — 건수는 12로 조용한데 실제 문제가 15일인 적이 있었다. */
+/* ★이 파일의 esc() 는 아래쪽 IIFE 안에 있어 여기서는 안 보인다(2026-08-19 실측 ReferenceError).
+   화면에 함수를 새로 붙일 땐 기존 헬퍼가 「전역인지」부터 확인해라. */
+if(typeof esc!=='function'){window.esc=function(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};}
 function csDur(h){h=Number(h)||0;return h>=24?(Math.floor(h/24)+'일 '+(h%24)+'시간'):(h+'시간');}
 function csTile(t,v,c){return '<div style="flex:1;min-width:150px;border:1px solid '+c+';border-radius:10px;padding:14px 16px;background:#fff"><div style="font-size:.72rem;color:#64748b">'+t+'</div><div style="font-size:1.45rem;font-weight:700;color:'+c+';margin-top:2px">'+v+'</div></div>';}
 async function loadCS(){

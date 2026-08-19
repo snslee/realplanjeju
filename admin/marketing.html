@@ -210,6 +210,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
   </header>
   <nav class="sidebar">
+    <div class="nav-section">고객</div>
+    <div class="nav-item" title="고객소통 받은편지함(답을 기다리는 사람)" onclick="switchTab('tcs',this);loadCS()"><span>📮</span>고객소통 <b id="cs-badge" style="margin-left:auto;font-size:.7rem;color:#dc2626"></b></div>
     <div class="nav-section">분석</div>
     <div class="nav-item active" title="통계 대시보드" onclick="switchTab('t1',this)"><span>📊</span>통계 대시보드</div>
     <div class="nav-item" title="잠자는 거인" onclick="switchTab('t4',this)"><span>🔍</span>잠자는 거인</div>

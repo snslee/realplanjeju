@@ -945,6 +945,24 @@ const PROJECT_REF='iodfqlkeiwxyuojwcozv';
 const SB_AUTH_KEY='sb-'+PROJECT_REF+'-auth-token';
 const SB_VERIFIER_KEY='sb-'+PROJECT_REF+'-auth-token-code-verifier';
 const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{detectSessionInUrl:false,persistSession:true,autoRefreshToken:true,flowType:'pkce',lock:(n,t,fn)=>fn()}});
+
+/* ★2026-08-19 정본 단일화 3단계 — PostgREST 1,000행 상한 페이징 헬퍼.
+   .limit(n)은 서버 상한(1,000)을 넘지 못하고, 넘어도 에러가 안 난다.
+   즉 표가 1,000행을 넘는 순간 화면 숫자가 조용히 깎인다(2026-08-18 실증: 2,073→724).
+   전량 목록을 읽는 곳은 반드시 이 함수를 쓴다. */
+async function sbAll(build, opt){
+  opt=opt||{}; var page=opt.page||1000, max=opt.max||50000;
+  var out=[], from=0;
+  for(;;){
+    var r=await build().range(from, from+page-1);
+    if(r&&r.error) return {data:out, error:r.error};
+    var d=(r&&r.data)||[];
+    out=out.concat(d);
+    if(d.length<page || out.length>=max) break;
+    from+=page;
+  }
+  return {data:out, error:null};
+}
 async function loadGrowthSignal(){
   var el=document.getElementById('growth-signal'); if(!el) return;
   try{
@@ -1514,7 +1532,7 @@ function copyTitle(t){navigator.clipboard.writeText(t).then(()=>showToast('📋 
 
 async function loadSlots(){
   document.getElementById('slots-body').innerHTML='<tr><td colspan="6" class="loading">로딩 중...</td></tr>';
-  const{data,error}=await sb.from('mk_blog_slots').select('id,발행일,채널,핵심키워드,최종제목,콘텐츠방향,상태,수정일').order('발행일',{ascending:false}).limit(1000);
+  const{data,error}=await sbAll(()=>sb.from('mk_blog_slots').select('id,발행일,채널,핵심키워드,최종제목,콘텐츠방향,상태,수정일').order('발행일',{ascending:false}));
   if(error){showToast('슬롯 로드 실패');return;}allSlots=data||[];_slotMonth=0;applySlotView();
 }
 let _slotList=[],_slotPage=1; const SLOT_PER=30;
@@ -1777,7 +1795,7 @@ async function loadNvTerms(){
     const latest=(data&&data.length)?data.reduce((m,r)=>r.유입월>m?r.유입월:m,'2000-01-01'):null;
     const rows=(data||[]).filter(r=>r.유입월===latest);
     // 커버 판정: publish_log 핵심키워드 포함 매칭
-    const {data:pub}=await sb.from('mk_blog_publish_log').select('채널,핵심키워드').not('핵심키워드','is',null);
+    const {data:pub}=await sbAll(()=>sb.from('mk_blog_publish_log').select('채널,핵심키워드').not('핵심키워드','is',null));
     const norm=s=>(s||'').toLowerCase().replace(/\s/g,'');
     const pmap={}; (pub||[]).forEach(p=>{(pmap[p.채널]=pmap[p.채널]||[]).push(norm(p.핵심키워드));});
     window._nvTerms=rows.map(r=>{const nk=norm(r.키워드);const covered=(pmap[r.채널]||[]).some(k=>k&&(nk.includes(k)||k.includes(nk)));return {...r,covered};})
@@ -2724,7 +2742,7 @@ async function loadRewriteTab(){
   var tb=document.getElementById('rw2-body'); if(!tb)return;
   tb.innerHTML='<tr><td colspan="10" class="loading">로딩 중...</td></tr>';
   try{
-    const{data,error}=await sb.from('v_rewrite_queue').select('*');
+    const{data,error}=await sbAll(()=>sb.from('v_rewrite_queue').select('*'));
     if(error)throw error;
     RW.rows=data||[]; renderRwQueue(); rwPick(); loadRwBoard(); loadRwMedia();
   }catch(e){tb.innerHTML='<tr><td colspan="10" style="color:#dc2626;padding:12px">리라이트 대상 로드 실패: '+rwEsc(e.message||e)+'</td></tr>';}

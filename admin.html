@@ -9851,5 +9851,37 @@ setInterval(warn,600);
 })();
 </script>
 
+
+<script>
+/* RP_STAGE v1.2 (2026-08-20) 견적 상세 상단 액션바 — 품목을 고칠 진입로를 맨 위로 올린다. */
+(function(){
+if(window.RP_STAGE_12){return;} window.RP_STAGE_12='1.2';
+function findBtn(fn){ var a=document.querySelectorAll('button'); for(var i=0;i<a.length;i++){ var oc=a[i].getAttribute('onclick')||''; if(oc.indexOf(fn+'(')===0) return oc; } return null; }
+function build(){
+  var isDetail=/^#quotation\/(?!new)/.test(location.hash||'');
+  var bar=document.getElementById('rp-actbar');
+  if(!isDetail){ if(bar){bar.parentNode.removeChild(bar);} return; }
+  if(bar) return;
+  var step=document.querySelector('.qt-chevron-step'); if(!step) return;
+  var host=step.parentNode; if(!host) return;
+  var rev=findBtn('qtReviseQuotation'), cop=findBtn('qtCopyQuotation'), edt=findBtn('qtOpenEditModal');
+  if(!rev&&!cop&&!edt) return;
+  bar=document.createElement('div'); bar.id='rp-actbar';
+  bar.style.cssText='margin:12px 0 4px;padding:11px 13px;background:#F4F7FB;border:1px solid #D5DFEA;border-radius:8px';
+  var h='<div style="font-size:12px;color:#4A5768;margin-bottom:8px;line-height:1.7">'
+   +'품목(일정 줄·견적 줄)을 고치려면 <b>[품목 고쳐서 새 버전]</b>을 쓰세요 — 원본은 그대로 남고 -v2 로 새 판이 열립니다.'
+   +'<br><b>[제목·금액 수정]</b>은 제목·견적금액·결제조건·비고 네 칸만 바꿉니다(품목은 안 바뀝니다).</div>'
+   +'<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  if(rev){ h+='<button onclick="'+rev.replace(/"/g,'&quot;')+'" style="flex:1;min-width:200px;padding:10px;border-radius:6px;border:1px solid #0C447C;background:#0C447C;color:#fff;font-weight:600;cursor:pointer">✏ 품목 고쳐서 새 버전 (-v2)</button>'; }
+  if(cop){ h+='<button onclick="'+cop.replace(/"/g,'&quot;')+'" style="flex:1;min-width:180px;padding:10px;border-radius:6px;border:1px solid #378ADD;background:#EAF1FA;color:#0C447C;font-weight:600;cursor:pointer">📋 복사해서 새 견적</button>'; }
+  if(edt){ h+='<button onclick="'+edt.replace(/"/g,'&quot;')+'" style="flex:1;min-width:160px;padding:10px;border-radius:6px;border:1px solid #C9D3E0;background:#fff;color:#4A5768;cursor:pointer">✏ 제목·금액 수정</button>'; }
+  h+='</div>';
+  bar.innerHTML=h;
+  if(host.nextSibling){ host.parentNode.insertBefore(bar,host.nextSibling); } else { host.parentNode.appendChild(bar); }
+}
+setInterval(build,700);
+})();
+</script>
+
 </body>
 </html>

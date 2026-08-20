@@ -204,7 +204,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.20.2</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.20.3</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -372,7 +372,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
           <table class="tbl"><thead><tr><th>요일</th><th>순번</th><th>채널</th><th>순위</th><th>키워드</th><th>상태</th><th>대표님이 할 일</th><th>담당</th><th>확인</th></tr></thead>
           <tbody id="rw2-bbody"><tr><td colspan="9" class="loading">로딩 중...</td></tr></tbody></table>
         </div></div>
-        <div style="font-size:.75rem;color:#94a3b8;margin-top:8px">💡 행을 누르면 그 글의 <b>라이브 보완 체크리스트</b>가 펼쳐집니다 · 🔒 = 라이브 보완이 남아 반영 잠김</div>
+        <div style="font-size:.75rem;color:#94a3b8;margin-top:8px">💡 행을 누르면 그 글의 <b>라이브 보완 체크리스트</b>가 펼쳐집니다 · 🔒 = 라이브 보완이 남아 반영 잠김 · <b style="color:#9a3412">⏸ 보류 슬롯이라도 보완이 남아 있으면 여기 함께 뜹니다(v1.20.3)</b></div>
       </div>
       <div id="rw2-q" style="display:none">
         <div class="filter-bar" style="margin-bottom:10px">
@@ -2811,7 +2811,15 @@ async function loadRewriteTab(){
   try{
     const{data,error}=await sbAll(()=>sb.from('v_rewrite_queue').select('*'));
     if(error)throw error;
-    RW.rows=data||[]; renderRwQueue(); rwPick(); loadRwBoard(); loadRwMedia();
+    RW.rows=data||[];
+    /* ★v1.20.3 수리1 — 대상 재고에서 바로 ③보완으로 들어가기 위해 초안별 「대기 보완 건수」를 먼저 적재한다.
+       이게 없으면 진행중 행이 「⏳ 진행중」 글자뿐이라 대표님이 클릭할 것이 없다(2026-08-20 대표 지적). */
+    try{
+      const{data:fxd}=await sb.from('mk_blog_drafts').select('id,라이브보완:자가검증_결과->라이브보완').not('자가검증_결과->라이브보완','is',null).limit(300);
+      RW.fixmap={};
+      (fxd||[]).forEach(function(x){var a=x.라이브보완; if(Array.isArray(a))RW.fixmap[x.id]=a.filter(function(f){return f.상태!=='완료';}).length;});
+    }catch(e){ RW.fixmap=RW.fixmap||{}; }
+    renderRwQueue(); rwPick(); loadRwBoard(); loadRwMedia();
   }catch(e){tb.innerHTML='<tr><td colspan="10" style="color:#dc2626;padding:12px">리라이트 대상 로드 실패: '+rwEsc(e.message||e)+'</td></tr>';}
 }
 /* ★2026-08-18 신설 — 리라이트 슬롯에 배정된 미디어를 화면에 띄운다.
@@ -2862,7 +2870,10 @@ async function loadRwBoard(){
   tb.innerHTML='<tr><td colspan="9" class="loading">로딩 중...</td></tr>';
   try{
     var from=new Date(Date.now()-14*864e5).toISOString().slice(0,10);
-    const{data,error}=await sb.from('v_rewrite_board').select('*').gte('발행일',from).neq('슬롯상태','halted').order('발행일');
+    /* ★v1.20.3 수리2 — 「보류(halted)」 슬롯이라도 라이브 보완이 남아 있으면 감추지 않는다.
+       기존 .neq('슬롯상태','halted') 가 구간형 상세 보완 10건(SNS 운영대행 6·체육대회 진행순서 4)을
+       편성판에서 통째로 지우고 있었다(2026-08-20 라이브 실측). */
+    const{data,error}=await sb.from('v_rewrite_board').select('*').gte('발행일',from).or('슬롯상태.neq.halted,보완_대기.gt.0').order('발행일');
     if(error)throw error;
     RWB.rows=data||[]; renderRwBoard();
   }catch(e){tb.innerHTML='<tr><td colspan="9" style="color:#dc2626;padding:12px">편성판 로드 실패: '+rwbEsc(e.message||e)+'</td></tr>';}
@@ -3057,6 +3068,7 @@ function renderRwQueue(){
     var i=RW.rows.indexOf(r);
     var act=r.잠금?'<span style="color:#94a3b8;font-size:.72rem">🔒 손대지 않음</span>'
       :(r.진행==='진행중'?'<span style="color:#b45309;font-size:.72rem;font-weight:700">⏳ 진행중'+(r.착수_경과일!=null?' D+'+r.착수_경과일+(r.착수_경과일>14?' 🔥':''):'')+'</span>'
+        +(r.리라이트_초안_id?'<br><button class="btn-sm btn-approve" style="font-size:.7rem;margin-top:3px" onclick="rwOpenFixFromQueue('+i+')">✎ 보완'+(((RW.fixmap||{})[r.리라이트_초안_id]||0)?' '+RW.fixmap[r.리라이트_초안_id]:'')+'</button>':'')
       :(r.진행==='완료'?'<span style="color:#16a34a;font-size:.72rem;font-weight:700">✅ 완료</span>'
       :'<button class="btn-sm btn-copy" style="font-size:.7rem" onclick="rwStart('+i+')">진단 보기</button>'));
     return '<tr'+(r.잠금?' style="background:#f8fafc;color:#94a3b8"':'')+'>'
@@ -3071,6 +3083,15 @@ function renderRwQueue(){
       +'<td style="font-size:.72rem">'+rwEsc(String(r.트랙||'').slice(0,1))+'</td>'
       +'<td>'+act+'</td></tr>';
   }).join('');
+}
+/* ★v1.20.3 수리1 — ① 대상 재고에서 ③ 보완 판을 바로 연다.
+   기존에는 ⓪ 편성판의 「✎ 보완」 버튼 하나가 유일한 진입로였고, 편성판은 보류(halted) 슬롯을
+   잘라내므로 보완 18건 중 14건이 어떤 경로로도 열리지 않았다(2026-08-20 라이브 실측). */
+function rwOpenFixFromQueue(i){
+  var r=RW.rows[i]; if(!r){showToast('행을 찾지 못했습니다');return;}
+  if(!r.리라이트_초안_id){showToast('보강본 초안이 아직 없습니다');return;}
+  RW.sel=r; RW.diag=null; RW.draft=null;
+  rwStepBtn(3); renderRwWrite();
 }
 function rwStep(s,b){
   ['b','q','d','w','p','r'].forEach(function(k){var e=document.getElementById('rw2-'+k);if(e)e.style.display=(k===s?'':'none');});

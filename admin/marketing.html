@@ -184,6 +184,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 .rwfx .ph-b{flex:1;min-width:0}
 .rwfx .ph-n{font-size:var(--f-s);font-weight:700;word-break:break-all}
 .rwfx .ph-l{font-size:var(--f-xs);color:var(--mut);margin-top:var(--s05)}
+.rwfx .ph-img{width:132px;height:99px;object-fit:cover;border-radius:var(--r-s);border:1px solid var(--line);cursor:zoom-in;flex-shrink:0;background:#f1f5f9}
+.rwfx .ph-img-x{width:132px;height:99px;border-radius:var(--r-s);border:1px dashed var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:var(--f-xs);color:var(--mut);text-align:center;line-height:1.4}
+.rwfx .ph-f{font-size:var(--f-s);font-weight:800;word-break:break-all}
+.rwfx .ph-p{font-size:var(--f-xs);color:var(--mut);word-break:break-all;margin-top:2px}
+.rwfx .folderbox{border:1px solid #fdba74;background:#fff7ed;border-radius:var(--r-s);padding:var(--s2);margin-top:var(--s2)}
 .rwfx .done-bar{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
   padding:var(--s3);margin-top:var(--s2);text-align:center}
 </style>
@@ -204,7 +209,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.21.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.22.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -3259,6 +3264,9 @@ function rwfxMd(t){
 function rwfxNew(f){var n=f.신규분||f.신규;return Array.isArray(n)?n:(n?[n]:[]);}
 function rwfxGone(f){return f.지울문장||f.삭제||'';}
 function rwfxPhotoPath(p){return (p&&(p.지시문||p.파일경로||p.파일))||'';}
+function rwfxFileName(p){var s=rwfxPhotoPath(p);var i=Math.max(s.lastIndexOf('\\'),s.lastIndexOf('/'));return i>=0?s.slice(i+1):s;}
+/* 반영대기 폴더 — 사진은 화면에서 못 여니 탐색기에서 끌어다 놓는다. 폴더는 초안에 적어 둔 값을 쓴다. */
+function rwfxWaitFolder(){var d=RW.draft;var v=d&&d.자가검증_결과&&d.자가검증_결과.반영대기_폴더;return v?String(v):'';}
 function rwfxSubs(f){return Array.isArray(f.하위)?f.하위:[];}
 function rwfxPasteCount(segs){return segs.reduce(function(a,x){
   var n=rwfxSubs(x.f).length;return a+(n?n:((String(x.f.복사문구||'')).trim()?1:0));},0);}
@@ -3471,7 +3479,21 @@ function renderRwFix(){
         +'<span class="k">'+rwEsc(x.f.구간)+'</span><span>'+rwEsc(x.f.항목||'')+'</span></button>';
     }).join('');
     h+='</div><div class="hint">보완을 한 건씩 붙이지 않습니다. 붙는 자리가 붙어 있는 것끼리 묶어 <b>구간 통째로</b> 갈아끼웁니다. '
-      +'구간 안에서 <span class="new">빨간 밑줄</span>이 새로 들어가는 부분이고, 나머지는 지금 라이브에 있는 글 그대로입니다.</div></div>';
+      +'구간 안에서 <span class="new">빨간 밑줄</span>이 새로 들어가는 부분이고, 나머지는 지금 라이브에 있는 글 그대로입니다.</div>';
+    /* ★v1.22.0 사진 안내 — 「경로가 안 열린다」의 답. 화면은 D드라이브를 못 연다(크롬이 막는다).
+       그래서 사진은 미리 폴더에 번호순으로 담아 두고, 대표님은 탐색기에서 끌어다 놓으신다. */
+    if(사진수){
+      var wf=rwfxWaitFolder();
+      h+='<div class="folderbox"><div style="font-weight:800;font-size:var(--f-s);color:#9a3412">📁 사진 '+사진수+'장 — 아래 폴더에 번호순으로 담아 뒀습니다</div>'
+        +(wf?('<div style="font-family:monospace;font-size:var(--f-s);margin-top:6px;word-break:break-all">'+rwEsc(wf)+'</div>'
+              +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'
+              +'<button class="fbtn p" onclick="rwFxCopyText(rwfxWaitFolder(),\'폴더 경로\')">폴더 경로 복사</button></div>'
+              +'<div class="hint" style="margin-top:6px">폴더 경로를 복사해 <b>탐색기 주소창</b>에 붙여 넣으시고, 파일을 편집기에 끌어다 놓으시면 됩니다. '
+              +'캡션은 각 사진 카드의 <b>캡션 복사</b>를 쓰십시오. <b>화면에서 사진을 직접 여는 것은 크롬이 막아 둬 불가능합니다.</b></div>')
+            :'<div class="hint" style="margin-top:6px">이 글은 아직 반영대기 폴더가 지정되지 않았습니다. 채팅에 <b>「반영대기 폴더 정리 진행」</b>이라고 주시면 번호순으로 담아 드립니다.</div>')
+        +'</div>';
+    }
+    h+='</div>';
 
     h+='<div class="doc"><div style="font-size:var(--f-h2);font-weight:800">'+rwEsc(d.제목||'')+'</div>';
     segs.forEach(function(x,n){
@@ -3491,13 +3513,23 @@ function renderRwFix(){
         +(rwfxGone(f)?'<i class="sw-gone">취소선</i> 지우는 문장':'')+'</div></div>'
         +rwfxSegBody(f,x.i);
       (Array.isArray(f.사진)?f.사진:[]).forEach(function(p,pi){
-        h+='<div class="ph"><div class="ph-t">'+rwEsc(p.번호||(f.구간+'-'+(pi+1)))+'</div><div class="ph-b">'
-          +'<div class="ph-n">'+rwEsc(rwfxPhotoPath(p))+'</div>'
+        /* ★v1.22.0 — 사진 카드에 「실물 그림」을 넣는다.
+           구판은 경로 글자만 보여 주고 「경로」 버튼은 클립보드 복사가 전부였다.
+           그래서 대표님이 어떤 사진인지 화면에서 확인할 방법이 아예 없었다.
+           https 화면은 D드라이브 파일을 못 연다(크롬 차단). 그래서 썸네일을 서버에 올려 띄운다. */
+        var th=p.썸네일_url||'';
+        h+='<div class="ph"><div class="ph-t">'+rwEsc(p.번호||(f.구간+'-'+(pi+1)))+'</div>'
+          +(th?'<img class="ph-img" src="'+rwEsc(th)+'" alt="'+rwEsc(p.캡션||'')+'" title="눌러서 크게 보기" onclick="window.open(\''+rwEsc(th)+'\',\'_blank\')">'
+              :'<div class="ph-img-x">미리보기<br>없음</div>')
+          +'<div class="ph-b">'
+          +'<div class="ph-f">'+rwEsc(rwfxFileName(p))+'</div>'
+          +'<div class="ph-p">'+rwEsc(rwfxPhotoPath(p))+'</div>'
           +(p.위치?'<div class="ph-l">넣을 자리 · '+rwEsc(p.위치)+'</div>':'')
           +(p.캡션?'<div class="ph-l">캡션 · '+rwEsc(p.캡션)+'</div>':'')
           +'</div><div style="display:flex;flex-direction:column;gap:4px">'
-          +'<button class="fbtn" onclick="rwFxCopyPhoto('+x.i+','+pi+',\'f\')">경로</button>'
-          +'<button class="fbtn" onclick="rwFxCopyPhoto('+x.i+','+pi+',\'c\')">캡션</button></div></div>';
+          +'<button class="fbtn" onclick="rwFxCopyPhoto('+x.i+','+pi+',\'n\')">파일명</button>'
+          +'<button class="fbtn" onclick="rwFxCopyPhoto('+x.i+','+pi+',\'f\')">경로 복사</button>'
+          +'<button class="fbtn" onclick="rwFxCopyPhoto('+x.i+','+pi+',\'c\')">캡션 복사</button></div></div>';
       });
       h+='<div class="seg-f">'
         +(rwfxSubs(f).length?'':'<button class="fbtn p big" onclick="rwFxCopy('+x.i+')">'+(f.유형==='제목'?'제목 복사':'이 구간 통째로 복사')+'</button>')
@@ -3553,7 +3585,9 @@ function rwFxCopy(i){var f=rwFxList()[i];if(!f){showToast('항목 없음');retur
   rwFxCopyText(sv,(f.구간||'')+' 구간');}
 function rwFxCopyPhoto(i,pi,kind){
   var f=rwFxList()[i], p=f&&Array.isArray(f.사진)?f.사진[pi]:null; if(!p)return;
-  rwFxCopyText(kind==='c'?(p.캡션||''):rwfxPhotoPath(p),kind==='c'?'캡션':'경로');
+  if(kind==='c'){rwFxCopyText(p.캡션||'','캡션');return;}
+  if(kind==='n'){rwFxCopyText(rwfxFileName(p),'파일명');return;}
+  rwFxCopyText(rwfxPhotoPath(p),'경로');
 }
 async function rwFxDone(i,el){
   var d=RW.draft; if(!d)return;

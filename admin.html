@@ -9798,5 +9798,58 @@ setInterval(function(){var tbl=q('#qt-items-table');if(!tbl)return;if(isTour()&&
 })();
 </script>
 
+
+<script>
+/* RP_STAGE v1.1 (2026-08-20) 담기 시 분류·수량 제안 + 상태 경고. v1.0 위에 얹는 추가 블록. */
+(function(){
+if(window.RP_STAGE_11){return;} window.RP_STAGE_11='1.1';
+var RULES=[
+ [/조식|아침식사/,'식사','조식'],[/중식|점심/,'식사','중식'],[/석식|저녁/,'식사','석식'],
+ [/숙소|체크인|호텔|리조트|펜션|입실/,'숙박','호텔'],
+ [/버스|차량|렌터카|승합|리무진/,'교통','버스'],
+ [/항공|김포|김해|청주|탑승수속/,'운임','항공료'],
+ [/가이드|인솔|안전요원|스텝|스탭/,'인건비','가이드'],
+ [/보험/,'기타','보험'],
+ [/입장|체험|관람|투어|박물관|테마파크|미술관/,'여행코스','관광지']
+];
+function suggest(nm){ nm=String(nm||''); for(var i=0;i<RULES.length;i++){ if(RULES[i][0].test(nm)) return {c1:RULES[i][1],c2:RULES[i][2]}; } return null; }
+var _t=window.rpToggle;
+window.rpToggle=function(i){
+  var arr=(window.state&&state.qt&&state.qt.items)||[]; var it=arr[i];
+  var turningOn = it && (it.견적서_표시===false);
+  _t.apply(null,arguments);
+  if(!it||!turningOn) return;
+  var s=suggest(it.품명);
+  if(s){ if(!String(it.카테고리_대분류||'').trim()){ window.qtUpdItem(i,'카테고리_대분류',s.c1); }
+         if(!String(it.카테고리_중분류||'').trim()){ window.qtUpdItem(i,'카테고리_중분류',s.c2); } }
+  var pax=+((window.state&&state.qt&&state.qt.인원_성인)||0);
+  if(pax>0 && !(+it.수량>0)){ window.qtUpdItem(i,'수량',pax); }
+  if(!String(it.단위||'').trim()){ window.qtUpdItem(i,'단위','명'); }
+  if(window.rpPaint){window.rpPaint();}
+};
+function warn(){
+  var box=document.getElementById('rp-sum'); if(!box) return;
+  var arr=(window.state&&state.qt&&state.qt.items)||[];
+  var nq=0,noDay=0,noTime=0,noPrice=0;
+  for(var i=0;i<arr.length;i++){ var it=arr[i]||{}; if(it.유형==='subtotal') continue;
+    if(it.견적서_표시!==false){ nq++; if(!(+it.단가>0)) noPrice++; }
+    if(it.일정표_표시){ if(it.일차==null||it.일차==='') noDay++; if(!String(it.시간||'').trim()) noTime++; } }
+  var msgs=[];
+  if(nq===0){ msgs.push('견적서에 인쇄될 줄이 <b>0행</b>입니다 — 위에서 [＋ 견적담기]를 누르세요'); }
+  if(noPrice>0){ msgs.push('단가 미입력 <b>'+noPrice+'행</b>'); }
+  if(noDay>0){ msgs.push('일차 미기입 <b>'+noDay+'행</b> (일정표 맨 뒤 「일차 미지정」으로 나갑니다)'); }
+  if(noTime>0){ msgs.push('시간 미기입 <b>'+noTime+'행</b> (일정표에 「-」로 인쇄됩니다 · 전일 자유일정이면 정상)'); }
+  var old=document.getElementById('rp-warn'); if(old){ old.parentNode.removeChild(old); }
+  if(!msgs.length){ box.style.background='#EAF6EC'; box.style.borderColor='#4CA25F'; box.style.color='#1F6B33'; return; }
+  box.style.background='#FAEEDA'; box.style.borderColor='#D9A441'; box.style.color='#854F0B';
+  var d=document.createElement('div'); d.id='rp-warn';
+  d.style.cssText='margin-top:6px;padding:8px 11px;background:#FFF7E8;border:1px solid #D9A441;border-radius:6px;font-size:12px;color:#854F0B;line-height:1.7';
+  d.innerHTML='확인이 필요합니다 — '+msgs.join(' · ');
+  box.parentNode.insertBefore(d, box.nextSibling);
+}
+setInterval(warn,600);
+})();
+</script>
+
 </body>
 </html>

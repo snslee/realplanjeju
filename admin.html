@@ -9707,5 +9707,96 @@ setTimeout(async function(){
   }catch(e){}
 },2500);
 </script>
+
+<script>
+/* RP_STAGE v1.0 (2026-08-20) 국내여행 견적 = 일정표 우선 2단 입력 (B안)
+   기존 코드 무수정. 이 블록만 삭제하면 완전 원복. */
+(function(){
+if(window.RP_STAGE){return;} window.RP_STAGE='1.0';
+function q(s){return document.querySelector(s);}
+function ST(){return (window.state&&window.state.qt)?window.state.qt:null;}
+function ITEMS(){var s=ST();return (s&&s.items)?s.items:[];}
+function isTour(){var s=ST();return !!(s&&s.bu==='국내여행');}
+function E(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function F(n){n=+n||0;return n.toLocaleString('ko-KR');}
+var FLD={1:'일차',2:'시간',3:'품명',4:'일정_표시',5:'카테고리_중분류',6:'비고',7:'카테고리_대분류',8:'수량',9:'단위',10:'단가'};
+var CSS='#rp-wrap .rp-h{font-weight:600;margin:16px 0 6px;color:#0C447C;font-size:14px}'
++'#rp-wrap .rp-sub{font-weight:400;color:#6B7785;font-size:12px}'
++'#rp-wrap table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}'
++'#rp-wrap th{background:#0C447C;color:#fff;padding:6px 4px;font-weight:500}'
++'#rp-wrap td{border-bottom:1px solid #E5E9EF;padding:3px 4px;vertical-align:top}'
++'#rp-wrap input,#rp-wrap textarea{width:100%;box-sizing:border-box;font-size:12px;padding:3px;border:1px solid #D5DFEA;border-radius:4px}'
++'#rp-wrap textarea{resize:vertical;min-height:26px;font-family:inherit}'
++'#rp-wrap .rp-btn{border:1px solid #4CA25F;background:#EAF6EC;color:#1F6B33;border-radius:4px;padding:4px 6px;cursor:pointer;font-size:11px;white-space:nowrap;width:100%}'
++'#rp-wrap .rp-btn.off{border-color:#D9A441;background:#FAEEDA;color:#854F0B}'
++'#rp-wrap .rp-del{border:1px solid #E0B4B4;background:#FBEDED;color:#A33;border-radius:4px;padding:2px 7px;cursor:pointer}'
++'#rp-wrap .rp-add{width:100%;border-radius:6px;padding:9px;cursor:pointer;font-weight:600;margin-top:6px}'
++'#rp-wrap .rp-sum{margin-top:12px;padding:9px 11px;background:#F4F7FB;border:1px solid #D5DFEA;border-radius:6px;font-size:12px;color:#0C447C}';
+function shell(){return ''
++'<div class="rp-h">1단계 · 일정표 짜기 <span class="rp-sub">— 하루 동선을 먼저 적습니다. 돈이 붙는 줄만 [＋ 견적담기]로 아래로 내려보냅니다.</span></div>'
++'<table><thead><tr><th style="width:9%">견적담기</th><th style="width:5%">일차</th><th style="width:9%">시간</th><th style="width:38%">관광일정</th><th style="width:9%">식사구분</th><th style="width:26%">비고</th><th style="width:4%"></th></tr></thead><tbody id="rp-sched"></tbody></table>'
++'<button class="rp-add" style="background:#EAF6EC;color:#1F6B33;border:1px solid #4CA25F" onclick="rpAdd(1)">＋ 일정 행 추가</button>'
++'<div class="rp-h" style="margin-top:22px">2단계 · 견적서 담기 <span class="rp-sub">— 여기 있는 줄만 고객 견적서에 인쇄됩니다.</span></div>'
++'<table><thead><tr><th style="width:9%">대분류</th><th style="width:9%">중분류</th><th style="width:24%">품명</th><th style="width:6%">수량</th><th style="width:5%">단위</th><th style="width:10%">단가</th><th style="width:11%">금액</th><th style="width:22%">비고</th><th style="width:4%"></th></tr></thead><tbody id="rp-quote"></tbody></table>'
++'<div style="display:flex;gap:8px"><button class="rp-add" style="background:#EAF1FA;color:#0C447C;border:1px solid #378ADD;flex:1" onclick="rpAdd(2)">＋ 견적 행 추가</button>'
++'<button class="rp-add" style="background:#E6F1FB;color:#0C447C;border:1px solid #378ADD;flex:1" onclick="qtAddSubtotalRow()">＋ 소계 행</button></div>'
++'<div class="rp-sum" id="rp-sum"></div>';}
+function schedRow(it,i,inQ){return '<tr>'
++'<td style="text-align:center"><button class="rp-btn'+(inQ?'':' off')+'" onclick="rpToggle('+i+')">'+(inQ?'담김 ✓':'＋ 견적담기')+'</button></td>'
++'<td><input type="number" min="1" max="30" placeholder="-" value="'+E(it.일차==null?'':it.일차)+'" onchange="rpUpd('+i+',1,this.value)"></td>'
++'<td><input type="text" list="qt-time-list" placeholder="09:00" value="'+E(it.시간||'')+'" onchange="rpUpd('+i+',2,this.value)"></td>'
++'<td><textarea placeholder="예: 함덕해변 · 서우봉 자유시간" onchange="rpUpd('+i+',3,this.value)">'+E(it.품명||'')+'</textarea>'
++'<input type="text" style="margin-top:2px;font-size:11px" placeholder="↳ 일정표 표기 (비우면 위 문구 그대로)" value="'+E(it.일정_표시||'')+'" onchange="rpUpd('+i+',4,this.value)"></td>'
++'<td><input type="text" list="qt-cat2-list" placeholder="-" value="'+E(it.카테고리_중분류||'')+'" onchange="rpUpd('+i+',5,this.value)"></td>'
++'<td><textarea onchange="rpUpd('+i+',6,this.value)">'+E(it.비고||'')+'</textarea></td>'
++'<td style="text-align:center"><button class="rp-del" onclick="rpDel('+i+')">×</button></td></tr>';}
+function quoteRow(it,i){var amt=(+it.수량||0)*(+it.단가||0);return '<tr>'
++'<td><input type="text" list="qt-cat1-list" placeholder="운임·숙박" value="'+E(it.카테고리_대분류||'')+'" onchange="rpUpd('+i+',7,this.value)"></td>'
++'<td><input type="text" list="qt-cat2-list" placeholder="항공료·중식" value="'+E(it.카테고리_중분류||'')+'" onchange="rpUpd('+i+',5,this.value)"></td>'
++'<td><textarea onchange="rpUpd('+i+',3,this.value)">'+E(it.품명||'')+'</textarea></td>'
++'<td><input type="number" value="'+E(it.수량==null?'':it.수량)+'" onchange="rpNum('+i+',8,this.value)"></td>'
++'<td><input type="text" list="qt-unit-list" value="'+E(it.단위||'')+'" onchange="rpUpd('+i+',9,this.value)"></td>'
++'<td><input type="number" value="'+E(it.단가==null?'':it.단가)+'" onchange="rpNum('+i+',10,this.value)"></td>'
++'<td style="text-align:right;white-space:nowrap">'+F(amt)+'원</td>'
++'<td><textarea onchange="rpUpd('+i+',6,this.value)">'+E(it.비고||'')+'</textarea></td>'
++'<td style="text-align:center"><button class="rp-del" onclick="rpDel('+i+')">×</button></td></tr>';}
+function subRow(it,i){var v=(typeof window.qtCalcSubtotalAt==='function')?window.qtCalcSubtotalAt(i):(it.금액||0);
+return '<tr style="background:#E6F1FB;color:#0C447C;font-weight:500"><td colspan="6" style="text-align:center;padding:7px">▶ 소계 (자동 계산)</td><td style="text-align:right">'+F(v)+'원</td><td></td><td style="text-align:center"><button class="rp-del" onclick="rpDel('+i+')">×</button></td></tr>';}
+function paint(){
+ var tbl=q('#qt-items-table'); if(!tbl)return;
+ var btns=tbl.nextElementSibling, w=q('#rp-wrap');
+ if(!isTour()){ if(w)w.style.display='none'; tbl.style.display=''; if(btns)btns.style.display=''; return; }
+ if(!w){ var st=document.createElement('style'); st.textContent=CSS; document.head.appendChild(st);
+   w=document.createElement('div'); w.id='rp-wrap'; w.innerHTML=shell(); tbl.parentNode.insertBefore(w,tbl); }
+ w.style.display=''; tbl.style.display='none'; if(btns)btns.style.display='none';
+ var ae=document.activeElement;
+ if(ae&&ae.closest&&ae.closest('#rp-wrap')&&/INPUT|TEXTAREA/.test(ae.tagName)){return;}
+ var arr=ITEMS(),a='',b='',ns=0,nq=0,nb=0;
+ for(var i=0;i<arr.length;i++){ var it=arr[i]||{};
+  if(it.유형==='subtotal'){ b+=subRow(it,i); continue; }
+  var inS=!!it.일정표_표시, inQ=(it.견적서_표시!==false);
+  if(inS){ a+=schedRow(it,i,inQ); ns++; }
+  if(inQ){ b+=quoteRow(it,i); nq++; }
+  if(inS&&inQ){ nb++; } }
+ if(!a){a='<tr><td colspan="7" style="text-align:center;color:#8A94A6;padding:16px">일정 행이 없습니다. 아래 [＋ 일정 행 추가]로 하루 동선부터 적어 주세요.</td></tr>';}
+ if(!b){b='<tr><td colspan="9" style="text-align:center;color:#8A94A6;padding:16px">견적 행이 없습니다. 위에서 [＋ 견적담기]를 누르거나 [＋ 견적 행 추가]를 쓰세요.</td></tr>';}
+ q('#rp-sched').innerHTML=a; q('#rp-quote').innerHTML=b;
+ q('#rp-sum').innerHTML='일정 <b>'+ns+'</b>행 · 그중 견적에 담김 <b>'+nb+'</b>행 · 견적 전용 <b>'+(nq-nb)+'</b>행 · 견적서에 인쇄될 줄 <b>'+nq+'</b>행';
+}
+window.rpPaint=paint;
+window.rpUpd=function(i,k,v){var f=FLD[k];if(!f)return;if(f==='일차'){v=(v===''||v==null)?null:parseInt(v,10);}window.qtUpdItem(i,f,v);};
+window.rpNum=function(i,k,v){var f=FLD[k];window.qtUpdItem(i,f,(v===''||v==null)?0:(+v||0));};
+window.rpToggle=function(i){var it=ITEMS()[i];if(!it)return;window.qtUpdItem(i,'견적서_표시',it.견적서_표시===false);paint();};
+window.rpDel=function(i){window.qtDelItem(i);paint();};
+window.rpAdd=function(mode){window.qtAddRow();var arr=ITEMS(),i=arr.length-1;if(i<0)return;
+ if(mode===1){window.qtUpdItem(i,'일정표_표시',true);window.qtUpdItem(i,'견적서_표시',false);}
+ else{window.qtUpdItem(i,'일정표_표시',false);window.qtUpdItem(i,'견적서_표시',true);}
+ paint();};
+function wrapFn(n){var o=window[n];if(typeof o!=='function'||o.__rp)return;var w=function(){var r=o.apply(this,arguments);try{paint();}catch(e){}return r;};w.__rp=1;window[n]=w;}
+['qtUpdItem','qtDelItem','qtAddRow','qtAddSubtotalRow','qtUpdateAll','qtSelectBU','qtApplyCopySource','qtResetAll','qtSelectCustomer','qtSelectAn'].forEach(wrapFn);
+setInterval(function(){var tbl=q('#qt-items-table');if(!tbl)return;if(isTour()&&(!q('#rp-wrap')||tbl.style.display!=='none')){paint();}},700);
+})();
+</script>
+
 </body>
 </html>

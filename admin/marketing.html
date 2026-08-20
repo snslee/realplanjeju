@@ -209,7 +209,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.22.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.23.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -2940,23 +2940,37 @@ function rwbBadge(t){
   var p=c.split('|');
   return '<span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:.71rem;font-weight:700;white-space:nowrap;background:'+p[0]+';color:'+p[1]+'">'+rwbEsc(t)+'</span>';
 }
+/* ★v1.23.0 (2026-08-20 대표 지적) — 편성판이 완료·미완료를 섞어 날짜순으로만 뿌려서
+   맨 위 다섯 줄이 전부 「반영 완료」였고 정작 오늘 할 8/21이 스크롤 아래에 있었다.
+   완료 판정은 배지만으로 하지 않는다 — ✅ 배지여도 보완이 남아 있으면 「할 일」이다. */
+function rwbIsTodo(r){return String(r.배지||'').indexOf('✅')!==0||(r.보완_대기||0)>0;}
 function renderRwBoard(){
   var tb=document.getElementById('rw2-bbody'), sum=document.getElementById('rw2-bsum'); if(!tb)return;
-  var l=RWB.rows;
+  var src=(RWB.rows||[]).slice();
+  var todo=src.filter(rwbIsTodo).sort(function(a,b){return String(a.발행일||'').localeCompare(String(b.발행일||''));});
+  var done=src.filter(function(r){return !rwbIsTodo(r);}).sort(function(a,b){return String(b.발행일||'').localeCompare(String(a.발행일||''));});
+  todo.forEach(function(r){r.__grp='todo';}); done.forEach(function(r){r.__grp='done';});
+  var l=todo.concat(done);
+  RWB.todoN=todo.length; RWB.doneN=done.length;
   if(sum){
     var wait=l.filter(function(r){return String(r.배지||'').indexOf('✅')!==0;}).length;
     var late=l.filter(function(r){return String(r.배지||'').indexOf('🔴')===0;}).length;
     var fx=l.reduce(function(a,r){return a+(r.보완_대기||0);},0);
     var bad=l.filter(function(r){return r.요일정합!=='정상';}).length;
-    sum.innerHTML='편성 <b>'+l.length+'건</b> · 진행 대기 <b>'+wait+'건</b>'
+    sum.innerHTML='편성 <b>'+l.length+'건</b> · <span style="color:#9a3412;font-weight:800">지금 할 일 '+(RWB.todoN||0)+'건</span> · <span style="color:#64748b">완료 '+(RWB.doneN||0)+'건</span> · 진행 대기 <b>'+wait+'건</b>'
       +(late?' · <span style="color:#b91c1c;font-weight:800">🔴 지연 '+late+'건</span>':'')
       +(fx?' · <span style="color:#9a3412;font-weight:800">🔧 라이브 보완 '+fx+'건</span>':'')
       +(bad?' · <span style="color:#b45309">⚠️ 요일 오배정 '+bad+'건</span>':'')
       +' <span style="color:#64748b">· 금=네이버 블A·블B·블C / 토=티스토리 블A·블B·블C</span>';
   }
   if(!l.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:#94a3b8;padding:14px">편성 없음</td></tr>';return;}
-  var html='', lastDay='';
+  var html='', lastDay='', lastGrp='';
   l.forEach(function(r,i){
+    if(r.__grp!==lastGrp){lastGrp=r.__grp; lastDay='';
+      var isT=(r.__grp==='todo');
+      html+='<tr style="background:'+(isT?'#fff7ed':'#f1f5f9')+'"><td colspan="9" style="font-weight:800;font-size:.82rem;color:'+(isT?'#9a3412':'#64748b')+';padding:9px 12px;border-top:2px solid '+(isT?'#fdba74':'#e2e8f0')+'">'
+        +(isT?('🔧 지금 할 일 — 임박한 것부터 '+(RWB.todoN||0)+'건'):('✅ 반영 완료 — 결과 대기·판정 '+(RWB.doneN||0)+'건'))
+        +'</td></tr>';}
     if(r.요일!==lastDay){lastDay=r.요일;
       html+='<tr style="background:#f8fafc"><td colspan="9" style="font-weight:800;font-size:.78rem;color:#334155;padding:7px 12px">'+rwbEsc(r.요일)
         +(r.요일정합!=='정상'?' <span style="color:#b45309;font-weight:700">'+rwbEsc(r.요일정합)+'</span>':'')+'</td></tr>';}
@@ -2995,7 +3009,7 @@ async function rwbToggle(slotId){
     var wait=fx.filter(function(f){return f.상태!=='완료';}).length;
     var h='<div style="font-weight:800;color:#9a3412;font-size:.86rem;margin-bottom:6px">🔧 라이브 보완 — 실제 글에 반영할 것 (대기 '+wait+' / 전체 '+fx.length+')</div>';
     var byOwner={};
-    fx.forEach(function(f,i){var o=f.담당||f.실행자||'대표';(byOwner[o]=byOwner[o]||[]).push({f:f,i:i});});
+    fx.forEach(function(f,i){if(!f||typeof f!=='object')return;var o=f.담당||f.실행자||'대표';(byOwner[o]=byOwner[o]||[]).push({f:f,i:i});});
     Object.keys(byOwner).forEach(function(o){
       h+='<div style="margin:8px 0 4px;font-size:.78rem;font-weight:700;color:'+(o.indexOf('클로드')>=0?'#1d4ed8':'#92400e')+'">'
         +(o.indexOf('클로드')>=0?'🤖 ':'🧑 ')+rwbEsc(o)+' — '+byOwner[o].filter(function(x){return x.f.상태!=='완료';}).length+'건 대기</div>';
@@ -3240,7 +3254,12 @@ function rwToday(){return new Date().toISOString().slice(0,10);}
 function rwDday(base,n){if(!base)return null;var d=new Date(String(base).slice(0,10)+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
 function rwIsNaver(){return String((RW.draft&&RW.draft.채널)||(RW.sel&&RW.sel.채널)||'').indexOf('네이버')>=0;}
 function rwFxList(){var d=RW.draft;var a=d&&d.자가검증_결과&&d.자가검증_결과.라이브보완;return Array.isArray(a)?a:[];}
-function rwSegs(){return rwFxList().map(function(f,i){return{f:f,i:i};}).filter(function(x){return x.f.구간;});}
+/* ★v1.23.0 — null 원소 방어. 2026-08-20에 라이브보완 배열에 null이 섞이자
+   `x.f.구간` 이 throw 해서 ③보완 판이 통째로 「보완 로드 실패」로 죽었다.
+   ★필터는 map 뒤에만 건다 — rwFxList 자체를 거르면 i가 밀려
+   rwFxDone(i)가 DB의 엉뚱한 항목을 완료 처리한다. */
+function rwSegs(){return rwFxList().map(function(f,i){return{f:f,i:i};}).filter(function(x){return x.f&&typeof x.f==='object'&&x.f.구간;});}
+function rwFxBroken(){return rwFxList().filter(function(f){return !f||typeof f!=='object';}).length;}
 
 /* ── 아주 작은 마크다운 (표·H2·링크만) ── */
 function rwfxMd(t){
@@ -3433,6 +3452,11 @@ function renderRwFix(){
   var box=document.getElementById('rw2-w'), d=RW.draft, r=RW.sel; if(!box||!d)return;
   var segs=rwSegs(), fx=rwFxList();
   var h='';
+  /* ★v1.23.0 — 깨진 원소가 있으면 숨기지 말고 대표께 보인다.
+     구판은 throw 해서 판 전체가 죽었고, 그냥 거르기만 하면 「보완이 원래 없었나」로 위장된다. */
+  var broken=rwFxBroken();
+  if(broken)h+='<div class="plan" style="border-color:#fca5a5;background:#fef2f2"><b style="color:#b91c1c">⚠ 보완 데이터 '+broken+'건이 손상돼 있습니다</b>'
+    +'<div class="hint" style="margin-top:4px">아래 구간은 정상분만 표시했습니다. 채팅에 <b>「보완 데이터 복구 진행」</b>이라고 주시면 백업에서 되살립니다.</div></div>';
   /* 머리 */
   h+='<div class="plan"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
     +'<div><div style="font-size:1.15rem;font-weight:800">리라이트 · 보완</div>'
@@ -3455,6 +3479,7 @@ function renderRwFix(){
       h+='<div class="hint">아직 구간(A·B·C·D)으로 묶이지 않아 한 건씩 붙이셔야 합니다. '
         +'채팅에 <b>「'+rwEsc(d.채널||'')+' 보완 데이터 적재 진행」</b>이라고 주시면 구간형으로 바꿔 올립니다.</div>';
       h+=fx.map(function(f,i){
+        if(!f||typeof f!=='object')return '';
         var done=(f.상태==='완료');
         return '<div class="seg" data-done="'+(done?1:0)+'" style="margin:var(--s2) 0">'
           +'<div class="seg-h"><span class="seg-k">'+(i+1)+'</span><span class="seg-t">'+rwEsc(f.항목||'')+'</span>'

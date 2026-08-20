@@ -1174,6 +1174,78 @@ function switchTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.c
 if(typeof esc!=='function'){window.esc=function(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};}
 function csDur(h){h=Number(h)||0;return h>=24?(Math.floor(h/24)+'일 '+(h%24)+'시간'):(h+'시간');}
 function csTile(t,v,c){return '<div style="flex:1;min-width:150px;border:1px solid '+c+';border-radius:10px;padding:14px 16px;background:#fff"><div style="font-size:.72rem;color:#64748b">'+t+'</div><div style="font-size:1.45rem;font-weight:700;color:'+c+';margin-top:2px">'+v+'</div></div>';}
+// ══ CTR·색인 진단 — 2026-08-20 신설 ═══════════════════════════════════
+// v_ctr_diagnosis 는 GSC 앵커(#section-N)를 본문 URL로 합쳐서 잰다.
+// 합치기 전에는 앵커 43건(노출 3,209·클릭 0)이 「제목 실패」로 잡혀 옛 글 달성배수를 0.62로 위장했다.
+// 제목 손질은 11~30위 구간에서만 허용된다(TITLE.md §0-5-2). 4~10위는 본문·스니펫만 손댄다.
+function ctrTile(t,v,c,s){return '<div style="flex:1;min-width:150px;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;background:#fff"><div style="font-size:.72rem;color:#64748b">'+t+'</div><div style="font-size:1.45rem;font-weight:700;color:'+c+';margin-top:2px">'+v+'</div>'+(s?'<div style="font-size:.68rem;color:#94a3b8;margin-top:2px">'+s+'</div>':'')+'</div>';}
+function ctrBand(r){var p=Number(r.평균순위||0);if(!p)return '-';if(p<=3)return '1~3위 · 손대지 마라';if(p<=10)return '4~10위 · 제목 변경 금지';if(p<=30)return '11~30위 · 제목 손질 허용';return '31위+ · 요건 밖';}
+function ctrBandColor(r){var p=Number(r.평균순위||0);if(p<=10&&p>0)return '#b45309';if(p<=30)return '#16a34a';return '#94a3b8';}
+async function loadCTR(){
+  var box=document.getElementById('ctr-list'), kpi=document.getElementById('ctr-kpi'), ibox=document.getElementById('ctr-index');
+  if(!box) return;
+  box.innerHTML='<p style="color:#94a3b8;font-size:.85rem">불러오는 중…</p>';
+  var res=await sb.from('v_ctr_diagnosis').select('*');
+  if(res.error){box.innerHTML='<p style="color:#dc2626;font-size:.85rem">조회 실패: '+esc(res.error.message)+'</p>';return;}
+  var rows=res.data||[];
+  var num=function(x){return Number(x||0);};
+  var sum=function(a,f){var s=0;a.forEach(function(r){s+=num(r[f]);});return s;};
+  var inLedger=rows.filter(function(r){return r.대장구분==='대장안';});
+  var old=rows.filter(function(r){return r.대장구분!=='대장안';});
+  var mult=function(a){var e=sum(a,'기대클릭');return e?(sum(a,'클릭')/e).toFixed(2):'-';};
+  var fix=rows.filter(function(r){return /^(A|B) /.test(r.진단||'');});
+  var anchors=sum(rows,'앵커_url수');
+  kpi.innerHTML=ctrTile('대장 안 달성배수',mult(inLedger),'#16a34a',inLedger.length+'개 글')
+    +ctrTile('옛 글 달성배수',mult(old),'#334155',old.length+'개 글')
+    +ctrTile('손질 확정(A·B)',fix.length+'건','#dc2626','손실 '+sum(fix,'손실클릭').toFixed(1)+'클릭/90일')
+    +ctrTile('흡수한 앵커 URL',anchors+'건','#2563eb','합치기 전엔 클릭 0으로 잡혔다');
+  var show=rows.filter(function(r){return /^(A|B|C|D) /.test(r.진단||'');})
+              .sort(function(a,b){return num(b.손실클릭)-num(a.손실클릭);});
+  if(!show.length){box.innerHTML='<p style="color:#16a34a;font-size:.9rem">손질 대상이 없습니다.</p>';return;}
+  var h='<table style="width:100%;border-collapse:collapse;font-size:.8rem"><thead><tr style="background:#f8fafc;text-align:left">'
+   +'<th style="padding:8px">제목</th><th style="padding:8px">구분</th><th style="padding:8px">노출</th><th style="padding:8px">클릭</th>'
+   +'<th style="padding:8px">순위</th><th style="padding:8px">기대</th><th style="padding:8px">달성</th><th style="padding:8px">손실</th>'
+   +'<th style="padding:8px">손댈 수 있나</th><th style="padding:8px">진단</th></tr></thead><tbody>';
+  show.forEach(function(r){
+    var d=String(r.진단||''), hot=/^(A|B) /.test(d);
+    h+='<tr style="border-top:1px solid #e2e8f0'+(hot?';background:#fef2f2':'')+'">'
+     +'<td style="padding:8px;max-width:320px"><a href="'+esc(r.외부_url)+'" target="_blank" rel="noopener" style="color:#2563eb">'+esc((r.제목||'(제목 미상)').slice(0,54))+'</a>'
+     +(r.앵커_url수>0?'<div style="font-size:.66rem;color:#94a3b8">앵커 '+r.앵커_url수+'개 합산</div>':'')+'</td>'
+     +'<td style="padding:8px;white-space:nowrap;color:#64748b">'+esc(r.대장구분||'')+'</td>'
+     +'<td style="padding:8px">'+num(r.노출)+'</td><td style="padding:8px">'+num(r.클릭)+'</td>'
+     +'<td style="padding:8px">'+esc(String(r.평균순위||'-'))+'</td>'
+     +'<td style="padding:8px">'+num(r.기대클릭).toFixed(1)+'</td>'
+     +'<td style="padding:8px;font-weight:700;color:'+(num(r.달성배수)<0.5?'#dc2626':'#334155')+'">'+(r.달성배수==null?'-':num(r.달성배수).toFixed(2))+'</td>'
+     +'<td style="padding:8px;font-weight:700">'+num(r.손실클릭).toFixed(1)+'</td>'
+     +'<td style="padding:8px;white-space:nowrap;font-size:.72rem;color:'+ctrBandColor(r)+'">'+ctrBand(r)+'</td>'
+     +'<td style="padding:8px;font-size:.72rem;color:#475569">'+esc(d)+'</td></tr>';
+  });
+  box.innerHTML=h+'</tbody></table>';
+  loadIndexNow(ibox);
+}
+async function loadIndexNow(ibox){
+  if(!ibox) return;
+  ibox.innerHTML='<p style="color:#94a3b8;font-size:.85rem">불러오는 중…</p>';
+  var r=await sb.from('v_index_status_now').select('*');
+  if(r.error){ibox.innerHTML='<p style="color:#dc2626;font-size:.85rem">조회 실패: '+esc(r.error.message)+'</p>';return;}
+  var rows=r.data||[], grp={};
+  rows.forEach(function(x){var k=x.검색_엔진+'|'+x.색인_상태+'|'+x.판정_출처;grp[k]=(grp[k]||0)+1;});
+  var h='<table style="width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:14px"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">엔진</th><th style="padding:8px">상태</th><th style="padding:8px">판정 출처</th><th style="padding:8px">건수</th></tr></thead><tbody>';
+  Object.keys(grp).sort().forEach(function(k){var p=k.split('|');
+    h+='<tr style="border-top:1px solid #e2e8f0"><td style="padding:8px">'+esc(p[0])+'</td><td style="padding:8px;font-weight:700;color:'+(p[1]==='OK'?'#16a34a':'#b45309')+'">'+esc(p[1])+'</td><td style="padding:8px;color:'+(p[2]==='(미실측)'?'#dc2626':'#64748b')+'">'+esc(p[2])+'</td><td style="padding:8px">'+grp[k]+'</td></tr>';});
+  h+='</tbody></table>';
+  var bad=rows.filter(function(x){return x.색인_상태!=='OK';}).slice(0,40);
+  if(bad.length){
+    h+='<h4 style="font-size:.85rem;font-weight:700;margin:10px 0 6px">색인 안 된 글 '+rows.filter(function(x){return x.색인_상태!=='OK';}).length+'건</h4>';
+    h+='<table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:7px">제목</th><th style="padding:7px">엔진</th><th style="padding:7px">상태</th><th style="padding:7px">커버리지</th><th style="padding:7px">최근검사</th></tr></thead><tbody>';
+    bad.forEach(function(x){
+      h+='<tr style="border-top:1px solid #e2e8f0"><td style="padding:7px;max-width:300px"><a href="'+esc(x.외부_url)+'" target="_blank" rel="noopener" style="color:#2563eb">'+esc((x.제목||x.외부_url).slice(0,50))+'</a></td>'
+       +'<td style="padding:7px">'+esc(x.검색_엔진)+'</td><td style="padding:7px;font-weight:700;color:#b45309">'+esc(x.색인_상태)+'</td>'
+       +'<td style="padding:7px;color:#64748b">'+esc(x.커버리지||'-')+'</td><td style="padding:7px;white-space:nowrap">'+esc(String(x.최근검사||'-'))+'</td></tr>';});
+    h+='</tbody></table>';
+  } else { h+='<p style="color:#16a34a;font-size:.85rem">색인 안 된 글이 없습니다.</p>'; }
+  ibox.innerHTML=h;
+}
 async function loadCS(){
   var box=document.getElementById('cs-list'), kpi=document.getElementById('cs-kpi');
   if(!box) return;

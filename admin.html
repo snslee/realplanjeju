@@ -6102,6 +6102,7 @@ async function qtGeneratePDF(silent, docType){
     let _prevCat1 = '', _prevCat2 = '';
     state.qt.items.forEach((it, idx) => {
       if(it && it.유형==='subtotal'){
+        if(idx === state.qt.items.length-1) return;  /* v2.32: 맨 끝 소계 행은 아래 합계 블록의 「소계」와 같은 값이라 중복 인쇄된다 */
         const subAmt = (typeof qtCalcSubtotalAt === 'function') ? qtCalcSubtotalAt(idx) : 0;
         rows.push([
           { content: '▶ 소계', colSpan: labelColSpan, styles: subStyleP },
@@ -6762,7 +6763,7 @@ async function qtDetailGeneratePDF(docType){
   state.qt.isGovernment = !!r.is_government;
   state.qt.attachments = r['첨부_옵션'] || {};
   state.qt.currentQuotationId = r.id;
-  state.qt.currentQuotationNo = r['견적번호'];   /* v2.8.2 — PDF 헤더 견적번호 정확 */
+  state.qt.currentQuotationNo = r['견적번호']; state.qt.인원_성인 = r['인원_성인']||null; state.qt.인원_아동 = r['인원_아동']||null;   /* v2.8.2 — PDF 헤더 견적번호 정확 */
   state.qt.customerInfo = state.qt.customerInfo || {회사명:r.수신_회사명};
   await qtGeneratePDF(false, docType);
 }
@@ -7230,7 +7231,7 @@ async function qtSendFromCard(qid){
     state.qt.isGovernment = !!r.is_government;
     state.qt.attachments = r['첨부_옵션'] || {};
     state.qt.currentQuotationId = r.id;
-    state.qt.currentQuotationNo = r['견적번호'];   /* v2.8.2 — Q-???-2026-??? fallback 차단 */
+    state.qt.currentQuotationNo = r['견적번호']; state.qt.인원_성인 = r['인원_성인']||null; state.qt.인원_아동 = r['인원_아동']||null;   /* v2.8.2 — Q-???-2026-??? fallback 차단 */
     state.qt.customerId = r.customer_id;
     state.qt.customerInfo = state.qt.customerInfo || {회사명:r.수신_회사명};
     hideLoading();

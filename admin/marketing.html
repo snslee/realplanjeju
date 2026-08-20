@@ -1956,7 +1956,7 @@ async function loadRewritePriority(){
 }
 async function loadRankEntries(){
   document.getElementById('rank-body').innerHTML='<tr><td colspan="9" class="loading">로딩 중...</td></tr>';
-  const{data,error}=await sb.from('mk_blog_publish_log').select('채널,핵심키워드,발행일,외부_url,진입판정,d_plus_7_rank,d_plus_14_rank,d_plus_30_rank,d_plus_90_rank').order('발행일',{ascending:false}).limit(100);
+  const{data,error}=await sb.from('mk_blog_publish_log').select('채널,핵심키워드,발행일,외부_url,진입판정,d_plus_7_rank,d_plus_14_rank,d_plus_30_rank,d_plus_90_rank,d_plus_7_만료,d_plus_14_만료,d_plus_30_만료,d_plus_90_만료').order('발행일',{ascending:false}).limit(100);
   if(error){showToast('진입 현황 로드 실패');return;}allRankEntries=data||[];_rankMonth=0;_rankJ='all';_rankPage=1;applyRankView();
 }
 function rb(v){if(v==null)return '<span style="color:#94a3b8">-</span>';const c=v<=5?'#10b981':v<=15?'#f59e0b':v<=30?'#f97316':'#ef4444';return `<span style="font-weight:700;color:${c}">${v}위</span>`;}

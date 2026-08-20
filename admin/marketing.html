@@ -204,7 +204,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.20.3</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.21.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -356,7 +356,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn" onclick="filterDrafts('approved',this)">✅ 승인</button>
         <button class="filter-btn" onclick="filterDrafts('published',this)">🚀 발행</button>
         <button class="filter-btn" onclick="filterDrafts('rejected',this)">❌ 반려</button>
-        <button class="filter-btn" id="livefix-btn" style="border-color:#fdba74;color:#9a3412" onclick="gotoRewriteFix()" title="라이브 보완은 리라이트 탭 ③ 보완으로 흡수했습니다 (v1.16.0)">🔧 라이브 보완 → 리라이트 ③</button>
       </div>
       <div id="drafts-board" style="border:0.5px solid #e2e8f0;border-radius:12px;background:#fff;max-height:72vh;overflow-y:auto"><div class="loading" style="padding:30px;text-align:center">로딩 중...</div></div>
       <div id="drafts-pager" style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin:12px 0"></div>
@@ -1587,8 +1586,8 @@ async function loadNaverMonthly(clrs){
 
 async function loadDrafts(){
   document.getElementById('drafts-board').innerHTML='<div class="loading" style="padding:30px;text-align:center">로딩 중...</div>';
-  const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형,슬롯_id,라이브보완:자가검증_결과->라이브보완,리라이트_원본url').order('발행일',{ascending:false,nullsFirst:false}).order('생성일',{ascending:false}).limit(100);
-  if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];window.allDrafts=allDrafts;window._draftBySlot={};allDrafts.forEach(function(d){if(d.슬롯_id)window._draftBySlot[d.슬롯_id]=d.id;});try{const{data:lf}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형,슬롯_id,라이브보완:자가검증_결과->라이브보완,리라이트_원본url').not('자가검증_결과->라이브보완','is',null).limit(100);(lf||[]).forEach(r=>{if(!allDrafts.some(d=>d.id===r.id))allDrafts.push(r);});}catch(e){}updateLiveFixBtn();renderDrafts(allDrafts);
+  const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형,슬롯_id,리라이트_원본url').order('발행일',{ascending:false,nullsFirst:false}).order('생성일',{ascending:false}).limit(100);
+  if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];window.allDrafts=allDrafts;window._draftBySlot={};allDrafts.forEach(function(d){if(d.슬롯_id)window._draftBySlot[d.슬롯_id]=d.id;});renderDrafts(allDrafts);
 }
 let _draftPage=1,_winPage=1,_slotMonth=0,_statPage=1,_nvPage=1,_rankPage=1,_rankMonth=0,_rankJ='all'; const DRAFT_PER=10,WIN_PER=10,STAT_PER=20,NV_PER=20,RANK_PER=15;
 function pagerHTML(pg,pages,total,fn){ if(pages<=1)return '<span style="font-size:.78rem;color:#94a3b8">총 '+total+'건</span>'; let h=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.max(1,pg-1)})">‹</button>`; for(let i=1;i<=pages;i++){if(i===1||i===pages||Math.abs(i-pg)<=2){h+=`<button class="btn-sm btn-copy" style="${i===pg?'background:#2563eb;color:#fff;border-color:#2563eb':''}" onclick="${fn}(${i})">${i}</button>`;}else if(Math.abs(i-pg)===3){h+='<span style="padding:4px;color:#94a3b8">…</span>';}} h+=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.min(pages,pg+1)})">›</button><span style="align-self:center;font-size:.78rem;color:#94a3b8;margin-left:10px">${pg}/${pages} · 총 ${total}건</span>`; return h; }
@@ -1607,50 +1606,21 @@ function rewriteBadge(d){
        + 'style="background:#fff7ed;color:#c2410c;padding:3px 9px;border-radius:8px;text-decoration:none;font-weight:700">'
        + '🔁 원본 글 열기</a>';
 }
-/* v1.16.0 — renderLiveFixPanel / toggleLiveFixBody 삭제.
-   라이브 보완 뷰는 리라이트 탭 ③ 보완이 정본이다(2026-08-18 대표 지시).
-   highlightLiveFix / fmtBodyFix 는 초안 리더가 계속 쓰므로 남긴다. */
-
-/* 라이브보완 — 본문 내 빨간 표시 (지시문이 본문에 있으면 그 자리, 없으면 위치의 "앵커" 뒤에 삽입 시뮬레이션) */
-function highlightLiveFix(body,fixArr){
-  if(!body||!Array.isArray(fixArr)||!fixArr.length)return{text:body,missing:[]};
-  var t=body,missing=[];
-  fixArr.forEach(function(f,idx){
-    var s=String(f.복사문구||f.지시문||'').trim();if(!s)return; if(/썸네일|실사진|이미지/.test(String(f.항목||'')))return;
-    var tag='⟦FIX'+idx+(f.상태==='완료'?'D':'P')+'⟧';
-    if(t.indexOf(s)>=0){t=t.replace(s,tag+s+'⟦/FIX⟧');return;}
-    var m=String(f.위치||'').match(/[“"']([^“”"']{6,})[”"']/);
-    var anchor=m?m[1]:null;
-    if(anchor&&t.indexOf(anchor)>=0){t=t.replace(anchor,anchor+' '+tag+s+'⟦/FIX⟧');}
-    else{missing.push(idx);}
-  });
-  return{text:t,missing:missing};
-}
-function fmtBodyFix(t,fixArr){
-  if(!t)return fmtBody(t);
-  var h=highlightLiveFix(t,fixArr||[]);
-  var html=mdRender(h.text);
-  html=html.replace(/⟦FIX(\d+)(P|D)⟧/g,function(_,n,st){
-    var done=st==='D';
-    return '<span style="color:#dc2626;font-weight:700;background:'+(done?'#fff':'#fef2f2')+';border-bottom:2px solid #dc2626;border-radius:3px;padding:0 2px"><span style="font-size:.68rem;background:'+(done?'#16a34a':'#dc2626')+';color:#fff;border-radius:6px;padding:1px 5px;margin-right:4px;vertical-align:middle">'+(done?'✔':'🔧')+' 보완'+(Number(n)+1)+'</span>';
-  }).replace(/⟦\/FIX⟧/g,'</span>');
-  if(h.missing.length){html='<div style="background:#fef2f2;border:0.5px solid #fecaca;border-radius:6px;padding:6px 9px;margin-bottom:8px;font-size:.78rem;color:#b91c1c">⚠ 위치 자동표시 실패 '+h.missing.map(function(i){return '보완'+(i+1);}).join('·')+' — 상단 지시문의 위치 설명을 참고하세요</div>'+html;}
-  return html;
-}
+/* v1.21.0 (2026-08-20 대표 지시) — 초안보관소에서 「라이브 보완」을 완전히 걷어냈다.
+   정본은 리라이트 탭 ③ 보완 하나뿐이다. v1.16.0 은 주석에만 「흡수」라 적고 코드를 안 지워
+   ①목록 강제합류(옛 글 53건) ②카드 배지 ③필터칩 ④글 열람 지시블록 ⑤본문 하이라이트
+   ⑥완료 처리 DB 쓰기 가 그대로 살아 있었다. 여섯 개 전부 제거한다. */
+/* 리라이트 ⓪편성판 전용 — 보완 문장 복사.
+   구판은 초안보관소 allDrafts 를 뒤져서, 강제합류를 없애면 「지시문 없음」이 됐다.
+   그래서 화면 배열이 아니라 DB 를 직접 읽는다. */
 async function copyLiveFix(id,i,btn){
-  const r=(allDrafts||[]).find(x=>x.id===id); const f=r&&Array.isArray(r.라이브보완)?r.라이브보완[i]:null;
+  const{data}=await sb.from('mk_blog_drafts').select('자가검증_결과').eq('id',id).maybeSingle();
+  const arr=(data&&data.자가검증_결과&&Array.isArray(data.자가검증_결과.라이브보완))?data.자가검증_결과.라이브보완:[];
+  const f=arr[i];
   if(!f){showToast('지시문 없음');return;}
   const txt=f.복사문구||f.지시문||'';
   try{await navigator.clipboard.writeText(txt);}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
   if(btn){const o=btn.textContent;btn.textContent='✅ 복사됨';setTimeout(()=>btn.textContent=o,1400);}showToast('삽입 문장 복사 완료');
-}
-async function markLiveFixDone(id,i){
-  const{data}=await sb.from('mk_blog_drafts').select('자가검증_결과').eq('id',id).maybeSingle();
-  if(!data||!data.자가검증_결과||!Array.isArray(data.자가검증_결과.라이브보완)){showToast('데이터 없음');return;}
-  const sv=data.자가검증_결과; sv.라이브보완[i].상태='완료'; sv.라이브보완[i].완료일=new Date().toISOString().slice(0,10);
-  const{error}=await sb.from('mk_blog_drafts').update({자가검증_결과:sv}).eq('id',id);
-  if(error){showToast('완료 처리 실패');return;}
-  showToast('✅ 보완 완료 처리');loadDrafts();
 }
 function renderDrafts(list){
   const box=document.getElementById('drafts-board');
@@ -1665,7 +1635,6 @@ function renderDrafts(list){
       <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:.9rem;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;gap:6px;align-items:center">${_tyB(r.슬롯유형)}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.제목||'(제목 없음)'}</span></div><div style="font-size:.68rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🔑 ${r.핵심키워드||'-'}${r.글자수_네이버?(' · '+r.글자수_네이버+'자'):''}${r.생성일?(' · 업로드 '+r.생성일.slice(5,10)):''}</div></div>
       ${(window._photoCntBySlot&&window._photoCntBySlot[r.슬롯_id])?`<span onclick="event.stopPropagation();gotoVaultSlot('${r.슬롯_id}')" style="cursor:pointer;font-size:.68rem;background:#e0f2fe;color:#0369a1;padding:2px 7px;border-radius:9px;flex-shrink:0;font-weight:700" title="사진 창고에서 이 글 사진 보기">📷 ${window._photoCntBySlot[r.슬롯_id]}</span>`:''}
       <span style="font-size:.68rem;background:${sbg[r.상태]||'#f1f5f9'};color:${stx[r.상태]||'#64748b'};padding:2px 7px;border-radius:9px;flex-shrink:0">${sl[r.상태]||r.상태||'초안'}</span>
-      ${(Array.isArray(r.라이브보완)&&r.라이브보완.some(f=>f.상태!=='완료'))?`<span style="font-size:.68rem;background:#ffedd5;color:#9a3412;padding:2px 7px;border-radius:9px;flex-shrink:0;font-weight:700">🔧 보완 ${r.라이브보완.filter(f=>f.상태!=='완료').length}</span>`:''}
       <span style="font-size:.7rem;color:#475569;flex-shrink:0;width:60px;text-align:right" title="발행일">📅${r.발행일?r.발행일.slice(5):(r.생성일?r.생성일.slice(5,10):'-')}</span>
       <span style="font-size:.8rem;font-weight:700;color:${sc==null?'#cbd5e1':sc>=9?'#10b981':'#f59e0b'};flex-shrink:0;width:26px;text-align:right">${sc!=null?sc:'-'}</span>
     </div>`;}).join('');
@@ -1674,13 +1643,6 @@ function filterDrafts(s,b){document.querySelectorAll('#draft-filters .filter-btn
   const board=document.getElementById('drafts-board'),pager=document.getElementById('drafts-pager');
   if(board)board.style.display=''; if(pager)pager.style.display='';
   renderDrafts(s==='all'?allDrafts:allDrafts.filter(r=>r.상태===s));}
-/* v1.16.0 — 「라이브 보완」 뷰는 리라이트 탭 ③ 보완으로 흡수했다.
-   같은 일을 두 화면에서 하면 어느 쪽이 정본인지 매번 헷갈린다(2026-08-18 대표 지시). */
-function gotoRewriteFix(){
-  document.querySelectorAll('.nav-item').forEach(function(n){if(n.title==='리라이트')n.click();});
-  setTimeout(function(){if(typeof rwStepBtn==='function')rwStepBtn(3);},350);
-}
-function updateLiveFixBtn(){const b=document.getElementById('livefix-btn');if(!b)return;const n=(allDrafts||[]).reduce((a,r)=>a+((Array.isArray(r.라이브보완)?r.라이브보완.filter(f=>f.상태!=='완료').length:0)),0);b.innerHTML='🔧 라이브 보완 → 리라이트 ③'+(n?` <span style="background:#ea580c;color:#fff;border-radius:8px;padding:0 6px;font-size:.72rem;font-weight:800">${n}</span>`:'');}
 async function approveDraft(id){const{error}=await sb.from('mk_blog_drafts').update({상태:'approved',승인일:new Date().toISOString()}).eq('id',id);if(error){showToast('승인 실패');return;}showToast('✅ 승인 완료');loadDrafts();}
 function openReject(id){rejectTargetId=id;document.getElementById('reject-reason').value='';document.getElementById('reject-modal').classList.add('open');}
 function closeModal(){document.getElementById('reject-modal').classList.remove('open');rejectTargetId=null;}
@@ -2295,8 +2257,7 @@ async function openDraftReader(id){
   const nav=data.본문_네이버||'',tis=data.본문_티스토리||'';
   let imgs=data.이미지프롬프트; if(typeof imgs==='string'){try{imgs=JSON.parse(imgs);}catch(e){imgs=null;}}
   const imgArr=Array.isArray(imgs)?imgs:[];
-  const fixArr=(data.자가검증_결과&&Array.isArray(data.자가검증_결과.라이브보완))?data.자가검증_결과.라이브보완:[];
-  window.__dc={nav:nav,tis:tis,fix:fixArr,pub_url:data.발행_url||'',img:imgArr.map((p,i)=>'이미지 '+(i+1)+' — '+(typeof p==='string'?p:(p.prompt||p.설명||JSON.stringify(p)))).join('\n\n')};
+  window.__dc={nav:nav,tis:tis,pub_url:data.발행_url||'',img:imgArr.map((p,i)=>'이미지 '+(i+1)+' — '+(typeof p==='string'?p:(p.prompt||p.설명||JSON.stringify(p)))).join('\n\n')};
   const navLen=nav.replace(/\s/g,'').length,tisLen=tis.replace(/\s/g,'').length;
   const isDraft=data.상태==='draft';
   window.__openDraftId=id;
@@ -2333,9 +2294,8 @@ async function openDraftReader(id){
       ${_phM.length?`<button class="btn-sm btn-copy" onclick="var s=document.getElementById('draft-made-sec');if(s)s.scrollIntoView({behavior:'smooth',block:'center'})">🗺 제작물 ${_phM.length}</button>`:''}
       ${isDraft?`<button class="btn-sm btn-approve" onclick="approveDraft('${id}')">✅ 승인</button><button class="btn-sm btn-reject" onclick="openReject('${id}')">❌ 반려</button>`:''}
     </div>
-    ${(window.__dc.fix&&window.__dc.fix.length)?`<div style="background:#fff7ed;border:1px solid #fdba74;border-radius:10px;padding:12px 14px;margin-bottom:16px"><div style="font-weight:800;font-size:.92rem;color:#9a3412;margin-bottom:8px">🔧 라이브 보완 지시 — 대기 ${window.__dc.fix.filter(f=>f.상태!=='완료').length}건 / 완료 ${window.__dc.fix.filter(f=>f.상태==='완료').length}건${window.__dc.pub_url?` · <a href="${window.__dc.pub_url}" target="_blank" style="color:#2563eb;font-weight:700">🔗 발행글 바로가기</a>`:''}</div>${window.__dc.fix.map((f,i)=>`<div style="font-size:.85rem;margin-bottom:10px;line-height:1.6"><b>${String(f.항목||'').replace(/</g,'&lt;')}</b> · 위치: ${String(f.위치||'').replace(/</g,'&lt;')} · 실행: ${String(f.실행자||'대표')} ${f.상태==='완료'?'<span style="color:#16a34a;font-weight:700">✅ 완료</span>':`<button class="btn-sm btn-copy" onclick="copyFixText(${i},this)">📋 삽입 문장 복사</button>`}<div style="background:#fff;border:0.5px solid #fde68a;border-radius:6px;padding:7px 9px;margin-top:4px;color:#334155;white-space:pre-wrap">${String(f.지시문||'').replace(/</g,'&lt;')}</div></div>`).join('')}</div>`:''}
-    ${nav?`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-weight:700;color:#1d4ed8;font-size:.92rem">📱 네이버 본문</span><button class="btn-sm btn-copy" onclick="copyDraftPart('nav',this)">📋 본문 전체 복사</button></div><div style="max-height:55vh;overflow-y:auto;padding-right:10px;font-size:.95rem;color:#1e293b">${fmtBodyFix(nav,window.__dc.fix)}</div>`:''}
-    ${tis?`<div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 8px"><span style="font-weight:700;color:#7e22ce;font-size:.92rem">💻 티스토리 본문</span><button class="btn-sm btn-copy" onclick="copyDraftPart('tis',this)">📋 본문 전체 복사</button></div><div style="max-height:45vh;overflow-y:auto;padding-right:10px;font-size:.95rem;color:#1e293b">${fmtBodyFix(tis,window.__dc.fix)}</div>`:''}
+    ${nav?`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-weight:700;color:#1d4ed8;font-size:.92rem">📱 네이버 본문</span><button class="btn-sm btn-copy" onclick="copyDraftPart('nav',this)">📋 본문 전체 복사</button></div><div style="max-height:55vh;overflow-y:auto;padding-right:10px;font-size:.95rem;color:#1e293b">${fmtBody(nav)}</div>`:''}
+    ${tis?`<div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 8px"><span style="font-weight:700;color:#7e22ce;font-size:.92rem">💻 티스토리 본문</span><button class="btn-sm btn-copy" onclick="copyDraftPart('tis',this)">📋 본문 전체 복사</button></div><div style="max-height:45vh;overflow-y:auto;padding-right:10px;font-size:.95rem;color:#1e293b">${fmtBody(tis)}</div>`:''}
     ${_phSec}
     ${window.__dc.img?`<details style="margin-top:20px"><summary style="font-weight:700;color:#0e7490;cursor:pointer;font-size:.92rem">🖼 이미지 프롬프트 (${imgArr.length}장) — 펼쳐보기 · 위 버튼은 클립보드 복사</summary><div style="margin-top:8px;background:#f8fafc;border:0.5px solid #e2e8f0;border-radius:8px;padding:14px;white-space:pre-wrap;font-size:.82rem;line-height:1.55;color:#334155;max-height:55vh;overflow-y:auto">${window.__dc.img.replace(/</g,"&lt;")}</div></details>`:""}
   </div>`;
@@ -2374,7 +2334,6 @@ async function openWinningReader(id){
 }
 
 
-async function copyFixText(i,btn){const f=((window.__dc||{}).fix||[])[i];if(!f){showToast('지시문 없음');return;}const txt=f.복사문구||f.지시문||'';try{await navigator.clipboard.writeText(txt);}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}if(btn){const o=btn.textContent;btn.textContent='✅ 복사됨!';setTimeout(()=>btn.textContent=o,1500);}showToast('삽입 문장 복사 완료');}
 async function copyDraftPart(k,btn){
   const t=(window.__dc||{})[k]||'';
   if(!t){showToast('복사할 내용이 없습니다');return;}

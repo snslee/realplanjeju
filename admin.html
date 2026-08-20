@@ -5278,25 +5278,25 @@ async function qtOpenEditModal(qid){
       if(typeof toast==='function') toast('견적 정보 로드 실패','warn'); return;
     }
     const q = data[0];
-    if(q.r_상태 === '수락' || q.r_상태 === '무효화'){
+    if(q.상태 === '수락' || q.상태 === '무효화'){
       if(typeof toast==='function') toast('수락/무효화 상태에서는 수정 불가 (신규 견적 작성)','warn'); return;
     }
-    const verBadge = q.r_수정차수 > 1 ? '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-size:11px;margin-left:8px">현재 '+q.r_수정차수+'차</span>' : '';
-    const nextVer = q.r_상태 === '발송완료' ? (q.r_수정차수||1) + 1 : (q.r_수정차수||1);
-    const warn = q.r_상태 === '발송완료' ? '<div style="background:#fff7ed;border:1px solid #f59e0b;border-radius:6px;padding:10px;margin-bottom:14px;font-size:12.5px;color:#9a3412">⚠️ 발송완료 상태입니다. 수정 시 <b>'+nextVer+'차로 차수 증가</b> + 상태 "작성중" 복귀 + <b>재발송 필요</b>합니다.</div>' : '';
+    const verBadge = q.수정차수 > 1 ? '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-size:11px;margin-left:8px">현재 '+q.수정차수+'차</span>' : '';
+    const nextVer = q.상태 === '발송완료' ? (q.수정차수||1) + 1 : (q.수정차수||1);
+    const warn = q.상태 === '발송완료' ? '<div style="background:#fff7ed;border:1px solid #f59e0b;border-radius:6px;padding:10px;margin-bottom:14px;font-size:12.5px;color:#9a3412">⚠️ 발송완료 상태입니다. 수정 시 <b>'+nextVer+'차로 차수 증가</b> + 상태 "작성중" 복귀 + <b>재발송 필요</b>합니다.</div>' : '';
     const html = warn +
       '<div style="margin-bottom:12px"><label style="display:block;font-size:11.5px;color:#5F5E5A;margin-bottom:4px">제목 (계약명·공문 자동 연계)'+verBadge+'</label>'+
-      '<input id="em-q-title" type="text" maxlength="200" value="'+escapeHtml(q.r_제목||'')+'" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;font-size:13px"/></div>'+
+      '<input id="em-q-title" type="text" maxlength="200" value="'+escapeHtml(q.제목||'')+'" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;font-size:13px"/></div>'+
       '<div style="margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
       '<div><label style="display:block;font-size:11.5px;color:#5F5E5A;margin-bottom:4px">견적금액 (원)</label>'+
-      '<input id="em-q-amount" type="number" value="'+(q.r_견적금액||0)+'" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;font-size:13px"/></div>'+
+      '<input id="em-q-amount" type="number" value="'+(q.견적금액||0)+'" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;font-size:13px"/></div>'+
       '<div><label style="display:block;font-size:11.5px;color:#5F5E5A;margin-bottom:4px">결제조건</label>'+
-      '<input id="em-q-pay" type="text" value="'+escapeHtml(q.r_결제조건||'')+'" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;font-size:13px"/></div></div>'+
+      '<input id="em-q-pay" type="text" value="'+escapeHtml(q.결제조건||'')+'" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;font-size:13px"/></div></div>'+
       '<div style="margin-bottom:12px"><label style="display:block;font-size:11.5px;color:#5F5E5A;margin-bottom:4px">비고</label>'+
-      '<textarea id="em-q-note" rows="2" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;font-size:13px;resize:vertical">'+escapeHtml(q.r_비고||'')+'</textarea></div>'+
+      '<textarea id="em-q-note" rows="2" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;font-size:13px;resize:vertical">'+escapeHtml(q.비고||'')+'</textarea></div>'+
       '<div><label style="display:block;font-size:11.5px;color:#c0392b;margin-bottom:4px">수정사유 <span style="color:#c0392b">*필수</span></label>'+
       '<textarea id="em-q-reason" rows="2" placeholder="예: 단가 정정 / 일정 변경 / 인원 수정 등" style="width:100%;padding:8px 10px;border:1px solid #f59e0b;border-radius:5px;font-size:13px;resize:vertical"></textarea></div>';
-    _editModalShow('✏ 견적서 수정 — ' + (q.r_견적번호||''), html, async ()=>{
+    _editModalShow('✏ 견적서 수정 — ' + (q.견적번호||''), html, async ()=>{
       const reason = document.getElementById('em-q-reason').value.trim();
       if(!reason){ if(typeof toast==='function') toast('수정사유는 필수입니다','warn'); throw new Error('reason required'); }
       const {data: ret, error: e2} = await sb.rpc('rpc_update_quotation_with_revision', {

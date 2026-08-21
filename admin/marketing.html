@@ -209,7 +209,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.23.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.24.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -1589,10 +1589,30 @@ async function loadNaverMonthly(clrs){
   window._naverMonthlyChart=new Chart(cv.getContext('2d'),{type:'line',data:{labels:months,datasets:chs.map((ch,i)=>({label:ch,data:months.map(m=>{const v=agg[ch+'|'+m];return v&&v>0?v:null;}),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.3,fill:false,pointRadius:3,spanGaps:true}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{type:'logarithmic',grid:{color:'#f1f5f9'},title:{display:true,text:'조회수 (로그축·작은 채널도 보임)'},ticks:{callback:function(v){const n=Number(v);return [1,10,100,1000,10000,100000].indexOf(n)>=0?n.toLocaleString():'';}}},x:{grid:{display:false}}}}});
 }
 
+/* ★v1.24.0 (2026-08-21 대표 지시) — 초안보관소에서 리라이트를 완전히 퇴출한다.
+   8/20 에는 「라이브 보완」 배지·필터만 지우고, 정작 리라이트 초안이 목록에 섞여
+   뜨는 구조는 손대지 않았다(반만 고침). 원인은 이 쿼리에 유형 구분이 아예 없어서
+   신규글·리라이트가 같은 테이블이라는 이유로 최신 100건에 통째로 딸려 온 것.
+   실측 2026-08-21: 100건 = 신규 81 + 리라이트 19(중복 16 + 반려 3).
+   리라이트의 정본 화면은 리라이트 탭 하나뿐이다.
+
+   ▸ 두 갈래 쿼리로 나눈 이유(중요)
+     allDrafts  = 화면 목록용   → 리라이트 제외
+     _draftBySlot = 슬롯→초안 맵 → 리라이트 포함(전량)
+   맵까지 같이 걸러 버리면 사진 배정판(vtOpenDraft)의 「📄 초안 열기」가
+   리라이트 슬롯에서 통째로 죽는다. 목록에서 뺀다고 맵에서까지 빼면 안 된다. */
 async function loadDrafts(){
   document.getElementById('drafts-board').innerHTML='<div class="loading" style="padding:30px;text-align:center">로딩 중...</div>';
-  const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형,슬롯_id,리라이트_원본url').order('발행일',{ascending:false,nullsFirst:false}).order('생성일',{ascending:false}).limit(100);
-  if(error){showToast('초안 로드 실패');return;}allDrafts=data||[];window.allDrafts=allDrafts;window._draftBySlot={};allDrafts.forEach(function(d){if(d.슬롯_id)window._draftBySlot[d.슬롯_id]=d.id;});renderDrafts(allDrafts);
+  const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,핵심키워드,제목,자가검증_점수,상태,생성일,발행일,발행_url,거절_사유,글자수_네이버,글자수_티스토리,슬롯유형,슬롯_id,리라이트_원본url').neq('슬롯유형','리라이트').order('발행일',{ascending:false,nullsFirst:false}).order('생성일',{ascending:false}).limit(100);
+  if(error){showToast('초안 로드 실패');return;}
+  allDrafts=data||[];window.allDrafts=allDrafts;
+  renderDrafts(allDrafts);
+  /* 맵은 유형 무관 전량 — 실패해도 목록은 이미 그려져 있으니 화면을 죽이지 않는다 */
+  window._draftBySlot=window._draftBySlot||{};
+  try{
+    const m=await sb.from('mk_blog_drafts').select('id,슬롯_id').not('슬롯_id','is',null).order('수정일',{ascending:false}).limit(2000);
+    if(!m.error){var mp={};(m.data||[]).forEach(function(d){if(d.슬롯_id&&!mp[d.슬롯_id])mp[d.슬롯_id]=d.id;});window._draftBySlot=mp;}
+  }catch(e){}
 }
 let _draftPage=1,_winPage=1,_slotMonth=0,_statPage=1,_nvPage=1,_rankPage=1,_rankMonth=0,_rankJ='all'; const DRAFT_PER=10,WIN_PER=10,STAT_PER=20,NV_PER=20,RANK_PER=15;
 function pagerHTML(pg,pages,total,fn){ if(pages<=1)return '<span style="font-size:.78rem;color:#94a3b8">총 '+total+'건</span>'; let h=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.max(1,pg-1)})">‹</button>`; for(let i=1;i<=pages;i++){if(i===1||i===pages||Math.abs(i-pg)<=2){h+=`<button class="btn-sm btn-copy" style="${i===pg?'background:#2563eb;color:#fff;border-color:#2563eb':''}" onclick="${fn}(${i})">${i}</button>`;}else if(Math.abs(i-pg)===3){h+='<span style="padding:4px;color:#94a3b8">…</span>';}} h+=`<button class="btn-sm btn-copy" onclick="${fn}(${Math.min(pages,pg+1)})">›</button><span style="align-self:center;font-size:.78rem;color:#94a3b8;margin-left:10px">${pg}/${pages} · 총 ${total}건</span>`; return h; }
@@ -1648,10 +1668,20 @@ function filterDrafts(s,b){document.querySelectorAll('#draft-filters .filter-btn
   const board=document.getElementById('drafts-board'),pager=document.getElementById('drafts-pager');
   if(board)board.style.display=''; if(pager)pager.style.display='';
   renderDrafts(s==='all'?allDrafts:allDrafts.filter(r=>r.상태===s));}
-async function approveDraft(id){const{error}=await sb.from('mk_blog_drafts').update({상태:'approved',승인일:new Date().toISOString()}).eq('id',id);if(error){showToast('승인 실패');return;}showToast('✅ 승인 완료');loadDrafts();}
+/* ★v1.24.0 C-5 — 승인·반려 뒤 화면 새로고침이 초안보관소 한쪽만 되던 것을 고친다.
+   승인/반려 버튼은 두 군데에 있다 — 초안보관소 글 열람(2320행)과 리라이트 ③보완 판(3603행).
+   그런데 approveDraft/confirmReject 는 loadDrafts() 만 불러서, 리라이트 탭에서 누르면
+   DB 는 바뀌는데 눈앞 화면은 그대로였다(대표가 「눌렀는데 안 바뀐다」고 느끼는 지점).
+   ★v1.24.0 C-1 로 초안보관소에서 리라이트가 빠졌으니, 리라이트 승인·반려의
+   유일한 통로는 이제 ③보완 판 하나다. 그쪽 새로고침이 반드시 붙어야 한다. */
+function rwAfterDraftChange(){
+  try{ if(typeof loadRwBoard==='function') loadRwBoard(); }catch(e){}
+  try{ if(typeof renderRwWrite==='function' && window.RW && RW.sel) renderRwWrite(); }catch(e){}
+}
+async function approveDraft(id){const{error}=await sb.from('mk_blog_drafts').update({상태:'approved',승인일:new Date().toISOString()}).eq('id',id);if(error){showToast('승인 실패');return;}showToast('✅ 승인 완료');loadDrafts();rwAfterDraftChange();}
 function openReject(id){rejectTargetId=id;document.getElementById('reject-reason').value='';document.getElementById('reject-modal').classList.add('open');}
 function closeModal(){document.getElementById('reject-modal').classList.remove('open');rejectTargetId=null;}
-async function confirmReject(){const reason=document.getElementById('reject-reason').value.trim();if(!reason){showToast('반려 사유를 입력하세요');return;}const{error}=await sb.from('mk_blog_drafts').update({상태:'rejected',거절_사유:reason}).eq('id',rejectTargetId);if(error){showToast('반려 실패');return;}closeModal();showToast('❌ 반려 처리됨');loadDrafts();}
+async function confirmReject(){const reason=document.getElementById('reject-reason').value.trim();if(!reason){showToast('반려 사유를 입력하세요');return;}const{error}=await sb.from('mk_blog_drafts').update({상태:'rejected',거절_사유:reason}).eq('id',rejectTargetId);if(error){showToast('반려 실패');return;}closeModal();showToast('❌ 반려 처리됨');loadDrafts();rwAfterDraftChange();}
 function copyTitle(t){navigator.clipboard.writeText(t).then(()=>showToast('📋 제목 복사됨'));}
 
 async function loadSlots(){
@@ -2927,14 +2957,19 @@ async function loadRwBoard(){
     /* ★v1.20.3 수리2 — 「보류(halted)」 슬롯이라도 라이브 보완이 남아 있으면 감추지 않는다.
        기존 .neq('슬롯상태','halted') 가 구간형 상세 보완 10건(SNS 운영대행 6·체육대회 진행순서 4)을
        편성판에서 통째로 지우고 있었다(2026-08-20 라이브 실측). */
-    const{data,error}=await sb.from('v_rewrite_board').select('*').gte('발행일',from).or('슬롯상태.neq.halted,보완_대기.gt.0').order('발행일');
+    /* ★v1.24.0 C-4 — 반려(rejected) 초안도 감추지 않는다.
+       반려 3건은 슬롯이 halted 라서 위 필터에 걸려 편성판에서 통째로 사라졌고,
+       v_rewrite_queue 에도 없어서 초안보관소가 유일한 통로였다. 초안보관소에서
+       리라이트를 빼는 순간 이 3건은 어디서도 안 보이게 된다 — 그래서 여기서 받는다. */
+    const{data,error}=await sb.from('v_rewrite_board').select('*').gte('발행일',from).or('슬롯상태.neq.halted,보완_대기.gt.0,초안상태.eq.rejected').order('발행일');
     if(error)throw error;
     RWB.rows=data||[]; renderRwBoard();
   }catch(e){tb.innerHTML='<tr><td colspan="9" style="color:#dc2626;padding:12px">편성판 로드 실패: '+rwbEsc(e.message||e)+'</td></tr>';}
 }
 function rwbBadge(t){
   var m={'✅':'#f1f5f9|#475569','🔴':'#fee2e2|#991b1b','🔵':'#dbeafe|#1e40af','🟢':'#dcfce7|#166534',
-         '🟡':'#fef3c7|#92400e','🟠':'#ffedd5|#9a3412','🔒':'#f8fafc|#94a3b8','⏸':'#f1f5f9|#64748b'};
+         '🟡':'#fef3c7|#92400e','🟠':'#ffedd5|#9a3412','🔒':'#f8fafc|#94a3b8','⏸':'#f1f5f9|#64748b',
+         '🚫':'#fee2e2|#7f1d1d'};  /* ★v1.24.0 반려 — 색이 없으면 회색으로 묻혀 눈에 안 띈다 */
   var k=String(t||'').slice(0,2), c=m[String(t||'').charAt(0)]||m[k]||'#f1f5f9|#475569';
   for(var key in m){ if(String(t||'').indexOf(key)===0){c=m[key];break;} }
   var p=c.split('|');
@@ -2987,7 +3022,9 @@ function renderRwBoard(){
       +'<td style="font-size:.7rem;color:#64748b">'+rwbEsc(r.담당)+'</td>'
       +'<td onclick="event.stopPropagation()">'
         +(r.원본_url?'<a href="'+rwbEsc(r.원본_url)+'" target="_blank" class="btn-sm btn-copy" style="text-decoration:none">🔗 원본</a> ':'')
-        +(r.초안_id?'<button class="btn-sm btn-approve" onclick="rwbOpenFix(\''+r.슬롯_id+'\')">✎ 보완</button>':'')
+        /* ★v1.24.0 — 반려 행은 「보완」이 아니라 「반려 확인」이다. 라벨을 갈라 준다.
+           둘 다 rwbOpenFix 로 ③ 보완 판을 여는 건 같다 — 거기서 사유를 읽고 되살린다. */
+        +(r.초안_id?'<button class="btn-sm '+(r.초안상태==='rejected'?'btn-reject':'btn-approve')+'" onclick="rwbOpenFix(\''+r.슬롯_id+'\')">'+(r.초안상태==='rejected'?'🚫 반려 확인':'✎ 보완')+'</button>':'')
       +'</td></tr>';
     html+='<tr id="rwbfx-'+r.슬롯_id+'" style="display:none"><td colspan="9" style="background:#fff7ed;padding:0"><div id="rwbfxin-'+r.슬롯_id+'" style="padding:12px 16px"></div></td></tr>';
   });
@@ -3430,6 +3467,20 @@ async function rwSaveMeasured(){
   }catch(e){showToast('기록 실패: '+(e.message||e));}
 }
 
+/* ★v1.24.0 C-4 — 반려 되살리기(rejected → draft).
+   초안보관소에서 리라이트를 퇴출했으므로 되살리기 통로도 리라이트 탭 안에 있어야 한다.
+   거절_사유는 지우지 않고 남긴다 — 왜 한 번 반려됐는지가 다음 검수의 재료다. */
+async function rwUnreject(id){
+  if(!confirm('이 반려 초안을 「초안」 상태로 되살립니다.\n(반려 사유 기록은 그대로 남습니다)\n\n진행할까요?'))return;
+  try{
+    const{error}=await sb.from('mk_blog_drafts').update({상태:'draft'}).eq('id',id);
+    if(error)throw error;
+    showToast('↩ 초안으로 되살렸습니다');
+    await renderRwWrite();
+    if(typeof loadRwBoard==='function')loadRwBoard();
+    if(typeof loadDrafts==='function')loadDrafts();
+  }catch(e){showToast('되살리기 실패: '+(e.message||e));}
+}
 /* ── ③ 보완 본체 ── */
 async function renderRwWrite(){
   var box=document.getElementById('rw2-w'), r=RW.sel; if(!box)return;
@@ -3441,7 +3492,7 @@ async function renderRwWrite(){
   }
   box.innerHTML='<div class="loading" style="padding:26px;text-align:center">보완 불러오는 중...</div>';
   try{
-    const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,제목,본문_네이버,본문_티스토리,상태,자가검증_점수,자가검증_결과,글자수_네이버,글자수_티스토리,리라이트_회차,원본_슬롯_id,반영전_순위,리라이트_반영일,발행_url').eq('id',r.리라이트_초안_id).maybeSingle();
+    const{data,error}=await sb.from('mk_blog_drafts').select('id,채널,제목,본문_네이버,본문_티스토리,상태,자가검증_점수,자가검증_결과,글자수_네이버,글자수_티스토리,리라이트_회차,원본_슬롯_id,반영전_순위,리라이트_반영일,발행_url,거절_사유').eq('id',r.리라이트_초안_id).maybeSingle();
     if(error)throw error;
     RW.draft=data;
     await rwLoadChain();
@@ -3452,6 +3503,14 @@ function renderRwFix(){
   var box=document.getElementById('rw2-w'), d=RW.draft, r=RW.sel; if(!box||!d)return;
   var segs=rwSegs(), fx=rwFxList();
   var h='';
+  /* ★v1.24.0 C-4 — 반려건은 맨 위에 사유를 띄운다. 초안보관소에서 리라이트를 뺐으니
+     반려 사유를 읽을 수 있는 화면이 여기밖에 없다. */
+  if(d.상태==='rejected'){
+    h+='<div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:12px;padding:12px 15px;margin-bottom:12px">'
+      +'<div style="font-weight:800;color:#7f1d1d;margin-bottom:4px">🚫 반려된 초안입니다</div>'
+      +'<div style="font-size:.82rem;color:#991b1b">사유 · '+rwEsc(d.거절_사유||'(기록 없음)')+'</div>'
+      +'<div style="font-size:.75rem;color:#b91c1c;margin-top:5px">아래 「↩ 반려 되살리기」를 누르면 초안 상태로 돌아가 다시 검수할 수 있습니다.</div></div>';
+  }
   /* ★v1.23.0 — 깨진 원소가 있으면 숨기지 말고 대표께 보인다.
      구판은 throw 해서 판 전체가 죽었고, 그냥 거르기만 하면 「보완이 원래 없었나」로 위장된다. */
   var broken=rwFxBroken();
@@ -3581,6 +3640,9 @@ function renderRwFix(){
     +'<button class="fbtn" onclick="rwToneCheck()">톤만 보기</button>'
     +'<button class="fbtn" onclick="rwCopyBody(this)">본문 전체 복사</button>'
     +(d.상태==='draft'?'<button class="fbtn p" onclick="approveDraft(\''+d.id+'\')">승인</button><button class="fbtn" onclick="openReject(\''+d.id+'\')">반려</button>':'')
+    /* ★v1.24.0 C-4 — 반려건 되살리기. 초안보관소에서 리라이트를 뺐으니 이 버튼이
+       rejected → draft 를 되돌리는 유일한 통로다. 없으면 반려는 영영 못 살린다. */
+    +(d.상태==='rejected'?'<button class="fbtn p" onclick="rwUnreject(\''+d.id+'\')">↩ 반려 되살리기 — 초안으로</button>':'')
     +'<button class="fbtn" onclick="rwStepBtn(4)">④ 반영 점검으로 &rarr;</button></div>'
     +'<div id="rw2-check" style="margin-top:12px"></div></div></details>';
   box.innerHTML=h;

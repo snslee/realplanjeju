@@ -209,7 +209,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.24.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.24.1</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -389,6 +389,15 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <button class="filter-btn" onclick="rwStep('r',this)">⑤ 반영 결과</button>
       </div>
       <div id="rw2-b">
+        <!-- ★v1.24.1 기간 토글 — 초안보관소에서 리라이트를 뺀 뒤, 14일 창 밖 옛 리라이트
+             6건(8/03~8/05)이 어디서도 안 보이는 사각지대가 생겼다. 여기서 열 수 있게 한다. -->
+        <div id="rw2-brange" style="display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+          <span style="font-size:.76rem;color:#64748b;font-weight:700">기간</span>
+          <button class="btn-sm btn-copy" id="rwbr-14" style="background:#2563eb;color:#fff;border-color:#2563eb" onclick="rwbSetRange(14,this)">최근 14일</button>
+          <button class="btn-sm btn-copy" id="rwbr-60" onclick="rwbSetRange(60,this)">최근 60일</button>
+          <button class="btn-sm btn-copy" id="rwbr-0"  onclick="rwbSetRange(0,this)">전체</button>
+          <span style="font-size:.72rem;color:#94a3b8">전체를 누르면 기간 밖 옛 리라이트까지 모두 나옵니다</span>
+        </div>
         <div id="rw2-bsum" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.82rem;color:#1e3a8a"></div>
         <div class="card"><div class="card-body" style="padding:0;overflow-x:auto">
           <table class="tbl"><thead><tr><th>요일</th><th>순번</th><th>채널</th><th>순위</th><th>키워드</th><th>상태</th><th>대표님이 할 일</th><th>담당</th><th>확인</th></tr></thead>
@@ -2947,13 +2956,27 @@ async function loadRwMedia(){
    v_rewrite_board — 자동 편성된 주 6편을 블A-1/블B-1/블C-1 한 줄씩 보여준다.
    행을 펼치면 그 글의 라이브 보완 체크리스트(초안보관소에서 이관)가 나온다.
    ══════════════════════════════════════════════════════════════════ */
-var RWB={rows:[],open:{},fx:{}};
+var RWB={rows:[],open:{},fx:{},days:14};
 function rwbEsc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+/* ★v1.24.1 — 기간 토글. 0 = 전체.
+   초안보관소에서 리라이트를 뺀 뒤 14일 창 밖 옛 리라이트가 어디서도 안 보이는
+   사각지대가 생겼다(실측 6건 · 8/03~8/05). 화면 필터만 넓히면 되는 문제라
+   뷰는 손대지 않는다 — 뷰에는 67행 전부 들어 있다. */
+function rwbSetRange(d,btn){
+  RWB.days=d;
+  ['14','60','0'].forEach(function(k){
+    var b=document.getElementById('rwbr-'+k); if(!b)return;
+    var on=(String(d)===k);
+    b.style.background=on?'#2563eb':''; b.style.color=on?'#fff':''; b.style.borderColor=on?'#2563eb':'';
+  });
+  loadRwBoard();
+}
 async function loadRwBoard(){
   var tb=document.getElementById('rw2-bbody'); if(!tb)return;
   tb.innerHTML='<tr><td colspan="9" class="loading">로딩 중...</td></tr>';
   try{
-    var from=new Date(Date.now()-14*864e5).toISOString().slice(0,10);
+    var days=(RWB.days==null?14:RWB.days);
+    var from=days>0?new Date(Date.now()-days*864e5).toISOString().slice(0,10):'1900-01-01';
     /* ★v1.20.3 수리2 — 「보류(halted)」 슬롯이라도 라이브 보완이 남아 있으면 감추지 않는다.
        기존 .neq('슬롯상태','halted') 가 구간형 상세 보완 10건(SNS 운영대행 6·체육대회 진행순서 4)을
        편성판에서 통째로 지우고 있었다(2026-08-20 라이브 실측). */

@@ -209,7 +209,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.24.1</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.24.2</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -1669,7 +1669,7 @@ function renderDrafts(list){
       <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:.9rem;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;gap:6px;align-items:center">${_tyB(r.슬롯유형)}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.제목||'(제목 없음)'}</span></div><div style="font-size:.68rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🔑 ${r.핵심키워드||'-'}${r.글자수_네이버?(' · '+r.글자수_네이버+'자'):''}${r.생성일?(' · 업로드 '+r.생성일.slice(5,10)):''}</div></div>
       ${(window._photoCntBySlot&&window._photoCntBySlot[r.슬롯_id])?`<span onclick="event.stopPropagation();gotoVaultSlot('${r.슬롯_id}')" style="cursor:pointer;font-size:.68rem;background:#e0f2fe;color:#0369a1;padding:2px 7px;border-radius:9px;flex-shrink:0;font-weight:700" title="사진 창고에서 이 글 사진 보기">📷 ${window._photoCntBySlot[r.슬롯_id]}</span>`:''}
       <span style="font-size:.68rem;background:${sbg[r.상태]||'#f1f5f9'};color:${stx[r.상태]||'#64748b'};padding:2px 7px;border-radius:9px;flex-shrink:0">${sl[r.상태]||r.상태||'초안'}</span>
-      <span style="font-size:.7rem;color:#475569;flex-shrink:0;width:60px;text-align:right" title="발행일">📅${r.발행일?r.발행일.slice(5):(r.생성일?r.생성일.slice(5,10):'-')}</span>
+      <span style="font-size:.7rem;color:#475569;flex-shrink:0;width:60px;text-align:right" title="발행일">📅${r.발행일?r.발행일.slice(5,10):(r.생성일?r.생성일.slice(5,10):'-')}</span>
       <span style="font-size:.8rem;font-weight:700;color:${sc==null?'#cbd5e1':sc>=9?'#10b981':'#f59e0b'};flex-shrink:0;width:26px;text-align:right">${sc!=null?sc:'-'}</span>
     </div>`;}).join('');
 }

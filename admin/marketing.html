@@ -209,7 +209,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.25.1</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.26.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -3007,7 +3007,8 @@ function rwbBadge(t){
          '🟡':'#fef3c7|#92400e','🟠':'#ffedd5|#9a3412','🔒':'#f8fafc|#94a3b8','⏸':'#f1f5f9|#64748b',
          '🚫':'#fee2e2|#7f1d1d',   /* ★v1.24.0 반려 — 색이 없으면 회색으로 묻혀 눈에 안 띈다 */
          '🟣':'#f3e8ff|#6b21a8',   /* ★v1.25.0 대상밖(31위~) */
-         '⚠':'#fef9c3|#854d0e'};  /* ★v1.25.0 순위 확인 필요 */
+         '⚠':'#fef9c3|#854d0e',   /* ★v1.25.0 순위 확인 필요 */
+         '🗑':'#f1f5f9|#64748b'};  /* ★v1.26.0 폐기 확정 — 종결이므로 눈에 덜 띄는 회색 */
   var k=String(t||'').slice(0,2), c=m[String(t||'').charAt(0)]||m[k]||'#f1f5f9|#475569';
   for(var key in m){ if(String(t||'').indexOf(key)===0){c=m[key];break;} }
   var p=c.split('|');
@@ -3016,7 +3017,15 @@ function rwbBadge(t){
 /* ★v1.23.0 (2026-08-20 대표 지적) — 편성판이 완료·미완료를 섞어 날짜순으로만 뿌려서
    맨 위 다섯 줄이 전부 「반영 완료」였고 정작 오늘 할 8/21이 스크롤 아래에 있었다.
    완료 판정은 배지만으로 하지 않는다 — ✅ 배지여도 보완이 남아 있으면 「할 일」이다. */
-function rwbIsTodo(r){return String(r.배지||'').indexOf('✅')!==0||(r.보완_대기||0)>0;}
+/* ★v1.26.0 — 「🗑 폐기 확정」도 할 일이 아니다.
+   대표 승인으로 종결된 건이 「지금 할 일」 맨 위에 남아 있으면, 8/15 처럼 같은 키워드가
+   두 줄(반영완료 + 폐기본)로 보여 중복으로 읽힌다. 종결 그룹으로 내린다.
+   단 보완이 남아 있으면 여전히 할 일이다(반영 잠김 해제가 필요하므로). */
+function rwbIsTodo(r){
+  var b=String(r.배지||'');
+  if(b.indexOf('✅')===0||b.indexOf('🗑')===0) return (r.보완_대기||0)>0;
+  return true;
+}
 function renderRwBoard(){
   var tb=document.getElementById('rw2-bbody'), sum=document.getElementById('rw2-bsum'); if(!tb)return;
   var src=(RWB.rows||[]).slice();
@@ -3042,7 +3051,7 @@ function renderRwBoard(){
     if(r.__grp!==lastGrp){lastGrp=r.__grp; lastDay='';
       var isT=(r.__grp==='todo');
       html+='<tr style="background:'+(isT?'#fff7ed':'#f1f5f9')+'"><td colspan="9" style="font-weight:800;font-size:.82rem;color:'+(isT?'#9a3412':'#64748b')+';padding:9px 12px;border-top:2px solid '+(isT?'#fdba74':'#e2e8f0')+'">'
-        +(isT?('🔧 지금 할 일 — 임박한 것부터 '+(RWB.todoN||0)+'건'):('✅ 반영 완료 — 결과 대기·판정 '+(RWB.doneN||0)+'건'))
+        +(isT?('🔧 지금 할 일 — 임박한 것부터 '+(RWB.todoN||0)+'건'):('✅ 종결 — 반영 완료·폐기 확정 '+(RWB.doneN||0)+'건'))
         +'</td></tr>';}
     if(r.요일!==lastDay){lastDay=r.요일;
       html+='<tr style="background:#f8fafc"><td colspan="9" style="font-weight:800;font-size:.78rem;color:#334155;padding:7px 12px">'+rwbEsc(r.요일)

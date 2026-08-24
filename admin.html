@@ -6119,8 +6119,8 @@ async function qtGeneratePDF(silent, docType){
         let cls = '';
         const sameGroup = (_c1 === _prevCat1 && _c2 === _prevCat2);
         if(!sameGroup){
-          if(_c1 && _c2) cls = `${_c1}\n${_c2}`;        /* 2줄 표시 (overflow:linebreak로 자동) */
-          else cls = _c1 || _c2 || '';
+          /* v2.34: 분류 한 줄 표기 (국내여행은 중분류 우선, 그 외는 대분류 우선) */
+          cls = (state.qt.bu==='국내여행') ? (_c2 || _c1 || '') : (_c1 || _c2 || '');
         }
         rows.push([
           { content: cls, styles: cat1Style },

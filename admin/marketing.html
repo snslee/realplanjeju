@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.19.2</title>
+<title>리얼플랜제주 마케팅 운영 v1.27.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -209,7 +209,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.26.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.27.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -248,7 +248,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <div style="margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div>
           <h2 style="font-size:1.2rem;font-weight:700">📮 고객소통 받은편지함</h2>
-          <p style="font-size:.78rem;color:#64748b;margin-top:4px">답을 기다리는 사람이 있는 일만 모읍니다. 지표는 건수가 아니라 <b>미응답 시간</b>입니다.</p>
+          <p style="font-size:.78rem;color:#64748b;margin-top:4px">답을 기다리는 사람이 있는 일만 모읍니다. 지표는 건수가 아니라 <b>미응답 시간</b>입니다.<br><span style="color:#b45309">🔎 「발행 확인필요」는 쓰레드 프로필에서 눈으로 대조한 뒤 <b>오른쪽 칸에 게시물 주소를 넣어 연결</b>하면 종결됩니다 — 서버가 대신 못 봅니다(Threads API 차단).</span></p>
         </div>
         <button onclick="loadCS()" style="padding:7px 14px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font-size:.8rem;cursor:pointer">새로고침</button>
       </div>
@@ -1286,11 +1286,48 @@ async function loadCS(){
        +'<td style="padding:8px;white-space:nowrap">'+esc(r.사업부||'-')+'</td>'
        +'<td style="padding:8px">'+esc(r.내용||'')+'</td>'
        +'<td style="padding:8px;color:#475569">'+esc(r.할일||'')+'</td>'
-       +'<td style="padding:8px;white-space:nowrap">'+(r.링크?'<a href="'+esc(r.링크)+'" target="_blank" rel="noopener" style="color:#2563eb">열기</a>':'-')+'</td></tr>';
+       +'<td style="padding:8px;white-space:nowrap">'+csLinkCell(r)+'</td></tr>';
     });
     h+='</tbody></table>';
   });
   box.innerHTML=h;
+}
+/* ★2026-08-25 C — 「확인필요」를 끊는 유일한 출구.
+   Threads 공식 API 는 계정 단위로 막혀 있고(실측 400 "API access blocked"), 프로필은 JS 렌더라
+   서버가 못 읽는다(rpc_sns_autoclose v2 · 2026-08-20 대표 지시). 그래서 사람이 눈으로 대조한 뒤
+   URL 을 여기 넣는 길밖에 없다. 넣는 순간 상태가 '발행'이 되고, 자문자답이 남아 있으면
+   같은 목록에 「자문자답 미완료」로 다시 떠서 답글까지 이어진다.
+   ★DB 는 직접 UPDATE 하지 않고 반드시 rpc_sns_link_url 을 탄다(편성 오염 방지 관행). */
+function csLinkCell(r){
+  if(r.링크) return '<a href="'+esc(r.링크)+'" target="_blank" rel="noopener" style="color:#2563eb">열기</a>';
+  if(r.출처==='슬롯' && /^쓰레드 (발행 확인필요|미발행 대기)$/.test(String(r.구분||''))){
+    var iid='csu_'+String(r.원본_id||'').replace(/[^a-zA-Z0-9]/g,'');
+    return '<input id="'+iid+'" placeholder="https://www.threads.com/@…/post/…" '
+      +'style="border:1px solid #cbd5e1;border-radius:6px;padding:4px 7px;font-size:.73rem;width:200px">'
+      +' <button onclick="csLinkSave(\''+esc(r.원본_id)+'\',\''+iid+'\',this)" '
+      +'style="padding:4px 11px;border:1px solid #2563eb;background:#2563eb;color:#fff;border-radius:6px;font-size:.73rem;cursor:pointer">연결</button>'
+      +'<div id="'+iid+'_m" style="font-size:.68rem;color:#94a3b8;margin-top:3px"></div>';
+  }
+  return '-';
+}
+async function csLinkSave(id,iid,btn){
+  var el=document.getElementById(iid), msg=document.getElementById(iid+'_m');
+  if(!el) return;
+  var u=(el.value||'').trim();
+  var say=function(t,c){ if(msg){msg.textContent=t; msg.style.color=c||'#94a3b8';} };
+  if(!u){ say('쓰레드 게시물 주소를 붙여넣으세요','#dc2626'); el.focus(); return; }
+  btn.disabled=true; var old=btn.textContent; btn.textContent='연결 중…'; say('확인 중…');
+  try{
+    var res=await sb.rpc('rpc_sns_link_url',{p_id:id,p_url:u});
+    if(res.error) throw res.error;
+    var d=res.data||{};
+    if(!d.ok){ say(d.error||'연결 실패','#dc2626'); btn.disabled=false; btn.textContent=old; return; }
+    say('연결됨 — '+(d['다음']||''),'#16a34a');
+    setTimeout(loadCS,900);
+  }catch(e){
+    say('연결 실패 — '+((e&&e.message)||e),'#dc2626');
+    btn.disabled=false; btn.textContent=old;
+  }
 }
 function csBadgePaint(rows){
   var b=document.getElementById('cs-badge'); if(!b) return;

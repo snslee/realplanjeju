@@ -9924,5 +9924,137 @@ setInterval(build,700);
 })();
 </script>
 
+<script>
+/* ── RP_SAVE v1.1 : 저장 버튼을 견적 상태에 따라 갈라 준다 (2026-08-25) ──────
+ * 대표 방침(2026-08-25)
+ *   ① 발송한 견적은 건드리지 않는다 (덮어쓰기·무효화 금지)
+ *   ② 수정 요청이 오면 차수(-vN)를 올려 둘 다 살린다
+ *   ③ 보내기 전 저장은 같은 번호에 덮어쓴다
+ * 배경 : 8/24 015→016→017, 8/25 018→019→019-v2 — 같은 견적을 3벌씩 만들고 있었다.
+ *        원인은 qtSaveDraft 가 항상 rpc_create_quotation 을 부르기 때문이다.
+ * 금액 : 함수가 추정하지 않고 화면 우측 「총 합 계」(#qt-s-total)을 그대로 보낸다.
+ *        (대행료·VAT·절사는 화면이 이미 계산해 둔다)
+ * 기존 코드 0줄 수정 · 롤백 = 이 블록 삭제
+ */
+(function(){
+  if(window.RP_SAVE){return;} window.RP_SAVE='1.1';
+  var LOCKED=['발송완료','수락','거절','무효화'];
+  var C={id:null,st:null,no:null,ver:1,busy:false};
+  function q(s){return document.querySelector(s);}
+  function ST(){try{return window.state&&window.state.qt;}catch(e){return null;}}
+  function money(n){return (n||0).toLocaleString('ko-KR');}
+  function msg(txt,kind){
+    var host=q('#qt-btn-save'); if(!host||!host.parentNode) return;
+    var b=q('#rp-msg');
+    if(!b){ b=document.createElement('div'); b.id='rp-msg';
+      b.style.cssText='margin:8px 0;padding:9px 11px;border-radius:5px;font-size:12.5px;line-height:1.5';
+      host.parentNode.insertBefore(b,host); }
+    var C2={ok:['#E4F2EB','#16704A'],warn:['#FBF1DC','#8A6100'],err:['#FBEBE8','#B93B2B']}[kind||'ok'];
+    b.style.background=C2[0]; b.style.color=C2[1]; b.style.border='1px solid '+C2[1];
+    b.textContent=txt;
+  }
+  function clearMsg(){ var b=q('#rp-msg'); if(b) b.remove(); }
+  /* 화면 우측 「총 합 계」 = 대행료·VAT·절사가 이미 반영된 값 */
+  function totalAmount(){
+    var e=q('#qt-s-total'); if(!e) return null;
+    var n=parseInt(String(e.textContent||'').replace(/[^0-9]/g,''),10);
+    return (n>0)?n:null;
+  }
+  function loadState(id){
+    if(C.busy) return; C.busy=true;
+    window.sb.from('quotations').select('"상태","견적번호","수정차수"').eq('id',id).maybeSingle()
+      .then(function(r){
+        var d=(r&&r.data)||{};
+        C.id=id; C.st=d['상태']||null; C.no=d['견적번호']||null; C.ver=d['수정차수']||1;
+        C.busy=false; try{paint();}catch(e){}
+      }, function(){ C.busy=false; });
+  }
+  function mkBtn(id,label,sub,style){
+    var b=q('#'+id);
+    if(!b){ b=document.createElement('button'); b.id=id;
+      var host=q('#qt-btn-save'); if(!host||!host.parentNode) return null;
+      host.parentNode.insertBefore(b,host.nextSibling); }
+    b.style.cssText='display:block;width:100%;padding:11px 12px;margin:0 0 8px;border-radius:6px;'
+      +'font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;'+style;
+    b.innerHTML=label+(sub?('<span style="display:block;font-weight:400;font-size:11px;opacity:.88;margin-top:2px">'+sub+'</span>'):'');
+    return b;
+  }
+  function killBtn(id){ var b=q('#'+id); if(b) b.remove(); }
+  /* ① 미발송 견적에 덮어쓰기 저장 */
+  window.rpSaveOver=async function(){
+    var s=ST(); if(!s) return;
+    if(!s.currentQuotationId){ msg('아직 저장 전입니다. 먼저 저장해 주세요.','warn'); return; }
+    var btn=q('#qt-btn-save'); if(btn){ btn.disabled=true; }
+    try{
+      s.items.forEach(function(it){ it['금액']=(+it['수량']||0)*(+it['단가']||0); });
+      if(typeof window.qtUpdRecipient==='function') window.qtUpdRecipient();
+      if(typeof window.qtUpdAttach==='function') window.qtUpdAttach();
+      var o=s.options||{};
+      var payload={ _quotation_id:s.currentQuotationId, _items:s.items,
+        _options:{'대행료_표기':o.feeShow,'vat_표기':o.vatShow,'판매가_컬럼':o.salePrice,'여행업등록_표기':o.tourReg,'절사_단위':o.trim,'대행료율':o.feeRate,'is_government':s.isGovernment,'결제조건':s.payment,'비고':s.note,'첨부':Object.assign({},s.attachments||{},{account:s.account||null})},
+        '_제목':s.title,
+        '_수신':{'회사명':(s.recipient||{}).co,'부서':(s.recipient||{}).dept,'담당자':(s.recipient||{}).name,'직위':(s.recipient||{}).title},
+        '_견적금액':totalAmount(), '_수정사유':'화면 저장' };
+      var r=await window.sb.rpc('rpc_save_quotation_items',payload);
+      if(r.error) throw r.error;
+      var row=(r.data&&r.data[0])||{};
+      C.id=null;
+      msg('✔ 저장 완료 — '+(row['견적번호']||'')+' · '+money(row['견적금액'])+'원 · '+(row['품목행수']||0)+'행 · 새 견적번호 안 생겼습니다','ok');
+    }catch(e){ msg('✕ 저장 실패 — '+((e&&e.message)||e),'err'); }
+    finally{ if(btn) btn.disabled=false; }
+  };
+  /* ② 발송된 견적을 고칠 때 — 새 차수(-vN) 생성 (원본 보존) */
+  window.rpNewRevision=function(){
+    var s=ST(); if(!s||!s.currentQuotationId) return;
+    s.parentId=s.currentQuotationId; C.id=null;
+    msg('수정 발송본을 만듭니다 — 원본 '+(C.no||'')+' 은 그대로 남고 새 차수 번호가 발급됩니다','warn');
+    if(typeof window.qtSaveDraftSafe==='function') window.qtSaveDraftSafe(q('#rp-btn-rev'));
+    else if(typeof window.qtSaveDraft==='function') window.qtSaveDraft();
+  };
+  /* ③ 정말 별개 견적으로 새로 저장 */
+  window.rpSaveNew=function(){
+    var s=ST(); if(!s) return;
+    s.parentId=null; C.id=null;
+    if(typeof window.qtSaveDraftSafe==='function') window.qtSaveDraftSafe(q('#rp-btn-new'));
+    else if(typeof window.qtSaveDraft==='function') window.qtSaveDraft();
+  };
+  function paint(){
+    var btn=q('#qt-btn-save'); var s=ST(); if(!btn||!s) return;
+    if(btn.__rpOrig===undefined) btn.__rpOrig=btn.getAttribute('onclick')||'';
+    var id=s.currentQuotationId||null;
+    if(!id){
+      if(btn.getAttribute('onclick')!==btn.__rpOrig) btn.setAttribute('onclick',btn.__rpOrig);
+      btn.disabled=false; btn.style.opacity='';
+      btn.style.background=''; btn.style.color=''; btn.style.border='';
+      btn.innerHTML='💾 저장<span style="display:block;font-weight:400;font-size:11px;opacity:.88;margin-top:2px">새 견적번호가 발급됩니다</span>';
+      killBtn('rp-btn-rev'); killBtn('rp-btn-new'); clearMsg();
+      C.id=null; return;
+    }
+    if(C.id!==id){ loadState(id); return; }
+    var locked=(LOCKED.indexOf(C.st)>=0);
+    if(locked){
+      btn.setAttribute('onclick','void 0');
+      btn.disabled=true; btn.style.opacity='1'; btn.style.cursor='not-allowed';
+      btn.style.background='#EBEEF2'; btn.style.color='#77828F'; btn.style.border='1px solid #C7CFD9';
+      btn.innerHTML='🔒 덮어쓰기 불가<span style="display:block;font-weight:400;font-size:11px;opacity:.9;margin-top:2px">'+(C.no||'')+' · 「'+(C.st||'')+'」 — 고객에게 나간 견적은 보존합니다</span>';
+      killBtn('rp-btn-new');
+      var b=mkBtn('rp-btn-rev','📑 수정 발송본 만들기 ('+(C.ver+1)+'차)',(C.no||'')+'-v'+(C.ver+1)+' 이 새로 만들어지고 원본은 그대로 남습니다','background:#0F7A44;color:#fff;border:1px solid #0F7A44');
+      if(b) b.setAttribute('onclick','rpNewRevision()');
+    }else{
+      btn.setAttribute('onclick','rpSaveOver()');
+      btn.disabled=false; btn.style.opacity=''; btn.style.cursor='pointer';
+      btn.style.background=''; btn.style.color=''; btn.style.border='';
+      btn.innerHTML='💾 저장 (덮어쓰기)<span style="display:block;font-weight:400;font-size:11px;opacity:.9;margin-top:2px">'+(C.no||'')+' 에 저장 — 번호 그대로</span>';
+      killBtn('rp-btn-rev');
+      var b2=mkBtn('rp-btn-new','＋ 다른 안(案)으로 새로 저장','정말 별개 견적일 때만 — 새 번호가 발급됩니다','background:transparent;color:#3B4B5E;border:1px solid #B9C6D6');
+      if(b2) b2.setAttribute('onclick','rpSaveNew()');
+    }
+  }
+  window.rpPaintSave=paint;
+  setInterval(function(){ try{paint();}catch(e){} },700);
+  try{paint();}catch(e){}
+})();
+</script>
+
 </body>
 </html>

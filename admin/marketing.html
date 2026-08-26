@@ -2555,7 +2555,7 @@ var _VF=['사업부','자산종류','사용여부','가용등급','확인','장�
 var _VFL={'사업부':'사업부','자산종류':'자산종류','장면':'장면','사용여부':'사용여부','가용등급':'가용등급','확인':'확인','저작권유형':'저작권','지역_도':'지역','시즌':'시즌','파일명_상태':'파일명'};
 async function loadVault(force){var el=document.getElementById('asgP1');
  if(!window._vtLoaded||force){if(el&&!window._vtRows)el.innerHTML='<div style="padding:18px;color:#94a3b8;font-size:.8rem">사진 창고 불러오는 중…</div>';
-  var r=await sb.from('mk_photo_assets').select('id,파일명,폴더,사업부,자산종류,장면,사용여부,저작권유형,지역_도,지역_시군,장소명,시즌,촬영일,용도구분,로컬경로,제안_파일명,파일명_상태,초상권플래그,배정_슬롯_id,배정_채널,배정_위치,배정_캡션,배정_글url,유사군_id,재사용_횟수,최근사용일,출처,모자이크_판정,콜라주_원본_ids').order('촬영일',{ascending:false,nullsFirst:false}).limit(6000);
+  var r=await sb.from('mk_photo_assets').select('id,파일명,폴더,사업부,자산종류,장면,사용여부,저작권유형,지역_도,지역_시군,장소명,시즌,촬영일,용도구분,로컬경로,제안_파일명,파일명_상태,초상권플래그,배정_슬롯_id,배정_채널,배정_위치,배정_캡션,배정_글url,유사군_id,재사용_횟수,최근사용일,출처,모자이크_경로,모자이크_판정,콜라주_원본_ids').order('촬영일',{ascending:false,nullsFirst:false}).limit(6000);
   /* ★2026-08-18: 가용등급·육안확인은 jsonb 안에 있어 패싯이 못 본다 → 파생 필드로 꺼낸다.
      안전만 재고 가용(쓸 수 있는가)을 안 재면 재고를 조용히 태운다. */
   (r.data||[]).forEach(function(x){var j=x.모자이크_판정||{};

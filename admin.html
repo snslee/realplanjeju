@@ -1592,7 +1592,11 @@ function renderCustomersTable(rows){
     const dot=levelToDot(r.unresponsive_level);
     const elapsed=elapsedDaysSince(r['신청일시']);
     const src=r['데이터출처']||'';
-    const srcBadge=(src==='수동등록')?'<span class="gubun-badge" style="background:#eef2f7;color:#5a6b82;margin-right:5px;">이관</span>':'';
+    const route=r['유입경로']||'';
+    /* 배지는 「어떻게 들어온 건인가」(유입경로)로 판정한다 — 데이터출처(수동등록)로 판정하면 전화 문의도 「이관」으로 찍힌다 */
+    const ROUTE_BADGE={'전화접수':['\uD83D\uDCDE 전화','#fdece9','#a8452f'],'현장방문':['\uD83C\uDFE2 방문','#eaf1fb','#2f5da8'],'메일':['\u2709 메일','#f0ecfb','#5a3fa8'],'지인소개':['\uD83E\uDD1D 소개','#eef7ec','#3f7a2f'],'이관':['\uD83D\uDCC1 이관','#eef2f7','#5a6b82']};
+    const rb=ROUTE_BADGE[route];
+    const srcBadge=rb?'<span class="gubun-badge" style="background:'+rb[1]+';color:'+rb[2]+';margin-right:5px;">'+rb[0]+'</span>':'';
     const reBadge=r['재문의여부']?'<span class="gubun-badge" style="background:#e2f2ea;color:#166f4e;margin-left:5px;">재문의</span>':'';
     const why=r['위험사유']||'';
     const whyHtml=why?'<div style="font-size:11px;color:#b0242c;margin-top:2px;line-height:1.4;">'+escapeHtml(why)+'</div>':'';

@@ -1593,15 +1593,35 @@ function renderCustomersTable(rows){
     const dot=levelToDot(r.unresponsive_level);
     const elapsed=elapsedDaysSince(r['신청일시']);
     const src=r['데이터출처']||'';
-    const srcBadge=(src==='수동등록')?'<span class="gubun-badge" style="background:#eef2f7;color:#5a6b82;margin-right:5px;">기존</span>':'';
-    return '<tr data-inq="'+escapeHtml(inq)+'" style="cursor:pointer;">'+
+    const srcBadge=(src==='수동등록')?'<span class="gubun-badge" style="background:#eef2f7;color:#5a6b82;margin-right:5px;">이관</span>':'';
+    const reBadge=r['재문의여부']?'<span class="gubun-badge" style="background:#e2f2ea;color:#166f4e;margin-left:5px;">재문의</span>':'';
+    const why=r['위험사유']||'';
+    const whyHtml=why?'<div style="font-size:11px;color:#b0242c;margin-top:2px;line-height:1.4;">'+escapeHtml(why)+'</div>':'';
+    const zone=r['구역']||'';
+    const dd=r['dday'];
+    const prec=r['희망일_정밀도']||'';
+    let ddTxt='<span style="color:#98a2b3;">미정</span>', ddSty='';
+    if(dd!==null&&dd!==undefined){
+      if(dd<0){ddTxt='D+'+Math.abs(dd);ddSty='color:#b0242c;font-weight:700;';}
+      else if(prec==='월'){const mm2=String(r['희망일']||'').slice(5,7);ddTxt=(mm2?Number(mm2)+'월중':'D-'+dd);ddSty='color:#3d4a5c;';}
+      else {ddTxt='D-'+dd;ddSty=(dd<=30?'color:#9a6100;font-weight:600;':'color:#3d4a5c;');}
+    }
+    const nc=r['무접촉일'];
+    let ncTxt='<span style="color:#b0242c;font-weight:700;">미접촉</span>';
+    if(nc!==null&&nc!==undefined){
+      const nCol=(nc>=14?'#b0242c':(nc>=7?'#9a6100':'#166f4e'));
+      ncTxt='<span style="color:'+nCol+';font-weight:'+(nc>=7?'700':'400')+';">'+nc+'일</span>';
+    }
+    const rowBg=(zone==='A')?'background:#fdf3f3;':((zone==='C')?'background:#f3faf6;':((zone==='D')?'opacity:.55;':''));
+    return '<tr data-inq="'+escapeHtml(inq)+'" data-zone="'+zone+'" style="cursor:pointer;'+rowBg+'">'+
       '<td>'+dot+'<b>'+escapeHtml(inq)+'</b></td>'+
-      '<td>'+srcBadge+escapeHtml(co)+'</td>'+
+      '<td>'+srcBadge+escapeHtml(co)+reBadge+whyHtml+'</td>'+
       '<td>'+escapeHtml(nm)+'</td>'+
       '<td>'+escapeHtml(bu)+'</td>'+
       '<td><span class="status-badge '+stCls+'">'+escapeHtml(st)+'</span></td>'+
       '<td>'+escapeHtml(owner)+'</td>'+
-      '<td style="text-align:right;">'+elapsed+'</td>'+
+      '<td style="text-align:right;'+ddSty+'">'+ddTxt+'</td>'+
+      '<td style="text-align:right;">'+ncTxt+'</td>'+
     '</tr>';
   }).join('');
   tbody.innerHTML=html;

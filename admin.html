@@ -1811,9 +1811,7 @@ function openAddCustomerModal(){
     const co=g('acm-co');
     if(!co){toast('회사(단체)명을 입력하세요','error');return;}
     const amtRaw=g('acm-amount');
-    const rcv=g('acm-received');
-    if(!rcv){toast('접수일(문의받은 날)을 입력하세요 — 행사일과 다른 날입니다','error');return;}
-    const rpcArgs={'p_회사명':co,'p_사업부':g('acm-bu')||'국내여행','p_접수일':rcv,'p_시작일':g('acm-start')||null,'p_종료일':g('acm-end')||null,'p_고객상태':g('acm-status')||'종료','p_구분':g('acm-gubun')||'기업','p_담당자명':g('acm-mgr')||null,'p_연락처':g('acm-tel')||null,'p_이메일':g('acm-email')||null,'p_사업자번호':null,'p_계약금액':amtRaw?Number(amtRaw):null,'p_품목요약':g('acm-items')||null,'p_내부담당자':null,'p_비고':g('acm-note')||null};
+    const rpcArgs={'p_회사명':co,'p_사업부':g('acm-bu')||'국내여행','p_접수일':null,'p_시작일':g('acm-start')||null,'p_종료일':g('acm-end')||null,'p_고객상태':g('acm-status')||'종료','p_구분':g('acm-gubun')||'기업','p_담당자명':g('acm-mgr')||null,'p_연락처':g('acm-tel')||null,'p_이메일':g('acm-email')||null,'p_사업자번호':null,'p_계약금액':amtRaw?Number(amtRaw):null,'p_품목요약':g('acm-items')||null,'p_내부담당자':null,'p_비고':g('acm-note')||null};
     const btn=document.getElementById('acm-save');btn.disabled=true;btn.textContent='저장 중…';
     try{
       const {data,error}=await withTimeout(sb.rpc('rpc_transfer_customer',rpcArgs),8000,'transfer_customer');

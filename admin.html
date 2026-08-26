@@ -1744,7 +1744,7 @@ function openNewInquiryModal(){
     const adult=Number(g('nim-adult')||0),child=Number(g('nim-child')||0);
     if(adult+child<=0){toast('인원을 입력하세요 (성인 또는 아동)','error');return;}
     const link=document.getElementById('nim-link');
-    const args={'p_회사명':co,'p_연락처':tel,'p_사업부':g('nim-bu')||'국내여행','p_접수수단':g('nim-via')||'전화','p_유입경로':g('nim-route')||'미확인',
+    const args={'p_회사명':co,'p_연락처':tel,'p_사업부':g('nim-bu')||'국내여행','p_유입경로':g('nim-route')||'전화',
       'p_희망시작일':start,'p_희망일_정밀도':prec,'p_희망종료일':g('nim-end')||null,
       'p_인원_성인':adult||null,'p_인원_아동':child||0,
       'p_구분':g('nim-gubun')||'기업','p_담당자명':g('nim-mgr')||null,'p_이메일':g('nim-email')||null,

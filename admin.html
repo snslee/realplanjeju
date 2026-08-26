@@ -1784,7 +1784,7 @@ function openAddCustomerModal(){
     +row2(sel2('사업부','acm-bu',['국내여행','행사이벤트','온라인마케팅','마케팅교육']),sel2('구분','acm-gubun',['기업','단체','개인','학교']))
     +row2(fld('담당자','acm-mgr','text','예: 홍길동'),fld('담당자 연락처','acm-tel','text','010-0000-0000'))
     +fld('이메일','acm-email','text','contact@company.com')
-    +row2(fld('접수일(문의받은 날) *','acm-received','date',''),sel2('이관 시점 상태','acm-status',['종료','계약완료','취소','이탈']))
+    +sel2('이관 시점 상태','acm-status',['종료','계약완료','취소','이탈'])
     +row2(fld('시작일(행사일)','acm-start','date',''),fld('종료일','acm-end','date',''))
     +fld('계약금액(원)','acm-amount','number','예: 5000000')
     +fld('행사 품목','acm-items','text','예: 무대,음향,의전,식음')

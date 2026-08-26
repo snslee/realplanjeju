@@ -1411,9 +1411,9 @@ async function logAccess(action,reason){
 
 // =============== Day 3 (a)+(c) 데이터 연동 ===============
 const STATUS_CLASS_MAP={
-  '신규문의':'s-new','접수확인':'s-contact','상담중':'s-progress',
+  '신규문의':'s-new','확인':'s-contact','상담중':'s-progress',
   '견적발송':'s-quote','계약대기':'s-quote','계약완료':'s-contract',
-  '진행중':'s-progress','진행완료':'s-done','이탈':'s-drop','보류':'s-drop'
+  '진행중':'s-progress','종료':'s-done','이탈':'s-drop','취소':'s-drop'
 };
 const KPI_CARD_MAP={
   new_count:'new',

@@ -541,6 +541,7 @@ table.qt-items td.narrow input{text-align:right}
 <div><div class="page-title">문의 목록</div><div class="page-subtitle">🆕 신규 미응답 → 🔴 지금 손봐야 → 🟡 진행 중(확인·상담중·견적발송 순) → 🟢 계약·매출 → ⬜ 종결</div></div>
 <div><button class="list-btn" id="btn-new-inquiry" type="button" style="background:#c0392b;color:#fff;border-color:#c0392b;margin-right:6px;">+ 신규 문의 접수</button><button class="list-btn" id="btn-more-toggle" type="button" title="관리자 메뉴" style="margin-right:6px;">⋯</button><button class="list-btn" id="btn-add-customer" type="button" hidden style="background:#185fa5;color:#fff;border-color:#185fa5;margin-right:6px;">+ 기존 고객 이관</button><button class="list-btn">엑셀 내보내기</button></div>
 </div>
+<div class="cust-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px 0;"><button type="button" class="cust-tab active" data-band="" style="padding:7px 13px;border:1px solid #d7dee7;border-radius:999px;background:#e8edf3;color:#44546a;font-size:12.5px;font-weight:600;cursor:pointer;">전체 <span class="cust-tab-n" data-band-n="" style="opacity:.65;font-weight:500;"></span></button><button type="button" class="cust-tab" data-band="0" style="padding:7px 13px;border:1px solid #d7dee7;border-radius:999px;background:#e7f0ff;color:#1a4b8f;font-size:12.5px;font-weight:600;cursor:pointer;">🆕 신규 미응답 <span class="cust-tab-n" data-band-n="0" style="opacity:.65;font-weight:500;"></span></button><button type="button" class="cust-tab" data-band="A" style="padding:7px 13px;border:1px solid #d7dee7;border-radius:999px;background:#fdedec;color:#a5352a;font-size:12.5px;font-weight:600;cursor:pointer;">🔴 지금 손봐야 <span class="cust-tab-n" data-band-n="A" style="opacity:.65;font-weight:500;"></span></button><button type="button" class="cust-tab" data-band="B" style="padding:7px 13px;border:1px solid #d7dee7;border-radius:999px;background:#fdf6e3;color:#8a5a00;font-size:12.5px;font-weight:600;cursor:pointer;">🟡 진행 중 <span class="cust-tab-n" data-band-n="B" style="opacity:.65;font-weight:500;"></span></button><button type="button" class="cust-tab" data-band="C" style="padding:7px 13px;border:1px solid #d7dee7;border-radius:999px;background:#e9f6f0;color:#14503a;font-size:12.5px;font-weight:600;cursor:pointer;">🟢 계약·매출 <span class="cust-tab-n" data-band-n="C" style="opacity:.65;font-weight:500;"></span></button><button type="button" class="cust-tab" data-band="D" style="padding:7px 13px;border:1px solid #d7dee7;border-radius:999px;background:#f1f3f5;color:#5a6a7d;font-size:12.5px;font-weight:600;cursor:pointer;">⬜ 종결 <span class="cust-tab-n" data-band-n="D" style="opacity:.65;font-weight:500;"></span></button></div>
 <div class="list-toolbar">
 <input type="search" id="flt-search" class="list-search" placeholder="회사·이름·전화·접수번호·이메일 검색">
 <select id="flt-status" class="filter-select"><option value="">상태 (전체)</option><option value="신규문의">신규문의</option><option value="확인">확인</option><option value="상담중">상담중</option><option value="견적발송">견적발송</option><option value="계약대기">계약대기</option><option value="계약완료">계약완료</option><option value="진행중">진행중</option><option value="종료">종료</option><option value="이탈">이탈</option><option value="취소">취소</option></select>
@@ -559,7 +560,7 @@ table.qt-items td.narrow input{text-align:right}
 <th style="width:110px;">사업부</th><th style="width:110px;">상태</th>
 <th style="width:100px;">담당자</th><th style="width:88px;text-align:right;">D-day</th><th style="width:76px;text-align:right;">무접촉</th>
 </tr></thead>
-<tbody><tr class="placeholder-row"><td colspan="7">
+<tbody><tr class="placeholder-row"><td colspan="8">
 <div>⏳ 불러오는 중…</div>
 </td></tr></tbody>
 </table>
@@ -1207,7 +1208,7 @@ const QT_BU_DEFAULT_ITINERARY = {
 const QT_BU_LIST = ["국내여행","행사이벤트","온라인마케팅","마케팅교육"];
 const state={user:null,session:null,adminRole:null,permissions:{},/* v2.9-E */ready:false,currentCustomerId:null,currentCustomerInq:null,currentCustomerBU:null,timelineOffset:0,timelineTotal:0,timelineLoading:false,editMode:false,currentRow:null,lastUpdatedAt:null,
 // v1.9 — 검색·필터·페이지네이션
-filters:{search:'',status:'',bu:'',owner:'',period:'',from:null,to:null,source:''},
+filters:{search:'',status:'',bu:'',owner:'',period:'',from:null,to:null,source:'',band:''},
 listPage:1,listTotal:0,listSearchTimer:null};
 window.state=state;/* v2.16-A 28-1 hook 노출 */
 /* Phase 2a v2.0: 견적 작성 state */
@@ -1538,23 +1539,54 @@ function buildListRpcArgs(){
     _tags:null,
     _limit:PAGE_SIZE,
     _offset:(state.listPage-1)*PAGE_SIZE,
-    _source:f.source||null
+    _source:f.source||null,
+    _band:f.band||null
   };
+}
+
+/* 선택된 탭에 테두리를 준다 */
+function paintCustTabs(){
+  const cur=(state.filters&&state.filters.band)||'';
+  document.querySelectorAll('.cust-tab').forEach(function(b){
+    const on=(b.getAttribute('data-band')||'')===cur;
+    b.style.outline=on?'2px solid #1a2332':'none';
+    b.style.outlineOffset=on?'1px':'0';
+    b.style.opacity=on?'1':'.72';
+  });
+}
+
+/* 탭 옆 건수 — 띠별로 1건씩만 받아 total_count 를 읽는다(전체를 끌어오지 않는다) */
+async function loadCustTabCounts(){
+  const bands=['','0','A','B','C','D'];
+  for(const b of bands){
+    try{
+      const a=buildListRpcArgs();
+      a._band=b||null;a._limit=1;a._offset=0;
+      a._search=null;a._status=null;a._business_unit=null;a._admin_email=null;
+      a._from_date=null;a._to_date=null;a._source=null;
+      const {data,error}=await sb.rpc('rpc_list_customers',a);
+      if(error)continue;
+      const n=(data&&data.length)?(data[0].total_count||0):0;
+      const el=document.querySelector('.cust-tab-n[data-band-n="'+b+'"]');
+      if(el)el.textContent=n;
+    }catch(e){}
+  }
 }
 
 async function loadCustomers(){
   if(!state.user)return;
   const tbody=$('.customers-table tbody');
-  if(tbody)tbody.innerHTML='<tr class="placeholder-row"><td colspan="7"><div>⏳ 불러오는 중…</div></td></tr>';
+  if(tbody)tbody.innerHTML='<tr class="placeholder-row"><td colspan="8"><div>⏳ 불러오는 중…</div></td></tr>';
   try{
     const args=buildListRpcArgs();
     const {data,error}=await withTimeout(sb.rpc('rpc_list_customers',args),8000,'list_customers');
     if(error)throw error;
     renderCustomersTable(data||[]);
     updateFilterSummary();
+    loadCustTabCounts();
   }catch(err){
     console.error('[loadCustomers]',err);
-    if(tbody)tbody.innerHTML='<tr class="placeholder-row"><td colspan="7"><div>❌ 불러오기 실패</div><div style="margin-top:6px;font-size:12px;">'+escapeHtml(err.message||err)+'</div></td></tr>';
+    if(tbody)tbody.innerHTML='<tr class="placeholder-row"><td colspan="8"><div>❌ 불러오기 실패</div><div style="margin-top:6px;font-size:12px;">'+escapeHtml(err.message||err)+'</div></td></tr>';
     toast('문의 목록 로딩 실패: '+(err.message||err),'error');
   }
   await logAccess('CUSTOMERS_VIEW',null);
@@ -1574,7 +1606,7 @@ function renderCustomersTable(rows){
   const tbody=$('.customers-table tbody');
   if(!tbody)return;
   if(!rows||rows.length===0){
-    tbody.innerHTML='<tr class="placeholder-row"><td colspan="7"><div>📭 검색 결과 없음</div><div style="margin-top:6px;font-size:12px;">필터 조건을 변경하거나 [초기화]를 눌러보세요</div></td></tr>';
+    tbody.innerHTML='<tr class="placeholder-row"><td colspan="8"><div>📭 검색 결과 없음</div><div style="margin-top:6px;font-size:12px;">필터 조건을 변경하거나 [초기화]를 눌러보세요</div></td></tr>';
     state.listTotal=0;
     setPagination(0,state.listPage);
     return;
@@ -4004,6 +4036,14 @@ function bindFilters(){
   if(btnNewInq)btnNewInq.addEventListener('click',openNewInquiryModal);
   const btnAddCust=$('#btn-add-customer');
   if(btnAddCust)btnAddCust.addEventListener('click',openAddCustomerModal);
+  /* 2026-08-26 탭 5종 — 서버(_band)에서 거른다. 화면단 필터는 페이지당 20건이라 오답이 된다 */
+  const tabWrap=document.querySelector('.cust-tabs');
+  if(tabWrap)tabWrap.addEventListener('click',(e)=>{
+    const b=e.target.closest('.cust-tab');if(!b)return;
+    state.filters.band=b.getAttribute('data-band')||'';
+    state.listPage=1;paintCustTabs();loadCustomers();
+  });
+  paintCustTabs();loadCustTabCounts();
   /* 2026-08-26 — 이관은 초기 자료 옮길 때만 쓴다. 삭제하지 않고 ⋯ 뒤로 접는다 */
   const btnMore=$('#btn-more-toggle');
   if(btnMore)btnMore.addEventListener('click',()=>{
@@ -4042,7 +4082,8 @@ function bindFilters(){
   });
   const reset=$('#flt-reset');
   if(reset)reset.addEventListener('click',()=>{
-    state.filters={search:'',status:'',bu:'',owner:'',period:'',from:null,to:null,source:''};
+    state.filters={search:'',status:'',bu:'',owner:'',period:'',from:null,to:null,source:'',band:''};
+    paintCustTabs();
     state.listPage=1;
     if(search)search.value='';
     if(sStatus)sStatus.value='';

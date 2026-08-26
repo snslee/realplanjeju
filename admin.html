@@ -1609,7 +1609,7 @@ function renderCustomersTable(rows){
     let ddTxt='<span style="color:#98a2b3;">미정</span>', ddSty='';
     if(dd!==null&&dd!==undefined){
       if(dd<0){ddTxt='D+'+Math.abs(dd);ddSty='color:#b0242c;font-weight:700;';}
-      else if(prec==='월'){const mm2=String(r['희망일']||'').slice(5,7);ddTxt=(mm2?Number(mm2)+'월중':'D-'+dd);ddSty='color:#3d4a5c;';}
+      else if(prec==='월'){const hy=String(r['희망일']||'');const yy=hy.slice(2,4),mm2=hy.slice(5,7);const nowY=String(new Date().getFullYear()).slice(2,4);ddTxt=(mm2?((yy&&yy!==nowY?yy+'년 ':'')+Number(mm2)+'월중'):'D-'+dd);ddSty=(dd<=30?'color:#9a6100;font-weight:600;':'color:#3d4a5c;');}
       else {ddTxt='D-'+dd;ddSty=(dd<=30?'color:#9a6100;font-weight:600;':'color:#3d4a5c;');}
     }
     const nc=r['무접촉일'];

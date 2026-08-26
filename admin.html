@@ -1490,9 +1490,9 @@ function renderUnresponsiveBadges(rows){
     if(!lv)continue;
     const s=String(lv);
     if(s==='ok')continue;
-    if(s.indexOf('72')>=0)c72++;
-    else if(s.indexOf('48')>=0)c48++;
-    else if(s.indexOf('24')>=0)c24++;
+    if(s==='critical'||s.indexOf('72')>=0)c72++;
+    else if(s==='warning'||s.indexOf('48')>=0)c48++;
+    else if(s==='notice'||s.indexOf('24')>=0)c24++;
   }
   const set=(sel,v)=>{const e=$(sel);if(e)e.textContent=v;};
   set('.warn-badge.w24 .wb-count',c24);

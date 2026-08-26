@@ -1631,6 +1631,23 @@ function renderCustomersTable(rows){
     '</tr>';
   }).join('');
   tbody.innerHTML=html;
+  /* 목록에서 담당자 바로 지정 — 주인 없는 건이 놓침의 진짜 원인이라 한 건씩 상세로 들어가지 않게 한다 */
+  tbody.querySelectorAll('.owner-sel').forEach(function(selEl){
+    selEl.addEventListener('click',function(e){e.stopPropagation();});
+    selEl.addEventListener('change',async function(e){
+      e.stopPropagation();
+      const cid=selEl.getAttribute('data-cid'); const val=selEl.value||null;
+      selEl.disabled=true;
+      try{
+        const {error}=await withTimeout(sb.rpc('rpc_assign_owner',{'_customer_id':cid,'_owner':val}),8000,'assign_owner');
+        if(error)throw error;
+        selEl.style.borderColor=val?'#cfd8e3':'#e0a0a0';
+        selEl.style.background=val?'#fff':'#fdf3f3';
+        toast('담당자 '+(val||'미지정')+' 로 변경','success');
+      }catch(err){console.error('[assign_owner]',err);toast('담당자 변경 실패: '+(err.message||err),'error');}
+      selEl.disabled=false;
+    });
+  });
   setPagination(total,state.listPage);
 }
 

@@ -729,7 +729,20 @@ window.rpSubmitInquiry=async function(){
   var src='direct', detail=null;
   try{var t0=JSON.parse(sessionStorage.getItem('rp_src0')||'{}');src=(t0.src||'direct')+(t0.content?' · '+t0.content:'');detail=(t0&&Object.keys(t0).length)?t0:null;}catch(e){}
   /* 2026-07-30 사고수리: 유입경로 컬럼 상한(120)을 넘기지 않는다. 상세는 유입_상세(jsonb)로 보낸다 */
-  var path='홈페이지'+SITE+'('+src+')'; if(path.length>118) path=path.slice(0,118);
+  /* 2026-08-26 추가: 고객이 직접 고른 유입경로가 있으면 그것을 정본으로 쓴다. 기계 판정값은 유입_상세에 보존한다 */
+  var know=($('rpf-know')?$('rpf-know').value:'')||'';
+  var knowEtc=($('rpf-know-etc')?$('rpf-know-etc').value.trim():'');
+  var pick='';
+  if(know==='기타'){pick=knowEtc?('기타: '+knowEtc):'기타';}
+  else if(know==='지인 소개'){pick=knowEtc?('지인 소개: '+knowEtc):'지인 소개';}
+  else if(know){pick=know;}
+  if(!detail) detail={};
+  detail['기계판정']='홈페이지'+SITE+'('+src+')';
+  detail['고객선택']=pick||'미선택';
+  /* 미선택이면 기존(기계 판정) 방식을 그대로 쓴다 — 데이터가 후퇴하지 않는다 */
+  var path=pick?('홈페이지'+SITE+' · '+pick):('홈페이지'+SITE+'('+src+')');
+  /* 2026-07-30 사고수리: 유입경로 컬럼 상한(120)을 넘기지 않는다. 상세는 유입_상세(jsonb)로 보낸다 */
+  if(path.length>118) path=path.slice(0,118);
   btn.disabled=true;btn.textContent='접수 중…';
   var r=await sb.rpc('submit_inquiry',{p_구분:document.getElementById('rpf-type').value,p_사업부:dept,p_회사명:org,p_담당자명:name,p_연락처:tel,
     p_이메일:($('rpf-email')?$('rpf-email').value.trim():'')||null,p_시작일:null,p_종료일:null,p_일정조율가능:null,

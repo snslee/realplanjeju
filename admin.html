@@ -3812,6 +3812,8 @@ function bindFilters(){
   if(sSource)sSource.addEventListener('change',()=>{
     state.filters.source=sSource.value;state.listPage=1;loadCustomers();
   });
+  const btnNewInq=$('#btn-new-inquiry');
+  if(btnNewInq)btnNewInq.addEventListener('click',openNewInquiryModal);
   const btnAddCust=$('#btn-add-customer');
   if(btnAddCust)btnAddCust.addEventListener('click',openAddCustomerModal);
   const sBu=$('#flt-bu');

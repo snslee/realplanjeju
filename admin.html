@@ -2433,6 +2433,8 @@ function renderOverviewEdit(r){
     return '<input class="edit-input" type="'+type+'" data-field="'+field+'" value="'+esc(val||'')+'" placeholder="(비어있음)">';
   };
   const sel=(field,val,opts)=>{
+    /* 현재 값이 목록에 없으면 맨 앞에 끼워 넣는다 — 안 그러면 편집 저장 때 조용히 지워진다 */
+    if(val&&opts.indexOf(val)<0)opts=[val].concat(opts);
     const o=opts.map(x=>'<option value="'+esc(x)+'"'+(val===x?' selected':'')+'>'+esc(x)+'</option>').join('');
     return '<select class="edit-select" data-field="'+field+'"><option value="">(선택 안함)</option>'+o+'</select>';
   };

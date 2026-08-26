@@ -337,6 +337,28 @@ footer .admin a{text-decoration:underline}
     <div class="frow one">
       <div class="fld"><label>요청 내용</label><textarea id="rpf-msg" rows="4" placeholder="목적·구성·특이사항을 적어주시면 딱 맞는 플랜으로 답하겠습니다."></textarea></div>
     </div>
+    <div class="frow one">
+      <div class="fld"><label>어떻게 알게 되셨나요? (선택)</label><select id="rpf-know" onchange="var v=this.value,w=document.getElementById('rpf-know-sub'),l=document.getElementById('rpf-know-lb'),e=document.getElementById('rpf-know-etc');if(v==='기타'){w.style.display='';l.textContent='어떻게 알게 되셨는지 적어주세요';e.placeholder='예: 지역 커뮤니티, 현수막';}else if(v==='지인 소개'){w.style.display='';l.textContent='소개해주신 분 (선택)';e.placeholder='예: 홍길동 님';}else{w.style.display='none';e.value='';}">
+        <option value="">선택 안 함</option>
+        <option>네이버 블로그</option>
+        <option>티스토리 블로그</option>
+        <option>네이버 검색</option>
+        <option>구글 검색</option>
+        <option>네이버 카페</option>
+        <option>유튜브</option>
+        <option>인스타그램</option>
+        <option>쓰레드</option>
+        <option>카카오톡 채널</option>
+        <option>네이버 플레이스</option>
+        <option>당근</option>
+        <option>ChatGPT 등 AI 추천</option>
+        <option>지인 소개</option>
+        <option value="기타">기타 (직접 입력)</option>
+      </select></div>
+    </div>
+    <div class="frow one" id="rpf-know-sub" style="display:none">
+      <div class="fld"><label id="rpf-know-lb">직접 입력</label><input id="rpf-know-etc" placeholder=""></div>
+    </div>
     <div class="agree">
       <label><input type="checkbox" id="rpf-ag1"> (필수) 개인정보 수집·이용 동의 — 견적 상담 목적</label><br>
       <label><input type="checkbox" id="rpf-ag2"> (선택) 행사·여행 소식 등 마케팅 정보 수신 동의</label>

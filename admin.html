@@ -1597,13 +1597,10 @@ function renderCustomersTable(rows){
     const elapsed=elapsedDaysSince(r['신청일시']);
     const src=r['데이터출처']||'';
     const route=r['유입경로']||'';
-    const via=r['접수수단']||'';
-    /* ★두 축이다 — 접수수단(어떤 수단으로 들어왔나) / 유입경로(어떻게 우리를 알았나). 한 칸으로 판정하면 전화 문의가 「이관」으로 찍힌다 */
-    const VIA_BADGE={'전화':['\uD83D\uDCDE 전화','#fdece9','#a8452f'],'현장방문':['\uD83C\uDFE2 방문','#eaf1fb','#2f5da8'],'메일':['\u2709 메일','#f0ecfb','#5a3fa8'],'이관':['\uD83D\uDCC1 이관','#eef2f7','#5a6b82']};
-    const vb=VIA_BADGE[via];
-    const viaBadge=vb?'<span class="gubun-badge" style="background:'+vb[1]+';color:'+vb[2]+';margin-right:5px;">'+vb[0]+'</span>':'';
-    const refBadge=(route==='지인소개')?'<span class="gubun-badge" style="background:#eef7ec;color:#3f7a2f;margin-right:5px;">\uD83E\uDD1D 소개</span>':'';
-    const srcBadge=viaBadge+refBadge;
+    /* 접수 경로는 한 칸에 하나다 — 전화로 왔으면 「전화」, 지인 소개면 「소개」. 둘 다 붙이지 않는다(대표 지시 2026-08-26) */
+    const ROUTE_BADGE={'전화':['\uD83D\uDCDE 전화','#fdece9','#a8452f'],'현장방문':['\uD83C\uDFE2 방문','#eaf1fb','#2f5da8'],'메일':['\u2709 메일','#f0ecfb','#5a3fa8'],'지인소개':['\uD83E\uDD1D 소개','#eef7ec','#3f7a2f'],'이관':['\uD83D\uDCC1 이관','#eef2f7','#5a6b82']};
+    const rb=ROUTE_BADGE[route];
+    const srcBadge=rb?'<span class="gubun-badge" style="background:'+rb[1]+';color:'+rb[2]+';margin-right:5px;">'+rb[0]+'</span>':'';
     const reBadge=r['재문의여부']?'<span class="gubun-badge" style="background:#e2f2ea;color:#166f4e;margin-left:5px;">재문의</span>':'';
     const why=r['위험사유']||'';
     const whyHtml=why?'<div style="font-size:11px;color:#b0242c;margin-top:2px;line-height:1.4;">'+escapeHtml(why)+'</div>':'';

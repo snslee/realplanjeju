@@ -1640,7 +1640,109 @@ function rpStorageSeg(s){
 }
 window.rpStorageSeg=rpStorageSeg;
 
-/* 기존 계약 고객 수동등록 모달 (데이터출처=수동등록 / rpc_create_customer) */
+/* ★신규 문의 접수 모달 (전화·현장방문·메일·지인소개 / rpc_create_inquiry)
+   ★접수일은 서버 now() 고정 — 화면에서 넘기지 않는다(희망일이 접수일 칸에 들어가던 사고 재발 방지)
+   ★고객상태는 '신규문의' 고정 · 담당자 기본 김현숙(변경 가능) */
+function openNewInquiryModal(){
+  if(document.getElementById('nim-overlay'))return;
+  let linkPrev=null;
+  const F=(label,id,type,ph,req)=>'<div><label style="display:block;font-size:12.5px;font-weight:600;color:#44546a;margin-bottom:5px;">'+label+(req?' <span style="color:#c0392b;">*</span>':'')+'</label><input id="'+id+'" type="'+type+'" placeholder="'+(ph||'')+'" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #cfd8e3;border-radius:8px;font-size:13.5px;"></div>';
+  const S=(label,id,opts,req)=>'<div><label style="display:block;font-size:12.5px;font-weight:600;color:#44546a;margin-bottom:5px;">'+label+(req?' <span style="color:#c0392b;">*</span>':'')+'</label><select id="'+id+'" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #cfd8e3;border-radius:8px;font-size:13.5px;background:#fff;">'+opts.map(o=>'<option value="'+o+'">'+o+'</option>').join('')+'</select></div>';
+  const R2=(a,b)=>'<div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">'+a+b+'</div>';
+  const today=new Date().toLocaleDateString('ko-KR');
+  const ov=document.createElement('div');
+  ov.id='nim-overlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(20,30,45,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+  ov.innerHTML=''
+    +'<div style="background:#fff;border-radius:14px;max-width:580px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.25);">'
+    +'<div style="padding:18px 22px;border-bottom:1px solid #e6ebf2;display:flex;justify-content:space-between;align-items:center;">'
+    +'<div><div style="font-size:16px;font-weight:700;color:#1a2332;">+ 신규 문의 접수</div>'
+    +'<div style="font-size:12px;color:#8a97a8;margin-top:3px;">접수일 '+today+' 자동 기록 · 상태는 「신규문의」로 저장되어 목록 맨 위에 뜹니다</div></div>'
+    +'<button type="button" id="nim-x" style="border:none;background:none;font-size:20px;cursor:pointer;color:#8a97a8;">×</button></div>'
+    +'<div style="padding:20px 22px;display:grid;gap:13px;">'
+    +'<div id="nim-dupe" style="display:none;"></div>'
+    +R2(F('회사(단체)명','nim-co','text','예: 평택시 진위면',1),F('연락처','nim-tel','text','010-0000-0000',1))
+    +R2(S('접수 경로','nim-route',['전화접수','현장방문','메일','지인소개'],1),S('사업부','nim-bu',['국내여행','행사이벤트','온라인마케팅','마케팅교육'],1))
+    +R2(S('구분','nim-gubun',['기업','단체','개인','학교']),F('담당자','nim-mgr','text','예: 홍길동'))
+    +R2(F('이메일','nim-email','text','contact@company.com'),F('사업자번호','nim-biz','text','000-00-00000'))
+    +'<div style="border-top:1px dashed #e6ebf2;padding-top:12px;">'
+    +'<div style="font-size:12.5px;font-weight:600;color:#44546a;margin-bottom:8px;">희망일 <span style="color:#c0392b;">*</span> <span style="font-weight:400;color:#8a97a8;">— 월은 필수, 일자는 정해졌을 때만 (비우면 「그 달 중」으로 기록)</span></div>'
+    +R2(F('희망 월','nim-month','month',''),F('희망 일자 — 미정이면 비워두세요','nim-day','date',''))
+    +'<div style="margin-top:11px;">'+F('종료일 — 여러 날이면','nim-end','date','')+'</div></div>'
+    +R2(F('인원 — 성인','nim-adult','number','예: 40',1),F('인원 — 아동','nim-child','number','0'))
+    +R2(F('희망지역','nim-region','text','예: 제주'),F('예산','nim-budget','text','예: 2,000만원'))
+    +'<div><label style="display:block;font-size:12.5px;font-weight:600;color:#44546a;margin-bottom:5px;">요청사항</label><textarea id="nim-req" rows="3" placeholder="통화 내용을 그대로 적어두세요" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #cfd8e3;border-radius:8px;font-size:13.5px;font-family:inherit;resize:vertical;"></textarea></div>'
+    +S('담당자 배정','nim-owner',['김현숙','이동환'])
+    +'</div>'
+    +'<div style="padding:14px 22px;border-top:1px solid #e6ebf2;display:flex;gap:8px;justify-content:flex-end;">'
+    +'<button type="button" id="nim-cancel" style="padding:9px 18px;border:1px solid #cfd8e3;background:#fff;border-radius:8px;cursor:pointer;">취소</button>'
+    +'<button type="button" id="nim-save" style="padding:9px 20px;border:none;background:#c0392b;color:#fff;border-radius:8px;cursor:pointer;font-weight:600;">접수</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.addEventListener('click',e=>{if(e.target===ov)close();});
+  document.getElementById('nim-x').onclick=close;
+  document.getElementById('nim-cancel').onclick=close;
+  document.getElementById('nim-co').focus();
+
+  /* 중복 확인 — 90점 이상이면 경고만 띄우고 저장은 막지 않는다(통화 중 막히면 곤란) */
+  async function nimCheckDupe(){
+    const g=id=>(document.getElementById(id).value||'').trim();
+    const box=document.getElementById('nim-dupe');
+    const tel=g('nim-tel'),co=g('nim-co'),biz=g('nim-biz');
+    if(!tel&&!biz&&!co){box.style.display='none';linkPrev=null;return;}
+    try{
+      const {data,error}=await sb.rpc('rpc_check_duplicate_customer',{'p_연락처':tel||null,'p_이메일':g('nim-email')||null,'p_회사명':co||null,'p_담당자명':g('nim-mgr')||null,'p_사업자번호':biz||null,'p_exclude_id':null});
+      if(error||!data||!data.length){box.style.display='none';linkPrev=null;return;}
+      const t=data[0];const hi=(t['점수']||0)>=90;
+      linkPrev=t['마스터_접수번호'];
+      box.style.cssText='display:block;padding:11px 13px;border-radius:9px;border:1px solid '+(hi?'#e6b0aa':'#f5d6a0')+';background:'+(hi?'#fdedec':'#fdf6e3')+';font-size:12.5px;line-height:1.65;color:#4a3728;';
+      box.innerHTML='<b>'+(hi?'⚠ 같은 고객으로 보입니다':'참고 — 비슷한 건이 있습니다')+'</b> ('+(t['점수']||0)+'점 · '+(t['근거']||'')+' · '+(t['상태구분']||'')+')<br>'
+        +(t['접수번호']||'')+' · '+(t['회사명']||'')+' · '+(t['고객상태']||'')+' · 접수 '+(t['접수일']||'')
+        +' · 누적 문의 '+(t['총문의횟수']||0)+'회 / 성사 '+(t['성사건수']||0)+'건'
+        +'<div style="margin-top:7px;"><label style="cursor:pointer;"><input type="checkbox" id="nim-link"'+(hi?' checked':'')+'> 최초 건(<b>'+(t['마스터_접수번호']||'')+'</b>)에 이어 붙이기 — 재문의로 기록</label></div>';
+    }catch(e){console.error('[nim dupe]',e);box.style.display='none';}
+  }
+  ['nim-tel','nim-biz','nim-co','nim-email'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.addEventListener('blur',nimCheckDupe);
+  });
+
+  document.getElementById('nim-save').onclick=async()=>{
+    const g=id=>(document.getElementById(id).value||'').trim();
+    const co=g('nim-co'),tel=g('nim-tel');
+    if(!co){toast('회사(단체)명을 입력하세요','error');return;}
+    if(!tel){toast('연락처를 입력하세요','error');return;}
+    const day=g('nim-day'),mon=g('nim-month');
+    if(!day&&!mon){toast('희망일은 최소 「월」까지 입력하세요','error');return;}
+    const prec=day?'일':'월';
+    const start=day?day:(mon+'-01');
+    const adult=Number(g('nim-adult')||0),child=Number(g('nim-child')||0);
+    if(adult+child<=0){toast('인원을 입력하세요 (성인 또는 아동)','error');return;}
+    const link=document.getElementById('nim-link');
+    const args={'p_회사명':co,'p_연락처':tel,'p_사업부':g('nim-bu')||'국내여행','p_접수경로':g('nim-route')||'전화접수',
+      'p_희망시작일':start,'p_희망일_정밀도':prec,'p_희망종료일':g('nim-end')||null,
+      'p_인원_성인':adult||null,'p_인원_아동':child||0,
+      'p_구분':g('nim-gubun')||'기업','p_담당자명':g('nim-mgr')||null,'p_이메일':g('nim-email')||null,
+      'p_사업자번호':g('nim-biz')||null,'p_희망지역':g('nim-region')||null,'p_예산':g('nim-budget')||null,
+      'p_요청사항':(document.getElementById('nim-req').value||'').trim()||null,
+      'p_내부담당자':g('nim-owner')||'김현숙',
+      'p_이전접수번호':(link&&link.checked&&linkPrev)?linkPrev:null};
+    const btn=document.getElementById('nim-save');btn.disabled=true;btn.textContent='접수 중…';
+    try{
+      const {data,error}=await withTimeout(sb.rpc('rpc_create_inquiry',args),8000,'create_inquiry');
+      if(error)throw error;
+      toast('접수 완료: '+((data&&data['접수번호'])||'')+' · 담당 '+((data&&data['내부담당자'])||''),'success');
+      close();
+      state.listPage=1;loadCustomers();
+    }catch(err){
+      console.error('[create_inquiry]',err);
+      toast('접수 실패: '+(err.message||err),'error');
+      btn.disabled=false;btn.textContent='접수';
+    }
+  };
+}
+
+/* 기존 고객 이관 모달 (과거 거래 옮겨담기 / rpc_transfer_customer) — 접수일과 희망일을 분리해서 받는다 */
 function openAddCustomerModal(){
   if(document.getElementById('acm-overlay'))return;
   function fld(label,id,type,ph){return '<div><label style="display:block;font-size:12.5px;font-weight:600;color:#44546a;margin-bottom:5px;">'+label+'</label><input id="'+id+'" type="'+type+'" placeholder="'+ph+'" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #cfd8e3;border-radius:8px;font-size:13.5px;"></div>';}

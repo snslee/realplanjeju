@@ -2535,9 +2535,14 @@ async function loadAssignBoard(force){
   renderAssignBoard();renderDraftPhotoPanel();
   if(window._draftView&&typeof renderDrafts==='function')renderDrafts(window._draftView);
 }
-function _asgName(r){var p=_normPath(r.로컬경로||r.배정_경로||'');var f=p?p.split('\\').pop():'';return f?f:String(r.파일명||'');}
-function asgPathCopy(i){var r=_asgRows[i];if(!r)return;var p=_normPath(r.로컬경로||r.배정_경로||'');if(!p)return;try{navigator.clipboard.writeText(p);}catch(e){}location.href='rpfolder:'+encodeURIComponent(p);if(window.showToast)showToast('탐색기에서 파일 위치를 엽니다 (경로도 복사됨)');}
-function asgDirCopy(ch){var r=_asgRows.filter(function(x){return x.배정_채널===ch&&(x.로컬경로||x.배정_경로);})[0];if(!r)return;var p=_normPath(r.로컬경로||r.배정_경로);var d=p.slice(0,p.lastIndexOf('\\')+1);try{navigator.clipboard.writeText(d);}catch(e){}location.href='rpfolder:'+encodeURIComponent(d);if(window.showToast)showToast('탐색기에서 폴더를 엽니다 (경로도 복사됨)');}
+/* ★2026-08-26 v1.28.0 — 게시용 사진의 정본은 모자이크_경로다.
+   로컬경로(원본)를 열면 얼굴이 안 가려진 파일이 그대로 블로그에 올라간다.
+   정본 순서 = 모자이크_경로 → 배정_경로 → 로컬경로. 사본이 없으면 화면이 빨갛게 경고한다. */
+function _pubPath(r){return _normPath((r&&(r.모자이크_경로||r.배정_경로||r.로컬경로))||'');}
+function _isRawOrigin(r){return !!r&&!r.모자이크_경로;}
+function _asgName(r){var p=_pubPath(r);var f=p?p.split('\\').pop():'';return f?f:String(r.파일명||'');}
+function asgPathCopy(i){var r=_asgRows[i];if(!r)return;var p=_pubPath(r);if(!p)return;try{navigator.clipboard.writeText(p);}catch(e){}location.href='rpfolder:'+encodeURIComponent(p);if(window.showToast)showToast(_isRawOrigin(r)?'⚠️ 모자이크 사본이 없습니다 — 원본을 엽니다. 그대로 올리지 마십시오':'모자이크 통과본 위치를 엽니다 (경로도 복사됨)');}
+function asgDirCopy(ch){var r=_asgRows.filter(function(x){return x.배정_채널===ch&&_pubPath(x);})[0];if(!r)return;var p=_pubPath(r);var d=p.slice(0,p.lastIndexOf('\\')+1);try{navigator.clipboard.writeText(d);}catch(e){}location.href='rpfolder:'+encodeURIComponent(d);if(window.showToast)showToast('탐색기에서 폴더를 엽니다 (경로도 복사됨)');}
 function asgCopy(i){var r=_asgRows[i];if(!r)return;navigator.clipboard.writeText(r.배정_캡션||'').then(function(){if(window.showToast)showToast('캡션 복사됨');});}
 async function asgDone(i){var r=_asgRows[i];if(!r)return;if(!confirm('['+r.파일명+'] 삽입 완료 처리할까요?'))return;var u=await sb.from('mk_photo_assets').update({'사용여부':'사용됨'}).eq('로컬경로',r.로컬경로);if(u.error){alert('실패: '+u.error.message);return;}r.사용여부='사용됨';renderAssignBoard();renderDraftPhotoPanel();if(window.__openDraftId)openDraftReader(window.__openDraftId);}
 function asgView(v){window._asgView=v;renderAssignBoard();}

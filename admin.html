@@ -1588,7 +1588,11 @@ function renderCustomersTable(rows){
     const bu=r['사업부']||'-';
     const st=r['고객상태']||'-';
     const stCls=STATUS_CLASS_MAP[st]||'';
-    const owner=r['내부담당자']||'-';
+    const owner=r['내부담당자']||'';
+    const ownerSel='<select class="owner-sel" data-cid="'+r.id+'" style="padding:4px 6px;border:1px solid '+(owner?'#cfd8e3':'#e0a0a0')+';border-radius:6px;font-size:12px;background:'+(owner?'#fff':'#fdf3f3')+';">'
+      +'<option value=""'+(owner?'':' selected')+'>미지정</option>'
+      +['김현숙','이동환'].map(function(o){return '<option value="'+o+'"'+(owner===o?' selected':'')+'>'+o+'</option>';}).join('')
+      +'</select>';
     const dot=levelToDot(r.unresponsive_level);
     const elapsed=elapsedDaysSince(r['신청일시']);
     const src=r['데이터출처']||'';

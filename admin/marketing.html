@@ -2539,7 +2539,12 @@ async function loadAssignBoard(force){
    로컬경로(원본)를 열면 얼굴이 안 가려진 파일이 그대로 블로그에 올라간다.
    정본 순서 = 모자이크_경로 → 배정_경로 → 로컬경로. 사본이 없으면 화면이 빨갛게 경고한다. */
 function _pubPath(r){return _normPath((r&&(r.모자이크_경로||r.배정_경로||r.로컬경로))||'');}
-function _isRawOrigin(r){return !!r&&!r.모자이크_경로;}
+var _FACEKIND=['사진','콜라주','현지참고콜라주','현장영상','영상'];
+function _needsMosaic(r){return !!r&&_FACEKIND.indexOf(String(r.자산종류||''))>=0;}
+/* 코스맵·큐시트·배치도·자료카드는 사람이 안 나오는 제작물이라 경고 대상이 아니다.
+   콜라주는 2차 가공물이라 사본이 없는 게 정상이고, 대신 재료 추적(콜라주_원본_ids)이 있어야 한다. */
+function _isRawOrigin(r){if(!_needsMosaic(r)||(r&&r.모자이크_경로))return false;if(String(r.자산종류||'').indexOf('콜라주')>=0)return !(r.콜라주_원본_ids&&r.콜라주_원본_ids.length);return true;}
+function _rawMsg(r){return String((r&&r.자산종류)||'').indexOf('콜라주')>=0?'⚠️ 콜라주 재료 추적 없음':'⚠️ 모자이크 사본 없음 — 원본';}
 function _asgName(r){var p=_pubPath(r);var f=p?p.split('\\').pop():'';return f?f:String(r.파일명||'');}
 function asgPathCopy(i){var r=_asgRows[i];if(!r)return;var p=_pubPath(r);if(!p)return;try{navigator.clipboard.writeText(p);}catch(e){}location.href='rpfolder:'+encodeURIComponent(p);if(window.showToast)showToast(_isRawOrigin(r)?'⚠️ 모자이크 사본이 없습니다 — 원본을 엽니다. 그대로 올리지 마십시오':'모자이크 통과본 위치를 엽니다 (경로도 복사됨)');}
 function asgDirCopy(ch){var r=_asgRows.filter(function(x){return x.배정_채널===ch&&_pubPath(x);})[0];if(!r)return;var p=_pubPath(r);var d=p.slice(0,p.lastIndexOf('\\')+1);try{navigator.clipboard.writeText(d);}catch(e){}location.href='rpfolder:'+encodeURIComponent(d);if(window.showToast)showToast('탐색기에서 폴더를 엽니다 (경로도 복사됨)');}

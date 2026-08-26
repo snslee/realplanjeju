@@ -1685,7 +1685,8 @@ function openNewInquiryModal(){
     +'<div style="padding:20px 22px;display:grid;gap:13px;">'
     +'<div id="nim-dupe" style="display:none;"></div>'
     +R2(F('회사(단체)명','nim-co','text','예: 평택시 진위면',1),F('연락처','nim-tel','text','010-0000-0000',1))
-    +R2(S('접수 경로','nim-route',['전화접수','현장방문','메일','지인소개'],1),S('사업부','nim-bu',['국내여행','행사이벤트','온라인마케팅','마케팅교육'],1))
+    +R2(S('접수 수단','nim-via',['전화','현장방문','메일'],1),S('사업부','nim-bu',['국내여행','행사이벤트','온라인마케팅','마케팅교육'],1))
+    +R2(S('어떻게 알았나','nim-route',['미확인','지인소개','네이버검색','구글검색','블로그','유튜브','인스타그램','기타']),S('구분','nim-gubun',['기업','단체','개인','학교']))
     +R2(S('구분','nim-gubun',['기업','단체','개인','학교']),F('담당자','nim-mgr','text','예: 홍길동'))
     +R2(F('이메일','nim-email','text','contact@company.com'),F('사업자번호','nim-biz','text','000-00-00000'))
     +'<div style="border-top:1px dashed #e6ebf2;padding-top:12px;">'

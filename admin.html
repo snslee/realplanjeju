@@ -10058,8 +10058,9 @@ setInterval(build,700);
 
 
 
+
 <script>
-/* ── RP_EDIT v1.1 : 미발송 견적을 「같은 번호로」 고치는 길을 연다 (2026-08-26) ──
+/* ── RP_EDIT v1.2 : 미발송 견적을 「같은 번호로」 고치는 길을 연다 (2026-08-26) ──
  * 배경 : RP_SAVE v1.1(8/25)이 덮어쓰기 저장을 만들었는데, 그 버튼이 붙는
  *        #qt-btn-save 는 「견적 작성 폼」에만 있고 기존 견적을 그 폼으로 여는
  *        길이 없었다. 그래서 배포 하루가 지나도록 quotation_revisions 가 0행이었다.
@@ -10077,7 +10078,7 @@ setInterval(build,700);
  *      그 함수의 UPDATE 문에 수정차수가 없다 — 차수는 오르지 않는다.
  */
 (function(){
-  if(window.RP_EDIT){return;} window.RP_EDIT='1.1';
+  if(window.RP_EDIT){return;} window.RP_EDIT='1.2';
   var LOCKED=['발송완료','수락','거절','무효화'];
   var PEND=null;
   function row(){ try{return window.state&&window.state.qtDetailRow;}catch(e){return null;} }
@@ -10115,9 +10116,16 @@ setInterval(build,700);
         edt=document.createElement('button'); edt.id='rp-btn-edt';
         edt.style.cssText='flex:1;min-width:160px;padding:10px;border-radius:6px;border:1px solid #C9D3E0;background:#fff;color:#4A5768;cursor:pointer';
         edt.innerHTML='✏ 제목·금액 수정';
-        edt.addEventListener('click',function(){
+        /* ★v1.2 : 같은 클릭이 계속 버블링돼 「바깥 클릭 = 모달 닫기」에 걸려
+           모달이 열리자마자 닫히고 있었다(2026-08-26 실측 — 함수 직접 호출은 정상,
+           클릭으로는 3회 전부 무반응). 전파를 끊고 이벤트가 끝난 다음 턴에 연다.
+           고객360 카드의 같은 버튼은 원래 event.stopPropagation() 을 달고 있다. */
+        edt.addEventListener('click',function(e){
+          e.preventDefault(); if(e.stopPropagation) e.stopPropagation();
           var rr=row(); if(!rr||!rr.id) return;
-          if(typeof window.qtOpenEditModal==='function') window.qtOpenEditModal(rr.id);
+          setTimeout(function(){
+            if(typeof window.qtOpenEditModal==='function') window.qtOpenEditModal(rr.id);
+          },0);
         });
         wrap.appendChild(edt);
       }

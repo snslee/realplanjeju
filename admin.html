@@ -539,7 +539,7 @@ table.qt-items td.narrow input{text-align:right}
 <section id="view-customers" class="page" hidden>
 <div class="page-header">
 <div><div class="page-title">문의 목록</div><div class="page-subtitle">🆕 신규 미응답 → 🔴 지금 손봐야 → 🟡 진행 중(확인·상담중·견적발송 순) → 🟢 계약·매출 → ⬜ 종결</div></div>
-<div><button class="list-btn" id="btn-new-inquiry" type="button" style="background:#c0392b;color:#fff;border-color:#c0392b;margin-right:6px;">+ 신규 문의 접수</button><button class="list-btn" id="btn-add-customer" type="button" style="background:#185fa5;color:#fff;border-color:#185fa5;margin-right:6px;">+ 기존 고객 이관</button><button class="list-btn">엑셀 내보내기</button></div>
+<div><button class="list-btn" id="btn-new-inquiry" type="button" style="background:#c0392b;color:#fff;border-color:#c0392b;margin-right:6px;">+ 신규 문의 접수</button><button class="list-btn" id="btn-more-toggle" type="button" title="관리자 메뉴" style="margin-right:6px;">⋯</button><button class="list-btn" id="btn-add-customer" type="button" hidden style="background:#185fa5;color:#fff;border-color:#185fa5;margin-right:6px;">+ 기존 고객 이관</button><button class="list-btn">엑셀 내보내기</button></div>
 </div>
 <div class="list-toolbar">
 <input type="search" id="flt-search" class="list-search" placeholder="회사·이름·전화·접수번호·이메일 검색">
@@ -1667,9 +1667,11 @@ window.rpStorageSeg=rpStorageSeg;
 /* ★신규 문의 접수 모달 (전화·현장방문·메일·지인소개 / rpc_create_inquiry)
    ★접수일은 서버 now() 고정 — 화면에서 넘기지 않는다(희망일이 접수일 칸에 들어가던 사고 재발 방지)
    ★고객상태는 '신규문의' 고정 · 담당자 기본 김현숙(변경 가능) */
-function openNewInquiryModal(){
+function openNewInquiryModal(pre){
   if(document.getElementById('nim-overlay'))return;
-  let linkPrev=null;
+  /* 2026-08-26 재문의 접수: pre 가 오면 「재문의」 모드 — 고객 정보를 채우고 원건에 이어 붙인다 */
+  const RE=!!(pre&&pre['접수번호']);
+  let linkPrev=RE?pre['접수번호']:null;
   const F=(label,id,type,ph,req)=>'<div><label style="display:block;font-size:12.5px;font-weight:600;color:#44546a;margin-bottom:5px;">'+label+(req?' <span style="color:#c0392b;">*</span>':'')+'</label><input id="'+id+'" type="'+type+'" placeholder="'+(ph||'')+'" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #cfd8e3;border-radius:8px;font-size:13.5px;"></div>';
   const S=(label,id,opts,req)=>'<div><label style="display:block;font-size:12.5px;font-weight:600;color:#44546a;margin-bottom:5px;">'+label+(req?' <span style="color:#c0392b;">*</span>':'')+'</label><select id="'+id+'" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #cfd8e3;border-radius:8px;font-size:13.5px;background:#fff;">'+opts.map(o=>'<option value="'+o+'">'+o+'</option>').join('')+'</select></div>';
   const R2=(a,b)=>'<div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">'+a+b+'</div>';
@@ -1680,11 +1682,16 @@ function openNewInquiryModal(){
   ov.innerHTML=''
     +'<div style="background:#fff;border-radius:14px;max-width:580px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.25);">'
     +'<div style="padding:18px 22px;border-bottom:1px solid #e6ebf2;display:flex;justify-content:space-between;align-items:center;">'
-    +'<div><div style="font-size:16px;font-weight:700;color:#1a2332;">+ 신규 문의 접수</div>'
-    +'<div style="font-size:12px;color:#8a97a8;margin-top:3px;">접수일 '+today+' 자동 기록 · 상태는 「신규문의」로 저장되어 목록 맨 위에 뜹니다</div></div>'
+    +'<div><div style="font-size:16px;font-weight:700;color:#1a2332;">'+(RE?'↻ 재문의 접수':'+ 신규 문의 접수')+'</div>'
+    +'<div style="font-size:12px;color:#8a97a8;margin-top:3px;">'+(RE?('원건 '+(pre['접수번호']||'')+' 에 이어 붙입니다 · 접수일 '+today+' 자동 기록'):('접수일 '+today+' 자동 기록 · 상태는 「신규문의」로 저장되어 목록 맨 위에 뜹니다'))+'</div></div>'
     +'<button type="button" id="nim-x" style="border:none;background:none;font-size:20px;cursor:pointer;color:#8a97a8;">×</button></div>'
     +'<div style="padding:20px 22px;display:grid;gap:13px;">'
     +'<div id="nim-dupe" style="display:none;"></div>'
+    +(RE?('<div style="padding:11px 13px;border-radius:9px;border:1px solid #a8d5c2;background:#e9f6f0;font-size:12.5px;line-height:1.65;color:#14503a;">'
+        +'<b>↻ 재문의 — '+(pre['회사명']||'')+'</b><br>원건 <b>'+(pre['접수번호']||'')+'</b> 에 이어 붙습니다. 회사·담당자 정보는 그대로 가져왔고 <b>이번 희망일·인원·요청사항만</b> 새로 받습니다.'
+        +'<div id="nim-hist" style="margin-top:6px;color:#2f6b55;">누적 조회 중…</div></div>'):'')
+    +(RE?('<label style="display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border:1px solid #e6b0aa;border-radius:9px;background:#fdedec;font-size:12.5px;line-height:1.55;color:#7b241c;cursor:pointer;">'
+        +'<input type="checkbox" id="nim-agree" style="margin-top:2px;"><span><b>(필수)</b> 이번 건도 새 접수라 개인정보 수집·이용 동의가 따로 필요합니다. 고객에게 안내하고 동의를 받았습니다.</span></label>'):'')
     +R2(F('회사(단체)명','nim-co','text','예: 평택시 진위면',1),F('연락처','nim-tel','text','010-0000-0000',1))
     +R2(S('접수 경로','nim-route',['전화','현장방문','메일','지인소개'],1),S('사업부','nim-bu',['국내여행','행사이벤트','온라인마케팅','마케팅교육'],1))
     +R2(S('구분','nim-gubun',['기업','단체','개인','학교']),F('담당자','nim-mgr','text','예: 홍길동'))
@@ -1707,10 +1714,34 @@ function openNewInquiryModal(){
   ov.addEventListener('click',e=>{if(e.target===ov)close();});
   document.getElementById('nim-x').onclick=close;
   document.getElementById('nim-cancel').onclick=close;
-  document.getElementById('nim-co').focus();
+  /* 2026-08-26 재문의: 회사·담당자 정보 자동 채움 — 새로 받는 것은 희망일·인원·요청사항뿐 */
+  if(RE){
+    const setv=(id,val)=>{const el=document.getElementById(id);if(el&&val!=null&&val!=='')el.value=val;};
+    setv('nim-co',pre['회사명']);setv('nim-tel',pre['연락처']);setv('nim-mgr',pre['담당자명']);
+    setv('nim-email',pre['이메일']);setv('nim-biz',pre['사업자번호']);
+    ['nim-bu','nim-gubun','nim-owner'].forEach(id=>{
+      const el=document.getElementById(id);if(!el)return;
+      const want={'nim-bu':pre['사업부'],'nim-gubun':pre['구분'],'nim-owner':pre['내부담당자']}[id];
+      if(want&&Array.prototype.some.call(el.options,o=>o.value===want))el.value=want;
+    });
+    const m=document.getElementById('nim-month');if(m)m.focus();
+    /* 누적 문의·성사·매출 — 이미 쓰는 RPC 로 조회한다(추가 권한 불요) */
+    (async()=>{
+      const h=document.getElementById('nim-hist');if(!h)return;
+      try{
+        const {data,error}=await sb.rpc('rpc_check_duplicate_customer',{'p_연락처':pre['연락처']||null,'p_이메일':pre['이메일']||null,'p_회사명':pre['회사명']||null,'p_담당자명':pre['담당자명']||null,'p_사업자번호':pre['사업자번호']||null,'p_exclude_id':null});
+        if(error||!data||!data.length){h.textContent='누적 이력 없음';return;}
+        const t=data[0];
+        h.innerHTML='누적 문의 <b>'+(t['총문의횟수']||0)+'회</b> · 성사 <b>'+(t['성사건수']||0)+'건</b> · 누적매출 <b>'+Number(t['누적매출']||0).toLocaleString('ko-KR')+'원</b>';
+      }catch(e){h.textContent='누적 조회 실패';}
+    })();
+  }else{
+    document.getElementById('nim-co').focus();
+  }
 
   /* 중복 확인 — 90점 이상이면 경고만 띄우고 저장은 막지 않는다(통화 중 막히면 곤란) */
   async function nimCheckDupe(){
+    if(RE)return; /* 재문의는 원건이 이미 정해져 있다 — 중복검사가 linkPrev 를 덮으면 안 된다 */
     const g=id=>(document.getElementById(id).value||'').trim();
     const box=document.getElementById('nim-dupe');
     const tel=g('nim-tel'),co=g('nim-co'),biz=g('nim-biz');
@@ -1742,6 +1773,8 @@ function openNewInquiryModal(){
     const start=day?day:(mon+'-01');
     const adult=Number(g('nim-adult')||0),child=Number(g('nim-child')||0);
     if(adult+child<=0){toast('인원을 입력하세요 (성인 또는 아동)','error');return;}
+    if(RE){const ag=document.getElementById('nim-agree');
+      if(!ag||!ag.checked){toast('재문의도 새 접수입니다 — 개인정보 수집·이용 동의 확인에 체크하세요','error');return;}}
     const link=document.getElementById('nim-link');
     const args={'p_회사명':co,'p_연락처':tel,'p_사업부':g('nim-bu')||'국내여행','p_유입경로':g('nim-route')||'전화',
       'p_희망시작일':start,'p_희망일_정밀도':prec,'p_희망종료일':g('nim-end')||null,
@@ -1750,7 +1783,7 @@ function openNewInquiryModal(){
       'p_사업자번호':g('nim-biz')||null,'p_희망지역':g('nim-region')||null,'p_예산':g('nim-budget')||null,
       'p_요청사항':(document.getElementById('nim-req').value||'').trim()||null,
       'p_내부담당자':g('nim-owner')||'김현숙',
-      'p_이전접수번호':(link&&link.checked&&linkPrev)?linkPrev:null};
+      'p_이전접수번호':RE?linkPrev:((link&&link.checked&&linkPrev)?linkPrev:null)};
     const btn=document.getElementById('nim-save');btn.disabled=true;btn.textContent='접수 중…';
     try{
       const {data,error}=await withTimeout(sb.rpc('rpc_create_inquiry',args),8000,'create_inquiry');
@@ -1943,12 +1976,38 @@ function renderCustomerCardLine(r){
   // Day 4-1B v1.7 — 편집 모드 토글 버튼
   const editBtns=state.editMode
     ? '<div class="ccl-edit-actions"><button class="btn-edit-toggle btn-edit-cancel" id="btn-edit-cancel">취소</button><button class="btn-edit-toggle btn-edit-save" id="btn-edit-save">저장</button></div>'
-    : '<div class="ccl-edit-actions"><button class="btn-edit-toggle" id="btn-edit-enter">✏ 편집</button><button class="btn-edit-toggle btn-edit-cancel" id="btn-cust-delete" style="color:#c0392b;border-color:#c0392b">🗑 삭제</button></div>';
-  el.innerHTML=(parts.length?parts.join('<span class="ccl-divider">·</span>'):'<span class="ccl-empty">정보 없음</span>')+editBtns;
+    : '<div class="ccl-edit-actions"><button class="btn-edit-toggle" id="btn-cust-reinquiry" style="color:#166f4e;border-color:#a8d5c2">↻ 이 고객 재문의 접수</button><button class="btn-edit-toggle" id="btn-edit-enter">✏ 편집</button><button class="btn-edit-toggle btn-edit-cancel" id="btn-cust-delete" style="color:#c0392b;border-color:#c0392b">🗑 삭제</button></div>';
+  el.innerHTML=(parts.length?parts.join('<span class="ccl-divider">·</span>'):'<span class="ccl-empty">정보 없음</span>')+'<span id="ccl-loyal"></span>'+editBtns;
   const eb=$('#btn-edit-enter');if(eb)eb.addEventListener('click',enterCustomerEdit);
   const sb=$('#btn-edit-save');if(sb)sb.addEventListener('click',saveCustomerEdit);
   const cb=$('#btn-edit-cancel');if(cb)cb.addEventListener('click',cancelCustomerEdit);
   const db=$('#btn-cust-delete');if(db)db.addEventListener('click',deleteCustomer);
+  /* 2026-08-26 재문의 접수 — 목록에서 찾아 상세를 연 뒤 여기서 이어 붙인다 */
+  const rb=$('#btn-cust-reinquiry');
+  if(rb)rb.addEventListener('click',()=>{
+    const cur=state.currentRow;if(!cur){toast('고객 정보 없음','error');return;}
+    openNewInquiryModal({'접수번호':cur['이전접수번호']||cur['접수번호'],'회사명':cur['회사명'],'담당자명':cur['담당자명'],
+      '연락처':cur['연락처'],'이메일':cur['이메일'],'사업자번호':cur['사업자번호'],
+      '사업부':cur['사업부'],'구분':cur['구분'],'내부담당자':cur['내부담당자']});
+  });
+  paintLoyaltyBadge(r);
+}
+
+/* 상세 명함줄 — 재문의·단골 배지와 누적(문의·성사·매출) 표시 */
+async function paintLoyaltyBadge(r){
+  const host=$('#ccl-loyal');
+  if(!host||!r)return;
+  if(r['재문의여부'])host.innerHTML='<span class="gubun-badge" style="background:#e2f2ea;color:#166f4e;margin-left:5px;">↻ 재문의</span>';
+  try{
+    const {data,error}=await sb.rpc('rpc_check_duplicate_customer',{'p_연락처':r['연락처']||null,'p_이메일':r['이메일']||null,'p_회사명':r['회사명']||null,'p_담당자명':r['담당자명']||null,'p_사업자번호':r['사업자번호']||null,'p_exclude_id':null});
+    if(error||!data||!data.length)return;
+    const t=data[0];
+    const cnt=Number(t['총문의횟수']||0),win=Number(t['성사건수']||0),rev=Number(t['누적매출']||0);
+    if(cnt<=1&&win<=0)return;
+    const loyal=(cnt>=3||win>=2)?'<span class="gubun-badge" style="background:#fdf0d5;color:#8a5a00;margin-left:5px;">★ 단골</span>':'';
+    host.innerHTML=(r['재문의여부']?'<span class="gubun-badge" style="background:#e2f2ea;color:#166f4e;margin-left:5px;">↻ 재문의</span>':'')+loyal
+      +'<span class="ccl-item" style="margin-left:6px;color:#5a6a7d;">문의 '+cnt+'회 · 성사 '+win+'건'+(rev>0?(' · 누적 '+rev.toLocaleString('ko-KR')+'원'):'')+'</span>';
+  }catch(e){}
 }
 
 /* 고객 삭제 (소프트 삭제 · rpc_delete_customer) */
@@ -3945,6 +4004,13 @@ function bindFilters(){
   if(btnNewInq)btnNewInq.addEventListener('click',openNewInquiryModal);
   const btnAddCust=$('#btn-add-customer');
   if(btnAddCust)btnAddCust.addEventListener('click',openAddCustomerModal);
+  /* 2026-08-26 — 이관은 초기 자료 옮길 때만 쓴다. 삭제하지 않고 ⋯ 뒤로 접는다 */
+  const btnMore=$('#btn-more-toggle');
+  if(btnMore)btnMore.addEventListener('click',()=>{
+    const t=$('#btn-add-customer');if(!t)return;
+    t.hidden=!t.hidden;
+    if(!t.hidden)toast('기존 고객 이관은 과거 자료를 옮길 때만 쓰세요. 같은 고객의 새 문의는 상세에서 「↻ 재문의 접수」','info');
+  });
   const sBu=$('#flt-bu');
   if(sBu)sBu.addEventListener('change',()=>{
     state.filters.bu=sBu.value;state.listPage=1;loadCustomers();

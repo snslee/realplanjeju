@@ -10056,5 +10056,113 @@ setInterval(build,700);
 })();
 </script>
 
+
+<script>
+/* ── RP_EDIT v1.0 : 미발송 견적을 「같은 번호로」 고치는 길을 연다 (2026-08-26) ──
+ * 배경 : RP_SAVE v1.1(8/25)이 덮어쓰기 저장을 만들었는데, 그 버튼이 붙는
+ *        #qt-btn-save 는 「견적 작성 폼」에만 있고 기존 견적을 그 폼으로 여는
+ *        길이 없었다. 그래서 배포 하루가 지나도록 quotation_revisions 가 0행이었다.
+ *        상세 화면 진입로 3개(-v2 새버전 / 복사 / 제목·금액)는 전부 새 번호를
+ *        만들거나 네 칸만 고친다 → 대표 방침 ③(보내기 전 저장은 덮어쓴다)이 사장돼 있었다.
+ * 하는 일 (기존 코드 0줄 수정 · 롤백 = 이 블록 삭제)
+ *   ① 미발송(작성중)일 때만 상세 액션바에 「✏ 이 견적 고치기 (번호 유지)」 추가
+ *      → 편집 폼을 열고 state.qt.currentQuotationId 에 원본 id 를 물려
+ *        RP_SAVE 가 「💾 저장 (덮어쓰기)」를 그리게 한다. parentId 는 null 로 막아
+ *        -vN 자동 채번을 차단한다.
+ *   ② 발송완료·수락·거절·무효화면 「✏ 제목·금액 수정」 버튼을 감춘다.
+ *      rpc_update_quotation_with_revision 이 그 상태를 raise exception 으로 막으므로
+ *      누르면 100% 에러다 (대표 방침 ①).
+ *   ③ 모달 저장 라벨 「저장 (수정차수 +1)」 → 「저장」.
+ *      그 함수의 UPDATE 문에 수정차수가 없다 — 차수는 오르지 않는다.
+ */
+(function(){
+  if(window.RP_EDIT){return;} window.RP_EDIT='1.0';
+  var LOCKED=['발송완료','수락','거절','무효화'];
+  var PEND=null;
+  function row(){ try{return window.state&&window.state.qtDetailRow;}catch(e){return null;} }
+  function ST(){ try{return window.state&&window.state.qt;}catch(e){return null;} }
+  function isDetail(){ return /^#quotation\/(?!new)/.test(location.hash||''); }
+  function isForm(){ return /^#quotation\/new/.test(location.hash||''); }
+
+  /* ① 덮어쓰기 진입 — confirm 을 쓰지 않는다(화면을 멈춰 세우지 않기 위해) */
+  window.rpEditOverwrite=function(){
+    var r=row(); if(!r||!r.id) return;
+    if(LOCKED.indexOf(r['상태'])>=0) return;
+    window.state.qtCopySource=r;
+    window.state.qtCopyMode='revise';
+    PEND={id:r.id,no:r['견적번호']||''};
+    location.hash='#quotation/new';
+  };
+
+  function paintDetail(){
+    var b=document.getElementById('rp-actbar'), r=row();
+    if(!b||!r) return;
+    var wrap=b.querySelector('div[style*="display:flex"]'); if(!wrap) return;
+    var locked=(LOCKED.indexOf(r['상태'])>=0);
+
+    /* ② 잠긴 견적에서는 제목·금액 수정 버튼을 치운다 */
+    [].slice.call(wrap.querySelectorAll('button')).forEach(function(x){
+      if((x.getAttribute('onclick')||'').indexOf('qtOpenEditModal')===0 && locked){ x.remove(); }
+    });
+
+    /* ① 미발송에만 덮어쓰기 버튼 */
+    var mine=document.getElementById('rp-btn-over');
+    if(!locked){
+      if(!mine){
+        mine=document.createElement('button'); mine.id='rp-btn-over';
+        mine.setAttribute('onclick','rpEditOverwrite()');
+        mine.style.cssText='flex:1;min-width:210px;padding:10px;border-radius:6px;border:1px solid #0F7A44;background:#0F7A44;color:#fff;font-weight:600;cursor:pointer';
+        mine.innerHTML='✏ 이 견적 고치기 (번호 유지)';
+        wrap.insertBefore(mine, wrap.firstChild);
+      }
+    } else if(mine){ mine.remove(); }
+
+    var note=document.getElementById('rp-edit-note');
+    if(!note){
+      note=document.createElement('div'); note.id='rp-edit-note';
+      note.style.cssText='margin-top:8px;font-size:12px;line-height:1.7;color:#4A5768';
+      b.appendChild(note);
+    }
+    note.innerHTML = locked
+      ? '<b style="color:#B93B2B">이 견적은 고객에게 나갔습니다(「'+(r['상태']||'')+'」).</b> 원본은 그대로 보존하고, 고칠 것이 있으면 <b>[품목 고쳐서 새 버전 (-v2)]</b>으로 새 차수를 만드세요.'
+      : '<b style="color:#0F7A44">아직 발송 전입니다.</b> <b>[이 견적 고치기 (번호 유지)]</b>를 쓰면 <b>같은 견적번호에 덮어써집니다</b> — 새 번호가 생기지 않습니다. (-v2 새 버전은 이미 보낸 견적을 고칠 때 씁니다)';
+  }
+
+  /* ① 폼이 다 뜨면 currentQuotationId 를 물린다 */
+  function bindForm(){
+    if(!PEND||!isForm()) return;
+    var s=ST(); if(!s) return;
+    if(!s.items||!s.items.length) return;   /* 폼 로드 완료 대기 */
+    s.currentQuotationId=PEND.id;
+    s.currentQuotationNo=PEND.no;
+    s.parentId=null;                        /* -vN 채번 차단 */
+    PEND=null;
+    if(typeof window.rpPaintSave==='function'){ try{window.rpPaintSave();}catch(e){} }
+  }
+
+  /* ③ 모달 라벨 정정 */
+  function fixModal(){
+    var b=document.getElementById('edit-modal-submit');
+    if(!b||b.__rpFixed) return;
+    b.innerHTML='💾 저장';
+    b.__rpFixed=1;
+    if(!document.getElementById('rp-modal-note') && b.parentNode){
+      var n=document.createElement('div'); n.id='rp-modal-note';
+      n.style.cssText='margin:6px 0 0;font-size:11.5px;color:#4A5768;line-height:1.6';
+      n.textContent='견적번호와 수정차수는 그대로입니다 — 제목·견적금액·결제조건·비고 네 칸만 바뀝니다.';
+      b.parentNode.insertBefore(n,b);
+    }
+  }
+
+  function tick(){
+    try{ if(isDetail()) paintDetail(); }catch(e){}
+    try{ bindForm(); }catch(e){}
+    try{ fixModal(); }catch(e){}
+  }
+  setInterval(tick,700);
+  try{tick();}catch(e){}
+})();
+</script>
+
 </body>
 </html>

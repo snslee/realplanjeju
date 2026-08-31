@@ -1,0 +1,46 @@
+-- sql/121_pj_project_ledger.sql
+-- 프로젝트 원장 A1~A5 (2026-08-31 대표 승인)
+--
+-- 왜 만들었나
+--  · 2026 지출 693건 중 고객이 연결된 건이 12건(1.7%)뿐이었다.
+--  · 로컬 지출결의 대장(2021~2026.04 xlsx 60개 · 2,055행)에는 「봉래초 첫째날 숙소」처럼
+--    한 줄에 고객·거래처·항목·계좌가 다 있는데, DB에는 그 축이 없었다.
+--  · 과거를 아무리 정리해도 새 데이터가 계속 같은 식으로 쌓이면 소용이 없다 → 미래부터 막는다.
+--
+-- 설계 원칙 — 모든 돈은 「약속」과 「현금」 두 단계를 갖는다
+--  · 약속: 견적·계약·세금계산서 발행 / 지출결의 승인 → 원장 '예정' · 정산_성격으로 손익 제외
+--  · 현금: 통장 입출금                                  → 원장 '확정' · 손익 반영
+--  · 대사: rpc_acc_match 가 둘을 짝지으면 그 행이 곧 현금이므로 정산_성격을 자동으로 푼다
+--    ★함수 3곳(match 1차·2차·confirm)을 각각 고치지 않고 「경로가 모이는 자리」= 트리거에 건다.
+--
+-- 구성
+--  A1 pj_프로젝트 신설 + acc_거래내역/ap_결재 에 프로젝트_id + fn_pj_다음번호(PJ-YYYY-NNN) + RLS
+--     rpc_pj_list / rpc_pj_upsert / rpc_pj_detail / rpc_pj_from_contract
+--  A2 rpc_ap_submit·rpc_ap_update 가 프로젝트_id 를 받는다.
+--     프로젝트를 고르면 고객은 프로젝트에서 자동으로 따라온다(_ap_customer_of_project).
+--     지출결의·경비정산에 프로젝트가 없으면 거부하지 않고 비고에 [프로젝트 미지정]을 남긴다
+--     (화면에서 막고, 서버는 구버전 캐시 사용자를 죽이지 않는다).
+--  A3 fn_acc_on_contract_signed 에 rpc_pj_from_contract 배선 — 계약 체결 시 프로젝트 자동 생성.
+--     프로젝트 생성 실패가 계약 저장을 죽이지 않도록 begin/exception 으로 감쌌다.
+--  A4 fn_acc_결재행_대사시_손익반영 트리거 + rpc_acc_insert_from_approval 프로젝트_id 전파
+--  A5 신설 없음 — acc-upload-remind-3rd-0930kst 크론과 rpc_acc_upload_remind 가 이미 있다.
+--
+-- 백업: bak_function_defs id 2~5 (fn_acc_on_contract_signed · rpc_acc_insert_from_approval
+--                                 · rpc_ap_submit · rpc_ap_update)
+-- 감도시험(DO + raise exception 전체 롤백) 결과 2026-08-31:
+--   채번=PJ-2026-001 | 원장전파: 프로젝트=t 고객=t 금액=6627500 출처=결재 상태=예정
+--   정산_성격=결재예정(통장과 이중) || 대사후: 정산_성격=NULL→손익반영
+--   비고=[통장 대사 확인 — 손익 반영 2026-08-31]
+--   롤백 후 프로젝트 0건 · 결재 원장 예정 유지 · 원천매칭 406 불변
+--
+-- 롤백
+--   drop trigger trg_acc_결재행_대사 on acc_거래내역;
+--   drop function fn_acc_결재행_대사시_손익반영, rpc_pj_list, rpc_pj_upsert, rpc_pj_detail,
+--                 rpc_pj_from_contract, fn_pj_다음번호, _ap_resolve_project, _ap_customer_of_project;
+--   alter table acc_거래내역 drop column 프로젝트_id;  alter table ap_결재 drop column 프로젝트_id;
+--   drop table pj_프로젝트;
+--   bak_function_defs id 2~5 로 4개 함수 복원
+--
+-- 전문은 2026-08-31 마이그레이션 4건 참조:
+--   pj_project_ledger_a1 / pj_project_rpc_a1b / pj_wiring_a2s_a3_a4 / ap_submit_update_project_link
+--   + ap_detail_project_field (상세 조회에 프로젝트명 추가)

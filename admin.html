@@ -9557,7 +9557,7 @@ function wsInit(){wsLoad();}
    ══════════════════════════════════════════════════════════════════════ */
 
 /* 유입경로 표시명 */
-var WS_SRC={naver_blog:'네이버 블로그',tistory:'티스토리',naver_search:'네이버 검색',naver_etc:'네이버 기타',
+var WS_SRC={naver_blog:'네이버 블로그',tistory:'티스토리',naver_search:'네이버 검색',kin:'지식인',naver_etc:'네이버 기타',
   google:'구글 검색',direct:'직접 방문',instagram:'인스타그램',youtube:'유튜브',facebook:'페이스북',
   kakao:'카카오',daum:'다음',bing:'빙',old_homepage:'구 홈페이지',internal:'내부 이동',
   internal_admin:'내부 테스트',etc:'기타',naver_place:'네이버 플레이스',threads:'쓰레드',
@@ -9851,7 +9851,7 @@ async function wsDashSummary(){
     var rows=r.data||[];var today=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'});
     var t=0,src={};rows.forEach(function(v){if(new Date(v.방문_시각).toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'})===today)t++;var s=v.유입_출처||'etc';src[s]=(src[s]||0)+1;});
     el.textContent=t;document.getElementById('wsd-week').textContent=rows.length;
-    var SRC={naver_blog:'네이버 블로그',tistory:'티스토리',naver_search:'네이버 검색',google:'구글',direct:'직접',instagram:'인스타',youtube:'유튜브',facebook:'페이스북',kakao:'카카오',naver_etc:'네이버 기타',etc:'기타'};
+    var SRC={naver_blog:'네이버 블로그',tistory:'티스토리',naver_search:'네이버 검색',kin:'지식인',google:'구글',direct:'직접',instagram:'인스타',youtube:'유튜브',facebook:'페이스북',kakao:'카카오',naver_etc:'네이버 기타',etc:'기타'};
     var top=Object.keys(src).sort(function(a,b){return src[b]-src[a];}).slice(0,3).map(function(k){return (SRC[k]||k)+' '+src[k];}).join(' · ');
     var _t=document.getElementById('wsd-top'); if(_t)_t.textContent='유입 TOP: '+(top||'아직 없음');
   }catch(e){}

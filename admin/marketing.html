@@ -280,6 +280,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div style="font-size:.78rem;color:#64748b;margin-bottom:8px">🎯 <b>목적</b> — 블ABC·4채널·쓰레드의 글과 사진을 지속 개선해 <b>홈페이지 유입 → 문의 → 계약</b>으로 잇는다 <span id="fs-time" style="color:#94a3b8"></span></div>
         <div id="fs-cells" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:.8rem">로딩 중...</div>
       </div>
+      <!-- A-3 (2026-08-31 대표 승인 묶음A) 지식인 답변 현황 — 데이터는 rpc_kin_status 하나만 쓴다 -->
+      <div id="kin-strip" data-sec="🧩 지식인" style="margin:0 0 16px;padding:12px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:12px">
+        <div style="font-size:.78rem;color:#64748b;margin-bottom:8px">🧩 <b>지식인</b> — 고객이 실제로 올린 질문에 답해 <b>조회 → 프로필 → 문의</b>로 잇는다 <span id="kin-time" style="color:#94a3b8"></span></div>
+        <div id="kin-cells" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:.8rem">로딩 중...</div>
+        <div id="kin-wait" style="margin-top:10px"></div>
+      </div>
       <div class="kpi-grid" data-sec="📌 KPI">
         <div class="kpi-card"><div class="kpi-label">📈 티스토리 총노출</div><div class="kpi-value" id="kpi-노출">--</div><div class="kpi-sub" id="kpi-노출-sub">최근 8일 누적</div></div>
         <div class="kpi-card"><div class="kpi-label">👆 티스토리 총클릭</div><div class="kpi-value" id="kpi-클릭">--</div><div class="kpi-sub" id="kpi-클릭-sub">최근 8일 누적</div></div>
@@ -2837,7 +2843,8 @@ function renderDraftPhotoPanel(){
     +'</div>';
 }
 /* 퍼널 v1.0 (2026-07-31 승인분) — 목적: 플랫폼→유입→문의→계약 */
-async function loadFunnel(){try{
+async function loadFunnel(){ loadKinStatus();
+  try{
   const{data}=await sb.rpc('rpc_funnel_kpi');if(!data)return;
   const seg=[['노출(최근집계)',data['노출_최근8일']],['클릭',data['클릭_최근8일']],['방문 28일',data['방문_28일']],['블로그유입 28일',data['블로그유입_28일']],['문의 30일',data['문의_30일']],['귀속',data['문의귀속_30일']],['견적 90일',data['견적_90일']],['계약',data['계약_90일']]];
   document.getElementById('fs-cells').innerHTML=seg.map((s,i)=>'<span style="background:#f1f5f9;border-radius:8px;padding:4px 10px"><b>'+((s[1]??0).toLocaleString())+'</b> '+s[0]+'</span>'+(i<seg.length-1?'<span style="color:#cbd5e1">→</span>':'')).join('');
@@ -2845,6 +2852,27 @@ async function loadFunnel(){try{
   var chm=data['채널유입_28일']||{};var chTxt=['place','kakao','gbp','karrot','threads'].map(function(k){var v=chm[k]||chm['naver_place']&&k==='place'||0;return k+' <b>'+(chm[k]||0)+'</b>';}).join(' · ');
   document.getElementById('fs-cells').innerHTML+='<span style="background:#eef2ff;color:#3730a3;border-radius:8px;padding:4px 10px">채널유입 28일 '+chTxt+'</span>';
 }catch(e){console.error('funnel',e);}}
+async function loadKinStatus(){try{
+  const{data:d}=await sb.rpc('rpc_kin_status');if(!d)return;
+  const cell=(lb,v,bg,fg)=>'<span style="background:'+(bg||'#f1f5f9')+';'+(fg?'color:'+fg+';':'')+'border-radius:8px;padding:4px 10px"><b>'+((v??0).toLocaleString?(v??0).toLocaleString():v)+'</b> '+lb+'</span>';
+  var arrow='<span style="color:#cbd5e1">→</span>';
+  var html=[cell('재고',d['재고_미처리']),arrow,cell('대기',d['대기_초안'],(d['대기_초안']>0?'#fef3c7':'#f1f5f9')),arrow,
+            cell('게시',d['게시_누계']),arrow,cell('조회',d['조회_누계']),arrow,
+            cell('채택',d['채택'],(d['채택']>0?'#dcfce7':'#fee2e2')),arrow,
+            cell('문의',d['문의_지식인'],(d['문의_지식인']>0?'#dcfce7':'#fee2e2'))].join('');
+  if(d['삭제됨']>0)html+=cell('삭제됨',d['삭제됨'],'#fee2e2','#991b1b');
+  (d['사업부별']||[]).forEach(function(b){html+='<span style="background:#eef2ff;color:#3730a3;border-radius:8px;padding:4px 10px">'+b['사업부']+' 게시<b>'+b['게시']+'</b>·조회<b>'+b['조회']+'</b></span>';});
+  document.getElementById('kin-cells').innerHTML=html;
+  var t=document.getElementById('kin-time');if(t)t.textContent='· '+(d['기준시각']||'')+' · 최근게시 '+(d['최근게시일']||'-');
+  var w=d['대기목록']||[],box=document.getElementById('kin-wait');
+  if(!w.length){box.innerHTML='<div style="font-size:.76rem;color:#94a3b8">게시 대기 0건 — 다음 초안 크론(월·수·금 09:55)을 기다립니다</div>';}
+  else{box.innerHTML='<div style="font-size:.76rem;color:#b45309;margin-bottom:6px">✍️ <b>지금 게시할 수 있는 초안 '+w.length+'건</b> — 텔레그램 카드의 본문을 복사해 아래 질문에 답니다</div>'+
+    w.map(function(x){return '<div style="display:flex;gap:8px;align-items:center;padding:5px 0;border-top:1px solid #f1f5f9;font-size:.78rem">'+
+      '<span style="background:#f1f5f9;border-radius:6px;padding:2px 7px;font-size:.72rem">'+x['사업부']+'</span>'+
+      '<span style="flex:1">'+(x['제목']||'')+'</span>'+
+      '<span style="color:#64748b">'+x['점수']+'점</span>'+
+      '<a href="'+x['링크']+'" target="_blank" rel="noopener" style="background:#0f172a;color:#fff;border-radius:6px;padding:3px 9px;text-decoration:none">열기</a></div>';}).join('');}
+}catch(e){console.error('kin',e);}}
 async function loadFunnelRecon(){try{
   const el=document.getElementById('funnel-recon');if(!el)return;
   const{data:r}=await sb.rpc('rpc_funnel_reconcile');if(!r){el.innerHTML='';return;}

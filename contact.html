@@ -648,7 +648,7 @@
         if(sessionStorage.getItem('rp_src0')) return;
         var q0=new URLSearchParams(location.search), ref0=(document.referrer||'');
         var s0=q0.get('utm_source')||'';
-        if(!s0){s0=ref0.indexOf('blog.naver.com')>-1?'naver_blog':ref0.indexOf('tistory.com')>-1?'tistory':ref0.indexOf('search.naver.com')>-1?'naver_search':ref0.indexOf('google.')>-1?'google':ref0.indexOf('instagram.com')>-1?'instagram':ref0.indexOf('youtube')>-1?'youtube':ref0?'etc':'direct';}
+        if(!s0){s0=ref0.indexOf('blog.naver.com')>-1?'naver_blog':ref0.indexOf('tistory.com')>-1?'tistory':ref0.indexOf('kin.naver.com')>-1?'kin':ref0.indexOf('search.naver.com')>-1?'naver_search':ref0.indexOf('google.')>-1?'google':ref0.indexOf('instagram.com')>-1?'instagram':ref0.indexOf('youtube')>-1?'youtube':ref0?'etc':'direct';}
         var d0={src:s0,content:q0.get('utm_content')||'',landing:location.pathname,referrer:ref0.split('?')[0]||''};
         ['utm_source','utm_medium','utm_campaign','utm_content'].forEach(function(k){var v=q0.get(k);if(v)d0[k]=v;});
         sessionStorage.setItem('rp_src0',JSON.stringify(d0));

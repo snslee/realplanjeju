@@ -1281,6 +1281,15 @@ async function loadCS(){
    같은 목록에 「자문자답 미완료」로 다시 떠서 답글까지 이어진다.
    ★DB 는 직접 UPDATE 하지 않고 반드시 rpc_sns_link_url 을 탄다(편성 오염 방지 관행). */
 function csLinkCell(r){
+  /* ★2026-09-02 sql122 — 「자문자답 완료」 출구.
+     이 버튼이 없어서 실물로 답글을 달아도 받은편지함이 최장 12일간 안 내려갔다
+     (자문자답_완료 를 true 로 바꾸는 경로가 시스템 전체에 0개였다). */
+  if(String(r.구분||'')==='자문자답 미완료' && r.출처==='슬롯'){
+    var did='csd_'+String(r.원본_id||'').replace(/[^a-zA-Z0-9]/g,'');
+    return (r.링크?'<a href="'+esc(r.링크)+'" target="_blank" rel="noopener" style="color:#2563eb">열기</a> ':'')
+      +'<button onclick="csSelfDone(\''+esc(r.원본_id)+'\',\''+did+'\',this)" style="padding:4px 11px;border:1px solid #16a34a;background:#16a34a;color:#fff;border-radius:6px;font-size:.73rem;cursor:pointer">자문자답 완료</button>'
+      +'<div id="'+did+'_m" style="font-size:.68rem;color:#94a3b8;margin-top:3px"></div>';
+  }
   if(r.링크) return '<a href="'+esc(r.링크)+'" target="_blank" rel="noopener" style="color:#2563eb">열기</a>';
   if(r.출처==='슬롯' && /^쓰레드 (발행 확인필요|미발행 대기)$/.test(String(r.구분||''))){
     var iid='csu_'+String(r.원본_id||'').replace(/[^a-zA-Z0-9]/g,'');

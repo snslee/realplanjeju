@@ -1320,6 +1320,25 @@ async function csLinkSave(id,iid,btn){
     btn.disabled=false; btn.textContent=old;
   }
 }
+/* ★2026-09-02 — 자문자답 종결. DB 직접 UPDATE 하지 않고 rpc_sns_selfreply_done 을 탄다.
+   되돌리기는 DB 에서 p_완료=false 로 다시 부르면 된다(받은편지함에 되살아난다). */
+async function csSelfDone(id,did,btn){
+  var msg=document.getElementById(did+'_m');
+  var say=function(t,c){ if(msg){msg.textContent=t; msg.style.color=c||'#94a3b8';} };
+  if(!window.confirm('쓰레드에 자문자답 답글을 실제로 다셨습니까?\n\n실물을 보지 않고 누르면, 답글이 안 달린 글이 목록에서 사라집니다.')) return;
+  btn.disabled=true; var old=btn.textContent; btn.textContent='처리 중…'; say('처리 중…');
+  try{
+    var res=await sb.rpc('rpc_sns_selfreply_done',{p_id:id});
+    if(res.error) throw res.error;
+    var d=res.data||{};
+    if(!d.ok){ say(d.error||'처리 실패','#dc2626'); btn.disabled=false; btn.textContent=old; return; }
+    say('종결됨 — '+(d['다음']||''),'#16a34a');
+    setTimeout(loadCS,900);
+  }catch(e){
+    say('처리 실패 — '+((e&&e.message)||e),'#dc2626');
+    btn.disabled=false; btn.textContent=old;
+  }
+}
 function csBadgePaint(rows){
   var b=document.getElementById('cs-badge'); if(!b) return;
   var n=(rows||[]).filter(function(r){return r.경과시간>r.sla시간;}).length;

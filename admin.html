@@ -10049,10 +10049,10 @@ function wsRender(rows,days,slotMap){
     var v=byDay[d]||0, isToday=(d===today), dow=new Date(d+'T00:00:00+09:00').getDay(), wk=(dow===0||dow===6), bo=wsBlackout(d);
     var h=v?Math.max(6,Math.round(v/mx*100)):0;
     var col=isToday?'#1B4FA8':(v?'#4A85F6':'transparent');
-    return '<div title="'+d+' · '+(bo?('⚠ 측정중단 — '+bo):(v+'명'))+'" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:132px;'+(bo?'background:repeating-linear-gradient(45deg,#fff6f6,#fff6f6 4px,#ffe0e0 4px,#ffe0e0 8px);':(wk?'background:#fafbfe;':''))+'">'
+    return '<div title="'+d+' · '+(bo?('⚠ 측정중단 — '+bo):(v+'명'))+'" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:132px">'
       + '<div style="font-size:9.5px;color:'+(bo?'#C62828':(v?'#5a6478':'#cfd6e4'))+';font-weight:'+(isToday?'800':'600')+';margin-bottom:2px">'+(bo?'⚠':'')+(v||0)+'</div>'
-      + (v ? '<div style="width:100%;background:'+(bo?'#EBA3A3':col)+';height:'+h+'px;border-radius:3px 3px 0 0"></div>'
-           : '<div style="width:100%;border-top:'+(bo?'2px solid #E57373':'1px dashed #dbe3f0')+';height:2px"></div>')
+      + (v ? '<div style="width:100%;background:'+(bo?'#C9CFDA':col)+';height:'+h+'px;border-radius:3px 3px 0 0"></div>'
+           : '<div style="width:100%;border-top:1px dashed '+(bo?'#C9CFDA':'#dbe3f0')+';height:2px"></div>')
       + '</div>';
   }).join('');
   var ticks=dates.map(function(d,idx){

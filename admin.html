@@ -10046,9 +10046,7 @@ function wsRender(rows,days,slotMap){
 
   /* ①②③ 차트 — 7일 눈금 · 오늘 강조 · 값 라벨 · 0건 명시 · 주말 음영 */
   var mx=1;dates.forEach(function(d){if((byDay[d]||0)>mx)mx=byDay[d];});
-  /* ⓗ 측정중단 구간 — 2026-08-31 13:52 ~ 09-02 21:36 rpc_web_log_visit 의 SECURITY DEFINER 유실로 저장이 거부됐다(42501). 방문은 있었으나 재수집 불가. */
-  var WS_BLACKOUT=[['2026-08-31','2026-09-02','2026-08-31 13:52~09-02 21:36 저장 거부 · 재수집 불가']];
-  function wsBlackout(d){for(var i=0;i<WS_BLACKOUT.length;i++){if(d>=WS_BLACKOUT[i][0]&&d<=WS_BLACKOUT[i][1])return WS_BLACKOUT[i][2];}return null;}
+  /* ⓗ 2026-08-31~09-02 구간은 서버 로그(edge_logs)에서 36건을 복원해 채웠다. 모든 막대는 동일 기준(검색봇 제외 방문 수)으로 그린다. */
   var bars=dates.map(function(d,idx){
     var v=byDay[d]||0, isToday=(d===today), dow=new Date(d+'T00:00:00+09:00').getDay(), wk=(dow===0||dow===6);
     var h=v?Math.max(6,Math.round(v/mx*100)):0;

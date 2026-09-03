@@ -10050,7 +10050,7 @@ function wsRender(rows,days,slotMap){
   var WS_BLACKOUT=[['2026-08-31','2026-09-02','2026-08-31 13:52~09-02 21:36 저장 거부 · 재수집 불가']];
   function wsBlackout(d){for(var i=0;i<WS_BLACKOUT.length;i++){if(d>=WS_BLACKOUT[i][0]&&d<=WS_BLACKOUT[i][1])return WS_BLACKOUT[i][2];}return null;}
   var bars=dates.map(function(d,idx){
-    var v=byDay[d]||0, isToday=(d===today), dow=new Date(d+'T00:00:00+09:00').getDay(), wk=(dow===0||dow===6), bo=wsBlackout(d);
+    var v=byDay[d]||0, isToday=(d===today), dow=new Date(d+'T00:00:00+09:00').getDay(), wk=(dow===0||dow===6);
     var h=v?Math.max(6,Math.round(v/mx*100)):0;
     var col=isToday?'#1B4FA8':(v?'#4A85F6':'transparent');
     return '<div title="'+d+' · '+v+'명" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:132px">'

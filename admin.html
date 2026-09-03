@@ -10154,7 +10154,7 @@ async function wsDashSummary(){
   try{
     var el=document.getElementById('wsd-today');if(!el)return;
     var since=new Date(Date.now()-7*864e5).toISOString();
-    var r=await window.sb.from('web_방문로그').select('방문_시각,유입_출처').gte('방문_시각',since).limit(8000);
+    var r=await window.sb.from('web_방문로그').select('방문_시각,유입_출처').gte('방문_시각',since).not('봇여부','is',true).limit(8000);
     if(r.error)return;
     var rows=r.data||[];var today=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'});
     var t=0,src={};rows.forEach(function(v){if(new Date(v.방문_시각).toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'})===today)t++;var s=v.유입_출처||'etc';src[s]=(src[s]||0)+1;});

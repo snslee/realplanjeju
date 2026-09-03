@@ -10124,7 +10124,7 @@ async function wsBlogLoad(){
     if(ce){
       var since2=new Date(Date.now()-7*864e5).toISOString();
       var site2=((document.getElementById('ws-site')||{}).value)||'ALL';
-      var vq=window.sb.from('web_방문로그').select('유입_출처').gte('방문_시각',since2);if(site2!=='ALL')vq=vq.eq('사이트',site2);
+      var vq=window.sb.from('web_방문로그').select('유입_출처').gte('방문_시각',since2).not('봇여부','is',true);if(site2!=='ALL')vq=vq.eq('사이트',site2);
       var v=await vq.limit(8000);
       var cq=window.sb.from('customers').select('유입경로').gte('created_at',since2).is('deleted_at',null);if(site2!=='ALL')cq=cq.like('유입경로','홈페이지'+site2+'%');
       var cu=await cq.limit(2000);

@@ -20,10 +20,12 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--blue-bg);color:var(--ink);font-family:'Noto Sans KR',-apple-system,'Malgun Gothic',sans-serif;font-size:17px;line-height:1.5}
 a{color:var(--blue-d)}
-.nav{background:#fff;border-bottom:1px solid var(--line);padding:14px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-.nav .logo{font-weight:900;color:var(--navy);font-size:15px;text-decoration:none}
-.nav a.m{font-size:14px;color:var(--mut);text-decoration:none}
-.nav .cta{margin-left:auto;background:var(--blue-d);color:#fff;font-size:13px;font-weight:700;padding:0 16px;border-radius:6px;text-decoration:none;min-height:44px;display:flex;align-items:center}
+header.site{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);z-index:1000}
+header.site .hwrap{max-width:1140px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:66px}
+header.site .logo{font-weight:900;font-size:21px;letter-spacing:.5px;color:var(--blue);text-decoration:none;line-height:1.1}
+header.site .logo span{color:var(--blue)}header.site .logo small{display:block;font-size:10.5px;font-weight:600;color:var(--mut);letter-spacing:2px}
+header.site .menu{display:flex;gap:30px;font-size:15px;font-weight:700}header.site .menu a{color:var(--ink);text-decoration:none}header.site .menu a:hover,header.site .menu a.on{color:var(--blue)}
+@media(max-width:900px){header.site .menu{gap:16px;font-size:13.5px}}@media(max-width:600px){header.site .menu{gap:11px;font-size:12px}header.site .logo{font-size:17px}header.site .logo small{display:none}}
 .wrap{max-width:860px;margin:0 auto;padding:26px 18px 70px}
 .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:26px 26px 30px}
 h1{font-size:27px;font-weight:900;color:var(--navy);margin:6px 0 10px;line-height:1.4;letter-spacing:-.02em}

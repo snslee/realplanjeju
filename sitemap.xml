@@ -10,5 +10,7 @@
   <url><loc>https://realplanjeju.com/insight/group-trip/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://realplanjeju.com/insight/event-agency/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://realplanjeju.com/marketing/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://realplanjeju.com/company/</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://realplanjeju.com/insight/about-realplanjeju/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://realplanjeju.com/about/lee-donghwan/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 </urlset>

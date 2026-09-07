@@ -653,6 +653,8 @@ window.__rpSb=sb; window.__rpSite=SITE; window.__rpSbUrl=SB_URL; window.__rpSbKe
 function wantEdit(){return /rpedit/.test(location.hash)||/[?&]edit\b/.test(location.search);}
 
 /* 1) 저장된 라이브 콘텐츠 주입 (편집 저장분이 있으면 원본 대신 표시) */
+/* FAQ 페이지 넘김 — #rp-root 안 인라인 script는 CMS innerHTML 주입 뒤 실행되지 않아(2026-09-07 실측 버튼 무반응) 여기서 다시 묶는다 */
+window.rpInitFaq=function(){try{var K="faq",P=5;var pg=document.querySelectorAll("."+K+"-pg"),dt=document.querySelectorAll("."+K+"-dot"),c=document.getElementById(K+"-cnt"),prev=document.getElementById(K+"-prev"),next=document.getElementById(K+"-next");if(!pg.length||!prev||!next)return;var T=0;pg.forEach(function(e){T+=e.children.length});var cur=0;pg.forEach(function(e,i){if(e.style.display==="block")cur=i});function go(n){if(n<0||n>=pg.length)return;cur=n;pg.forEach(function(e,i){e.style.display=(i===n?"block":"none")});dt.forEach(function(e,i){e.style.background=(i===n?"#2b4a80":"#fff");e.style.color=(i===n?"#fff":"#5a6b85")});if(c)c.textContent=(n*P+1)+"\u2013"+Math.min((n+1)*P,T)+" / \uc804\uccb4 "+T+"\uac1c";var s=document.getElementById(K);if(s)s.scrollIntoView({behavior:"smooth",block:"start"});}dt.forEach(function(e){e.onclick=function(){go(+e.dataset.go)}});prev.onclick=function(){go(cur-1)};next.onclick=function(){go(cur+1)};window.__faqReady=true;}catch(e){}};
 async function loadContent(){
   if(!sb)return;
   try{

@@ -659,7 +659,7 @@ async function loadContent(){
   if(!sb)return;
   try{
     var r=await sb.rpc('rpc_web_get_content',{p_사이트:SITE});
-    if(r.data){document.getElementById('rp-root').innerHTML=r.data;if(window.rpInitSite)window.rpInitSite();}
+    if(r.data){document.getElementById('rp-root').innerHTML=r.data;if(window.rpInitSite)window.rpInitSite();if(window.rpInitFaq)window.rpInitFaq();}
   }catch(e){}
 }
 /* 2) 방문 로그 — IP 미저장·실도메인에서만·편집 모드 제외 */

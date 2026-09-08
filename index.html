@@ -21,7 +21,16 @@
 <style>
 :root{--blue:#4A85F6;--blue-d:#2B62C4;--navy:#0d1e33;--blue-bg:#F5F8FD;--ink:#222B3A;--mut:#7C8698;--line:#E6ECF5}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:var(--ink);background:#fff}
+/* (126) 홈 인라인 정본화 — 파일 본문은 CMS 폴백이라 여기서 덮는다 */
+[style*="color:#16243d"]{color:#222B3A!important}
+[style*="solid #16243d"]{border-color:#222B3A!important}
+[style*="solid #cfd9e8"]{border-color:#E6ECF5!important}
+[style*="#4b7bec"]{color:#4A85F6!important}
+[style*="#3f4a5c"]{color:#7C8698!important}
+[style*="#f5f7fb"]{background:#F5F8FD!important}
+[style*="#7a4b00"]{color:#B45309!important}
+[style*="#fff6e8"]{background:#FFF3E4!important}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;color:var(--ink);background:#fff}
 .wrap{max-width:1140px;margin:0 auto;padding:0 20px}
 img{max-width:100%} a{text-decoration:none;color:inherit}
 header{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);z-index:1000}

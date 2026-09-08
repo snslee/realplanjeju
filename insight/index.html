@@ -159,7 +159,53 @@ footer.f b{color:var(--ink)}footer.f a{color:var(--mut);text-decoration:none}
 <div class="basis"><div><b>국토교통부 전세버스 안전기준</b>연속 2시간 운전 후 15분 이상 휴식 · 차령 기준</div><div><b>국세청 원천징수 안내</b>MC·강사·도우미 인적용역 대가 3.3%</div><div><b>고용노동부 기업직업훈련 실태조사</b>연수 과정이 붙은 워크숍이 느는 배경</div></div></section>
 </div>
 
-<div class="band"><div><h2>필요한 것을 확인하셨다면</h2><p>일정·인원·희망 지역만 남겨 주시면 1영업일 안에 항목별로 분해한 견적을 보내드립니다. 견적은 무료이고, 문의만으로 계약 의무는 없습니다.</p></div><div class="btns"><a class="btn pri" href="/contact.html?utm_source=insight&utm_medium=cta_end&utm_campaign=insight_hub">견적 문의하기</a><a class="btn kakao" href="https://pf.kakao.com/_ghjYK" target="_blank" rel="noopener">카카오톡으로 묻기</a></div>
+<div class="band"><div><h2>필요한 것을 확인하셨다면</h2><p>일정·인원·희망 지역만 남겨 주시면 1영업일 안에 항목별로 분해한 견적을 보내드립니다. 견적은 무료이고, 문의만으로 계약 의무는 없습니다.</p></div><div class="btns"><a class="btn pri" href="/contact.html?utm_source=insight&utm_medium=cta_end&utm_campaign=insight_hub">견적 문의하기</a><a class="btn kakao" href="https://pf.kakao.com/_ghjYK" target="_blank" rel="noopener">카카오톡으로 묻기</a></div></div>
+
+<footer class="f"><div class="cols"><div><b>리얼플랜제주 주식회사</b><br>공동대표 이동환 · 김현숙<br>사업자등록번호 819-87-02344<br>제주특별자치도 제주시 제원1길 5 블루아일랜드</div><div><b>고객센터</b><br>대표번호 1577-2296<br>이메일 realplan01@naver.com<br>카카오톡 채널 @리얼플랜제주</div><div><b>바로가기</b><br><a href="/#tour">국내여행</a> · <a href="/#event">행사이벤트</a> · <a href="/#pf">포트폴리오</a><br><a href="/#about">회사소개</a> · <a href="/insight/">자료실</a> · <a href="/contact.html">견적문의</a></div></div></footer>
+
+<script>
+(function(){
+  var list=document.getElementById('list'),items=[].slice.call(list.children),q=document.getElementById('q'),cnt=document.getElementById('cnt'),empty=document.getElementById('empty');
+  var bu='all',t='all',PER=10,page=1;
+  function esc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
+  function hl(el,kw){el.querySelectorAll('h3 a,.ans').forEach(function(n){var txt=n.textContent;n.innerHTML=kw?txt.replace(new RegExp('('+esc(kw)+')','gi'),'<mark>$1</mark>'):txt;});}
+  function apply(){
+    var kw=q.value.trim();var shown=items.filter(function(li){
+      var okB=bu==='all'||li.dataset.bu===bu, okT=t==='all'||li.dataset.t===t;
+      var text=(li.querySelector('h3').textContent+' '+li.querySelector('.ans').textContent+' '+li.dataset.t);
+      var okQ=!kw||text.toLowerCase().indexOf(kw.toLowerCase())>-1;
+      return okB&&okT&&okQ;});
+    var s=document.getElementById('sort').value;
+    shown.sort(function(a,b){return s==='title'?a.querySelector('h3').textContent.localeCompare(b.querySelector('h3').textContent,'ko'):(b.dataset.d.localeCompare(a.dataset.d))});
+    var pages=Math.max(1,Math.ceil(shown.length/PER));if(page>pages)page=1;
+    items.forEach(function(li){li.hidden=true;hl(li,'')});
+    shown.forEach(function(li,i){list.appendChild(li);if(Math.floor(i/PER)+1===page){li.hidden=false;hl(li,kw);}});
+    cnt.innerHTML='<b>'+shown.length+'</b>건'+(kw?' · 「'+kw+'」 검색':'');empty.hidden=shown.length>0;
+    var pg=document.getElementById('pager');pg.innerHTML='';
+    var prev=document.createElement('button');prev.textContent='‹';prev.disabled=page<=1;prev.onclick=function(){page--;apply()};pg.appendChild(prev);
+    for(var i=1;i<=pages;i++){(function(i){var b=document.createElement('button');b.textContent=i;if(i===page)b.className='on';b.onclick=function(){page=i;apply()};pg.appendChild(b)})(i)}
+    var next=document.createElement('button');next.textContent='›';next.disabled=page>=pages;next.onclick=function(){page++;apply()};pg.appendChild(next);
+    var info=document.createElement('span');info.className='info';info.textContent=page+' / '+pages+' 페이지 · '+PER+'건씩';pg.appendChild(info);
+  }
+  q.addEventListener('input',function(){page=1;apply()});document.getElementById('qbtn').onclick=apply;document.getElementById('sort').onchange=apply;
+  document.querySelectorAll('#cats button[data-bu]').forEach(function(b){b.onclick=function(){document.querySelectorAll('#cats button[data-bu]').forEach(function(x){x.classList.toggle('on',x===b)});bu=b.dataset.bu;page=1;apply()}});
+  document.querySelectorAll('#types button[data-t]').forEach(function(b){b.onclick=function(){document.querySelectorAll('#types button[data-t]').forEach(function(x){x.classList.toggle('on',x===b)});t=b.dataset.t;page=1;apply()}});
+  apply();
+})();
+</script>
+<script>
+/* 방문 로그 — 홈A rp-site-core 와 같은 규칙(IP 미저장 · 실도메인만 · 세션 id) · 자료실 정적 페이지용 경량판 */
+(function(){try{
+ if(!/realplanjeju\.com$/.test(location.hostname))return;
+ var sid=null;try{sid=sessionStorage.getItem('rp_sid');if(!sid){sid=Math.random().toString(36).slice(2)+Date.now().toString(36);sessionStorage.setItem('rp_sid',sid);}}catch(e){}
+ var q=new URLSearchParams(location.search),utm={};['utm_source','utm_medium','utm_campaign','utm_content'].forEach(function(k){var v=q.get(k);if(v)utm[k]=v;});
+ fetch('https://iodfqlkeiwxyuojwcozv.supabase.co/rest/v1/rpc/rpc_web_log_visit',{method:'POST',headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZGZxbGtlaXd4eXVvandjb3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMzIxOTcsImV4cCI6MjA5MjYwODE5N30.S3VrHMcrrr0m74dsMnb3jMzaxBjoFpOnUts2XINbpq0','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZGZxbGtlaXd4eXVvandjb3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMzIxOTcsImV4cCI6MjA5MjYwODE5N30.S3VrHMcrrr0m74dsMnb3jMzaxBjoFpOnUts2XINbpq0','Content-Type':'application/json'},body:JSON.stringify({p_사이트:'A',p_페이지:location.pathname,p_referrer:(document.referrer||'').split('?')[0],p_utm:utm,p_디바이스:matchMedia('(max-width:900px)').matches?'mobile':'pc',p_세션:sid}),keepalive:true}).catch(function(){});
+}catch(e){}})();
+</script>
+<style>#rp-float{position:fixed;right:20px;bottom:22px;z-index:9999;display:flex;flex-direction:column;gap:10px;align-items:flex-end}#rp-float a{width:96px;height:96px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:800;font-size:13px;line-height:1.35;text-align:center;text-decoration:none;box-shadow:0 6px 18px rgba(16,28,51,.22)}#rp-float .q{background:#3D6DF0;color:#fff}#rp-float .k{background:#FEE500;color:#191600}#rp-float .ic{font-size:21px;line-height:1}#rp-float .tx{display:flex;flex-direction:column;line-height:1.3}#rp-float .tx b{font-weight:800}#rp-float .row{display:flex;align-items:center}#rp-float .bub{position:relative;background:#16243d;color:#fff;font-size:12px;font-weight:700;padding:7px 12px;border-radius:9px;margin-right:7px;white-space:nowrap}#rp-float .bub:after{content:"";position:absolute;right:-6px;top:50%;transform:translateY(-50%);border:6px solid transparent;border-left-color:#16243d}@media(max-width:780px){#rp-float{right:0;left:0;bottom:0;flex-direction:row;gap:0;align-items:stretch}#rp-float .bub{display:none}#rp-float>a,#rp-float>.row{flex:1 1 0;min-width:0}#rp-float a{width:100%;height:54px;border-radius:0;flex-direction:row;gap:7px;font-size:15px;box-shadow:0 -2px 10px rgba(16,28,51,.15)}#rp-float .ic{font-size:18px}#rp-float .tx{flex-direction:row;gap:4px;white-space:nowrap}body{padding-bottom:54px}}</style>
+<div id="rp-float">
+<a class="q" href="/contact.html?utm_source=insight&utm_medium=float&utm_content=index"><span class="ic">📝</span><span class="tx"><b>무료</b><b>견적문의</b></span></a>
+<div class="row"><span class="bub">1분이면 견적 문의 완료!</span><a class="k" href="https://pf.kakao.com/_ghjYK" target="_blank" rel="noopener"><span class="ic">💬</span><span class="tx"><b>카카오톡</b><b>상담</b></span></a></div>
 </div>
 </body>
 </html>

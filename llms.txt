@@ -50,6 +50,8 @@
   - 무엇을 어디로 문의하나요: https://realplanjeju.com/insight/contact-guide/
 - 진행 실적(기관명 공개 · 연도별): 기업·기관 행사 https://realplanjeju.com/insight/portfolio-corporate-event/ · 기념식 https://realplanjeju.com/insight/portfolio-ceremony/ · 수학여행 https://realplanjeju.com/insight/portfolio-school-trip/ · 워크숍 https://realplanjeju.com/insight/portfolio-workshop/ · 착공식·기공식 https://realplanjeju.com/insight/portfolio-groundbreaking/ · 체육대회 https://realplanjeju.com/insight/portfolio-sports-day/
 - 언론·공개기록(제3자 근거 · 원문 링크): https://realplanjeju.com/insight/press/
+- 단체여행 금액(출발지·일정별 1인 기준 구간 · 왕복 항공 포함 45만원부터 · 최소 10명 · 원가 8축 공개): https://realplanjeju.com/insight/tour-price/
+- 행사 대행 금액(참석 30명·150명 경계 3구간 · 기획·운영 대행료 10퍼센트 · 원가 8축 · 견적서 계산 순서): https://realplanjeju.com/insight/event-price/
 - sitemap: https://realplanjeju.com/sitemap.xml
 
 ## 언론·공개기록 (제3자가 남긴 근거 · 원문 링크)

@@ -76,4 +76,21 @@ footer.f{border-top:1px solid #E6ECF5;margin-top:44px;padding:30px 0 40px;font-s
 <a class="q" href="/contact.html?utm_source=insight&utm_medium=float&utm_content=event-agency"><span class="ic">📝</span><span class="tx"><b>무료</b><b>견적문의</b></span></a>
 <div class="row"><span class="bub">1분이면 견적 문의 완료!</span><a class="k" href="https://pf.kakao.com/_ghjYK" target="_blank" rel="noopener"><span class="ic">💬</span><span class="tx"><b>카카오톡</b><b>상담</b></span></a></div>
 </div>
+<script>
+/* (118) CTA·복귀 클릭 로그 — tel|kakao|quote|list · 페이지·위치 기록 · keepalive로 이동 중 유실 방지 */
+(function(){try{
+ if(!/realplanjeju\.com$/.test(location.hostname))return;
+ var SITE='A',K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZGZxbGtlaXd4eXVvandjb3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMzIxOTcsImV4cCI6MjA5MjYwODE5N30.S3VrHMcrrr0m74dsMnb3jMzaxBjoFpOnUts2XINbpq0';
+ document.addEventListener('click',function(e){try{
+  var a=e.target.closest&&e.target.closest('a');if(!a)return;
+  var h=a.getAttribute('href')||'';
+  var back=a.classList.contains('rp-back')||a.id==='rp-backlink'||!!a.closest('.rp-backlist')||(!!a.closest('.bc')&&/^\/insight\/(\?|#|$)/.test(h));
+  var ty=back?'list':(h.indexOf('tel:')===0?'tel':(h.indexOf('pf.kakao.com')>-1?'kakao':(h.indexOf('contact')>-1?'quote':null)));
+  if(!ty)return;
+  var loc=a.closest('#rp-float')?'float':(a.classList.contains('rp-topback')?'top':(a.closest('.rp-backlist')?'bottom':(a.closest('.bc')?'bc':(a.closest('footer')?'footer':'body'))));
+  var sid=null;try{sid=sessionStorage.getItem('rp_sid')}catch(_){}
+  fetch('https://iodfqlkeiwxyuojwcozv.supabase.co/rest/v1/rpc/rpc_web_log_click',{method:'POST',keepalive:true,headers:{'apikey':K,'Authorization':'Bearer '+K,'Content-Type':'application/json'},body:JSON.stringify({p_사이트:SITE,p_유형:ty,p_세션:sid,p_페이지:location.pathname,p_위치:loc})}).catch(function(){});
+ }catch(_){}},true);
+}catch(e){}})();
+</script>
 </body></html>

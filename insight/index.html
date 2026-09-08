@@ -193,7 +193,9 @@ footer.f b{color:var(--ink)}footer.f a{color:var(--mut);text-decoration:none}
   q.addEventListener('input',function(){page=1;apply()});document.getElementById('qbtn').onclick=apply;document.getElementById('sort').onchange=apply;
   document.querySelectorAll('#cats button[data-bu]').forEach(function(b){b.onclick=function(){document.querySelectorAll('#cats button[data-bu]').forEach(function(x){x.classList.toggle('on',x===b)});bu=b.dataset.bu;page=1;apply()}});
   document.querySelectorAll('#types button[data-t]').forEach(function(b){b.onclick=function(){document.querySelectorAll('#types button[data-t]').forEach(function(x){x.classList.toggle('on',x===b)});t=b.dataset.t;page=1;apply()}});
+  rpRestore();
   apply();
+  try{var sk='rp_insight_scroll'+location.search,sv=sessionStorage.getItem(sk);if(sv)window.scrollTo(0,parseInt(sv,10)||0);window.addEventListener('pagehide',function(){try{sessionStorage.setItem('rp_insight_scroll'+location.search,String(window.scrollY))}catch(e){}});}catch(e){}
 })();
 </script>
 <script>

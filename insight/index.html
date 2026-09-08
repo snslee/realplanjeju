@@ -186,7 +186,10 @@ footer.f b{color:var(--ink)}footer.f a{color:var(--mut);text-decoration:none}
     for(var i=1;i<=pages;i++){(function(i){var b=document.createElement('button');b.textContent=i;if(i===page)b.className='on';b.onclick=function(){page=i;apply()};pg.appendChild(b)})(i)}
     var next=document.createElement('button');next.textContent='›';next.disabled=page>=pages;next.onclick=function(){page++;apply()};pg.appendChild(next);
     var info=document.createElement('span');info.className='info';info.textContent=page+' / '+pages+' 페이지 · '+PER+'건씩';pg.appendChild(info);
+    rpSave();
   }
+  function rpSave(){try{var u=new URLSearchParams();if(bu!=='all')u.set('bu',bu);if(t!=='all')u.set('t',t);var kw=q.value.trim();if(kw)u.set('q',kw);var s=document.getElementById('sort').value;if(s!=='new')u.set('sort',s);if(page>1)u.set('p',page);var qs=u.toString(),url=location.pathname+(qs?'?'+qs:'');history.replaceState(null,'',url);sessionStorage.setItem('rp_insight_last',url);}catch(e){}}
+  function rpRestore(){try{var u=new URLSearchParams(location.search);var b=u.get('bu'),tt=u.get('t'),kw=u.get('q'),s=u.get('sort'),p=parseInt(u.get('p')||'1',10);if(kw)q.value=kw;if(s)document.getElementById('sort').value=s;if(b){bu=b;document.querySelectorAll('#cats button[data-bu]').forEach(function(x){x.classList.toggle('on',x.dataset.bu===b)});}if(tt){t=tt;document.querySelectorAll('#types button[data-t]').forEach(function(x){x.classList.toggle('on',x.dataset.t===tt)});}if(p>1)page=p;}catch(e){}}
   q.addEventListener('input',function(){page=1;apply()});document.getElementById('qbtn').onclick=apply;document.getElementById('sort').onchange=apply;
   document.querySelectorAll('#cats button[data-bu]').forEach(function(b){b.onclick=function(){document.querySelectorAll('#cats button[data-bu]').forEach(function(x){x.classList.toggle('on',x===b)});bu=b.dataset.bu;page=1;apply()}});
   document.querySelectorAll('#types button[data-t]').forEach(function(b){b.onclick=function(){document.querySelectorAll('#types button[data-t]').forEach(function(x){x.classList.toggle('on',x===b)});t=b.dataset.t;page=1;apply()}});

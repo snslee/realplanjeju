@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://realplanjeju.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://realplanjeju.com/contact.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://realplanjeju.com/insight/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://realplanjeju.com/insight/workshop/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://realplanjeju.com/insight/school-trip/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://realplanjeju.com/insight/sports-day/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://realplanjeju.com/insight/charter-bus/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://realplanjeju.com/insight/group-trip/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://realplanjeju.com/insight/event-agency/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://realplanjeju.com/company/</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://realplanjeju.com/insight/about-realplanjeju/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://realplanjeju.com/about/lee-donghwan/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://realplanjeju.com/</loc><lastmod>2026-09-10</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://realplanjeju.com/contact.html</loc><lastmod>2026-07-30</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://realplanjeju.com/insight/</loc><lastmod>2026-09-08</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://realplanjeju.com/insight/workshop/</loc><lastmod>2026-09-10</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://realplanjeju.com/insight/school-trip/</loc><lastmod>2026-09-10</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://realplanjeju.com/insight/sports-day/</loc><lastmod>2026-09-05</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://realplanjeju.com/insight/charter-bus/</loc><lastmod>2026-09-10</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://realplanjeju.com/insight/group-trip/</loc><lastmod>2026-09-10</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://realplanjeju.com/insight/event-agency/</loc><lastmod>2026-09-10</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://realplanjeju.com/company/</loc><lastmod>2026-09-06</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://realplanjeju.com/insight/about-realplanjeju/</loc><lastmod>2026-09-07</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://realplanjeju.com/about/lee-donghwan/</loc><lastmod>2026-09-05</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://realplanjeju.com/insight/process/</loc><lastmod>2026-09-06</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://realplanjeju.com/insight/cancel-refund/</loc><lastmod>2026-09-06</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://realplanjeju.com/insight/contact-guide/</loc><lastmod>2026-09-06</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
@@ -21,5 +21,5 @@
   <url><loc>https://realplanjeju.com/insight/portfolio-workshop/</loc><lastmod>2026-09-06</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://realplanjeju.com/insight/portfolio-groundbreaking/</loc><lastmod>2026-09-06</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://realplanjeju.com/insight/portfolio-sports-day/</loc><lastmod>2026-09-06</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://realplanjeju.com/insight/press/</loc><lastmod>2026-09-08</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url><url><loc>https://realplanjeju.com/insight/tour-price/</loc><lastmod>2026-09-08</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url><url><loc>https://realplanjeju.com/insight/event-price/</loc><lastmod>2026-09-08</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://realplanjeju.com/insight/press/</loc><lastmod>2026-09-08</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url><url><loc>https://realplanjeju.com/insight/tour-price/</loc><lastmod>2026-09-10</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url><url><loc>https://realplanjeju.com/insight/event-price/</loc><lastmod>2026-09-10</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
 </urlset>

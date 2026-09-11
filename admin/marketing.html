@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.30.0</title>
+<title>리얼플랜제주 마케팅 운영 v1.31.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -209,7 +209,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.30.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.31.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -234,8 +234,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
     <div class="nav-item" title="작성 가이드" onclick="switchTab('t6',this)"><span>🎨</span>작성 가이드</div>
     <div class="nav-item" title="키워드·인사이트" onclick="switchTab('t8',this)"><span>🔑</span>키워드·인사이트</div>
     <div class="nav-item" title="채널 소식" onclick="switchTab('tchan',this);loadChannelAll()"><span>📡</span>채널 소식</div>
-    <div class="nav-section">SNS</div>
-    <div class="nav-item" title="SNS 운영(쓰레드·유튜브)" onclick="switchTab('t13',this);snsInit()"><span>📱</span>SNS 운영</div>
+    <div class="nav-section">채널 운영</div>
+    <div class="nav-item" title="유튜브 운영(리얼플랜여행·사장님 마케팅 지니)" onclick="switchTab('t13',this);snsInit()"><span>▶️</span>유튜브 운영</div>
   </nav>
   <!-- mobile-nav 제거: 사이드바 아이콘 축소형으로 통일(A안 v1.8.1) — 전 탭 모바일 접근 -->
   <main class="main">
@@ -252,6 +252,28 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
       <div id="cs-kpi" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px"></div>
       <div id="cs-list"></div>
+      <!-- ★2026-09-11 — 한 목록에 쓰레드·지식인이 번갈아 섞여 있어 탭으로 나눴다.
+           분류는 구분 문자열 하나로만 한다 — v_cs_inbox 는 손대지 않는다. -->
+      <div id="cs-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px"></div>
+      <div id="cs-pane-thread"><div id="cs-list-thread"></div>
+      <h3 style="font-size:.95rem;font-weight:700;margin:26px 0 8px;padding-top:16px;border-top:2px solid #e2e8f0">🧵 쓰레드 발행 관리 <span style="color:#94a3b8;font-weight:400;font-size:.8rem">· SNS 운영에서 옮겨옴(2026-09-11)</span></h3>
+      <div id="cs-threads">
+      <div id="t13-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:14px"></div>
+      <div style="background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:14px">🧵 예정 시각에 텔레그램으로 복붙 카드가 자동 발송됩니다(플레이스 소식과 동일). 게시 후 좋아요·댓글·저장·답글완료를 입력하면 역제안 엔진이 학습합니다. 쓰레드는 해시태그가 아닌 <b>본문 키워드</b>로 노출돼요.</div>
+      <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px">
+        <table style="width:100%;border-collapse:collapse;font-size:.8rem">
+          <thead><tr style="background:#f8fafc;text-align:left"><th style="padding:9px">예정(KST)</th><th>사업부</th><th>유형</th><th>등급</th><th>상태</th><th>반응/답글</th></tr></thead>
+          <tbody id="t13-body"><tr><td colspan="6" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody>
+        </table>
+      </div>
+      <script>
+      async function loadThreadsSlots(){var box=document.getElementById('t13-body');if(!box)return;box.innerHTML='<tr><td colspan="6" style="padding:12px;color:#64748b">로딩 중...</td></tr>';try{var r=await sb.from('mk_sns_slots').select('예정일시,사업부,유형,홍보등급,핵심키워드,상태,좋아요,댓글,저장,공유,답글완료').eq('플랫폼','쓰레드').order('예정일시');if(r.error)throw r.error;var rows=r.data||[];var pub=rows.filter(function(x){return x.상태==='발행'}).length;var wt=rows.filter(function(x){return x.상태==='대기'||x.상태==='카드발송'}).length;document.getElementById('t13-kpi').innerHTML=t13kpi('전체',rows.length)+t13kpi('발행',pub)+t13kpi('대기/발송',wt);box.innerHTML=rows.map(function(x){var dt=x.예정일시?new Date(x.예정일시).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'-';var react=(x.좋아요||0)+'♥ '+(x.댓글||0)+'💬 '+(x.저장||0)+'🔖';var reply=x.답글완료?'✅':'—';return '<tr style="border-top:1px solid #f1f5f9"><td style="padding:8px">'+dt+'</td><td>'+(x.사업부||'')+'</td><td>'+(x.유형||'')+'</td><td>'+(x.홍보등급||'')+'</td><td>'+(x.상태||'')+'</td><td>'+react+' / 답글'+reply+'</td></tr>';}).join('')||'<tr><td colspan="6" style="padding:12px;color:#64748b">카드 없음</td></tr>';}catch(e){box.innerHTML='<tr><td colspan="6" style="padding:12px;color:#dc2626">오류: '+(e&&e.message||e)+'</td></tr>';}}
+      function t13kpi(l,v){return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px"><div style="font-size:.72rem;color:#64748b">'+l+'</div><div style="font-size:1.4rem;font-weight:700">'+v+'</div></div>';}
+      </script>
+      </div>
+      </div>
+      <div id="cs-pane-kin" style="display:none"><div id="cs-list-kin"></div></div>
+      <div id="cs-pane-etc" style="display:none"><div id="cs-list-etc"></div></div>
     </div>
     <!-- ══ CTR·색인 진단 — 2026-08-20 신설 ══════════════════════════════
          v_ctr_diagnosis(앵커 합산) + v_index_status_now(URL Inspection 실측).
@@ -907,28 +929,10 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
     </div>
     <div class="tab-panel" id="t13">
       <div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div><h2 style="font-size:1.2rem;font-weight:700">📱 SNS 운영</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">쓰레드 @realplan_travel · 유튜브 <b>리얼플랜여행</b> 621편·구독 2,860 · 채널 <a href="https://www.youtube.com/@realplan_travel" target="_blank" style="color:#2563eb">@realplan_travel</a></p></div>
+        <div><h2 style="font-size:1.2rem;font-weight:700">▶️ 유튜브 운영</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px"><b>리얼플랜여행</b> 621편·구독 2,860 <a href="https://www.youtube.com/@realplan_travel" target="_blank" style="color:#2563eb">@realplan_travel</a><br><span style="color:#b45309">🧵 쓰레드 발행 관리는 「고객소통 → 🧵 쓰레드」 탭으로 옮겼습니다(2026-09-11).</span></p></div>
         <button onclick="snsRefresh()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
-        <button class="filter-btn sns-t active" onclick="snsTab('threads',this)">🧵 쓰레드</button>
-        <button class="filter-btn sns-t" onclick="snsTab('youtube',this)">▶️ 유튜브</button>
-      </div>
-      <div id="sns-threads" class="sns-panel">
-      <div id="t13-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:14px"></div>
-      <div style="background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:14px">🧵 예정 시각에 텔레그램으로 복붙 카드가 자동 발송됩니다(플레이스 소식과 동일). 게시 후 좋아요·댓글·저장·답글완료를 입력하면 역제안 엔진이 학습합니다. 쓰레드는 해시태그가 아닌 <b>본문 키워드</b>로 노출돼요.</div>
-      <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px">
-        <table style="width:100%;border-collapse:collapse;font-size:.8rem">
-          <thead><tr style="background:#f8fafc;text-align:left"><th style="padding:9px">예정(KST)</th><th>사업부</th><th>유형</th><th>등급</th><th>상태</th><th>반응/답글</th></tr></thead>
-          <tbody id="t13-body"><tr><td colspan="6" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody>
-        </table>
-      </div>
-      <script>
-      async function loadThreadsSlots(){var box=document.getElementById('t13-body');if(!box)return;box.innerHTML='<tr><td colspan="6" style="padding:12px;color:#64748b">로딩 중...</td></tr>';try{var r=await sb.from('mk_sns_slots').select('예정일시,사업부,유형,홍보등급,핵심키워드,상태,좋아요,댓글,저장,공유,답글완료').eq('플랫폼','쓰레드').order('예정일시');if(r.error)throw r.error;var rows=r.data||[];var pub=rows.filter(function(x){return x.상태==='발행'}).length;var wt=rows.filter(function(x){return x.상태==='대기'||x.상태==='카드발송'}).length;document.getElementById('t13-kpi').innerHTML=t13kpi('전체',rows.length)+t13kpi('발행',pub)+t13kpi('대기/발송',wt);box.innerHTML=rows.map(function(x){var dt=x.예정일시?new Date(x.예정일시).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'-';var react=(x.좋아요||0)+'♥ '+(x.댓글||0)+'💬 '+(x.저장||0)+'🔖';var reply=x.답글완료?'✅':'—';return '<tr style="border-top:1px solid #f1f5f9"><td style="padding:8px">'+dt+'</td><td>'+(x.사업부||'')+'</td><td>'+(x.유형||'')+'</td><td>'+(x.홍보등급||'')+'</td><td>'+(x.상태||'')+'</td><td>'+react+' / 답글'+reply+'</td></tr>';}).join('')||'<tr><td colspan="6" style="padding:12px;color:#64748b">카드 없음</td></tr>';}catch(e){box.innerHTML='<tr><td colspan="6" style="padding:12px;color:#dc2626">오류: '+(e&&e.message||e)+'</td></tr>';}}
-      function t13kpi(l,v){return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px"><div style="font-size:.72rem;color:#64748b">'+l+'</div><div style="font-size:1.4rem;font-weight:700">'+v+'</div></div>';}
-      </script>
-      </div>
-      <div id="sns-youtube" class="sns-panel" style="display:none">
+      <div id="sns-youtube" class="sns-panel">
         <style>#sns-youtube table td,#sns-youtube table th{padding:7px 9px;vertical-align:top}</style>
         <div id="yt-warn" style="display:none;font-size:.78rem;padding:9px 12px;border-radius:8px;margin-bottom:12px"></div>
         <div id="yt-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
@@ -1328,8 +1332,18 @@ async function loadCS(){
     +csTile('기준 초과',over.length+'건',over.length?'#dc2626':'#16a34a')
     +csTile('전체 대기',rows.length+'건','#334155');
   csBadgePaint(rows);
-  if(!rows.length){box.innerHTML='<p style="color:#16a34a;font-size:.9rem">대기 중인 건이 없습니다.</p>';return;}
-  var grp={};rows.forEach(function(r){(grp[r.구분]=grp[r.구분]||[]).push(r);});
+  box.innerHTML='';
+  /* ★2026-09-11 — 쓰레드·지식인 탭 분리. 쓰레드 탭 아래에는
+     SNS 운영에서 옮겨온 「쓰레드 발행 관리」가 붙는다. */
+  var CSB=[{k:'thread',label:'🧵 쓰레드',test:function(g){return /쓰레드|자문자답/.test(g);}},
+           {k:'kin',label:'🧩 지식인',test:function(g){return /지식인/.test(g);}},
+           {k:'etc',label:'📎 기타',test:function(){return true;}}];
+  var bkt={thread:[],kin:[],etc:[]};
+  rows.forEach(function(r){var g=String(r.구분||'');
+    for(var i=0;i<CSB.length;i++){ if(CSB[i].test(g)){ bkt[CSB[i].k].push(r); break; } }});
+  var csRender=function(list){
+  if(!list.length) return '<p style="color:#16a34a;font-size:.9rem;padding:6px 0">대기 중인 건이 없습니다.</p>';
+  var grp={};list.forEach(function(r){(grp[r.구분]=grp[r.구분]||[]).push(r);});
   var h='';
   Object.keys(grp).forEach(function(k){
     var g=grp[k], go=g.filter(function(r){return r.경과시간>r.sla시간;}).length;
@@ -1346,7 +1360,29 @@ async function loadCS(){
     });
     h+='</tbody></table>';
   });
-  box.innerHTML=h;
+  return h;
+  };
+  CSB.forEach(function(b){var el=document.getElementById('cs-list-'+b.k);if(el)el.innerHTML=csRender(bkt[b.k]);});
+  var tb=document.getElementById('cs-tabs');
+  if(tb){ tb.innerHTML=CSB.filter(function(b){return b.k!=='etc'||bkt.etc.length;}).map(function(b){
+      var g=bkt[b.k], go=g.filter(function(r){return r.경과시간>r.sla시간;}).length;
+      return '<button id="cs-tabbtn-'+b.k+'" onclick="csTab(\''+b.k+'\')" '
+       +'style="padding:8px 15px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#334155;font-size:.85rem;font-weight:700;cursor:pointer">'
+       +b.label+' <span style="color:#64748b;font-weight:500">'+g.length+'</span>'
+       +(go?' <span style="color:#dc2626;font-weight:700">⚠'+go+'</span>':'')+'</button>';}).join(''); }
+  csTab(window._csTab||'thread');
+}
+/* ★탭 전환. 이 화면은 상태를 바꾸지 않는다 — 보이는 패널만 바꾼다. */
+function csTab(k){
+  window._csTab=k;
+  ['thread','kin','etc'].forEach(function(x){
+    var p=document.getElementById('cs-pane-'+x); if(p)p.style.display=(x===k?'':'none');
+    var b=document.getElementById('cs-tabbtn-'+x);
+    if(b){ b.style.background=(x===k?'#e8effe':'#fff');
+           b.style.borderColor=(x===k?'#2563eb':'#cbd5e1');
+           b.style.color=(x===k?'#1d4ed8':'#334155'); }
+  });
+  if(k==='thread'&&typeof loadThreadsSlots==='function'&&!window._csThOnce){window._csThOnce=1;loadThreadsSlots();}
 }
 /* ★2026-08-25 C — 「확인필요」를 끊는 유일한 출구.
    Threads 공식 API 는 계정 단위로 막혀 있고(실측 400 "API access blocked"), 프로필은 JS 렌더라
@@ -4240,19 +4276,12 @@ function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'
 function N(n){return (+n||0).toLocaleString();}
 function kpi(t,v,sub,col){return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:11px 14px"><div style="font-size:.71rem;color:#64748b">'+E(t)+'</div><div style="font-size:1.16rem;font-weight:800;margin-top:2px'+(col?';color:'+col:'')+'">'+E(v)+'</div>'+(sub?'<div style="font-size:.68rem;color:#94a3b8;margin-top:2px">'+E(sub)+'</div>':'')+'</div>';}
 
-window.snsTab=function(k,el){
-  ['threads','youtube'].forEach(function(x){var p=document.getElementById('sns-'+x);if(p)p.style.display=(x===k?'':'none');});
-  document.querySelectorAll('#t13 .sns-t').forEach(function(b){b.classList.remove('active');});
-  if(el)el.classList.add('active');
-  if(k==='youtube') ytInit();
-  if(k==='threads'&&typeof loadThreadsSlots==='function'&&!window._snsThOnce){window._snsThOnce=1;loadThreadsSlots();}
-};
-window.snsRefresh=function(){
-  var on=document.getElementById('sns-youtube');
-  if(on&&on.style.display!=='none'){_yt.loaded=false;ytInit(true);}
-  else if(typeof loadThreadsSlots==='function')loadThreadsSlots();
-};
-window.snsInit=function(){if(typeof loadThreadsSlots==='function'&&!window._snsThOnce){window._snsThOnce=1;loadThreadsSlots();}};
+/* ★2026-09-11 — SNS 운영 → 유튜브 운영. 쓰레드 발행 관리는 고객소통으로 옮겼다.
+   옮긴 이유: 쓰레드가 SNS 운영과 고객소통 두 곳에 흩어져 있어
+   「쓰레드만 보겠다」가 안 됐다. loadThreadsSlots 는 그대로 두고 그리는 자리만 옮겼다. */
+window.snsTab=function(k,el){ if(k==='youtube') ytInit(); };
+window.snsRefresh=function(){ _yt.loaded=false; ytInit(true); };
+window.snsInit=function(){ ytInit(); };
 
 /* ── 시즌 창 D-day ── */
 var SEASON={'여름':[6,8],'가을':[10,11],'겨울':[12,2],'봄':[3,4]};

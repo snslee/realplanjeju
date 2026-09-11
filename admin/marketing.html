@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.31.0</title>
+<title>리얼플랜제주 마케팅 운영 v1.32.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -209,7 +209,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.31.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.32.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -929,26 +929,40 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
     </div>
     <div class="tab-panel" id="t13">
       <div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div><h2 style="font-size:1.2rem;font-weight:700">▶️ 유튜브 운영</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px"><b>리얼플랜여행</b> 621편·구독 2,860 <a href="https://www.youtube.com/@realplan_travel" target="_blank" style="color:#2563eb">@realplan_travel</a><br><span style="color:#b45309">🧵 쓰레드 발행 관리는 「고객소통 → 🧵 쓰레드」 탭으로 옮겼습니다(2026-09-11).</span></p></div>
+        <div><h2 style="font-size:1.2rem;font-weight:700">▶️ 유튜브 운영</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">🧞 <b>사장님 마케팅 지니</b> 신규 <a href="https://www.youtube.com/@%EC%82%AC%EC%9E%A5%EB%8B%98%EB%A7%88%EC%BC%80%ED%8C%85%EC%A7%80%EB%8B%88" target="_blank" style="color:#2563eb">@사장님마케팅지니</a> 0편·구독 0 · ✈️ <b>리얼플랜여행</b> 621편·구독 2,860 <a href="https://www.youtube.com/@realplan_travel" target="_blank" style="color:#2563eb">@realplan_travel</a><br><span style="color:#b45309">🧵 쓰레드 발행 관리는 「고객소통 → 🧵 쓰레드」 탭으로 옮겼습니다(2026-09-11).</span></p></div>
         <button onclick="snsRefresh()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
       <div id="sns-youtube" class="sns-panel">
         <style>#sns-youtube table td,#sns-youtube table th{padding:7px 9px;vertical-align:top}</style>
         <div id="yt-warn" style="display:none;font-size:.78rem;padding:9px 12px;border-radius:8px;margin-bottom:12px"></div>
-        <div id="yt-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
-
-        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">① 채널 현황 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_assets 정본 · 매주 월 09:00 자동 수집(youtube-inventory)</span></h3></div>
-        <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">형식</th><th style="text-align:right">편수</th><th style="text-align:right">총조회</th><th style="text-align:right">평균</th><th style="text-align:right">최고</th><th>마지막 발행</th></tr></thead><tbody id="yt-form"><tr><td colspan="6" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody></table></div>
-        <div id="yt-trend" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;font-size:.76rem;margin-bottom:16px;color:#64748b"></div>
-
-        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">② 편성 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_slots · 시즌 창을 놓치면 1년 밀린다</span></h3></div>
-        <div id="yt-season" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px"></div>
+        
+                <!-- ★2026-09-11 — 한 화면에 두 채널이 섞여 있었다.
+             621편·구독 2,860 은 리얼플랜여행이고, 편성 13건은 사장님 마케팅 지니다.
+             DB 에 채널 컬럼을 넣고(대표 승인) 화면도 채널 단위로 갈랐다. -->
+        <div id="yt-chan-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+          <button id="ytc-btn-genie" onclick="ytChan('genie')" style="padding:8px 15px;border:1px solid #2563eb;border-radius:9px;background:#e8effe;color:#1d4ed8;font-size:.85rem;font-weight:700;cursor:pointer">🧞 사장님 마케팅 지니 <span style="font-weight:500;color:#64748b">신규</span></button>
+          <button id="ytc-btn-travel" onclick="ytChan('travel')" style="padding:8px 15px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#334155;font-size:.85rem;font-weight:700;cursor:pointer">✈️ 리얼플랜여행 <span style="font-weight:500;color:#64748b">621편</span></button>
+        </div>
+        <div id="ytc-genie">
+        <div id="genie-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px"></div>
+        <div id="genie-note" style="background:#f0f7ff;border:1px solid #cfe0fb;color:#1e40af;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:16px">🧞 <b>목표는 수익창출이 아니라 문의</b>입니다. 구독 1,000·시청 4,000시간을 채울 때까지는 <b>검증된 주제 100%</b>로 가고, 그 뒤에 미검증 주제를 테스트합니다. 주 1편 · 1년 52편.</div>
+<div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">② 편성 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_slots · 검증된 주제 100% · 주 1편</span></h3></div>
         <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:16px"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">발행일</th><th>코너</th><th>핵심키워드</th><th>제목</th><th>상태</th></tr></thead><tbody id="yt-slots"><tr><td colspan="5" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody></table></div>
 
         <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">③ 성과 · Phase A 졸업 조건 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_metrics D+7/D+28 · 4개 충족 시 대표 출연 착수</span></h3></div>
         <div id="yt-grad" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:.78rem;margin-bottom:16px"></div>
 
+                </div>
+        <div id="ytc-travel" style="display:none">
+        <div id="yt-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
+<div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">① 채널 현황 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_assets 정본 · 매주 월 09:00 자동 수집(youtube-inventory)</span></h3></div>
+        <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">형식</th><th style="text-align:right">편수</th><th style="text-align:right">총조회</th><th style="text-align:right">평균</th><th style="text-align:right">최고</th><th>마지막 발행</th></tr></thead><tbody id="yt-form"><tr><td colspan="6" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody></table></div>
+        <div id="yt-trend" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;font-size:.76rem;margin-bottom:16px;color:#64748b"></div>
+
         <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">④ 재고 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· 발행분 621편(재활용 후보) + 미발행 재료 mk_video_sources</span></h3></div>
+        <div style="font-size:.74rem;color:#64748b;margin:2px 0 6px">🗓 시즌 창 · 소재를 언제까지 써야 하는지 — 놓치면 1년 대기</div>
+        <div id="yt-season" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px"></div>
+
         <div id="yt-src" style="margin-bottom:10px"></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center">
           <button class="filter-btn yt-f active" onclick="ytFilter('b2b',this)">B2B 21편</button>
@@ -959,6 +973,7 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
           <span id="yt-cnt" style="font-size:.74rem;color:#64748b"></span>
         </div>
         <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px;max-height:520px"><table style="width:100%;border-collapse:collapse;font-size:.76rem"><thead><tr style="background:#f8fafc;text-align:left;position:sticky;top:0"><th style="padding:8px">제목</th><th style="width:60px">형식</th><th style="width:64px;text-align:right">조회</th><th style="width:56px;text-align:right">길이</th><th style="width:70px">시즌</th><th style="width:70px">대상</th><th style="width:80px">현장실측</th><th style="width:56px"></th></tr></thead><tbody id="yt-list"><tr><td colspan="8" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody></table></div>
+        </div>
       </div>
     </div>
 
@@ -4305,21 +4320,49 @@ window.ytInit=async function(force){
   if(_yt.loaded&&!force)return; _yt.loaded=true;
   var warn=document.getElementById('yt-warn');
   try{
-    var r1=await sb.from('mk_youtube_assets').select('영상id,제목,발행일,조회수,좋아요,댓글수,길이_초,형식,주제분류,지역,대상,b2b_전환가치,재생목록,촬영시즌,시점고지,예약발행월,현장실측').order('조회수',{ascending:false}).limit(1000);
+    var r1=await sb.from('mk_youtube_assets').select('영상id,제목,발행일,조회수,좋아요,댓글수,길이_초,형식,주제분류,지역,대상,b2b_전환가치,재생목록,촬영시즌,시점고지,예약발행월,현장실측').eq('채널','리얼플랜여행').order('조회수',{ascending:false}).limit(1000);
     var r2=await sb.from('mk_video_sources').select('분류,편수,길이_초,해상도,지역,사업부,롱폼_활용등급,얼굴포함,저작권,사용여부').order('롱폼_활용등급');
-    var r3=await sb.from('mk_youtube_slots').select('*').order('발행일',{ascending:true}).limit(200);
-    var r4=await sb.from('mk_youtube_metrics').select('*').order('수집_시각',{ascending:false}).limit(400);
+    var r3=await sb.from('mk_youtube_slots').select('*').eq('채널','사장님 마케팅 지니').order('발행일',{ascending:true}).limit(200);
+    var r4=await sb.from('mk_youtube_metrics').select('*').eq('채널','사장님 마케팅 지니').order('수집_시각',{ascending:false}).limit(400);
     if(r1.error)throw r1.error;
     _yt.assets=r1.data||[]; _yt.src=r2.data||[]; _yt.slots=r3.data||[]; _yt.metrics=r4.data||[];
     if(!_yt.assets.length&&warn){warn.style.display='';warn.style.cssText+=';background:#fef2f2;border:1px solid #fecaca;color:#b91c1c';warn.innerHTML='⛔ 재고 0건으로 조회됨 — RLS SELECT 정책을 확인하세요(mk_youtube_assets).';}
     else if(warn)warn.style.display='none';
-    renderYtKpi(); renderYtForm(); renderYtTrend(); renderYtSeason(); renderYtSlots(); renderYtGrad(); renderYtSrc(); renderYtList();
+    renderGenieKpi(); renderYtKpi(); renderYtForm(); renderYtTrend(); renderYtSeason(); renderYtSlots(); renderYtGrad(); renderYtSrc(); renderYtList();
   }catch(e){
     if(warn){warn.style.display='';warn.style.cssText+=';background:#fef2f2;border:1px solid #fecaca;color:#b91c1c';warn.innerHTML='⛔ 조회 실패: '+E(e.message||e);}
     console.error('ytInit',e);
   }
 };
 
+/* ★2026-09-11 — 신규 채널 출발선. 이 채널은 0편에서 시작한다.
+   측정 배선이 아직 없는 칸은 숫자를 지어내지 않고 「—」로 둔다. */
+window.ytChan=function(k){
+  window._ytChan=k;
+  ['genie','travel'].forEach(function(x){
+    var p=document.getElementById('ytc-'+x); if(p)p.style.display=(x===k?'':'none');
+    var b=document.getElementById('ytc-btn-'+x);
+    if(b){ b.style.background=(x===k?'#e8effe':'#fff');
+           b.style.borderColor=(x===k?'#2563eb':'#cbd5e1');
+           b.style.color=(x===k?'#1d4ed8':'#334155'); }
+  });
+};
+function renderGenieKpi(){
+  var sl=_yt.slots||[], mt=_yt.metrics||[];
+  var pub=sl.filter(function(x){return x.영상url;}).length;
+  var next=sl.filter(function(x){return x.발행일&&!x.영상url;})
+             .map(function(x){return String(x.발행일).slice(0,10);}).sort()[0]||'-';
+  var YPP=new Date('2027-02-01');
+  var dday=Math.ceil((YPP-new Date())/86400000);
+  var inq=mt.reduce(function(s,x){return s+(+x.문의수||0);},0);
+  document.getElementById('genie-kpi').innerHTML=
+    kpi('\uD83C\uDFAC 발행',N(pub)+'편 / 52편','주 1편 · 1년 계획',pub?'':'#dc2626')
+   +kpi('\uD83D\uDCCB 편성 확정',N(sl.length)+'건','다음 발행 '+next,sl.length?'':'#dc2626')
+   +kpi('\uD83D\uDC65 구독','— / 1,000','수집 배선 전','#94a3b8')
+   +kpi('\u23F1 시청시간','— / 4,000h','2027-02 부터 8,000h','#94a3b8')
+   +kpi('\uD83D\uDDD3 수익화 기한','D-'+N(dday),'2027-02-01',(dday<180)?'#b45309':'')
+   +kpi('\uD83D\uDCDE 문의',N(inq)+'건','이 채널 유입',(inq?'#0a7c55':'#94a3b8'));
+}
 function renderYtKpi(){
   var a=_yt.assets, tot=a.reduce(function(s,x){return s+(+x.조회수||0);},0);
   var last=a.reduce(function(m,x){return (x.발행일&&x.발행일>m)?x.발행일:m;},'');
@@ -4330,9 +4373,7 @@ function renderYtKpi(){
     kpi('▶️ 발행 영상',N(a.length)+'편','누적 '+N(tot)+'회')
    +kpi('⏸ 마지막 업로드',(last||'-').slice(0,10),(days!=null?days+'일 경과':''),(days!=null&&days>30)?'#dc2626':'')
    +kpi('🎯 B2B 영상',N(b2b)+'편','전체의 '+(a.length?(100*b2b/a.length).toFixed(1):0)+'%')
-   +kpi('🗂 재생목록 배정',N(pl)+'편',(a.length-pl)+'편 미배정',(pl===0)?'#dc2626':'')
-   +kpi('📋 편성 슬롯',N(_yt.slots.length)+'건',_yt.slots.length?'':'미편성',(_yt.slots.length?'':'#dc2626'))
-   +kpi('📊 성과 적재',N(_yt.metrics.length)+'행',_yt.metrics.length?'':'측정 없음',(_yt.metrics.length?'':'#dc2626'));
+      +kpi('\uD83D\uDDC2 재생목록 배정',N(pl)+'편',(a.length-pl)+'편 미배정',(pl===0)?'#dc2626':'');
 }
 function renderYtForm(){
   var g={};

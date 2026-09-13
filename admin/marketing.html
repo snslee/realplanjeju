@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.32.0</title>
+<title>리얼플랜제주 마케팅 운영 v1.33.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -209,7 +209,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.32.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.33.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -929,7 +929,7 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
     </div>
     <div class="tab-panel" id="t13">
       <div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div><h2 style="font-size:1.2rem;font-weight:700">▶️ 유튜브 운영</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">🧞 <b>사장님 마케팅 지니</b> 신규 <a href="https://www.youtube.com/@%EC%82%AC%EC%9E%A5%EB%8B%98%EB%A7%88%EC%BC%80%ED%8C%85%EC%A7%80%EB%8B%88" target="_blank" style="color:#2563eb">@사장님마케팅지니</a> 0편·구독 0 · ✈️ <b>리얼플랜여행</b> 621편·구독 2,860 <a href="https://www.youtube.com/@realplan_travel" target="_blank" style="color:#2563eb">@realplan_travel</a><br><span style="color:#b45309">🧵 쓰레드 발행 관리는 「고객소통 → 🧵 쓰레드」 탭으로 옮겼습니다(2026-09-11).</span></p></div>
+        <div><h2 style="font-size:1.2rem;font-weight:700">▶️ 유튜브 운영</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">🧞 <b>사장님 마케팅 지니</b> <a href="https://www.youtube.com/@%EC%82%AC%EC%9E%A5%EB%8B%98%EB%A7%88%EC%BC%80%ED%8C%85%EC%A7%80%EB%8B%88" target="_blank" style="color:#2563eb">@사장님마케팅지니</a> · <b id="genie-hd-ct">0편 · 구독 0</b><br><span style="color:#b45309">📆 편성표는 「편성 → ▶️ 유튜브」 탭으로 옮겼습니다(2026-09-13 v1.33.0). 구 채널 621편은 아래 ✈️ 칩 안에만 있습니다.</span></p></div>
         <button onclick="snsRefresh()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
       <div id="sns-youtube" class="sns-panel">
@@ -944,15 +944,25 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
           <button id="ytc-btn-travel" onclick="ytChan('travel')" style="padding:8px 15px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#334155;font-size:.85rem;font-weight:700;cursor:pointer">✈️ 리얼플랜여행 <span style="font-weight:500;color:#64748b">621편</span></button>
         </div>
         <div id="ytc-genie">
-        <div id="genie-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px"></div>
-        <div id="genie-note" style="background:#f0f7ff;border:1px solid #cfe0fb;color:#1e40af;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:16px">🧞 <b>목표는 수익창출이 아니라 문의</b>입니다. 구독 1,000·시청 4,000시간을 채울 때까지는 <b>검증된 주제 100%</b>로 가고, 그 뒤에 미검증 주제를 테스트합니다. 주 1편 · 1년 52편.</div>
-<div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">② 편성 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_slots · 검증된 주제 100% · 주 1편</span></h3></div>
-        <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:16px"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">발행일</th><th>코너</th><th>핵심키워드</th><th>제목</th><th>상태</th></tr></thead><tbody id="yt-slots"><tr><td colspan="5" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody></table></div>
+        <div id="genie-note" style="background:#f0f7ff;border:1px solid #cfe0fb;color:#1e40af;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:14px">🧞 <b>목표는 수익창출이 아니라 문의</b>입니다. 주제는 <b>3원천 교차</b>(①지식인 ②AI 모델별 리서치 ③유튜브 전수조사)로만 정하고 <b>블로그에서 끌어오지 않습니다</b>. 정본 = 스킬 <code>realplan-genie v1.3</code>.</div>
 
-        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">③ 성과 · Phase A 졸업 조건 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_metrics D+7/D+28 · 4개 충족 시 대표 출연 착수</span></h3></div>
-        <div id="yt-grad" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:.78rem;margin-bottom:16px"></div>
+        <div style="margin:6px 0 8px"><h3 style="font-size:1rem;font-weight:700">① 🎯 성장 로드맵 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· G1 0→1,000 · 관문은 편당 조회 하나다</span></h3></div>
+        <div id="genie-road" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:8px"></div>
+        <div id="genie-road2" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:18px"></div>
 
-                </div>
+        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">② 🔬 P0 관측구간 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· 2개월 6편 · 월 3편 · 한 편에 하나만 바꾼다</span></h3></div>
+        <div id="genie-p0" style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:18px"></div>
+
+        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">③ 🔧 제작 진행 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_slots 컬럼 실측 · 막힌 단계가 빨강</span></h3></div>
+        <div id="genie-steps" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:18px"></div>
+
+        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">④ 💰 문의·매출 깔때기 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· KPI 1순위 · 조회 높은데 문의 0이면 실패 편</span></h3></div>
+        <div id="genie-funnel" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:18px"></div>
+
+        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">⑤ ✅ 알고리즘 정합 · ⚙️ 채널 세팅</h3></div>
+        <div id="genie-setup" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:16px"></div>
+
+        </div>
         <div id="ytc-travel" style="display:none">
         <div id="yt-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
 <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">① 채널 현황 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_assets 정본 · 매주 월 09:00 자동 수집(youtube-inventory)</span></h3></div>
@@ -975,6 +985,18 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
         <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px;max-height:520px"><table style="width:100%;border-collapse:collapse;font-size:.76rem"><thead><tr style="background:#f8fafc;text-align:left;position:sticky;top:0"><th style="padding:8px">제목</th><th style="width:60px">형식</th><th style="width:64px;text-align:right">조회</th><th style="width:56px;text-align:right">길이</th><th style="width:70px">시즌</th><th style="width:70px">대상</th><th style="width:80px">현장실측</th><th style="width:56px"></th></tr></thead><tbody id="yt-list"><tr><td colspan="8" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody></table></div>
         </div>
       </div>
+    </div>
+
+
+    <!-- ★2026-09-13 v1.33.0 — 유튜브 편성을 「📆 편성」 탭으로 이관.
+         HTML 수술 없이 schInit 이 런타임에 옮겨 담는다(기존 패널 3개와 동일 방식 · 회귀 0). -->
+    <div class="tab-panel" id="tyt">
+      <div style="margin-bottom:12px">
+        <h3 style="font-size:1rem;font-weight:700">▶️ 유튜브 편성 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_slots · 사장님 마케팅 지니 · 검증된 주제 100%</span></h3>
+        <p style="font-size:.78rem;color:#64748b;margin-top:3px">주제는 <b>3원천 교차</b>로만 정합니다 — ①지식인 ②AI 모델별 리서치 ③유튜브 전수조사. <b>블로그 슬롯에서 끌어오지 않습니다.</b></p>
+      </div>
+      <div id="yt-slot-kpi" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">발행일</th><th>코너</th><th>핵심키워드</th><th>제목</th><th>상태</th></tr></thead><tbody id="yt-slots"><tr><td colspan="5" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody></table></div>
     </div>
 
     <div class="tab-panel" id="t10">
@@ -4316,6 +4338,23 @@ function seasonWindow(s){
   return {in:true,days:Math.ceil((end-now)/86400000),label:endM+'/'+end.getDate()+' 마감'};
 }
 
+window.loadYtSlots=function(){ if(_yt.loaded) renderYtSlots(); else ytInit(); };
+window.ytFunnelExtras=async function(){
+  _yt.funnel=_yt.funnel||{};
+  try{ var a=await sb.from('mk_short_links').select('코드,스캔수').eq('자산종류','유튜브');
+       _yt.funnel.links=(a.data||[]).length;
+       _yt.funnel.scans=(a.data||[]).reduce(function(t,x){return t+(+x.스캔수||0);},0);
+  }catch(e){ _yt.funnel.links=0; _yt.funnel.scans=0; }
+  try{ var b=await sb.from('customers').select('접수번호').ilike('유입경로','%youtube%');
+       _yt.funnel.ytc=(b.data||[]).length;
+  }catch(e){ _yt.funnel.ytc=0; }
+  try{ var c=await sb.from('mk_insight_docs').select('*',{count:'exact',head:true}); _yt.funnel.docs=c.count||0;
+  }catch(e){ _yt.funnel.docs=0; }
+  try{ var d=await sb.from('quotations').select('*',{count:'exact',head:true}); _yt.funnel.quo=d.count||0;
+       var f=await sb.from('contracts').select('*',{count:'exact',head:true}); _yt.funnel.con=f.count||0;
+  }catch(e){ _yt.funnel.quo=0; _yt.funnel.con=0; }
+  renderGenieFunnel();
+};
 window.ytInit=async function(force){
   if(_yt.loaded&&!force)return; _yt.loaded=true;
   var warn=document.getElementById('yt-warn');
@@ -4328,7 +4367,7 @@ window.ytInit=async function(force){
     _yt.assets=r1.data||[]; _yt.src=r2.data||[]; _yt.slots=r3.data||[]; _yt.metrics=r4.data||[];
     if(!_yt.assets.length&&warn){warn.style.display='';warn.style.cssText+=';background:#fef2f2;border:1px solid #fecaca;color:#b91c1c';warn.innerHTML='⛔ 재고 0건으로 조회됨 — RLS SELECT 정책을 확인하세요(mk_youtube_assets).';}
     else if(warn)warn.style.display='none';
-    renderGenieKpi(); renderYtKpi(); renderYtForm(); renderYtTrend(); renderYtSeason(); renderYtSlots(); renderYtGrad(); renderYtSrc(); renderYtList();
+    renderGenieKpi(); renderGenieP0(); renderGenieSteps(); renderGenieFunnel(); renderGenieSetup(); renderYtKpi(); renderYtForm(); renderYtTrend(); renderYtSeason(); renderYtSlots(); renderYtSrc(); renderYtList(); ytFunnelExtras();
   }catch(e){
     if(warn){warn.style.display='';warn.style.cssText+=';background:#fef2f2;border:1px solid #fecaca;color:#b91c1c';warn.innerHTML='⛔ 조회 실패: '+E(e.message||e);}
     console.error('ytInit',e);
@@ -4350,18 +4389,114 @@ window.ytChan=function(k){
 function renderGenieKpi(){
   var sl=_yt.slots||[], mt=_yt.metrics||[];
   var pub=sl.filter(function(x){return x.영상url;}).length;
-  var next=sl.filter(function(x){return x.발행일&&!x.영상url;})
-             .map(function(x){return String(x.발행일).slice(0,10);}).sort()[0]||'-';
-  var YPP=new Date('2027-02-01');
-  var dday=Math.ceil((YPP-new Date())/86400000);
-  var inq=mt.reduce(function(s,x){return s+(+x.문의수||0);},0);
-  document.getElementById('genie-kpi').innerHTML=
-    kpi('\uD83C\uDFAC 발행',N(pub)+'편 / 52편','주 1편 · 1년 계획',pub?'':'#dc2626')
-   +kpi('\uD83D\uDCCB 편성 확정',N(sl.length)+'건','다음 발행 '+next,sl.length?'':'#dc2626')
-   +kpi('\uD83D\uDC65 구독','— / 1,000','수집 배선 전','#94a3b8')
-   +kpi('\u23F1 시청시간','— / 4,000h','2027-02 부터 8,000h','#94a3b8')
-   +kpi('\uD83D\uDDD3 수익화 기한','D-'+N(dday),'2027-02-01',(dday<180)?'#b45309':'')
-   +kpi('\uD83D\uDCDE 문의',N(inq)+'건','이 채널 유입',(inq?'#0a7c55':'#94a3b8'));
+  var views=mt.reduce(function(a,x){return a+(+x.조회수||0);},0);
+  var subs=mt.reduce(function(a,x){return a+(+x.구독증가||0);},0);
+  var inq=mt.reduce(function(a,x){return a+(+x.문의수||0);},0);
+  var per=pub?Math.round(views/pub):0, conv=views?(100*subs/views):0;
+  var road=document.getElementById('genie-road');
+  if(road) road.innerHTML=
+     kpi('🎯 편당 조회',(pub?N(per):'—')+' / 1,905','G1 관문 — 이 하나가 전부',(per>=1905?'#0a7c55':'#94a3b8'))
+    +kpi('📈 구독 전환율',(views?conv.toFixed(2)+'%':'—')+' / 1.0%','조회가 구독으로 바뀌는 비율',(conv>=1?'#0a7c55':'#94a3b8'))
+    +kpi('📞 문의 누계',N(inq)+' / 10건','🔴 KPI 1순위',(inq?'#0a7c55':'#dc2626'))
+    +kpi('🎬 발행',N(pub)+' / 52편','P0 6편 → 주 1편',(pub?'':'#dc2626'));
+  var r2=document.getElementById('genie-road2');
+  if(r2) r2.innerHTML='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">'
+    +gstage('G1','0 → 1,000',true)+gstage('G2','1,000 → 10,000',false)+gstage('G3','10,000 → 100,000',false)
+    +'</div><div style="font-size:.78rem;color:#475569;line-height:1.8">'
+    +'<b>G1 졸업 = 3개 동시 충족</b> · 구독 <b>'+N(subs)+' / 1,000</b> · 12개월 롱폼 시청 <b>— / 8,000h</b> '
+    +'<span style="color:#b45309">(4,000h 아님 · 2027-02 요건 개정)</span> · 문의 <b>'+N(inq)+' / 10건</b><br>'
+    +'도달 예상 <b>2027-10</b>(설계치 · 편당 1,905 유지) ~ <b>2028-01</b>(보수치) · 정본 <code>70_성장로드맵_v2.0</code>'
+    +'</div>';
+  var hd=document.getElementById('genie-hd-ct');
+  if(hd) hd.textContent=N(pub)+'편 · 구독 '+N(subs);
+}
+function gstage(c,t,on){
+  return '<div style="flex:1;min-width:148px;border:1px solid '+(on?'#2563eb':'#e2e8f0')+';background:'+(on?'#e8effe':'#f8fafc')+';border-radius:8px;padding:8px 11px">'
+   +'<div style="font-size:.92rem;font-weight:800;color:'+(on?'#1d4ed8':'#94a3b8')+'">'+c+(on?' <span style="font-size:.64rem;font-weight:700">진행 중</span>':'')+'</div>'
+   +'<div style="font-size:.72rem;color:#64748b">'+t+'</div></div>';
+}
+function renderGenieP0(){
+  var el=document.getElementById('genie-p0'); if(!el)return;
+  var sl=(_yt.slots||[]);
+  var P=[['— (기준선)','5지표 전량 기록'],['썸네일 카피만','노출 CTR'],['도입 30초 구조만','첫 30초 유지율'],
+         ['길이만 (16↔24분)','평균 시청지속'],['자료 비율만 (25↔40%)','중반 이탈 지점'],['쇼츠 파상 발행','쇼츠→롱폼 유입']];
+  var h='<table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;text-align:left">'
+   +'<th style="padding:7px">편</th><th>발행일</th><th>이번에만 바꾸는 것 1개</th><th>D+7에 볼 것</th><th>상태</th></tr></thead><tbody>';
+  for(var i=0;i<6;i++){
+    var x=sl[i]||{}, p=P[i];
+    h+='<tr style="border-top:1px solid #eef2f7"><td style="padding:7px"><b>'+(i+1)+'편</b></td>'
+     +'<td style="white-space:nowrap">'+E(x.발행일||'미편성')+'</td>'
+     +'<td><b>'+p[0]+'</b></td><td style="color:#64748b">'+p[1]+'</td>'
+     +'<td style="color:'+(x.영상url?'#0a7c55':'#94a3b8')+'">'+(x.영상url?'발행':'대기')+'</td></tr>';
+  }
+  h+='</tbody></table><div style="font-size:.75rem;color:#b45309;margin-top:9px">🔴 <b>한 편에 하나만 바꾼다.</b> 편수를 늘려서 푸는 것은 금지. '
+   +'P0 종료 시 <b>우리 실측으로 확정한 값 5개</b>(썸네일 문법·도입 구조·길이·자료 비율·쇼츠 리듬)가 나온다.</div>';
+  el.innerHTML=h;
+}
+function renderGenieSteps(){
+  var el=document.getElementById('genie-steps'); if(!el)return;
+  var sl=_yt.slots||[], tot=sl.length||1;
+  var S=[['주제','핵심키워드'],['제목','최종제목'],['대본','대본'],['자료·편집지시','편집지시서'],
+         ['업로드 패키지','업로드패키지'],['발행','영상url'],['파생 쇼츠','파생쇼츠']];
+  var h='<div style="display:flex;gap:5px;flex-wrap:wrap">';
+  S.forEach(function(g){
+    var n=sl.filter(function(x){var v=x[g[1]]; return v!==null&&v!==undefined&&v!=='';}).length;
+    var full=(n===tot&&n>0), zero=(n===0);
+    h+='<div style="flex:1;min-width:92px;border:1px solid '+(full?'#16a34a':(zero?'#fecaca':'#e2e8f0'))+';background:'+(full?'#eafaf0':(zero?'#fef2f2':'#f8fafc'))
+     +';border-radius:8px;padding:8px 6px;text-align:center">'
+     +'<div style="font-size:1.05rem;font-weight:800;color:'+(full?'#0a7c55':(zero?'#dc2626':'#334155'))+'">'+N(n)+'</div>'
+     +'<div style="font-size:.68rem;color:#64748b;line-height:1.3">'+g[0]+'</div></div>';
+  });
+  h+='</div>';
+  var wait=sl.filter(function(x){return !x.영상url;});
+  var shoot=wait.map(function(x){return x.촬영일;}).filter(Boolean).sort()[0];
+  var pubd=wait.map(function(x){return x.발행일;}).filter(Boolean).sort()[0];
+  function dd(d){ if(!d) return '—'; var n=Math.ceil((new Date(d+'T00:00:00')-new Date())/86400000); return (n>=0?'D-'+n:'D+'+(-n)); }
+  h+='<div style="margin-top:10px;font-size:.78rem;color:#475569">'
+   +'다음 촬영 <b>'+E(shoot||'—')+'</b> <span style="color:#b45309;font-weight:700">'+dd(shoot)+'</span>'
+   +' · 다음 발행 <b>'+E(pubd||'—')+'</b> <span style="color:#b45309;font-weight:700">'+dd(pubd)+'</span>'
+   +' · 전체 <b>'+N(sl.length)+'편</b></div>';
+  el.innerHTML=h;
+}
+function fline(lab,val,w,stop,note){
+  return '<div style="display:flex;align-items:center;gap:9px;margin:5px 0">'
+   +'<div style="min-width:108px;font-size:.78rem;color:#334155">'+lab+'</div>'
+   +'<div style="height:15px;border-radius:3px;background:'+(w>0?'#2563eb':'#cbd5e1')+';width:'+(w>0?w:4)+'px"></div>'
+   +'<div style="font-size:.76rem;color:'+(stop?'#dc2626':'#64748b')+';font-weight:'+(stop?'700':'400')+'">'+val+'</div>'
+   +(note?'<div style="font-size:.72rem;color:#94a3b8">'+note+'</div>':'')+'</div>';
+}
+function renderGenieFunnel(){
+  var el=document.getElementById('genie-funnel'); if(!el)return;
+  var mt=_yt.metrics||[];
+  var views=mt.reduce(function(a,x){return a+(+x.조회수||0);},0);
+  var cmt=mt.reduce(function(a,x){return a+(+x.댓글수||0);},0);
+  var inq=mt.reduce(function(a,x){return a+(+x.문의수||0);},0);
+  var f=_yt.funnel||{};
+  var mx=Math.max(views,1), W=function(v){ return Math.round(260*v/mx); };
+  var h=fline('조회',N(views),W(views),false,'')
+   +fline('자료요청 댓글',N(cmt),W(cmt),false,'목표 = 조회의 0.5%')
+   +fline('링크 클릭',(f.links===undefined?'조회 중':(f.links?N(f.scans||0)+'회 · 링크 '+N(f.links)+'개':'단축링크 0개 — 길이가 끊겨 있습니다')),W(f.scans||0),!f.links,'목표 = 댓글의 40%')
+   +fline('자료실 착지',(f.docs===undefined?'조회 중':N(f.docs)+'편 대기'),4,false,'/insight/')
+   +fline('문의',N(inq)+'건',W(inq),(views>0&&inq===0),(f.ytc!==undefined?'유튜브 유입 고객 '+N(f.ytc)+'건 · 신·구 채널 구분 배선 대기':''))
+   +fline('견적 → 계약',(f.quo===undefined?'조회 중':N(f.quo)+' → '+N(f.con)+' (전사 누계)'),4,false,'realplan-deal');
+  h+='<div style="margin-top:9px;font-size:.75rem;color:#b45309">🔴 <b>조회가 높은데 문의가 0이면 실패한 편</b>으로 판정하고 다음 편 구성을 고친다.</div>';
+  el.innerHTML=h;
+}
+function renderGenieSetup(){
+  var el=document.getElementById('genie-setup'); if(!el)return;
+  var A=['문의 경로 존재','길이 16~20분','대본 11,000~14,000자','도입 30초 결론 선제시','제목 5요소 3개 이상',
+         '자료 블록 4~6','자료 전체 40% 이하','자료 1회 90초 이하','무편집 연속 20초 초과 금지','챕터 미사용'];
+  var h='<div style="font-size:.78rem;font-weight:700;margin-bottom:6px">알고리즘 정합 10줄 <span style="color:#94a3b8;font-weight:400">· 편당 자동 체크 (발행 0편 — 측정 전)</span></div>'
+   +'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">';
+  A.forEach(function(t){ h+='<span style="font-size:.71rem;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;border-radius:6px;padding:3px 7px">'+t+'</span>'; });
+  h+='</div><div style="font-size:.78rem;font-weight:700;margin-bottom:6px">채널 세팅</div><div style="display:flex;gap:5px;flex-wrap:wrap">';
+  var S=[['이름·핸들·설명·키워드 24개','ok'],['배너·프로필·워터마크 파일','ok'],['재생목록 2개','chk'],['OAuth youtube.force-ssl','no'],['D+7·D+28 성과 수집','no'],['유튜브 단축링크','no']];
+  S.forEach(function(x){
+    var c=(x[1]==='ok'?['#0a7c55','#eafaf0','#a7e0c0','✅']:(x[1]==='chk'?['#b45309','#fff8e8','#f3d2a8','❓']:['#dc2626','#fef2f2','#fecaca','❌']));
+    h+='<span style="font-size:.72rem;color:'+c[0]+';background:'+c[1]+';border:1px solid '+c[2]+';border-radius:6px;padding:3px 8px">'+c[3]+' '+x[0]+'</span>';
+  });
+  h+='</div>';
+  el.innerHTML=h;
 }
 function renderYtKpi(){
   var a=_yt.assets, tot=a.reduce(function(s,x){return s+(+x.조회수||0);},0);
@@ -4416,28 +4551,15 @@ function renderYtSeason(){
 }
 function renderYtSlots(){
   var s=_yt.slots;
+  var sk=document.getElementById('yt-slot-kpi');
+  if(sk){ var pub=s.filter(function(x){return x.영상url;}).length;
+    var nx=s.filter(function(x){return x.발행일&&!x.영상url;}).map(function(x){return String(x.발행일).slice(0,10);}).sort()[0]||'-';
+    sk.innerHTML=kpi('\uD83D\uDCCB 편성', N(s.length)+' / 52편','Q1 확정 \u00b7 Q2~Q4 미편성',(s.length?'':'#dc2626'))
+      +kpi('\uD83C\uDFAC 발행',N(pub)+'편','다음 발행 '+nx,(pub?'':'#94a3b8'))
+      +kpi('\uD83D\uDD0E 검증','3원천 교차','\u2605\u2605 이상만 편성','#1d4ed8'); }
   if(!s.length){document.getElementById('yt-slots').innerHTML='<tr><td colspan="5" style="padding:14px;color:#b45309;background:#fffbeb">편성된 유튜브 슬롯이 없습니다. <b>mk_youtube_slots 0행</b> — 편성 적재 승인 후 여기 표시됩니다.</td></tr>';return;}
   document.getElementById('yt-slots').innerHTML=s.map(function(r){
     return '<tr style="border-top:1px solid #eef2f7"><td style="padding:8px;white-space:nowrap">'+E(r.발행일||'')+'</td><td>'+E(r.코너||'')+'</td><td><b>'+E(r.핵심키워드||'')+'</b></td><td>'+E((r.최종제목||'').slice(0,60))+'</td><td>'+E(r.상태||'')+'</td></tr>';}).join('');
-}
-function renderYtGrad(){
-  var m=_yt.metrics;
-  var G=[['첫 30초 유지','80% 이상','평균시청지속률_pct',80],['노출 CTR','6% 이상','노출클릭률_pct',6],['평균 시청','길이의 40% 이상','평균시청지속률_pct',40]];
-  var h='';
-  if(!m.length){
-    h='<div style="color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;margin-bottom:10px"><b>측정 데이터 0행</b> — 졸업 조건 4개 중 3개를 지금 잴 수 없습니다. D+7/D+28 수집 배선이 필요합니다.</div>';
-  }
-  h+='<div style="display:grid;gap:8px">';
-  G.forEach(function(g){
-    var vals=m.map(function(x){return +x[g[2]];}).filter(function(v){return v>0;});
-    var ok=vals.filter(function(v){return v>=g[3];}).length;
-    var pct=Math.min(100,Math.round(100*ok/3));
-    h+='<div><div style="display:flex;justify-content:space-between;font-size:.76rem"><span><b>'+g[0]+'</b> <span style="color:#94a3b8">'+g[1]+'</span></span><span style="color:'+(ok>=3?'#16a34a':'#64748b')+'">'+(vals.length?ok+'/3편':'측정 없음')+'</span></div>'
-      +'<div style="height:8px;background:#eef2f7;border-radius:4px;margin-top:4px;overflow:hidden"><div style="height:8px;width:'+pct+'%;background:'+(ok>=3?'#16a34a':'#4A85F6')+'"></div></div></div>';
-  });
-  h+='<div><div style="display:flex;justify-content:space-between;font-size:.76rem"><span><b>제작 리드타임</b> <span style="color:#94a3b8">5영업일 · 재작업 1회 이하</span></span><span style="color:#64748b">측정 없음</span></div><div style="height:8px;background:#eef2f7;border-radius:4px;margin-top:4px"></div></div>';
-  h+='</div><div style="margin-top:10px;font-size:.76rem;color:#b45309">→ 4개 전부 충족 전에는 <b>대표 출연(Phase B) 착수 불가</b>입니다.</div>';
-  document.getElementById('yt-grad').innerHTML=h;
 }
 function renderYtSrc(){
   var g={};
@@ -4483,7 +4605,8 @@ window.renderYtList=function(){
 (function(){
 var SUB=[['plan','tplan','📋 승인대기','loadSlotPlan'],
          ['slots','t3','🎯 슬롯표','loadSlots'],
-         ['cal','t7','📅 달력','initCalendar']];
+         ['cal','t7','📅 달력','initCalendar'],
+         ['yt','tyt','▶️ 유튜브','loadYtSlots']];
 function esc(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 window.schInit=function(){

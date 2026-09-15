@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.33.0</title>
+<title>리얼플랜제주 마케팅 운영 v1.34.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -209,7 +209,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 </div>
 <div id="app">
   <header class="hdr">
-    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.33.0</span>
+    <span class="hdr-logo">📊 마케팅 운영</span><span class="hdr-badge">v1.34.0</span>
     <div class="hdr-spacer"></div>
     <span class="hdr-user" id="hdr-email"></span>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
@@ -795,49 +795,101 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <div id="slot-detail" style="display:none;margin-top:16px"></div>
     </div>
     <div class="tab-panel" id="t8">
-      <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div><h2 style="font-size:1.2rem;font-weight:700">🔑 키워드·인사이트</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">로컬 13개월 통계 적재 · rpc_blog_brief 허브</p></div>
-        <button onclick="loadKeywordInsight()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
+      <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><h2 style="font-size:1.2rem;font-weight:700">🔑 키워드·인사이트</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">매출 키워드 정본 <code>mk_revenue_keywords</code> 기준 · 창고는 참고용</p></div>
+        <button onclick="loadKeywordInsight(true)" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
-      <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:14px">ℹ️ 키워드 풀은 전부 <b>참고용(활성 off)</b>입니다. STAGE 0에서 rpc_blog_brief가 채널·주제·시즌에 맞는 키워드·상위글·오디언스를 자동 반환합니다.</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:16px" id="ki-kpi"></div>
-      <div class="card" style="margin:0 0 16px"><div class="card-hdr"><h3>📡 키워드 레이더 상태 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">검색량 신선도 · 실검색어 매칭률 · 방문자 수집</span></h3></div>
-        <div class="card-body"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px" id="ki-radar"><div class="loading">로딩 중...</div></div></div>
+      <div style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:14px">💰 <b>이 탭의 주인공은 「매출로 이어지는 키워드」입니다.</b> 아래 4칸은 전부 <b>할 일</b>이라 줄었다 늘었다 합니다 — 쌓이기만 하는 숫자(풀 총계·상위글 수)는 <b>창고</b>로 내렸습니다.<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #a7f3d0;color:#92400e">⚠️ <b>커버 판정은 띄어쓰기가 다르면 못 잡습니다</b>(「챗GPT 실무교육」 ↔ 「챗GPT 실무 교육」). 글이 분명히 있는데 🕳️로 보이면 <code>mk_revenue_keywords.커버_url</code>에 손으로 연결하세요. · 검색량은 <b>검색광고·데이터랩 실측만</b> 씁니다 — <b>측정대기</b>는 아직 안 잰 칸입니다.</div></div>
+      <div class="sec-nav" style="display:none"><!-- 섹션칩 자동생성 차단: 이 탭은 아래 「매출 키워드 / 창고」 버튼이 구역을 가른다 --></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:16px" id="rk-kpi"><div class="loading">로딩 중...</div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        <button class="filter-btn active" id="ki-sub-a" onclick="kiSub('a')">💰 매출 키워드</button>
+        <button class="filter-btn" id="ki-sub-b" onclick="kiSub('b')">📦 창고 (참고용)</button>
       </div>
-      <div class="card" style="margin:0 0 16px"><div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🔎 네이버 실검색어 TOP <span style="font-weight:500;font-size:.72rem;color:#94a3b8">creator-advisor 실유입 · 고객이 실제 검색한 말</span></h3>
-        <div id="nv-term-filter" style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="filter-btn active" data-ch="전체" onclick="renderNvTerms('전체')">전체</button>
-          <button class="filter-btn" data-ch="블A네이버" onclick="renderNvTerms('블A네이버')">블A</button>
-          <button class="filter-btn" data-ch="블B네이버" onclick="renderNvTerms('블B네이버')">블B</button>
-          <button class="filter-btn" data-ch="블C네이버" onclick="renderNvTerms('블C네이버')">블C</button>
-        </div></div>
-        <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.72rem;padding:7px 11px">💡 네이버는 온디맨드 수집(쿠키 40분 만료). <b id="nv-term-date">-</b> 기준. 우리 글이 없는 검색어는 🕳️ 표시 → 슬롯 후보.</div>
-        <div class="card-body" style="padding:0;overflow-x:auto">
-          <table class="tbl"><thead><tr><th>채널</th><th>실검색어</th><th>유입</th><th>비율%</th><th>커버</th></tr></thead>
-          <tbody id="nv-term-body"><tr><td colspan="5" class="loading">로딩 중...</td></tr></tbody></table>
+      <div id="t8a">
+        <div class="card" style="margin:0">
+          <div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>💰 매출 키워드 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">v_revenue_kw_by_channel · 우선순위 높은 순 · 키워드 1개가 채널 여러 칸에 나옵니다</span></h3>
+            <button class="filter-btn" onclick="rkCopy()">📋 보이는 목록 복사</button>
+          </div>
+          <div style="padding:9px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-bottom:1px solid #f1f5f9">
+            <span style="font-size:.72rem;color:#94a3b8;width:42px">사업부</span>
+            <button class="filter-btn active rk-bu" data-v="전체" onclick="rkSet('bu','전체')">전체</button>
+            <button class="filter-btn rk-bu" data-v="국내여행" onclick="rkSet('bu','국내여행')">국내여행</button>
+            <button class="filter-btn rk-bu" data-v="행사이벤트" onclick="rkSet('bu','행사이벤트')">행사·이벤트</button>
+            <button class="filter-btn rk-bu" data-v="온라인마케팅" onclick="rkSet('bu','온라인마케팅')">온라인마케팅</button>
+            <button class="filter-btn rk-bu" data-v="마케팅교육" onclick="rkSet('bu','마케팅교육')">마케팅교육·컨설팅</button>
+          </div>
+          <div style="padding:9px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-bottom:1px solid #f1f5f9">
+            <span style="font-size:.72rem;color:#94a3b8;width:42px">채널</span>
+            <button class="filter-btn active rk-ch" data-v="전체" onclick="rkSet('ch','전체')">전체</button>
+            <button class="filter-btn rk-ch" data-v="블A네이버" onclick="rkSet('ch','블A네이버')">블A네이버</button>
+            <button class="filter-btn rk-ch" data-v="블A티스토리" onclick="rkSet('ch','블A티스토리')">블A티스토리</button>
+            <button class="filter-btn rk-ch" data-v="블B네이버" onclick="rkSet('ch','블B네이버')">블B네이버</button>
+            <button class="filter-btn rk-ch" data-v="블B티스토리" onclick="rkSet('ch','블B티스토리')">블B티스토리</button>
+            <button class="filter-btn rk-ch" data-v="블C네이버" onclick="rkSet('ch','블C네이버')">블C네이버</button>
+            <button class="filter-btn rk-ch" data-v="블C티스토리" onclick="rkSet('ch','블C티스토리')">블C티스토리</button>
+            <button class="filter-btn rk-ch" data-v="자료실A" onclick="rkSet('ch','자료실A')">자료실A</button>
+            <button class="filter-btn rk-ch" data-v="자료실B" onclick="rkSet('ch','자료실B')">자료실B</button>
+            <button class="filter-btn rk-ch" data-v="홈A" onclick="rkSet('ch','홈A')">홈A</button>
+            <button class="filter-btn rk-ch" data-v="홈B" onclick="rkSet('ch','홈B')">홈B</button>
+            <button class="filter-btn rk-ch" data-v="쓰레드" onclick="rkSet('ch','쓰레드')">쓰레드*</button>
+            <button class="filter-btn rk-ch" data-v="플레이스" onclick="rkSet('ch','플레이스')">플레이스*</button>
+          </div>
+          <div style="padding:9px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-bottom:1px solid #f1f5f9">
+            <span style="font-size:.72rem;color:#94a3b8;width:42px">추리기</span>
+            <button class="filter-btn" id="rk-f-gap" onclick="rkToggle('gap')">🕳️ 미커버만</button>
+            <button class="filter-btn" id="rk-f-peak" onclick="rkToggle('peak')">🔥 피크 임박만</button>
+            <button class="filter-btn" id="rk-f-fix" onclick="rkToggle('fix')">📏 확정만(실측 완료)</button>
+            <span id="rk-count" style="font-size:.74rem;color:#64748b;margin-left:auto">-</span>
+          </div>
+          <div style="background:#eff6ff;border-bottom:1px solid #bfdbfe;color:#1e40af;font-size:.71rem;padding:7px 11px">* <b>쓰레드·플레이스는 P5-B 확산·소통 방 소관</b>입니다 — 여기서는 「어떤 키워드를 넘길지」만 봅니다.</div>
+          <div class="card-body" style="padding:0;overflow-x:auto">
+            <table class="tbl"><thead><tr><th>#</th><th>키워드</th><th>사업부</th><th>단계</th><th>채널</th><th>검색량</th><th>데이터랩</th><th>피크월</th><th>근거</th><th>커버</th></tr></thead>
+            <tbody id="rk-body"><tr><td colspan="10" class="loading">로딩 중...</td></tr></tbody></table>
+          </div>
         </div>
       </div>
-      <div class="card" style="margin:0 0 16px"><div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🏆 조회수 상위 글 (mk_top_posts)</h3>
-        <div id="ki-top-filter" style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="filter-btn active" data-ch="전체" onclick="renderKiTop('전체')">전체</button>
-          <button class="filter-btn" data-ch="블A" onclick="renderKiTop('블A')">블A 여행</button>
-          <button class="filter-btn" data-ch="블B" onclick="renderKiTop('블B')">블B 행사</button>
-          <button class="filter-btn" data-ch="블C" onclick="renderKiTop('블C')">블C 마케팅</button><span style="border-left:1px solid #e2e8f0;margin:0 2px"></span><button class="filter-btn active" data-mt="조회수" onclick="setKiMetric('조회수')">조회수</button><button class="filter-btn" data-mt="공감수" onclick="setKiMetric('공감수')">공감수</button><button class="filter-btn" data-mt="댓글수" onclick="setKiMetric('댓글수')">댓글수</button><!--RP-KI-METRIC-BTN-->
-        </div></div>
-        <div style="font-size:.72rem;color:#94a3b8;padding:6px 16px 0">블A=13개월 풀데이터 · 블B·블C=2026-03 한 달치만(네이버 통계 추가 업로드 시 확장)</div>
-        <div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>채널</th><th>월</th><th>순위</th><th>제목</th><th>조회수</th></tr></thead><tbody id="ki-top"><tr><td colspan="5" class="loading">로딩 중...</td></tr></tbody></table></div>
-      </div>
-      <div class="card" style="margin:0"><div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🔎 유입 검색어 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">방문자가 실제 검색해 들어온 키워드</span></h3>
-        <div id="ki-inflow-filter" style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="filter-btn active" data-ch="전체" onclick="renderKiInflow('전체')">전체</button>
-          <button class="filter-btn" data-ch="블A" onclick="renderKiInflow('블A')">블A 여행</button>
-          <button class="filter-btn" data-ch="블B" onclick="renderKiInflow('블B')">블B 행사</button>
-          <button class="filter-btn" data-ch="블C" onclick="renderKiInflow('블C')">블C 마케팅</button>
-        </div></div>
-        <div class="card-body" id="ki-inflow" style="font-size:.85rem;color:#475569;line-height:1.9">로딩 중...</div>
-      </div>
-      <div class="card" style="margin:16px 0 0"><div class="card-hdr"><h3>🎯 티스토리 주제 적합도 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">의도 키워드 vs 실제 유입 검색어(GSC)</span></h3></div>
-        <div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>판정</th><th>의도 키워드</th><th>실제 top 검색어</th><th>노출</th></tr></thead><tbody id="ki-drift"><tr><td colspan="4" class="loading">로딩 중...</td></tr></tbody></table></div>
+      <div id="t8b" style="display:none">
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;color:#475569;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:14px">📦 <b>창고 = 참고용 원자재입니다.</b> 키워드 풀은 전부 <b>활성 off</b>이고, STAGE 0에서 <code>rpc_blog_brief</code>가 채널·주제·시즌에 맞춰 자동 반환합니다. 여기 숫자는 <b>쌓이기만 하므로 판단에 쓰지 마세요</b> — 판단은 위 「매출 키워드」에서 합니다. 이 창고는 <b>열 때만 조회</b>합니다(탭을 열자마자 긁지 않습니다).</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:16px" id="ki-kpi"></div>
+        <div class="card" style="margin:0 0 16px"><div class="card-hdr"><h3>📡 키워드 레이더 상태 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">검색량 신선도 · 실검색어 매칭률 · 방문자 수집 · rpc_keyword_radar 1회</span></h3></div>
+          <div class="card-body"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px" id="ki-radar"><div class="loading">로딩 중...</div></div></div>
+        </div>
+        <div class="card" style="margin:0 0 16px"><div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🔎 네이버 실검색어 TOP <span style="font-weight:500;font-size:.72rem;color:#94a3b8">creator-advisor 실유입 · 고객이 실제 검색한 말</span></h3>
+          <div id="nv-term-filter" style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="filter-btn active" data-ch="전체" onclick="renderNvTerms('전체')">전체</button>
+            <button class="filter-btn" data-ch="블A네이버" onclick="renderNvTerms('블A네이버')">블A</button>
+            <button class="filter-btn" data-ch="블B네이버" onclick="renderNvTerms('블B네이버')">블B</button>
+            <button class="filter-btn" data-ch="블C네이버" onclick="renderNvTerms('블C네이버')">블C</button>
+          </div></div>
+          <div style="background:#fffbeb;border-bottom:1px solid #fde68a;color:#92400e;font-size:.72rem;padding:7px 11px">💡 네이버는 온디맨드 수집(쿠키 40분 만료). <b id="nv-term-date">-</b> 기준. 우리 글이 없는 검색어는 🕳️ 표시 → 슬롯 후보.</div>
+          <div class="card-body" style="padding:0;overflow-x:auto">
+            <table class="tbl"><thead><tr><th>채널</th><th>실검색어</th><th>유입</th><th>비율%</th><th>커버</th></tr></thead>
+            <tbody id="nv-term-body"><tr><td colspan="5" class="loading">로딩 중...</td></tr></tbody></table>
+          </div>
+        </div>
+        <div class="card" style="margin:0 0 16px"><div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🏆 조회수 상위 글 (mk_top_posts)</h3>
+          <div id="ki-top-filter" style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="filter-btn active" data-ch="전체" onclick="renderKiTop('전체')">전체</button>
+            <button class="filter-btn" data-ch="블A" onclick="renderKiTop('블A')">블A 여행</button>
+            <button class="filter-btn" data-ch="블B" onclick="renderKiTop('블B')">블B 행사</button>
+            <button class="filter-btn" data-ch="블C" onclick="renderKiTop('블C')">블C 마케팅</button><span style="border-left:1px solid #e2e8f0;margin:0 2px"></span><button class="filter-btn active" data-mt="조회수" onclick="setKiMetric('조회수')">조회수</button><button class="filter-btn" data-mt="공감수" onclick="setKiMetric('공감수')">공감수</button><button class="filter-btn" data-mt="댓글수" onclick="setKiMetric('댓글수')">댓글수</button><!--RP-KI-METRIC-BTN-->
+          </div></div>
+          <div style="font-size:.72rem;color:#94a3b8;padding:6px 16px 0">블A=13개월 풀데이터 · 블B·블C=2026-03 한 달치만(네이버 통계 추가 업로드 시 확장)</div>
+          <div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>채널</th><th>월</th><th>순위</th><th>제목</th><th>조회수</th></tr></thead><tbody id="ki-top"><tr><td colspan="5" class="loading">로딩 중...</td></tr></tbody></table></div>
+        </div>
+        <div class="card" style="margin:0"><div class="card-hdr" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h3>🔎 유입 검색어 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">방문자가 실제 검색해 들어온 키워드</span></h3>
+          <div id="ki-inflow-filter" style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="filter-btn active" data-ch="전체" onclick="renderKiInflow('전체')">전체</button>
+            <button class="filter-btn" data-ch="블A" onclick="renderKiInflow('블A')">블A 여행</button>
+            <button class="filter-btn" data-ch="블B" onclick="renderKiInflow('블B')">블B 행사</button>
+            <button class="filter-btn" data-ch="블C" onclick="renderKiInflow('블C')">블C 마케팅</button>
+          </div></div>
+          <div class="card-body" id="ki-inflow" style="font-size:.85rem;color:#475569;line-height:1.9">로딩 중...</div>
+        </div>
+        <div class="card" style="margin:16px 0 0"><div class="card-hdr"><h3>🎯 티스토리 주제 적합도 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">의도 키워드 vs 실제 유입 검색어(GSC)</span></h3></div>
+          <div class="card-body" style="padding:0;overflow-x:auto"><table class="tbl"><thead><tr><th>판정</th><th>의도 키워드</th><th>실제 top 검색어</th><th>노출</th></tr></thead><tbody id="ki-drift"><tr><td colspan="4" class="loading">로딩 중...</td></tr></tbody></table></div>
+        </div>
       </div>
     </div>
     <div class="tab-panel" id="t14">
@@ -1595,7 +1647,114 @@ async function planBadge(){
 }
 setTimeout(planBadge,1200);
 
-async function loadKeywordInsight(){ loadKeywordRadar(); loadNvTerms();
+/* v1.34.0 키워드·인사이트 개편 — 매출 키워드 정본(mk_revenue_keywords)이 주인공.
+   창고(옛 6칸)는 「열 때만」 조회한다. 탭을 열자마자 v_keyword_match를 두 번 세느라 10.4초 걸리던 것을 없앴다. */
+var _rk={bu:'전체',ch:'전체',gap:false,peak:false,fix:false,rows:[],sub:'a'};
+function kiSub(w){
+  _rk.sub=w;
+  var A=document.getElementById('t8a'),B=document.getElementById('t8b');
+  var ba=document.getElementById('ki-sub-a'),bb=document.getElementById('ki-sub-b');
+  if(A)A.style.display=(w==='a')?'':'none';
+  if(B)B.style.display=(w==='b')?'':'none';
+  if(ba)ba.classList.toggle('active',w==='a');
+  if(bb)bb.classList.toggle('active',w==='b');
+  if(w==='b'&&!window._kiWarehouseLoaded){window._kiWarehouseLoaded=true;loadWarehouse();}
+  setTimeout(buildSecNavs,300);
+}
+async function loadKeywordInsight(force){
+  if(force){window._kiRkLoaded=false;}
+  if(!window._kiRkLoaded){window._kiRkLoaded=true;await loadRevenueKw();}
+  if(force&&_rk.sub==='b'){window._kiWarehouseLoaded=true;loadWarehouse();}
+}
+function _rkEsc(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function _rkEvi(o){
+  if(!o||typeof o!=='object')return '<span style="color:#cbd5e1">—</span>';
+  var order=['AI','지식인','GSC노출','데이터랩'],out=[];
+  Object.keys(o).sort(function(a,b){var ia=order.indexOf(a),ib=order.indexOf(b);return (ia<0?9:ia)-(ib<0?9:ib);}).forEach(function(k){
+    var v=o[k]; if(v===null||v===undefined||v==='')return;
+    out.push(_rkEsc(k)+' '+_rkEsc(v));
+  });
+  return out.length?'<span style="font-size:.71rem;color:#64748b">'+out.join(' · ')+'</span>':'<span style="color:#cbd5e1">—</span>';
+}
+async function loadRevenueKw(){
+  var tb=document.getElementById('rk-body'); if(!tb) return;
+  var kpi=document.getElementById('rk-kpi');
+  try{
+    var r1=await sb.from('v_revenue_kw_by_channel').select('*').order('우선순위점수',{ascending:false,nullsFirst:false}).limit(3000);
+    if(r1.error) throw r1.error;
+    _rk.rows=r1.data||[];
+    var r2=await sb.from('mk_revenue_keywords').select('id,상태,커버_url').limit(3000);
+    if(r2.error) throw r2.error;
+    var r3=await sb.from('v_revenue_kw_gap').select('id,피크임박').limit(3000);
+    if(r3.error) throw r3.error;
+    var master=r2.data||[], gap=r3.data||[];
+    var covered={};
+    _rk.rows.forEach(function(x){if(x.커버여부==='커버')covered[x.id]=1;});
+    master.forEach(function(x){if(x.커버_url)covered[x.id]=1;});
+    var tot=master.length, cov=Object.keys(covered).length;
+    var fixed=master.filter(function(x){return x.상태==='확정';}).length;
+    var gapN=gap.length, peakGap=gap.filter(function(x){return !!x.피크임박;}).length;
+    var card=function(label,val,sub,color){return '<div class="kpi-card"><div class="kpi-label">'+label+'</div><div class="kpi-value" style="color:'+(color||'#0f172a')+'">'+val+'</div><div style="font-size:.7rem;color:#94a3b8;margin-top:3px;line-height:1.45;word-break:keep-all">'+sub+'</div></div>';};
+    if(kpi)kpi.innerHTML=[
+      card('🕳️ 미커버 (할 일)',gapN+'건','정본 '+tot+'건 중 글이 아직 없는 키워드 · v_revenue_kw_gap',gapN===0?'#059669':'#d97706'),
+      card('🔥 피크 임박 미커버',peakGap+'건','이번달·다음달이 성수기인데 글이 없다 → 먼저 쓴다',peakGap===0?'#059669':'#dc2626'),
+      card('✅ 커버',cov+' / '+tot,'글이 붙은 키워드(자동 매칭 + 손 연결) · 띄어쓰기 다르면 못 잡는다','#059669'),
+      card('📏 검색량 실측 완료',fixed+' / '+tot,'나머지 '+(tot-fixed)+'건은 검색광고 실측 대기(측정대기)',fixed===tot?'#059669':'#64748b')
+    ].join('');
+    renderRk();
+  }catch(e){
+    tb.innerHTML='<tr><td colspan="10" style="color:#dc2626;padding:12px">매출 키워드 로드 실패: '+(e&&e.message||e)+'</td></tr>';
+    if(kpi)kpi.innerHTML='<div style="color:#dc2626">KPI 로드 실패: '+(e&&e.message||e)+'</div>';
+  }
+}
+function rkSet(k,v){_rk[k]=v;Array.prototype.forEach.call(document.querySelectorAll('.rk-'+k),function(b){b.classList.toggle('active',b.getAttribute('data-v')===v);});renderRk();}
+function rkToggle(k){_rk[k]=!_rk[k];var el=document.getElementById('rk-f-'+k);if(el)el.classList.toggle('active',_rk[k]);renderRk();}
+function _rkView(){
+  var rows=_rk.rows.slice();
+  if(_rk.bu!=='전체')rows=rows.filter(function(r){return r.사업부===_rk.bu;});
+  if(_rk.ch!=='전체')rows=rows.filter(function(r){return r.채널===_rk.ch;});
+  if(_rk.gap)rows=rows.filter(function(r){return r.커버여부!=='커버';});
+  if(_rk.peak)rows=rows.filter(function(r){return !!r.피크임박;});
+  if(_rk.fix)rows=rows.filter(function(r){return r.상태==='확정';});
+  return rows;
+}
+function renderRk(){
+  var tb=document.getElementById('rk-body');if(!tb)return;
+  var rows=_rkView(), c=document.getElementById('rk-count');
+  if(c)c.textContent=rows.length+'칸 / 전체 '+_rk.rows.length+'칸';
+  if(!rows.length){tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:14px">조건에 맞는 키워드가 없습니다</td></tr>';return;}
+  var M=(new Date()).getMonth()+1, M2=(M%12)+1;
+  tb.innerHTML=rows.map(function(r,i){
+    var stg=({'문의직전':'#dc2626','비교검토':'#d97706','정보탐색':'#64748b'})[r.매출단계]||'#64748b';
+    var pk=(r.피크월&&r.피크월.length)?r.피크월.map(function(m){return (m===M||m===M2)?'<b style="color:#dc2626">'+m+'월</b>':(m+'월');}).join('·'):'<span style="color:#cbd5e1">—</span>';
+    var vol=(r.검색량==null)?'<span style="color:#cbd5e1">미측정</span>':Number(r.검색량).toLocaleString();
+    var dl=(r.데이터랩지수==null)?'<span style="color:#cbd5e1">—</span>':(Number(r.데이터랩지수).toFixed(1)+(r.데이터랩군?'<span style="color:#94a3b8;font-size:.68rem"> '+_rkEsc(r.데이터랩군)+'</span>':''));
+    var cv=(r.커버여부==='커버')?(r.커버url?'<a href="'+_rkEsc(r.커버url)+'" target="_blank" style="color:#059669;font-weight:700">✓ 글</a>':'<span style="color:#059669;font-weight:700">✓</span>'):'<span style="color:#d97706;font-weight:700">🕳️</span>';
+    var st=(r.상태==='측정대기')?'<span style="font-size:.66rem;color:#94a3b8"> · 측정대기</span>':'';
+    return '<tr'+(r.피크임박?' style="background:#fffbeb"':'')+'>'
+      +'<td style="color:#94a3b8">'+(i+1)+'</td>'
+      +'<td style="font-weight:700;max-width:240px">'+_rkEsc(r.키워드)+st+'</td>'
+      +'<td style="font-size:.76rem;white-space:nowrap">'+_rkEsc(r.사업부)+'</td>'
+      +'<td style="font-size:.76rem;font-weight:700;white-space:nowrap;color:'+stg+'">'+_rkEsc(r.매출단계)+'</td>'
+      +'<td style="font-size:.76rem;white-space:nowrap">'+_rkEsc(r.채널)+'</td>'
+      +'<td style="font-weight:600;white-space:nowrap">'+vol+'</td>'
+      +'<td style="white-space:nowrap">'+dl+'</td>'
+      +'<td style="font-size:.74rem;white-space:nowrap">'+pk+'</td>'
+      +'<td>'+_rkEvi(r.원천증거)+'</td>'
+      +'<td style="white-space:nowrap">'+cv+'</td></tr>';
+  }).join('');
+}
+function rkCopy(){
+  var rows=_rkView();
+  var head=['키워드','사업부','매출단계','채널','검색량','데이터랩지수','피크월','상태','커버'].join('\t');
+  var body=rows.map(function(r){return [r.키워드,r.사업부,r.매출단계,r.채널,(r.검색량==null?'':r.검색량),(r.데이터랩지수==null?'':r.데이터랩지수),((r.피크월||[]).join('/')),r.상태,(r.커버여부==='커버'?(r.커버url||'커버'):'미커버')].join('\t');}).join('\n');
+  var txt=head+'\n'+body;
+  var c=document.getElementById('rk-count');
+  var done=function(){if(c){var o=c.textContent;c.textContent='📋 '+rows.length+'칸 복사됨';setTimeout(function(){c.textContent=o;},1800);}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,function(){window.prompt('복사하세요',txt);});}
+  else{window.prompt('복사하세요',txt);}
+}
+async function loadWarehouse(){ loadKeywordRadar(); loadNvTerms();
   const[tot,yk,ui]=await Promise.all([
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}),
     sb.from('mk_keyword_pool').select('*',{count:'exact',head:true}).eq('출처','연관키워드DB'),
@@ -2124,23 +2283,22 @@ function renderNvTerms(ch){
   if(!rows.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:14px">데이터 없음 — 쿠키 온디맨드 백필 필요</td></tr>';return;}
   tb.innerHTML=rows.map(r=>`<tr><td>${(r.채널||'').replace('네이버','')}</td><td style="font-weight:600">${r.키워드||''}</td><td>${r.클릭_수??0}</td><td>${r.유입비율??''}</td><td>${r.covered?'<span style="color:#059669">✓</span>':'<span style="color:#d97706">🕳️</span>'}</td></tr>`).join('');
 }
+// v1.34.0 — 레이더 쿼리 교체. 옛 코드는 v_keyword_match를 count로 2번 불렀다(실측 5,213ms x 2 = 10.4초).
+// rpc_keyword_radar()가 같은 값을 1회 573ms에 준다(실측 8,600 / 982 일치 확인 2026-09-15).
 async function loadKeywordRadar(){
   const box=document.getElementById('ki-radar'); if(!box) return;
   const tile=(label,val,sub,color)=>`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px"><div style="font-size:.72rem;color:#64748b">${label}</div><div style="font-size:1.3rem;font-weight:800;color:${color||'#0f172a'}">${val}</div><div style="font-size:.7rem;color:#94a3b8">${sub||''}</div></div>`;
   try{
-    const today=new Date();const d7=new Date(today.getTime()-7*864e5).toISOString().slice(0,10);
-    const [fresh,tot,match,vis]=await Promise.all([
-      sb.from('mk_keywords').select('id',{count:'exact',head:true}).gte('검증일',d7),
-      sb.from('v_keyword_match').select('실검색어',{count:'exact',head:true}),
-      sb.from('v_keyword_match').select('실검색어',{count:'exact',head:true}).not('매칭키워드','is',null),
-      sb.from('mk_metrics').select('측정_일자').eq('데이터_소스','naver_visitor').order('측정_일자',{ascending:false}).limit(1)
-    ]);
-    const rate=tot.count?((match.count||0)/tot.count*100).toFixed(1):'0';
+    const {data,error}=await sb.rpc('rpc_keyword_radar');
+    if(error) throw error;
+    const d=data||{};
+    const tot=Number(d['실검색어_총']||0), mt=Number(d['실검색어_매칭']||0);
+    const rate=tot?((mt/tot)*100).toFixed(1):'0';
     box.innerHTML=[
-      tile('검색량 7일 내 갱신',(fresh.count??0)+'건','searchad-volume-rotate · 일 100건 로테이션'),
-      tile('실검색어 매칭률',rate+'%',(match.count||0)+' / '+(tot.count||0)+'행 · v_keyword_match',rate<20?'#dc2626':(rate<50?'#d97706':'#059669')),
+      tile('검색량 7일 내 갱신',(d['검색량_7일내갱신']??0)+'건','searchad-volume-rotate · 일 100건 로테이션'),
+      tile('실검색어 매칭률',rate+'%',mt.toLocaleString()+' / '+tot.toLocaleString()+'행 · rpc_keyword_radar',rate<20?'#dc2626':(rate<50?'#d97706':'#059669')),
       tile('미커버 원천','v_uncovered_terms','잠자는 거인 탭 하단 TOP20'),
-      tile('네이버 방문자 수집',(vis.data&&vis.data[0]?vis.data[0].측정_일자:'-'),'fn_collect_naver_visitors · 매일 00:35')
+      tile('네이버 방문자 수집',(d['네이버_방문자_최신']||'-'),'fn_collect_naver_visitors · 매일 00:35')
     ].join('');
   }catch(e){box.innerHTML='<div style="color:#dc2626">레이더 로드 실패: '+(e.message||e)+'</div>';}
 }

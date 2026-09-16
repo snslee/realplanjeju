@@ -11414,5 +11414,207 @@ setTimeout(tick,300);
 })();
 </script>
 <!-- RP-DASH-V2 end -->
+<!-- RP-SEASON-ADMIN v1.0 start (2026-09-16 회사 시스템 방 · 대표 승인 번들) — 홈페이지 관리 › 시즌 추천 상품: 클로드가 올린 포스터를 대표가 「승인」하면 홈A·B에 바로 표시 -->
+<style id="ss-css">
+#ss-card{background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:18px 20px;margin:0 0 18px}
+#ss-card .ss-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+#ss-card .ss-sub{font-size:12.5px;color:#7a869c;margin-top:3px}
+#ss-card .ss-mon{display:flex;align-items:center;gap:8px}
+#ss-card .ss-mon button,#ss-card .ss-btn{border:1px solid #cfd8e3;background:#fff;border-radius:7px;padding:5px 11px;font-size:12.5px;cursor:pointer;color:#334155}
+#ss-card .ss-mon b{font-size:15px}
+#ss-card .ss-sum{display:flex;gap:14px;flex-wrap:wrap;align-items:center;background:#f7faff;border:1px solid #e3e9f4;border-radius:10px;padding:8px 12px;font-size:12.5px;margin-bottom:12px}
+#ss-card .ss-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#ss-card .ss-slot{border:1px solid #e3e9f4;border-radius:12px;padding:12px;min-width:0}
+#ss-card .ss-slot.wait{border:2px solid #f59e0b;background:#fffdf7}
+#ss-card .ss-sh{display:flex;gap:8px;align-items:center;margin-bottom:10px;font-size:14px}
+#ss-card .ss-site{font-weight:800;border-radius:6px;padding:1px 7px;font-size:11.5px}
+#ss-card .ss-sA{background:#dbeafe;color:#1d4ed8}#ss-card .ss-sB{background:#ede9fe;color:#6d28d9}
+#ss-card .ss-pill{margin-left:auto;border:1px solid;border-radius:999px;padding:1px 10px;font-size:11.5px;font-weight:700;white-space:nowrap}
+#ss-card .ss-b{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px}
+#ss-card .ss-poster{aspect-ratio:3/4;border-radius:8px;overflow:hidden;background:linear-gradient(160deg,#2B62C4,#17305f);color:#fff;display:flex;align-items:flex-end;padding:8px;font-size:11.5px;cursor:pointer}
+#ss-card .ss-poster img{width:100%;height:100%;object-fit:cover;display:block}
+#ss-card .ss-poster.img{padding:0;display:block}
+#ss-card .ss-kv{display:flex;gap:6px;font-size:12.5px;margin-bottom:5px;line-height:1.5}
+#ss-card .ss-kv>span:first-child{flex:0 0 72px;color:#7a869c}
+#ss-card .ss-kv>span+span{flex:1;min-width:0;color:#334155}
+#ss-card .ss-kv b{font-weight:700}
+#ss-card .ss-bdg{display:inline-block;background:#4A85F6;color:#fff;border-radius:999px;padding:0 8px;font-size:11.5px;font-weight:700}
+#ss-card .ss-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+#ss-card .ss-go{border:0;background:#2563eb;color:#fff;border-radius:7px;padding:6px 14px;font-size:13px;font-weight:800;cursor:pointer}
+#ss-card .ss-go[disabled]{background:#cbd5e1;cursor:not-allowed}
+#ss-card .ss-red{color:#dc2626;border-color:#fecaca}
+#ss-card .ss-note{font-size:11.5px;color:#98a3b8;margin-top:6px}
+#ss-card .ss-ok{color:#15803d;font-weight:700}
+#ss-card .ss-warn{color:#b45309}
+#ss-modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px}
+#ss-modal .bx{background:#fff;border-radius:14px;max-width:760px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+#ss-modal .mh{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #e3e9f4;font-weight:800;font-size:14px}
+#ss-modal .pv{background:#F5F8FD;padding:22px}
+#ss-modal .pv-card{display:grid;grid-template-columns:230px minmax(0,1fr);gap:20px;background:#fff;border:1px solid #e3e9f4;border-radius:16px;padding:18px}
+#ss-modal .pv-card img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;display:block}
+#ss-modal h3{font-size:19px;margin:2px 0 12px}
+#ss-modal .pv-bdg{display:inline-block;margin-left:8px;background:#4A85F6;color:#fff;border-radius:999px;padding:2px 10px;font-size:12px;vertical-align:middle}
+#ss-modal ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+#ss-modal li{border:1px solid #e3e9f4;border-radius:10px;padding:10px 14px;font-size:15px;font-weight:700;background:#F5F8FD;display:flex;justify-content:space-between}
+#ss-modal li:after{content:"\2192";color:#4A85F6}
+#ss-modal .cta{display:inline-block;margin-top:14px;background:#4A85F6;color:#fff;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:800}
+#ss-modal .ss-go{border:0;background:#2563eb;color:#fff;border-radius:7px;padding:7px 16px;font-size:13px;font-weight:800;cursor:pointer}
+#ss-modal .ss-btn{border:1px solid #cfd8e3;background:#fff;border-radius:7px;padding:6px 12px;font-size:13px;cursor:pointer}
+#ss-modal .mf{display:flex;justify-content:flex-end;gap:8px;padding:10px 14px;border-top:1px solid #e3e9f4}
+@media(max-width:900px){#ss-card .ss-grid{grid-template-columns:1fr}#ss-modal .pv-card{grid-template-columns:1fr}}
+</style>
+<script id="ss-js">
+(function(){
+  var SLOTS=[['A','travel','국내여행'],['A','event','행사이벤트'],['B','marketing','온라인마케팅'],['B','edu','교육·컨설팅']];
+  var HOME={A:'https://realplanjeju.com/',B:'https://marketing.realplanjeju.com/'};
+  var st={m:null,d:null,busy:false,shown:false,msg:{}};
+  function SB(){return window.sb;}
+  function E(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function kstToday(){var d=new Date(Date.now()+9*3600e3);return d.toISOString().slice(0,10);}
+  function md(s){if(!s)return '';var p=String(s).slice(0,10).split('-');var dt=new Date(Date.UTC(+p[0],+p[1]-1,+p[2]));return (+p[1])+'/'+(+p[2])+'('+'일월화수목금토'[dt.getUTCDay()]+')';}
+  function hm(s){if(!s)return '';var d=new Date(new Date(s).getTime()+9*3600e3);return (d.getUTCMonth()+1)+'/'+d.getUTCDate()+' '+String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');}
+  function defMonth(){var t=kstToday().split('-');var y=+t[0],m=+t[1];m+=1;if(m>12){m=1;y++;}return y+'-'+String(m).padStart(2,'0');}
+  function shiftM(k,n){var p=k.split('-');var y=+p[0],m=+p[1]+n;while(m>12){m-=12;y++;}while(m<1){m+=12;y--;}return y+'-'+String(m).padStart(2,'0');}
+  function mount(){
+    var wv=document.getElementById('view-website');if(!wv)return null;
+    var c=document.getElementById('ss-card');if(c)return c;
+    var grid=null;wv.querySelectorAll('button').forEach(function(x){if(!grid&&(x.getAttribute('onclick')||'').indexOf("wsOpenEditor('B')")>-1)grid=x.parentNode&&x.parentNode.parentNode;});
+    if(!grid)return null;
+    c=document.createElement('div');c.id='ss-card';
+    var after=document.getElementById('rpd-staff');if(!after||after.parentNode!==grid.parentNode)after=grid;
+    grid.parentNode.insertBefore(c,after.nextSibling);
+    c.addEventListener('click',onClick);
+    return c;
+  }
+  async function load(){
+    var c=mount();if(!c||!SB())return;
+    if(!st.m)st.m=defMonth();
+    if(!c.innerHTML)c.innerHTML='<b style="font-size:15px">🗓 시즌 추천 상품</b> <span style="color:#98a3b8;font-size:12.5px">불러오는 중…</span>';
+    var r=await SB().rpc('rpc_web_season_list',{'p_월':st.m+'-01'});
+    if(r.error){c.innerHTML='<b style="font-size:15px">🗓 시즌 추천 상품</b><div style="color:#c0392b;font-size:12.5px;margin-top:6px">불러오기 실패: '+E(r.error.message)+'</div>';return;}
+    st.d=r.data;render();
+  }
+  function liveOf(site,slot){var L=(st.d&&st.d['지금_'+site])||[];for(var i=0;i<L.length;i++)if(L[i]['칸']===slot)return L[i];return null;}
+  function render(){
+    var c=mount();if(!c||!st.d)return;
+    var d=st.d,rows=d['행']||[],today=d['오늘']||kstToday(),owner=d['내_권한']==='owner';
+    var cnt={live:0,sched:0,wait:0,empty:0};
+    var html=SLOTS.map(function(s){
+      var site=s[0],slot=s[1],bu=s[2];
+      var mine=rows.filter(function(r){return r['사이트']===site&&r['칸']===slot;});
+      var wait=mine.filter(function(r){return r['상태']==='승인대기';})[0]||null;
+      var ok=mine.filter(function(r){return r['상태']==='승인';})[0]||null;
+      var rej=mine.filter(function(r){return r['상태']==='반려'&&r['반려_사유']!=='새 판으로 대체';})[0]||null;
+      var cur=wait||ok;var live=liveOf(site,slot);
+      var pill,pc,cls='';
+      if(wait){pill='승인 대기';pc='#b45309';cls=' wait';cnt.wait++;}
+      else if(ok&&ok['게시_시작일']<=today){pill='● 홈'+site+'에 게시 중';pc='#15803d';cnt.live++;}
+      else if(ok){pill='📅 '+md(ok['게시_시작일'])+' 게시 예정';pc='#1d4ed8';cnt.sched++;}
+      else{pill='비어 있음';pc='#94a3b8';cnt.empty++;}
+      var m=+st.m.slice(5,7);
+      var h='<div class="ss-slot'+cls+'"><div class="ss-sh"><span class="ss-site ss-s'+site+'">홈'+site+'</span><b>'+bu+'</b><span class="ss-pill" style="color:'+pc+';border-color:'+pc+'">'+pill+'</span></div><div class="ss-b">';
+      if(cur)h+='<div class="ss-poster img" data-act="pv" data-id="'+cur.id+'" title="크게 보기"><img src="'+E(cur['포스터_url'])+'" alt=""></div>';
+      else h+='<div class="ss-poster">'+E(bu)+'<br>기본 카드</div>';
+      h+='<div>';
+      if(cur){
+        h+='<div class="ss-kv"><span>게시 시작</span><span><b>'+md(cur['게시_시작일'])+'</b>'+(cur['게시_종료일']?' ~ '+md(cur['게시_종료일']):' ~ '+m+'월 말')+'</span></div>';
+        h+='<div class="ss-kv"><span>홈 표시</span><span><span class="ss-bdg">'+m+'월 추천</span> · 버튼 '+E((cur['버튼']||[]).map(function(b){return b['이름'];}).join(' · '))+'</span></div>';
+        var ck=cur['검수']||{};
+        h+='<div class="ss-kv"><span>클로드 검수</span><span>'+['얼굴','상표','저작권','비율','링크'].map(function(k){return (ck[k]?'<span class="ss-ok">✔</span>':'<span class="ss-warn">✕</span>')+k;}).join(' ')+(ck['메모']?'<br><span style="color:#7a869c">'+E(ck['메모'])+'</span>':'')+'</span></div>';
+        h+='<div class="ss-kv"><span>올린 때</span><span>'+E(cur['올린이']||'')+' · '+hm(cur['올린_시각'])+(cur['승인_시각']?' · 승인 '+E(cur['승인자']||'')+' '+hm(cur['승인_시각']):'')+'</span></div>';
+      }else{
+        h+='<div class="ss-kv"><span>이번 달</span><span>아직 올라온 포스터가 없습니다. 클로드가 만들어 올리면 여기서 승인합니다.</span></div>';
+      }
+      h+='<div class="ss-kv"><span>지금 홈</span><span>'+(live?('<b>'+live['월_숫자']+'월 포스터</b> 게시 중'):'기본 카드(포스터 없음)')+'</span></div>';
+      if(rej)h+='<div class="ss-note">최근 반려: '+E(rej['반려_사유']||'')+' ('+hm(rej['처리_시각'])+')</div>';
+      h+='<div class="ss-acts">';
+      if(wait){
+        h+='<button class="ss-btn" data-act="pv" data-id="'+wait.id+'">👁 미리보기</button>';
+        h+='<button class="ss-go" data-act="ok" data-id="'+wait.id+'"'+(owner?'':' disabled title="대표(owner) 계정만 승인할 수 있습니다"')+'>✅ 승인</button>';
+        h+='<button class="ss-btn ss-red" data-act="no" data-id="'+wait.id+'"'+(owner?'':' disabled')+'>↩ 반려</button>';
+      }else if(ok){
+        h+='<button class="ss-btn" data-act="pv" data-id="'+ok.id+'">👁 미리보기</button>';
+        h+='<a class="ss-btn" href="'+HOME[site]+'?rpv='+Date.now()+'#season" target="_blank" rel="noopener" style="text-decoration:none">🔗 홈에서 보기</a>';
+        h+='<button class="ss-btn ss-red" data-act="down" data-id="'+ok.id+'"'+(owner?'':' disabled')+'>⏬ 내리기</button>';
+      }
+      h+='</div>';
+      if(st.msg[slot])h+='<div class="ss-note" style="color:#15803d">'+st.msg[slot]+'</div>';
+      h+='</div></div></div>';
+      return h;
+    }).join('');
+    c.innerHTML='<div class="ss-h"><div><b style="font-size:15px">🗓 시즌 추천 상품</b> <span style="font-size:11px;background:#65a30d;color:#fff;border-radius:999px;padding:1px 7px;vertical-align:middle">새로</span>'
+      +'<div class="ss-sub">클로드가 포스터를 만들어 올리면 여기서 <b>미리보기 → 승인</b>만 누르세요. 승인하면 홈A·B에 바로 표시됩니다(게시 시작일 전이면 그날 0시). 사이트마다 2칸 · 칸마다 한 달에 1장</div></div>'
+      +'<div class="ss-mon"><button data-act="m-1">◀</button><b>'+st.m.slice(0,4)+'년 '+(+st.m.slice(5,7))+'월</b><button data-act="m+1">▶</button></div></div>'
+      +'<div class="ss-sum"><span>승인 대기 <b style="color:#b45309">'+cnt.wait+'</b></span><span>게시 중 <b style="color:#15803d">'+cnt.live+'</b></span><span>게시 예정 <b style="color:#1d4ed8">'+cnt.sched+'</b></span><span>비어 있음 <b>'+cnt.empty+'</b></span>'
+      +(owner?'':'<span style="color:#b45309">이 계정은 보기만 가능합니다(승인은 대표 계정)</span>')+'<button class="ss-btn" data-act="reload" style="margin-left:auto">↻ 새로고침</button></div>'
+      +'<div class="ss-grid">'+html+'</div>';
+  }
+  function findRow(id){var rows=(st.d&&st.d['행'])||[];for(var i=0;i<rows.length;i++)if(rows[i].id===id)return rows[i];return null;}
+  function preview(r){
+    var old=document.getElementById('ss-modal');if(old)old.remove();
+    var m=+String(r['월']).slice(5,7);var bu=r['사업부'];
+    var w=document.createElement('div');w.id='ss-modal';
+    w.innerHTML='<div class="bx"><div class="mh">👁 미리보기 — 홈'+r['사이트']+'에서 이렇게 보입니다<button class="ss-x" style="border:0;background:none;font-size:20px;cursor:pointer">×</button></div>'
+      +'<div class="pv"><div style="text-align:center;margin-bottom:16px"><div style="font-size:12px;letter-spacing:.2em;color:#4A85F6;font-weight:800">SEASON OFFER</div><div style="font-size:24px;font-weight:800">시즌 추천 상품</div></div>'
+      +'<div class="pv-card"><img src="'+E(r['포스터_url'])+'" alt=""><div><h3>'+E(bu)+'<span class="pv-bdg">'+m+'월 추천</span></h3><ul>'
+      +(r['버튼']||[]).map(function(b){return '<li><span>'+E(b['이름'])+'</span></li>';}).join('')+'</ul>'
+      +(r['상세문안']?'<p style="font-size:14px;color:#6b7280;white-space:pre-line">'+E(r['상세문안'])+'</p>':'')
+      +'<span class="cta">이 상품으로 견적 문의</span></div></div>'
+      +'<div style="font-size:12px;color:#7a869c;margin-top:12px">포스터 '+(r['가로']||'')+'×'+(r['세로']||'')+' · '+(r['용량_kb']||'')+'KB · 대체 텍스트: '+E(r['대체텍스트']||'')+'</div></div>'
+      +'<div class="mf">'+(r['상태']==='승인대기'&&st.d['내_권한']==='owner'?'<button class="ss-go" data-act="ok" data-id="'+r.id+'">✅ 이대로 승인</button>':'')+'<button class="ss-btn ss-x">닫기</button></div></div>';
+    w.addEventListener('click',function(e){if(e.target===w||e.target.closest('.ss-x')){w.remove();return;}var b=e.target.closest('[data-act="ok"]');if(b){w.remove();act('ok',b.getAttribute('data-id'));}});
+    document.body.appendChild(w);
+  }
+  async function act(a,id){
+    if(st.busy)return;var r=findRow(id);if(!r)return;
+    var where='홈'+r['사이트']+' · '+r['사업부'];
+    try{
+      st.busy=true;
+      if(a==='ok'){
+        var now=r['게시_시작일']<=((st.d&&st.d['오늘'])||kstToday());
+        if(!confirm(where+' 포스터를 승인할까요?\n'+(now?'승인하면 홈에 바로 표시됩니다.':md(r['게시_시작일'])+' 0시에 홈에 표시됩니다.')))return;
+        var x=await SB().rpc('rpc_web_season_approve',{p_id:id});
+        if(x.error){alert('승인 실패: '+x.error.message);return;}
+        var msg='✅ 승인 완료';
+        if(now){var lv=await SB().rpc('rpc_web_season_live',{'p_사이트':r['사이트']});
+          var hit=(lv.data||[]).some(function(v){return v['포스터_url']===r['포스터_url'];});
+          msg+=hit?' · 홈'+r['사이트']+' 반영 확인됨':' · 홈 반영 확인 실패(새로고침 후 다시 확인)';}
+        else msg+=' · '+md(r['게시_시작일'])+' 0시 자동 게시';
+        st.msg[r['칸']]=msg;
+      }else if(a==='no'){
+        var why=prompt(where+' 포스터를 반려합니다. 고칠 점을 한 줄로 적어 주세요(클로드가 보고 다시 만듭니다).','');
+        if(why===null)return;
+        var y=await SB().rpc('rpc_web_season_reject',{p_id:id,'p_사유':why||'사유 없음'});
+        if(y.error){alert('반려 실패: '+y.error.message);return;}
+        st.msg[r['칸']]='↩ 반려했습니다';
+      }else if(a==='down'){
+        if(!confirm(where+' 포스터를 홈에서 내릴까요?\n내리면 바로 기본 카드(또는 이전 포스터)로 돌아갑니다.'))return;
+        var z=await SB().rpc('rpc_web_season_takedown',{p_id:id});
+        if(z.error){alert('내리기 실패: '+z.error.message);return;}
+        st.msg[r['칸']]='⏬ 내렸습니다';
+      }
+    }finally{st.busy=false;}
+    await load();
+  }
+  function onClick(e){
+    var b=e.target.closest('[data-act]');if(!b)return;
+    var a=b.getAttribute('data-act'),id=b.getAttribute('data-id');
+    if(a==='m-1'||a==='m+1'){st.m=shiftM(st.m,a==='m-1'?-1:1);st.msg={};load();return;}
+    if(a==='reload'){st.msg={};load();return;}
+    if(a==='pv'){var r=findRow(id);if(r)preview(r);return;}
+    if(a==='ok'||a==='no'||a==='down'){if(b.disabled)return;act(a,id);}
+  }
+  function tick(){
+    try{
+      var wv=document.getElementById('view-website');var vis=wv&&!wv.hidden;
+      if(vis&&!st.shown){st.shown=true;load();}
+      else if(!vis&&st.shown){st.shown=false;}
+    }catch(e){}
+  }
+  setInterval(tick,1200);setTimeout(tick,400);
+  window.rpSeasonReload=load;
+})();
+</script>
+<!-- RP-SEASON-ADMIN v1.0 end -->
 </body>
 </html>

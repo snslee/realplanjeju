@@ -4891,5 +4891,445 @@ document.addEventListener('change',function(e){
 })();
 </script>
 
+<!-- RP-MENU-V2 start · v1.35.0 · 2026-09-16 메뉴 재편 1단계 -->
+<script>
+/* ══ RP-MENU-V2 — 마케팅 운영 메뉴 재편 1단계 (v1.35.0 · 2026-09-16 대표 승인) ══════════
+   원본 HTML은 손대지 않고, 페이지가 뜬 뒤 구역을 옮겨 담는다(편성 탭 schInit 과 같은 방식).
+   되돌리기 = RP-MENU-V2 start~end 주석 사이 스크립트 블록 하나를 걷어내면 원상태.
+   16 → 14 메뉴 · 잠자는 거인 폐지(목록은 키워드·기회로) · CTR·색인은 순위·클릭 진단 하위탭으로
+   작성 가이드 → 기준·알고리즘 · 판정 문구 3곳 교정(4~10위 제목 금지 · 티스토리 D7 · 추정 색인)
+   DB 쓰기 0건 — 전부 읽기 전용 조회다. */
+(function(){
+'use strict';
+if(window.__rpMenuV2)return;
+window.__rpMenuV2='v1.35.0';
+var VER='v1.35.0';
+function $(id){return document.getElementById(id);}
+function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
+function safe(tag,fn){try{return fn();}catch(e){warn(tag,e);}}
+function hide(n){if(n){n.style.display='none';n.setAttribute('data-mv2-hidden','1');}}
+function kst(d){return new Date((d||new Date()).getTime()+9*3600e3).toISOString().slice(0,10);}
+function daysAgo(ymd){if(!ymd)return null;var t=Date.parse(String(ymd).slice(0,10)+'T00:00:00+09:00');return Math.floor((Date.now()-t)/86400e3);}
+/* 최근 완결 월 3개 — 오늘이 9월이면 6·7·8월 */
+function lastMonths(n){var out=[],d=new Date(Date.now()+9*3600e3);d.setUTCDate(1);for(var i=0;i<n;i++){d.setUTCMonth(d.getUTCMonth()-1);out.push(d.toISOString().slice(0,7));}return out.reverse();}
+function wrap(name,after,before){
+  var orig=window[name];
+  if(typeof orig!=='function'){warn('wrap',name+' 없음');return false;}
+  if(orig.__mv2)return true;
+  var w=async function(){
+    if(before){try{var r0=before.apply(this,arguments);if(r0===false)return;}catch(e){warn(name+':before',e);}}
+    var res=await orig.apply(this,arguments);
+    if(after){try{await after.apply(this,arguments);}catch(e){warn(name+':after',e);}}
+    return res;
+  };
+  w.__mv2=true;w.__orig=orig;window[name]=w;return true;
+}
+var CSS='.mv2-sub{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}'
++'.mv2-strip{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 14px;padding:9px 12px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;font-size:.76rem;color:#475569}'
++'.mv2-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;border:1px solid #e2e8f0;background:#f8fafc;white-space:nowrap}'
++'.mv2-ok{border-color:#bbf7d0;background:#f0fdf4;color:#166534}.mv2-wn{border-color:#fde68a;background:#fffbeb;color:#92400e}.mv2-bad{border-color:#fecaca;background:#fef2f2;color:#b91c1c;font-weight:700}.mv2-mut{color:#94a3b8}'
++'.mv2-grid{border-collapse:collapse;font-size:.74rem;margin:6px 0 10px;width:100%}.mv2-grid th,.mv2-grid td{border:1px solid #e2e8f0;padding:4px 7px;text-align:center;white-space:nowrap}.mv2-grid th{background:#f8fafc;color:#64748b;font-weight:600}.mv2-grid td.l{text-align:left}'
++'.mv2-note{font-size:.72rem;color:#64748b;margin:4px 0 10px}';
+safe('css',function(){var st=document.createElement('style');st.id='mv2-css';st.textContent=CSS;document.head.appendChild(st);});
+
+/* ───────── 1. 왼쪽 메뉴 ───────── */
+var NAV={};
+function rebuildNav(){
+  var nav=document.querySelector('nav.sidebar');if(!nav)return false;
+  nav.querySelectorAll('.nav-item').forEach(function(n){var m=(n.getAttribute('onclick')||'').match(/switchTab\('([^']+)'/);if(m)NAV[m[1]]=n;});
+  var need=['tcs','t1','t4','t5','tctr','t12','t2','t15','tsch','t10','t11','t14','t6','t8','tchan','t13'];
+  var miss=need.filter(function(k){return !NAV[k];});
+  if(miss.length){warn('nav','메뉴 구조가 달라 재편 중단: '+miss.join(','));return false;}
+  function relabel(n,icon,text,title){var sp=n.querySelector('span');var b=n.querySelector('b');n.innerHTML='';var s=document.createElement('span');s.textContent=icon;n.appendChild(s);n.appendChild(document.createTextNode(text));if(b)n.appendChild(b);if(title)n.title=title;void sp;}
+  relabel(NAV.t5,'🏆','순위·클릭 진단','순위·클릭 진단(진입 현황 · 클릭(CTR) · 색인)');
+  relabel(NAV.t8,'🔑','키워드·기회','키워드·기회(매출 키워드 · 기회 키워드 · 실검색어 · 상위 글 · 창고)');
+  relabel(NAV.t6,'📐','기준·알고리즘','기준·알고리즘(알고리즘 대장 · 스킬 버전 · DB 정본 규칙)');
+  var plan=[['고객',['tcs']],['성과 보기',['t1','t5','t12']],['기회 찾기',['t8']],['만들기',['tsch','t2','t15','t10','t11','t14']],['퍼뜨리기',['tchan','t13']],['기준',['t6']]];
+  nav.querySelectorAll('.nav-section').forEach(function(s){s.remove();});
+  plan.forEach(function(g){var h=document.createElement('div');h.className='nav-section';h.textContent=g[0];nav.appendChild(h);g[1].forEach(function(k){nav.appendChild(NAV[k]);});});
+  [NAV.t4,NAV.tctr].forEach(function(n){hide(n);nav.appendChild(n);});
+  return true;
+}
+
+/* ───────── 2. 순위·클릭 진단 (t5 + tctr) ───────── */
+var T5SUB='entry',ctrLoaded=false;
+function buildT5(){
+  var p=$('t5'),q=$('tctr');if(!p||!q)return false;
+  var hdr=p.firstElementChild;
+  safe('t5hdr',function(){var h=hdr.querySelector('h2');if(h)h.textContent='🏆 순위·클릭 진단';var d=hdr.querySelector('p');if(d)d.textContent='진입 현황(D+7~90) · 클릭(CTR) · 색인 — 한 곳에서 봅니다';
+    var btn=hdr.querySelector('button');if(btn){btn.setAttribute('onclick','');btn.onclick=function(){mv2T5Refresh();};}});
+  var entry=document.createElement('div');entry.id='t5-entry';
+  var ctr=document.createElement('div');ctr.id='t5-ctr';ctr.style.display='none';
+  var idx=document.createElement('div');idx.id='t5-idx';idx.style.display='none';
+  var kids=[].slice.call(p.children).filter(function(c){return c!==hdr&&!c.classList.contains('sec-nav');});
+  kids.forEach(function(c){entry.appendChild(c);});
+  p.querySelectorAll(':scope > .sec-nav').forEach(function(n){n.remove();});
+  entry.querySelectorAll('.sec-off').forEach(function(n){n.classList.remove('sec-off');});
+  var bar=document.createElement('div');bar.className='mv2-sub';bar.id='t5-subbar';
+  bar.innerHTML='<button class="filter-btn active" data-s="entry">📅 진입 현황</button><button class="filter-btn" data-s="ctr">📉 클릭(CTR)</button><button class="filter-btn" data-s="idx">🔎 색인</button>';
+  bar.querySelectorAll('button').forEach(function(b){b.onclick=function(){t5Sub(b.getAttribute('data-s'));};});
+  p.appendChild(bar);p.appendChild(entry);p.appendChild(ctr);p.appendChild(idx);
+  /* tctr 내용 옮기기: 설명·KPI·목록 → 클릭 / 색인 제목·설명·표 → 색인 */
+  var qk=[].slice.call(q.children);var qhdr=qk[0];
+  var desc=qhdr&&qhdr.querySelector('p');
+  if(desc){var dd=document.createElement('p');dd.className='mv2-note';dd.innerHTML=desc.innerHTML;ctr.appendChild(dd);}
+  var guard=document.createElement('div');guard.className='mv2-note';guard.id='ctr-guard-note';
+  guard.innerHTML='🛑 <b>4~10위 글은 제목을 바꾸지 않습니다</b>(realplan-blog TITLE §0-5-2). 이 구간에서 「제목 손질」로 진단된 행은 <b>본문·스니펫 보강</b>으로 바꿔 표시합니다. 오른쪽 끝 <b>리라이트</b> 칸이 「미편입」이면 대기열에 아직 안 들어간 글입니다. <span id="ctr-guard-cnt"></span>';
+  ctr.appendChild(guard);
+  var toIdx=false;
+  qk.slice(1).forEach(function(c){if(c.tagName==='H3')toIdx=true;(toIdx?idx:ctr).appendChild(c);});
+  var ih=idx.querySelector('h3');if(ih)ih.style.marginTop='0';
+  return true;
+}
+function t5Sub(s){
+  T5SUB=s;
+  ['entry','ctr','idx'].forEach(function(k){var d=$('t5-'+k);if(d)d.style.display=(k===s)?'':'none';});
+  var bar=$('t5-subbar');if(bar)bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-s')===s);});
+  if((s==='ctr'||s==='idx')&&!ctrLoaded){ctrLoaded=true;if(typeof window.loadCTR==='function')window.loadCTR();}
+}
+window.mv2T5Sub=t5Sub;
+window.mv2T5Refresh=function(){if(T5SUB==='entry'){if(window.loadRankEntries)window.loadRankEntries();if(window.loadWinning)window.loadWinning();if(window.loadChannelDiagnosis)window.loadChannelDiagnosis();}else if(window.loadCTR)window.loadCTR();};
+
+/* D7 티스토리 카드 — 구글 순위는 참고치. 약세 문구는 네이버만으로 판정 */
+async function fixD7(){
+  var ts=$('cd-tistory');if(!ts)return;
+  var lab=ts.previousElementSibling;
+  if(lab&&!lab.getAttribute('data-mv2')){lab.setAttribute('data-mv2','1');
+    lab.innerHTML='📙 티스토리 채널 <span style="font-weight:500;font-size:.7rem;color:#94a3b8">· D+7 순위는 <b style="color:#b45309">구글(GSC) 참고치</b>입니다 — 티스토리는 AI 인용이 주 목표라 이 숫자만으로 약세 판정하지 않습니다(PLATFORM_PROFILE §7-1)</span>';}
+  var res=await sb.rpc('rpc_channel_d7_diag');var data=(res&&res.data)||[];
+  var since=new Date(Date.now()-30*86400e3).toISOString().slice(0,10);
+  var ai={};
+  try{var r2=await sb.from('mk_ai_metrics').select('채널,인용_수').gte('측정_일자',since).in('채널',['블A티스토리','블B티스토리','블C티스토리']).limit(2000);if(r2.error)throw r2.error;(r2.data||[]).forEach(function(x){ai[x.채널]=(ai[x.채널]||0)+(Number(x.인용_수)||0);});}catch(e){warn('ai',e);}
+  ['블A티스토리','블B티스토리','블C티스토리'].forEach(function(ch,i){
+    var card=ts.children[i];if(!card)return;
+    var old=card.querySelector('.mv2-ai');if(old)old.remove();
+    var tag=card.querySelector('span[style*="padding:1px 6px"]');if(tag&&/약세|보통|우수/.test(tag.textContent)){tag.textContent='참고치';tag.style.background='#f1f5f9';tag.style.color='#64748b';}
+    var d=document.createElement('div');d.className='mv2-ai';d.style.cssText='font-size:.7rem;margin-top:6px;color:#0f766e';
+    d.innerHTML='AI 인용(최근 30일) <b>'+(ai[ch]||0)+'건</b>';card.appendChild(d);
+  });
+  var weak=data.filter(function(x){return String(x.채널||'').indexOf('네이버')>=0&&x.d7_10위이내율!=null&&Number(x.d7_10위이내율)<30;})
+    .map(function(x){return x.채널+'('+Number(x.d7_평균순위).toFixed(0)+'위)';});
+  var w=$('cd-weak');
+  if(w)w.innerHTML='💡 <b>약세 진단(네이버 기준)</b> — '+(weak.length?'<b style="color:#dc2626">'+E(weak.join(', '))+'</b> : 광범위 일반어는 경쟁 과포화로 하위, 구체 롱테일이 상위입니다. 롱테일 비중을 높이세요.':'10위 이내율 30% 미만인 네이버 채널이 없습니다.')
+    +' <span style="color:#94a3b8">티스토리는 구글 순위가 아니라 AI 인용 수로 봅니다.</span>';
+}
+
+/* CTR 목록 — 4~10위 제목 손질 가드 + 리라이트 편입 상태 */
+async function fixCTR(){
+  var box=$('ctr-list');if(!box)return;
+  var tb=box.querySelector('table');if(!tb||tb.getAttribute('data-mv2'))return;tb.setAttribute('data-mv2','1');
+  var head=tb.querySelector('thead tr');if(head){var th=document.createElement('th');th.style.padding='8px';th.textContent='리라이트';head.appendChild(th);}
+  var rows=[].slice.call(tb.querySelectorAll('tbody tr'));var urls=[];var guarded=0;
+  rows.forEach(function(tr){
+    var td=tr.children;var a=td[0]&&td[0].querySelector('a');var u=a?a.getAttribute('href'):'';tr.setAttribute('data-url',u);if(u)urls.push(u);
+    var rank=parseFloat((td[4]&&td[4].textContent)||'');var diag=(td[9]&&td[9].textContent)||'';tr.setAttribute('data-diag',diag.slice(0,1));
+    if(rank>0&&rank<=10&&/제목\s*손질/.test(diag)){guarded++;
+      td[9].innerHTML='<b style="color:#b45309">본문·스니펫 보강</b> — 4~10위 제목 변경 금지<div style="color:#94a3b8;margin-top:2px">원래 진단: '+E(diag)+'</div>';
+      tr.style.background='#fffbeb';}
+  });
+  var st={};
+  if(urls.length){try{var r=await sb.from('v_rewrite_queue').select('외부_url,진행,순위').in('외부_url',urls);(r.data||[]).forEach(function(x){st[x.외부_url]=x;});}catch(e){warn('rwq',e);}}
+  var notIn=0;
+  rows.forEach(function(tr){
+    var td=document.createElement('td');td.style.cssText='padding:8px;white-space:nowrap;font-size:.72rem';
+    var u=tr.getAttribute('data-url'),q=st[u],act=/[ABD]/.test(tr.getAttribute('data-diag')||'');
+    if(q)td.innerHTML='<span class="mv2-chip mv2-ok">'+E(q.진행||'대기열')+'</span>';
+    else if(act){notIn++;td.innerHTML='<span class="mv2-chip mv2-bad">미편입</span>';}
+    else td.innerHTML='<span class="mv2-mut">-</span>';
+    tr.appendChild(td);
+  });
+  var g=$('ctr-guard-cnt');
+  if(g)g.innerHTML='<br>이번 목록: 제목 대신 본문 보강으로 바꾼 행 <b>'+guarded+'</b> · 대기열 미편입 <b style="color:#b91c1c">'+notIn+'</b>';
+  try{var bz=await sb.from('v_ctr_diagnosis').select('기대클릭').not('기대클릭','is',null).limit(1);
+    if(g&&!(bz.data||[]).length)g.innerHTML+='<br><b style="color:#b91c1c">⚠️ 기대 CTR 기준표를 읽지 못해 A·B·C·E 판정이 전부 빠져 있습니다</b> — 기준표(mk_ctr_baseline) 읽기 권한 수리가 필요합니다. 지금 보이는 목록은 D(순위 11위↓)만입니다.';}catch(e){warn('base',e);}
+}
+/* 색인 — 판정 출처가 (미실측)인 OK 는 「추정 OK」로 따로 */
+function fixIndex(){
+  var b=$('ctr-index');if(!b)return;var t=b.querySelector('table');if(!t||t.getAttribute('data-mv2'))return;t.setAttribute('data-mv2','1');
+  var real=0,guess=0,bad=0;
+  t.querySelectorAll('tbody tr').forEach(function(tr){var c=tr.children;if(c.length<4)return;var st=c[1].textContent.trim(),src=c[2].textContent.trim(),n=parseInt(c[3].textContent,10)||0;
+    if(st==='OK'&&src==='(미실측)'){guess+=n;c[1].textContent='추정 OK';c[1].style.color='#94a3b8';}
+    else if(st==='OK')real+=n;else bad+=n;});
+  var s=document.createElement('div');s.className='mv2-strip';
+  s.innerHTML='<span class="mv2-chip mv2-ok">실측 OK '+real+'</span><span class="mv2-chip">추정 OK '+guess+' <span class="mv2-mut">(검사 안 함)</span></span><span class="mv2-chip mv2-bad">대기·미확인·실패 '+bad+'</span>';
+  b.insertBefore(s,b.firstChild);
+}
+
+/* ───────── 3. 통계 대시보드 (t1) ───────── */
+function buildT1(){
+  var p=$('t1'),g=$('t4');if(!p||!g)return false;
+  var hdr=p.firstElementChild;
+  var strip=document.createElement('div');strip.id='mv2-fresh';strip.className='mv2-strip';strip.innerHTML='<b>데이터 기준일</b> <span class="mv2-mut">확인 중…</span>';
+  var nav=p.querySelector(':scope > .sec-nav');
+  p.insertBefore(strip,(nav||hdr).nextSibling);
+  /* 잠자는 거인의 네이버 순위 판정표 → 추세 그래프 다음 */
+  var rankCard=g.querySelector('[data-sec="🏆 네이버 순위"]');
+  var trend=p.querySelector('[data-sec="📈 추세 그래프"]');
+  if(rankCard&&trend){rankCard.style.marginBottom='16px';trend.parentNode.insertBefore(rankCard,trend.nextSibling);
+    rankCard.innerHTML=rankCard.innerHTML.replace('「상위노출 진입」 탭은','「순위·클릭 진단」 탭은');}
+  /* 안내문 속 옛 탭 이름 교정 */
+  p.querySelectorAll('div').forEach(function(d){if(!d.querySelector('div')&&d.innerHTML.indexOf('「잠자는 거인」 탭에서 확인하세요')>=0)d.innerHTML=d.innerHTML.replace('「잠자는 거인」 탭에서 확인하세요','아래 「네이버 채널별 순위 현황」 표에서 확인하세요').replace('「상위노출 진입」 탭에서 봅니다','「순위·클릭 진단」 탭에서 봅니다');});
+  /* 업로드 안내 + 누락 점검표 */
+  var up=p.querySelector('details[data-sec="📥 Excel 업로드"]');
+  if(up){
+    var sum=up.querySelector('summary');if(sum){var sp=document.createElement('span');sp.id='mv2-up-sum';sp.style.cssText='font-weight:500;font-size:.76rem;margin-left:8px';sum.appendChild(sp);}
+    up.querySelectorAll('div').forEach(function(d){if(!d.querySelector('div')&&d.textContent.indexOf('다운로드 파일(여러 개 가능)')>=0){d.innerHTML='네이버 블로그 통계 → <b>조회수(월간) · 조회수 순위 · 유입분석 · 공감수 순위 · 댓글수 순위 · 재방문율 · 평균사용시간</b> 7종 다운로드 파일(여러 개 가능). 종류 자동 판별 · 동일 채널·월 재업로드 시 전체 갱신. <b style="color:#b45309">채널 선택을 파일과 꼭 맞추세요</b> — 파일 안에는 블로그 구분이 없습니다.';}
+      if(!d.querySelector('div')&&d.textContent.indexOf('게시물별 조회수 · 유입 검색어')>=0&&d.textContent.indexOf('반영됩니다')>=0){d.innerHTML='ℹ️ 업로드 데이터는 <b>월별 조회수 차트</b>와 「키워드·기회」 탭의 <b>상위 글 · 실검색어</b>에 반영됩니다. 상단 KPI·추세 그래프는 자동수집 기준이라 반영되지 않습니다.';}});
+    var grid=document.createElement('div');grid.id='mv2-up-grid';grid.innerHTML='<div class="mv2-note">누락 점검표 불러오는 중…</div>';
+    var body=up.querySelector(':scope > div');if(body)body.insertBefore(grid,body.firstChild);
+  }
+  return true;
+}
+async function loadFresh(){
+  var el=$('mv2-fresh');if(!el)return;
+  async function last(tbl,col,src){var q=sb.from(tbl).select(col).order(col,{ascending:false}).limit(1);if(src)q=q.eq('데이터_소스',src);var r=await q;return r&&r.data&&r.data[0]?String(r.data[0][col]).slice(0,10):null;}
+  var L=await Promise.all([last('mk_metrics','측정_일자','gsc'),last('mk_rank_tracker','측정_일자'),last('mk_metrics','측정_일자','naver_visitor'),last('mk_metrics','측정_일자','naver_manual')]);
+  var lm=lastMonths(1)[0];
+  function chip(label,v,lim){if(!v)return '<span class="mv2-chip mv2-bad">'+label+' 없음</span>';var d=daysAgo(v);var cls=d>lim?'mv2-bad':(d>Math.ceil(lim/2)?'mv2-wn':'mv2-ok');return '<span class="mv2-chip '+cls+'">'+label+' '+v.slice(5)+' <span class="mv2-mut">('+d+'일 전)</span></span>';}
+  var man=L[3]?L[3].slice(0,7):null;var manOk=man&&man>=lm;
+  el.innerHTML='<b style="margin-right:4px">데이터 기준일</b>'+chip('티스토리 GSC',L[0],6)+chip('네이버 순위',L[1],3)+chip('네이버 방문자',L[2],3)
+   +'<span class="mv2-chip '+(manOk?'mv2-ok':'mv2-bad')+'">네이버 수동 통계 '+(man||'없음')+(manOk?'':' · '+lm.slice(5)+'월 파일 미수령')+'</span>';
+}
+var KINDS=[['조회수','월간 합계'],['조회수순위','조회수 순위'],['유입분석','유입분석'],['공감수','공감수 순위'],['댓글수','댓글수 순위'],['재방문율','재방문율'],['평균사용시간','평균사용시간']];
+var CHS=['블A네이버','블B네이버','블C네이버'];
+async function loadUpGrid(){
+  var el=$('mv2-up-grid');if(!el)return;
+  var ms=lastMonths(3),m0=ms[0]+'-01',have={};
+  function mark(ch,k,m){have[ch+'|'+k+'|'+String(m).slice(0,7)]=1;}
+  var jobs=[];
+  jobs.push(sb.from('mk_metrics').select('채널,측정_일자,유입_검색어').eq('데이터_소스','naver_manual').is('제목',null).gte('측정_일자',m0).limit(500).then(function(r){(r.data||[]).forEach(function(x){if(!x.유입_검색어)mark(x.채널,'조회수',x.측정_일자);});}));
+  ['조회수','공감수','댓글수'].forEach(function(mt){jobs.push(sb.from('mk_top_posts').select('채널,측정월').eq('지표',mt).eq('순위',1).gte('측정월',m0).limit(500).then(function(r){(r.data||[]).forEach(function(x){mark(x.채널,mt==='조회수'?'조회수순위':mt,x.측정월);});}));});
+  jobs.push(sb.from('mk_audience_stats').select('채널,측정월,유형').gte('측정월',m0).eq('항목','전체').limit(500).then(function(r){(r.data||[]).forEach(function(x){mark(x.채널,x.유형,x.측정월);});}));
+  CHS.forEach(function(ch){ms.forEach(function(m){jobs.push(sb.from('mk_inflow_keywords').select('키워드',{count:'exact',head:true}).eq('채널',ch).eq('출처','naver_유입분석_월간파일').eq('유입월',m+'-01').then(function(r){if(r&&r.count>0)mark(ch,'유입분석',m);}));});});
+  await Promise.all(jobs);
+  var h='<div class="mv2-note">📋 <b>누락 점검표</b> — 최근 완결 3개월 · 칸이 비면 그 파일을 네이버 블로그 통계에서 받아 올려야 합니다(재수집 불가 데이터).</div><div style="overflow-x:auto"><table class="mv2-grid"><thead><tr><th>채널</th><th>파일</th>'+ms.map(function(m){return '<th>'+m+'</th>';}).join('')+'</tr></thead><tbody>';
+  var missLast=0,lastM=ms[ms.length-1];
+  CHS.forEach(function(ch){KINDS.forEach(function(k,i){h+='<tr>'+(i===0?'<td class="l" rowspan="'+KINDS.length+'"><b>'+ch.replace('네이버','')+'</b></td>':'')+'<td class="l">'+k[1]+'</td>';
+    ms.forEach(function(m){var ok=have[ch+'|'+k[0]+'|'+m];if(!ok&&m===lastM)missLast++;h+='<td style="color:'+(ok?'#16a34a':'#dc2626')+';font-weight:700">'+(ok?'✓':'✗')+'</td>';});h+='</tr>';});});
+  el.innerHTML=h+'</tbody></table></div>';
+  var s=$('mv2-up-sum');if(s)s.innerHTML=missLast?'<span style="color:#dc2626">· '+lastM.slice(5)+'월 '+missLast+'/21개 누락</span>':'<span style="color:#16a34a">· '+lastM.slice(5)+'월 21개 완료</span>';
+}
+
+/* ───────── 4. 키워드·기회 (t8) ───────── */
+var KI_SUB='a',kiLoaded={};
+var PANES=['a','c','d','e','b'];
+function buildT8(){
+  var p=$('t8'),g=$('t4'),one=$('t1');if(!p||!g)return false;
+  var h2=p.querySelector('h2');if(h2)h2.textContent='🔑 키워드·기회';
+  var ba=$('ki-sub-a'),bb=$('ki-sub-b'),B=$('t8b');if(!ba||!bb||!B)return false;
+  bb.textContent='📦 창고';
+  [['c','🎯 기회 키워드'],['d','🔎 실검색어'],['e','🏆 상위 글']].forEach(function(x){var b=document.createElement('button');b.className='filter-btn';b.id='ki-sub-'+x[0];b.textContent=x[1];b.setAttribute('onclick',"kiSub('"+x[0]+"')");bb.parentNode.insertBefore(b,bb);});
+  function pane(id){var d=document.createElement('div');d.id=id;d.style.display='none';B.parentNode.insertBefore(d,B);return d;}
+  var C=pane('t8c'),D=pane('t8d'),Ee=pane('t8e');
+  function cardOf(inner){var n=inner;while(n&&n.parentElement&&!(n.classList&&n.classList.contains('card')))n=n.parentElement;return n;}
+  /* 기회 키워드 = 잠자는 거인 목록 */
+  var sl=g.querySelector('[data-sec="😴 잠자는 거인(순위 미확보)"]');
+  if(sl){sl.removeAttribute('data-sec');sl.style.margin='0';var h3=sl.querySelector('h3');if(h3)h3.innerHTML='🎯 기회 키워드 <span style="font-weight:500;font-size:.72rem;color:#94a3b8">검색량 1,000↑ · 우리 순위 없음 · 매출 키워드 먼저 · 폐기어·자기잠식 축 기본 숨김</span>';
+    var ctl=document.createElement('div');ctl.id='mv2-sl-ctl';ctl.style.cssText='display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 11px;border-bottom:1px solid #f1f5f9';
+    ctl.innerHTML='<button class="filter-btn active" id="mv2-sl-hide">폐기어·자기잠식 축 숨김</button><button class="filter-btn" id="mv2-sl-rev">💰 매출 키워드만</button><span id="mv2-sl-cnt" style="font-size:.74rem;color:#64748b;margin-left:auto">-</span>';
+    var body=sl.querySelector('.card-body');if(body)body.insertBefore(ctl,body.firstChild);
+    C.appendChild(sl);
+    $('mv2-sl-hide').onclick=function(){this.classList.toggle('active');renderGiants();};
+    $('mv2-sl-rev').onclick=function(){this.classList.toggle('active');renderGiants();};
+    var th=sl.querySelector('thead tr');if(th)th.innerHTML='<th>시즌판정</th><th>키워드</th><th>카테고리</th><th>검색량</th><th>등급</th><th>매출 키워드</th><th>비고</th>';
+  }
+  /* 실검색어 = 네이버 TOP + 미커버 + 유입 검색어 + 수동 유입 검색어 */
+  var nvt=cardOf($('nv-term-body'));if(nvt)D.appendChild(nvt);
+  var unc=g.querySelector('[data-sec="🕳️ 미커버 실검색어"]');if(unc){unc.removeAttribute('data-sec');unc.style.margin='0 0 16px';D.appendChild(unc);}
+  var inf=cardOf($('ki-inflow'));if(inf){inf.style.margin='0 0 16px';D.appendChild(inf);}
+  var nvk=one&&one.querySelector('details[data-sec="🔎 유입 검색어"]');if(nvk){nvk.removeAttribute('data-sec');D.appendChild(nvk);}
+  if(nvt)nvt.style.margin='0 0 16px';
+  /* 상위 글 = 조회수·공감·댓글 순위 + 게시물별 조회수 */
+  var st=document.createElement('div');st.id='mv2-top-fresh';st.className='mv2-strip';st.innerHTML='<span class="mv2-mut">측정월 확인 중…</span>';Ee.appendChild(st);
+  var top=cardOf($('ki-top'));if(top){top.style.margin='0 0 16px';Ee.appendChild(top);
+    top.querySelectorAll('div').forEach(function(d){if(d.children.length===0&&d.textContent.indexOf('블A=13개월')>=0)d.textContent='네이버 블로그 통계 「조회수·공감수·댓글수 순위」 파일 업로드분 기준 · 마지막 측정월은 위 표시';});}
+  var nvv=one&&one.querySelector('details[data-sec="📊 게시물 조회수"]');if(nvv){nvv.removeAttribute('data-sec');Ee.appendChild(nvv);}
+  p.querySelectorAll('.sec-off').forEach(function(n){n.classList.remove('sec-off');});
+  return true;
+}
+function kiSubV2(w){
+  if(PANES.indexOf(w)<0)w='a';KI_SUB=w;
+  try{if(window._rk)window._rk.sub=(w==='b'?'b':'a');}catch(_){}
+  PANES.forEach(function(k){var d=$('t8'+k);if(d)d.style.display=(k===w)?'':'none';var b=$('ki-sub-'+k);if(b)b.classList.toggle('active',k===w);});
+  if((w==='b'||w==='d'||w==='e')&&!window._kiWarehouseLoaded){window._kiWarehouseLoaded=true;if(window.loadWarehouse)window.loadWarehouse();}
+  if((w==='d'||w==='e')&&!kiLoaded.nm){kiLoaded.nm=1;if(window.loadNaverManual)window.loadNaverManual();}
+  if(w==='c'&&!kiLoaded.c){kiLoaded.c=1;loadGiantsV2();}
+  if(w==='d'&&!kiLoaded.d){kiLoaded.d=1;if(window.loadUncovered)window.loadUncovered();}
+  if(w==='e'){loadTopFresh();}
+  if(typeof window.buildSecNavs==='function')setTimeout(window.buildSecNavs,300);
+}
+var GIANTS=null,REVKW=null;
+var DROP=[[/가볼만한/,'가볼만한곳 — 9/04 편성 폐기(실패군 54%)'],[/플레이스/,'플레이스 — 9/03 자기잠식 축']];
+async function loadGiantsV2(){
+  var tb=$('sleeping-body');if(!tb)return;tb.innerHTML='<tr><td colspan="7" class="loading">로딩 중...</td></tr>';
+  try{
+    var r=await Promise.all([sb.from('v_sleeping_giants').select('키워드,카테고리,검색량,사업정합등급,시즌,시즌판정').order('검색량',{ascending:false}).limit(1000),sb.from('mk_revenue_keywords').select('키워드').limit(2000)]);
+    if(r[0].error)throw r[0].error;GIANTS=r[0].data||[];REVKW={};(r[1].data||[]).forEach(function(x){REVKW[String(x.키워드||'').replace(/\s/g,'')]=1;});
+    renderGiants();
+  }catch(e){tb.innerHTML='<tr><td colspan="7" style="color:#dc2626;padding:12px">기회 키워드 로드 실패: '+E(e.message||e)+'</td></tr>';}
+}
+function renderGiants(){
+  var tb=$('sleeping-body');if(!tb||!GIANTS)return;
+  var hideDrop=$('mv2-sl-hide')&&$('mv2-sl-hide').classList.contains('active');var revOnly=$('mv2-sl-rev')&&$('mv2-sl-rev').classList.contains('active');
+  var pri={'지금 착수':0,'상시':1,'철 아님(대기)':2};var dropped=0;
+  var rows=GIANTS.map(function(x){var why='';DROP.forEach(function(d){if(!why&&d[0].test(x.키워드||''))why=d[1];});return {x:x,why:why,rev:!!REVKW[String(x.키워드||'').replace(/\s/g,'')]};})
+    .filter(function(o){if(o.why&&hideDrop){dropped++;return false;}if(revOnly&&!o.rev)return false;return true;})
+    .sort(function(a,b){return (b.rev-a.rev)||((pri[a.x.시즌판정]??9)-(pri[b.x.시즌판정]??9))||((b.x.검색량||0)-(a.x.검색량||0));});
+  var c=$('mv2-sl-cnt');if(c)c.textContent='표시 '+Math.min(rows.length,60)+' / 해당 '+rows.length+' · 전체 '+GIANTS.length+(hideDrop?' · 숨김 '+dropped:'');
+  var col=function(j){return j==='지금 착수'?'#dc2626':(j==='상시'?'#0369a1':'#94a3b8');};
+  tb.innerHTML=rows.length?rows.slice(0,60).map(function(o){var r=o.x;return '<tr'+(o.why?' style="background:#fef2f2"':'')+'><td style="font-weight:700;color:'+col(r.시즌판정)+'">'+E(r.시즌판정)+'</td><td style="font-weight:600">'+E(r.키워드)+'</td><td>'+E(r.카테고리)+'</td><td style="font-weight:700">'+(r.검색량||0).toLocaleString()+'</td><td>'+E(r.사업정합등급)+'</td><td>'+(o.rev?'<span class="mv2-chip mv2-ok">💰</span>':'<span class="mv2-mut">-</span>')+'</td><td style="font-size:.72rem;color:#b91c1c">'+E(o.why)+'</td></tr>';}).join(''):'<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:14px">해당 없음</td></tr>';
+}
+async function loadTopFresh(){
+  var el=$('mv2-top-fresh');if(!el)return;
+  try{var r=await sb.from('mk_top_posts').select('측정월').order('측정월',{ascending:false}).limit(1);var m=r.data&&r.data[0]?String(r.data[0].측정월).slice(0,7):null;var lm=lastMonths(1)[0];
+    el.innerHTML=(m&&m>=lm)?'<span class="mv2-chip mv2-ok">마지막 측정월 '+m+'</span>':'<span class="mv2-chip mv2-bad">마지막 측정월 '+(m||'없음')+' — '+lm+' 파일 미수령</span><span class="mv2-mut">통계 대시보드 › 네이버 통계 Excel 업로드에서 올리면 채워집니다</span>';
+  }catch(e){warn('topfresh',e);}
+}
+
+/* ───────── 5. 기준·알고리즘 (t6) ───────── */
+var RULE_IDS=[2,3,4,10,11,13,16,18,23,27,45,53];
+var REG_STALE={'realplan-channel':['v2.6','v2.9'],'realplan-rewrite':['v2.6','v2.8'],'realplan-schedule':['v3.12','v3.16'],'realplan-sns':['v5.0','v5.2'],'realplan-video':['v2.6','v2.7'],'realplan-media':['v1.0','v1.1'],'realplan-coursemap':['v3.2','v3.3']};
+var REG_MISSING=['realplan-design','realplan-genie'];
+function buildT6(){
+  var p=$('t6');if(!p)return false;
+  var hdr=p.firstElementChild;
+  safe('t6hdr',function(){var t=hdr.querySelector('div');var h=hdr.querySelector('h2')||t;if(h)h.textContent='📐 기준·알고리즘';
+    var d=hdr.querySelector('p')||(hdr.children[1]);if(d)d.textContent='상위노출 알고리즘 대장 · 스킬 버전 · 스킬이 DB에서 읽는 규칙. 글쓰기 규격 본문(톤·제목·SEO/AEO/GEO)은 스킬 references가 정본이라 여기에 복사해 두지 않습니다.';});
+  var engine=null;
+  [].slice.call(p.children).forEach(function(c){
+    if(c===hdr)return;
+    var h3=c.querySelector&&c.querySelector('h3');var txt=(h3?h3.textContent:c.textContent)||'';
+    if(/콘텐츠 엔진/.test(txt)&&c.classList.contains('card')){engine=c;return;}
+    hide(c);
+  });
+  if(!engine)return false;
+  var eh=engine.querySelector('h3');if(eh)eh.textContent='📡 상위노출 알고리즘 대장 · 🧩 스킬 버전 · 📋 DB 정본 규칙';
+  var body=engine.querySelector('.card-body');
+  if(body){
+    [].slice.call(body.children).slice(0,2).forEach(hide);
+    var info=document.createElement('div');info.className='mv2-note';
+    info.innerHTML='ℹ️ 알고리즘 표의 4채널(플레이스·카카오·구글비즈니스·당근)은 「채널 소식」 탭 대장(mk_channel_algorithm)과 <b>두 벌</b>입니다 — 한쪽만 고치면 어긋납니다(통합은 P5-A 안건). 경과일이 주기를 넘기면 빨강입니다.';
+    body.insertBefore(info,body.firstChild);
+    var at=$('algo-body');var atbl=at&&at.closest('table');if(atbl){var th=atbl.querySelector('thead tr');if(th)th.innerHTML='<th>플랫폼</th><th>버전</th><th>마지막 점검</th><th>경과</th><th>내용 갱신</th><th>핵심 변경사항</th>';}
+    var rs=$('skillrules-body');var rtbl=rs&&rs.closest('div');
+    var lab=rtbl&&rtbl.previousElementSibling;if(lab)lab.textContent='📋 스킬이 DB에서 직접 읽는 규칙 (mk_blog_skill_rules · 스킬 문서에 id가 적힌 행만)';
+    var reg=document.createElement('div');reg.innerHTML='<div style="font-weight:700;margin:14px 0 6px;color:#334155">🧩 스킬 버전 대조 (mk_skill_registry)</div><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>스킬</th><th>등재 버전</th><th>등재일</th><th>대조</th></tr></thead><tbody id="mv2-skill-body"><tr><td colspan="4" class="loading">로딩 중...</td></tr></tbody></table></div>';
+    if(rtbl&&lab)body.insertBefore(reg,lab);else body.appendChild(reg);
+    var old=document.createElement('details');old.id='mv2-rules-old';old.style.cssText='margin-top:12px;border:1px solid #e2e8f0;border-radius:8px';
+    old.innerHTML='<summary style="padding:9px 12px;cursor:pointer;font-size:.82rem;color:#64748b">구버전 사본 규칙 <b id="mv2-rules-old-n">-</b>행 — 스킬버전 표기가 낡았고 정본은 스킬 references입니다 (참고용)</summary><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>id</th><th>구분</th><th>채널</th><th>버전</th><th>규칙</th></tr></thead><tbody id="mv2-rules-old-body"></tbody></table></div>';
+    body.appendChild(old);
+  }
+  return true;
+}
+async function loadAlgoV2(){
+  var tb=$('algo-body');if(!tb)return;
+  var r=await sb.from('mk_blog_algorithm').select('플랫폼,알고리즘_버전,마지막_업데이트일,마지막_점검일,업데이트_주기_일,핵심변경사항,활성').eq('활성',true).order('플랫폼');
+  if(r.error){tb.innerHTML='<tr><td colspan="6" style="color:#ef4444">로드 실패</td></tr>';return;}
+  tb.innerHTML=(r.data||[]).map(function(x){var k=x.핵심변경사항;if(k&&typeof k==='object')k=Array.isArray(k)?k.join(' / '):JSON.stringify(k);k=String(k||'-');
+    var d=daysAgo(x.마지막_점검일),cyc=Number(x.업데이트_주기_일)||30,cls=d==null?'mv2-bad':(d>cyc?'mv2-bad':(d>=Math.floor(cyc*0.8)?'mv2-wn':'mv2-ok'));
+    var u=daysAgo(x.마지막_업데이트일);
+    return '<tr><td style="font-weight:700;white-space:nowrap">'+E(x.플랫폼)+'</td><td><span style="background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:9px;font-size:.75rem">'+E(x.알고리즘_버전||'-')+'</span></td><td style="white-space:nowrap;font-size:.78rem">'+E(x.마지막_점검일||'-')+'</td><td><span class="mv2-chip '+cls+'">'+(d==null?'없음':d+'일')+' / '+cyc+'</span></td><td style="white-space:nowrap;font-size:.74rem;color:'+(u!=null&&u>60?'#b45309':'#64748b')+'">'+E(x.마지막_업데이트일||'-')+(u!=null&&u>60?' · 내용 '+u+'일 그대로':'')+'</td><td style="font-size:.78rem;line-height:1.6"><details><summary style="cursor:pointer">'+E(k.slice(0,70))+(k.length>70?'…':'')+'</summary>'+E(k)+'</details></td></tr>';}).join('')||'<tr><td colspan="6" style="text-align:center;color:#94a3b8">없음</td></tr>';
+}
+async function loadSkillRulesV2(){
+  var tb=$('skillrules-body'),ob=$('mv2-rules-old-body');if(!tb)return;
+  var r=await sb.from('mk_blog_skill_rules').select('id,구분,채널,규칙,스킬버전,활성').eq('활성',true).order('id');
+  if(r.error){tb.innerHTML='<tr><td colspan="4" style="color:#ef4444">로드 실패</td></tr>';return;}
+  var live=[],old=[];(r.data||[]).forEach(function(x){(RULE_IDS.indexOf(Number(x.id))>=0?live:old).push(x);});
+  function row(x,withId){var g=String(x.규칙||'-');return '<tr>'+(withId?'<td style="color:#94a3b8">'+x.id+'</td>':'')+'<td style="font-weight:700;white-space:nowrap">'+(withId?'':'<span style="color:#94a3b8;font-weight:400">id'+x.id+'</span> ')+E(x.구분||'-')+'</td><td style="color:#64748b;font-size:.75rem;white-space:nowrap">'+E(x.채널||'공통')+'</td><td><span style="background:#ede9fe;color:#6d28d9;padding:2px 7px;border-radius:9px;font-size:.72rem">'+E(x.스킬버전||'-')+'</span></td><td style="font-size:.78rem;line-height:1.6"><details><summary style="cursor:pointer">'+E(g.slice(0,90))+(g.length>90?'…':'')+'</summary>'+E(g)+'</details></td></tr>';}
+  var th=tb.closest('table')&&tb.closest('table').querySelector('thead tr');if(th)th.innerHTML='<th>구분</th><th>채널</th><th>버전</th><th>규칙</th>';
+  tb.innerHTML=live.map(function(x){return row(x,false);}).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8">없음</td></tr>';
+  if(ob)ob.innerHTML=old.map(function(x){return row(x,true);}).join('');
+  var n=$('mv2-rules-old-n');if(n)n.textContent=old.length;
+  loadSkillReg();
+}
+async function loadSkillReg(){
+  var tb=$('mv2-skill-body');if(!tb)return;
+  var r=await sb.from('mk_skill_registry').select('스킬명,버전,갱신일').order('스킬명');
+  if(r.error){tb.innerHTML='<tr><td colspan="4" style="color:#ef4444">로드 실패</td></tr>';return;}
+  var names={};var h=(r.data||[]).map(function(x){names[x.스킬명]=1;var s=REG_STALE[x.스킬명],flag='';
+    if(s&&x.버전===s[0])flag='<span class="mv2-chip mv2-wn">설치본 '+s[1]+' · 대장 갱신 필요(9/16 실측)</span>';
+    else flag='<span class="mv2-mut">-</span>';
+    return '<tr><td style="font-weight:600">'+E(x.스킬명)+'</td><td>'+E(x.버전)+'</td><td style="font-size:.76rem;color:#64748b">'+E(String(x.갱신일||'').slice(0,10))+'</td><td>'+flag+'</td></tr>';}).join('');
+  REG_MISSING.forEach(function(m){if(!names[m])h+='<tr><td style="font-weight:600">'+E(m)+'</td><td class="mv2-mut">미등재</td><td></td><td><span class="mv2-chip mv2-bad">대장에 없음(9/16 실측)</span></td></tr>';});
+  tb.innerHTML=h;
+}
+
+/* ───────── 6. 리라이트 · 사실관계 · 초안 ───────── */
+async function loadRwCtrCard(){
+  var p=$('t15');if(!p)return;
+  var box=$('mv2-rw-ctr');
+  if(!box){box=document.createElement('details');box.id='mv2-rw-ctr';box.style.cssText='background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin:0 0 12px';
+    var hdr=p.firstElementChild;p.insertBefore(box,hdr.nextSibling);}
+  var r=await sb.from('v_ctr_diagnosis').select('채널,제목,외부_url,평균순위,노출,클릭,진단');
+  var rows=(r.data||[]).filter(function(x){return /^[ABD] /.test(String(x.진단||''));});var urls=rows.map(function(x){return x.외부_url;}).filter(Boolean);var st={};
+  if(urls.length){var q=await sb.from('v_rewrite_queue').select('외부_url,진행,순위').in('외부_url',urls);(q.data||[]).forEach(function(x){st[x.외부_url]=x;});}
+  var notIn=rows.filter(function(x){return !st[x.외부_url];}).length;
+  rows.sort(function(a,b){return (!!st[a.외부_url])-(!!st[b.외부_url])||Number(b.노출||0)-Number(a.노출||0);});
+  box.innerHTML='<summary style="padding:10px 14px;cursor:pointer;font-size:.86rem;font-weight:700">📉 클릭 진단에서 넘어온 글 '+rows.length+'건 <span style="color:'+(notIn?'#b91c1c':'#16a34a')+'">· 대기열 미편입 '+notIn+'건</span> <span style="font-weight:400;color:#94a3b8;font-size:.74rem">(순위·클릭 진단 › 클릭 탭 A·B·D)</span></summary>'
+   +'<div style="overflow-x:auto;padding:0 10px 10px"><table class="tbl"><thead><tr><th>채널</th><th>제목</th><th>순위</th><th>노출/클릭</th><th>할 일</th><th>대기열</th></tr></thead><tbody>'
+   +rows.map(function(x){var p1=Number(x.평균순위||0),q=st[x.외부_url];var todo=(p1>0&&p1<=10)?'본문·스니펫 보강(제목 금지)':(/^[AB] /.test(x.진단||'')?'제목 손질(11~30위)':'본문 보강');
+     return '<tr><td style="white-space:nowrap">'+E(x.채널)+'</td><td><a href="'+E(x.외부_url)+'" target="_blank" rel="noopener" style="color:#2563eb">'+E(String(x.제목||'(제목 미상)').slice(0,48))+'</a></td><td>'+E(x.평균순위)+'</td><td style="white-space:nowrap">'+E(x.노출)+' / '+E(x.클릭)+'</td><td style="font-size:.74rem">'+todo+'</td><td>'+(q?'<span class="mv2-chip mv2-ok">'+E(q.진행||'대기')+' · '+E(q.순위)+'위</span>':'<span class="mv2-chip mv2-bad">미편입</span>')+'</td></tr>';}).join('')
+   +'</tbody></table></div>';
+}
+async function loadFactAlert(){
+  var p=$('t11');if(!p)return;
+  var el=$('mv2-fact');
+  if(!el){el=document.createElement('div');el.id='mv2-fact';el.className='mv2-strip';var hdr=p.firstElementChild;p.insertBefore(el,hdr.nextSibling);}
+  var today=kst();
+  var r=await Promise.all([sb.from('mk_blog_facts').select('id',{count:'exact',head:true}).lt('만료예정일',today),sb.from('mk_blog_facts').select('id',{count:'exact',head:true}).is('만료예정일',null)]);
+  var a=r[0].count||0,b=r[1].count||0;
+  el.innerHTML='<b>사실 신선도</b><span class="mv2-chip '+(a?'mv2-bad':'mv2-ok')+'">만료일 지난 사실 '+a+'건</span><span class="mv2-chip '+(b?'mv2-wn':'mv2-ok')+'">만료일 없는 사실 '+b+'건</span><span class="mv2-mut">만료된 사실은 초안 허브가 그대로 주입할 수 있으니 재검증 후 날짜를 갱신하세요</span>';
+}
+
+/* ───────── 7. 연결 ───────── */
+function wireAll(){
+  var sw=window.switchTab;
+  if(typeof sw==='function'&&!sw.__mv2){
+    var ns=function(id,el){
+      if(id==='t4'){sw.call(this,'t8',NAV.t8);kiSubV2('c');return;}
+      if(id==='tctr'){sw.call(this,'t5',NAV.t5);t5Sub('ctr');return;}
+      var r=sw.apply(this,arguments);
+      if(id==='t8'&&KI_SUB!=='a')setTimeout(function(){kiSubV2(KI_SUB);},0);
+      if(id==='t15')safe('rwctr',function(){loadRwCtrCard().catch(function(e){warn('rwctr',e);});});
+      if(id==='t11')safe('fact',function(){loadFactAlert().catch(function(e){warn('fact',e);});});
+      return r;
+    };
+    ns.__mv2=true;ns.__orig=sw;window.switchTab=ns;
+  }
+  window.kiSub=kiSubV2;
+  window.loadRewritePriority=function(){return Promise.resolve();};
+  window.loadAlgo=function(){return loadAlgoV2().catch(function(e){warn('algo',e);});};
+  window.loadSkillRules=function(){return loadSkillRulesV2().catch(function(e){warn('rules',e);});};
+  window.loadSleeping=function(){return loadGiantsV2();};
+  wrap('loadStats',function(){if(window.loadGiantsNaver)window.loadGiantsNaver();loadFresh().catch(function(e){warn('fresh',e);});loadUpGrid().catch(function(e){warn('grid',e);});});
+  wrap('loadChannelDiagnosis',fixD7);
+  wrap('loadCTR',fixCTR);
+  wrap('loadIndexNow',fixIndex);
+}
+function boot(){
+  var ok={};
+  ok.nav=safe('nav',rebuildNav);
+  if(!ok.nav){warn('boot','메뉴 구조 불일치 — 재편을 적용하지 않았습니다');return;}
+  ok.t5=safe('t5',buildT5);
+  ok.t1=safe('t1',buildT1);
+  ok.t8=safe('t8',buildT8);
+  ok.t6=safe('t6',buildT6);
+  safe('wire',wireAll);
+  safe('badge',function(){var b=document.querySelector('.hdr-badge');if(b)b.textContent=VER;});
+  ['t1','t5','t8','t6'].forEach(function(id){var p=$(id);if(!p)return;p.querySelectorAll('.sec-off').forEach(function(n){n.classList.remove('sec-off');});});
+  safe('secnav',function(){var n=$('t1')&&$('t1').querySelector(':scope > .sec-nav');if(n)n.remove();if(typeof window.buildSecNavs==='function')window.buildSecNavs();});
+  /* 이미 통계 탭이 그려진 뒤라면 새 구역을 바로 채운다 */
+  var logged=!!($('hdr-email')&&$('hdr-email').textContent.trim());
+  safe('t1load',function(){if(logged&&$('t1')&&$('t1').classList.contains('active')&&(typeof sb!=='undefined')){if(window.loadGiantsNaver)window.loadGiantsNaver();loadFresh().catch(function(e){warn('fresh',e);});loadUpGrid().catch(function(e){warn('grid',e);});}});
+  safe('t6load',function(){if(logged&&(typeof sb!=='undefined')&&$('algo-body')){loadAlgoV2().catch(function(){});loadSkillRulesV2().catch(function(){});}});
+  window.__rpMenuV2State=ok;
+  try{console.info('[menu-v2] 적용 '+VER,JSON.stringify(ok));}catch(_){}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+</script>
+<!-- RP-MENU-V2 end -->
+
 </body>
 </html>

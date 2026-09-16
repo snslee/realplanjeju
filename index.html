@@ -366,20 +366,37 @@ footer .admin a{text-decoration:underline}
     <div class="frow one">
       <div class="fld"><label>어떻게 알게 되셨나요? (선택)</label><select id="rpf-know" onchange="var v=this.value,w=document.getElementById('rpf-know-sub'),l=document.getElementById('rpf-know-lb'),e=document.getElementById('rpf-know-etc');if(v==='기타'){w.style.display='';l.textContent='어떻게 알게 되셨는지 적어주세요';e.placeholder='예: 지역 커뮤니티, 현수막';}else if(v==='지인 소개'){w.style.display='';l.textContent='소개해주신 분 (선택)';e.placeholder='예: 홍길동 님';}else{w.style.display='none';e.value='';}">
         <option value="">선택 안 함</option>
-        <option>네이버 블로그</option>
-        <option>티스토리 블로그</option>
-        <option>네이버 검색</option>
-        <option>구글 검색</option>
-        <option>네이버 카페</option>
-        <option>유튜브</option>
-        <option>인스타그램</option>
-        <option>쓰레드</option>
-        <option>카카오톡 채널</option>
-        <option>네이버 플레이스</option>
-        <option>당근</option>
-        <option>ChatGPT 등 AI 추천</option>
-        <option>지인 소개</option>
-        <option value="기타">기타 (직접 입력)</option>
+        <optgroup label="블로그">
+          <option>네이버 블로그</option>
+          <option>티스토리 블로그</option>
+        </optgroup>
+        <optgroup label="검색">
+          <option>네이버 검색</option>
+          <option>구글 검색</option>
+          <option>네이버 플레이스</option>
+        </optgroup>
+        <optgroup label="AI 검색">
+          <option>ChatGPT</option>
+          <option>Perplexity</option>
+          <option>Gemini</option>
+          <option>Claude</option>
+          <option>네이버 AI 브리핑</option>
+          <option>기타 AI</option>
+        </optgroup>
+        <optgroup label="SNS·유튜브">
+          <option>인스타그램</option>
+          <option>유튜브</option>
+          <option>쓰레드</option>
+          <option>틱톡</option>
+          <option>페이스북</option>
+          <option>카카오톡 채널</option>
+        </optgroup>
+        <optgroup label="커뮤니티·기타">
+          <option>네이버 카페</option>
+          <option>당근</option>
+          <option>지인 소개</option>
+          <option value="기타">기타 (직접 입력)</option>
+        </optgroup>
       </select></div>
     </div>
     <div class="frow one" id="rpf-know-sub" style="display:none">

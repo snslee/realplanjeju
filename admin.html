@@ -11112,5 +11112,234 @@ setInterval(build,700);
   },true);
 })();
 </script>
+<!-- RP-DASH-V2 start (2026-09-16 대시보드·홈페이지 관리 개편 v1.0 · 원본 무수정 런타임 교체 · 이 블록만 지우면 원복) -->
+<script id="rp-dash-v2">
+(function(){
+if(window.RP_DASH_V2)return; window.RP_DASH_V2='1.0';
+function q(s){return document.querySelector(s);}
+function E(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function N(v){v=Number(v);return isFinite(v)?v.toLocaleString('ko-KR'):'-';}
+function SB(){return window.sb;}
+function P(v){return (v===null||v===undefined||v==='')?'-':(v+'%');}
+function kst(d){return new Date(d).toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'});}
+
+/* 0) 직원 표시 — 관리자 화면을 연 브라우저는 홈A(같은 주소) 방문을 직원으로 기록 */
+try{localStorage.setItem('rp_staff','1');}catch(e){}
+
+/* 1) 대시보드 KPI 6칸 — rpc_dashboard_kpis v2 값으로 이름·값 교체 */
+var _rk=window.renderKpis;
+window.renderKpis=function(j){
+  j=j||{};
+  if(!j.kpi_version){ if(typeof _rk==='function') return _rk(j); return; }
+  function card(key,label,val,sub,alert){
+    var c=q('.kpi-card[data-kpi="'+key+'"]'); if(!c)return;
+    var l=c.querySelector('.kpi-label'),v=c.querySelector('.kpi-value'),s=c.querySelector('.kpi-sub');
+    if(l)l.textContent=label;
+    if(v){v.textContent=val;v.style.fontSize='';v.style.color=alert?'#c0392b':'';}
+    if(s)s.textContent=sub;
+    c.style.borderLeftColor=alert?'#c0392b':'';
+  }
+  card('new','오늘 신규 문의',N(j.new_count),'최근 7일 '+N(j.new_7d)+'건',false);
+  card('unresponsive','미응답 (24h+)',N(j.unresponsive_count),'열린 문의 · 접촉 기록 없음',Number(j.unresponsive_count)>0);
+  card('in_progress','상담 중',N(j.consult_count),'확인·상담 단계',false);
+  card('top_bu','견적 대기',N(j.quote_wait_count),'14일+ 방치 '+N(j.quote_stale_14d)+' · 30일+ '+N(j.quote_stale_30d),Number(j.quote_stale_14d)>0);
+  card('completed','이번 달 계약',N(j.completed_month),'계약 전환일 기준',false);
+  var lost=(j.lost_rate_3m!=null)?Number(j.lost_rate_3m).toFixed(1)+'%':'-';
+  card('dropout','90일 이탈·취소',lost,'이탈 '+P(j.dropout_rate_3m)+' · 취소 '+P(j.cancel_rate_3m)+' ('+N(j.base_3m)+'건 중)',Number(j.lost_rate_3m)>=30);
+  var first=q('.kpi-card[data-kpi="new"]'),par=first&&first.parentNode;
+  if(par&&!par._rpdOrder){par._rpdOrder=1;['new','unresponsive','in_progress','top_bu','completed','dropout'].forEach(function(k){var c=q('.kpi-card[data-kpi="'+k+'"]');if(c)par.appendChild(c);});}
+  var tb=q('.kpi-card[data-kpi="top_bu"]');
+  if(tb&&!tb._rpdLink){tb._rpdLink=1;tb.style.cursor='pointer';tb.title='문의 목록 열기';tb.addEventListener('click',function(){location.hash='#customers';});}
+};
+
+/* 2) 대시보드 방문 줄 삭제 → 유입·전환표 머리에 30일 한 줄 */
+var _dashTok=0;
+window.wsDashSummary=async function(){
+  var my=++_dashTok;
+  try{
+    var box=document.getElementById('ws-dash'); if(box)box.hidden=true;
+    var head=document.getElementById('inflow-box'); if(!head||!SB())return;
+    var r=await SB().rpc('rpc_web_visit_summary',{p_days:30,p_site:'ALL'});
+    if(my!==_dashTok||r.error||!r.data)return;
+    var d=r.data;
+    var t=head.querySelector('span'); if(t)t.textContent='사람 방문 기준 · 봇·관리자·사이트 내부 이동 제외';
+    var line=document.getElementById('rpd-inflow-line');
+    if(!line){line=document.createElement('div');line.id='rpd-inflow-line';line.style.cssText='font-size:12.5px;color:#56627a;margin:2px 0 8px';head.insertBefore(line,document.getElementById('inflow-body'));}
+    line.innerHTML='최근 30일 사람 방문 <b style="color:#2B62C4">'+N(d['합계'])+'</b>세션 (오늘 '+N(d['오늘'])+')'
+      +' · 홈페이지 경유 문의 <b style="color:#2B62C4">'+N(d['홈페이지_문의'])+'</b>건 · 전환 '+P(d['문의_전환_pct'])
+      +' <a href="#website" style="margin-left:6px;color:#2B62C4;font-weight:700">상세 →</a>';
+  }catch(e){}
+};
+
+/* 3) 문의 목록 — 견적 방치 배지 */
+var _rct=window.renderCustomersTable;
+if(typeof _rct==='function'){
+  window.renderCustomersTable=function(rows){
+    var out=_rct.apply(this,arguments);
+    try{(rows||[]).forEach(function(r){
+      var st=r['고객상태']; if(st!=='견적발송'&&st!=='계약대기')return;
+      var nc=Number(r['무접촉일']); if(!(nc>=14))return;
+      var no=String(r['접수번호']||''); var tr=null;
+      document.querySelectorAll('.customers-table tbody tr').forEach(function(x){if(x.getAttribute('data-inq')===no)tr=x;});
+      if(!tr||tr.querySelector('.rpd-qbadge'))return;
+      var td=tr.children[4]; if(!td)return;
+      var b=document.createElement('span'); b.className='rpd-qbadge';
+      b.textContent=(nc>=30?'견적 30일+':'견적 14일+');
+      b.style.cssText='display:inline-block;margin-left:5px;padding:1px 6px;border-radius:8px;font-size:10.5px;font-weight:700;background:'+(nc>=30?'#fbe6e9':'#fdf1dc')+';color:'+(nc>=30?'#b3263a':'#9a5b00');
+      td.appendChild(b);
+    });}catch(e){}
+    return out;
+  };
+}
+
+/* 4) 홈페이지 관리 */
+function hpFix(){
+  var bs=document.querySelectorAll('#view-website b');
+  bs.forEach(function(b){ if(b.textContent.indexOf('realplanjeju.com/marketing')>-1){ b.textContent='B — 마케팅·교육 (marketing.realplanjeju.com)'; } });
+  bs.forEach(function(b){ if(b.textContent.indexOf('A — 여행·행사')===0 && b.textContent.indexOf('realplanjeju.com')<0){ b.textContent='A — 여행·행사 (realplanjeju.com)'; } });
+  var sum=document.querySelector('.ws-pane[data-pane="summary"]'); if(sum)sum.hidden=true;
+  var cv=document.getElementById('ws-conv'); if(cv&&cv.parentNode)cv.parentNode.hidden=true;
+  var chp=document.querySelector('.ws-pane[data-pane="channel"] b'); if(chp&&!chp._rpd){chp._rpd=1;chp.insertAdjacentHTML('afterend','<span style="font-size:11.5px;color:#98a3b8;margin-left:6px">(페이지뷰 기준)</span>');}
+  var pgp=document.querySelector('.ws-pane[data-pane="page"] b'); if(pgp&&!pgp._rpd){pgp._rpd=1;pgp.insertAdjacentHTML('afterend','<span style="font-size:11.5px;color:#98a3b8;margin-left:6px">(페이지뷰 기준)</span>');}
+  if(!document.querySelector('.ws-pane[data-pane="click"]')){
+    var ch=document.querySelector('.ws-pane[data-pane="post"]')||document.querySelector('.ws-pane[data-pane="channel"]');
+    if(ch){var d=document.createElement('div');d.className='ws-pane';d.setAttribute('data-pane','click');d.hidden=true;
+      d.innerHTML='<div style="margin-top:14px"><b style="font-size:13.5px">버튼 클릭 — 전화·카카오톡·견적 요청</b><span style="font-size:11.5px;color:#98a3b8;margin-left:6px">홈A·홈B·자료실의 문의 버튼을 누른 횟수 (선택한 기간·사이트)</span><div id="rpd-click"></div></div>';
+      ch.parentNode.insertBefore(d,ch.nextSibling);}
+  }
+  var hub=document.getElementById('rpd-staff');
+  if(!hub){
+    var grid=null; document.querySelectorAll('#view-website button').forEach(function(x){ if(!grid && (x.getAttribute('onclick')||'').indexOf("wsOpenEditor('B')")>-1) grid=x.parentNode&&x.parentNode.parentNode; });
+    if(grid){hub=document.createElement('div');hub.id='rpd-staff';hub.style.cssText='font-size:12px;color:#5a6478;margin:-4px 0 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap';grid.parentNode.insertBefore(hub,grid.nextSibling);}
+  }
+  if(hub){
+    var bAt=''; try{bAt=localStorage.getItem('rp_staff_b_at')||'';}catch(e){}
+    hub.innerHTML='<span>이 PC의 홈페이지 방문은 통계에서 뺍니다 —</span><span style="color:#2E7D32;font-weight:700">A ✓ 자동</span>'
+      +'<span style="color:'+(bAt?'#2E7D32':'#9a5b00')+';font-weight:700">B '+(bAt?'✓ '+E(bAt):'미표시')+'</span>'
+      +'<button type="button" id="rpd-staff-b" style="border:1px solid #cfd8e3;background:#fff;border-radius:6px;padding:3px 9px;font-size:12px;cursor:pointer">B 사이트에 직원 표시</button>';
+    var btn=document.getElementById('rpd-staff-b');
+    if(btn)btn.onclick=function(){ window.open('https://marketing.realplanjeju.com/#rpstaff','_blank'); try{localStorage.setItem('rp_staff_b_at',kst(new Date()));}catch(e){} hpFix(); };
+  }
+}
+
+window.wsOpenEditor=async function(site){
+  try{
+    var s=await window.sb.auth.getSession(); var t=s.data&&s.data.session;
+    if(!t){alert('로그인 세션이 없습니다. 다시 로그인해주세요.');return;}
+    var url=(site==='A'?'https://realplanjeju.com/':'https://marketing.realplanjeju.com/');
+    url+='?rpv='+Date.now();
+    window.open(url+'#rpedit&rpstaff&access='+encodeURIComponent(t.access_token)+'&refresh='+encodeURIComponent(t.refresh_token),'_blank');
+    if(site==='B'){try{localStorage.setItem('rp_staff_b_at',kst(new Date()));}catch(e){}}
+  }catch(e){alert('편집 창 열기 실패: '+e.message);}
+};
+
+window.WS_TAB='page';
+window.wsSetTab=function(t){
+  if(t==='summary')t='page'; if(t==='post')t='channel'; if(t==='conv')t='gsc';
+  window.WS_TAB=t;
+  hpFix();
+  var TABS=[['page','페이지별'],['channel','채널·글별'],['click','버튼 클릭'],['gsc','구글 검색어']];
+  var el=document.getElementById('ws-tabs');
+  if(el)el.innerHTML=TABS.map(function(x){var on=(x[0]===t);
+    return '<button type="button" onclick="wsSetTab(\''+x[0]+'\')" style="border:0;background:'+(on?'#4A85F6':'transparent')+';color:'+(on?'#fff':'#5a6478')+';font-weight:'+(on?'800':'600')+';font-size:13px;padding:9px 16px;border-radius:8px 8px 0 0;cursor:pointer">'+x[1]+'</button>';}).join('');
+  var show={page:['page'],channel:['channel','post'],click:['click'],gsc:['conv']}[t]||['page'];
+  document.querySelectorAll('.ws-pane').forEach(function(p){p.hidden=show.indexOf(p.getAttribute('data-pane'))<0;});
+};
+
+var _visTok=0;
+async function rpdVisit(days){
+  var my=++_visTok;
+  var site=((document.getElementById('ws-site')||{}).value)||'ALL';
+  var kpi=document.getElementById('ws-kpi'),ab=document.getElementById('ws-ab'),chart=document.getElementById('ws-chart');
+  if(!kpi||!SB())return;
+  var r=await SB().rpc('rpc_web_visit_summary',{p_days:days,p_site:site});
+  if(my!==_visTok)return;
+  if(r.error||!r.data){kpi.insertAdjacentHTML('beforeend','<div style="grid-column:1/-1;color:#c0392b;font-size:12px">방문 요약을 불러오지 못했습니다('+E(r.error&&r.error.message)+'). 위 숫자는 페이지뷰 기준입니다.</div>');return;}
+  var d=r.data;
+  function tile(k){return '<div style="background:#f7faff;border:1px solid #e3e9f4;border-radius:10px;padding:14px;text-align:center"><div style="font-size:12px;color:#7a869c">'+k[0]+'</div><div style="font-size:22px;font-weight:900;color:#2B62C4">'+k[1]+'</div><div style="font-size:10.5px;color:#a6b0c2;margin-top:2px">'+k[2]+'</div></div>';}
+  kpi.innerHTML=[
+    ['오늘 방문',N(d['오늘']),'사람 세션'],
+    ['최근 '+days+'일',N(d['합계']),'사람 세션 · 일평균 '+d['일평균']],
+    ['모바일 비율',P(d['모바일_pct']),'세션 기준'],
+    ['홈페이지 경유 문의',N(d['홈페이지_문의'])+'건','세션 대비 전환 '+P(d['문의_전환_pct'])]
+  ].map(tile).join('');
+  if(ab){
+    var s2=d['사이트별']||{};
+    ab.innerHTML=(site==='ALL')?('<span style="font-size:12px;color:#7a869c;margin-right:4px">사이트별(사람 세션):</span>'
+      +'<span style="display:inline-block;margin-right:6px;padding:3px 10px;border-radius:999px;background:#eef4ff;color:#2B62C4;font-weight:800;font-size:12px">A 여행·행사 '+N(s2.A||0)+'</span>'
+      +'<span style="display:inline-block;margin-right:6px;padding:3px 10px;border-radius:999px;background:#eefaf2;color:#1e8e4e;font-weight:800;font-size:12px">B 마케팅·교육 '+N(s2.B||0)+'</span>'
+      +((s2['미상']||0)?'<span style="font-size:11.5px;color:#98a3b8">사이트 미상 '+N(s2['미상'])+' (08-31~09-02 서버 로그 복원분)</span>':'')):'';
+  }
+  if(chart){
+    var list=d['일별']||[]; var mx=1; list.forEach(function(x){if(x.n>mx)mx=x.n;});
+    var today=kst(new Date()); var L=list.length;
+    var bars=list.map(function(x){var v=x.n||0,isT=(x.d===today),h=v?Math.max(6,Math.round(v/mx*100)):0,col=isT?'#1B4FA8':'#4A85F6';
+      return '<div title="'+x.d+' · '+v+'세션" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:132px">'
+        +'<div style="font-size:9.5px;color:'+(v?'#5a6478':'#cfd6e4')+';font-weight:'+(isT?'800':'600')+';margin-bottom:2px">'+v+'</div>'
+        +(v?'<div style="width:100%;background:'+col+';height:'+h+'px;border-radius:3px 3px 0 0"></div>':'<div style="width:100%;border-top:1px dashed #dbe3f0;height:2px"></div>')+'</div>';}).join('');
+    var ticks=list.map(function(x,i){var show=(i===0)||(i===L-1)||((L-1-i)%7===0);
+      return '<div style="flex:1;text-align:center;font-size:9.5px;color:'+(x.d===today?'#1B4FA8':'#98a3b8')+';font-weight:'+(x.d===today?'800':'400')+'">'+(show?String(x.d).slice(5):'')+'</div>';}).join('');
+    chart.innerHTML='<div style="display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid #e3e9f4">'+bars+'</div>'
+      +'<div style="display:flex;gap:2px;margin-top:3px">'+ticks+'</div>'
+      +'<div style="font-size:10.5px;color:#a6b0c2;margin-top:5px">막대 = 그날 처음 들어온 사람 세션(봇·관리자·사이트 내부 이동 제외) · 짙은 막대 = 오늘 · 8/30 이전은 봇 판정 자료가 없어 참고치</div>';
+  }
+}
+
+var _clkTok=0;
+async function rpdClicks(days){
+  var my=++_clkTok;
+  var el=document.getElementById('rpd-click'); if(!el||!SB())return;
+  var site=((document.getElementById('ws-site')||{}).value)||'ALL';
+  var since=new Date(Date.now()-days*864e5).toISOString();
+  var qy=SB().from('web_클릭로그').select('사이트,유형,페이지,위치,클릭_시각').gte('클릭_시각',since).order('클릭_시각',{ascending:false}).limit(3000);
+  if(site!=='ALL')qy=qy.eq('사이트',site);
+  var r=await qy; if(my!==_clkTok)return;
+  if(r.error){el.innerHTML='<div style="color:#c0392b;font-size:12.5px;margin-top:8px">불러오기 실패: '+E(r.error.message)+'</div>';return;}
+  var rows=r.data||[]; var LBL={tel:'전화',kakao:'카카오톡',quote:'견적 요청',list:'목록 복귀'};
+  var byT={},byP={}; rows.forEach(function(x){var k=(x['사이트']||'?')+'|'+(x['유형']||'?');byT[k]=(byT[k]||0)+1; if(x['유형']!=='list'){var p=(x['사이트']||'')+' '+(x['페이지']||'/');byP[p]=(byP[p]||0)+1;}});
+  var cell='padding:5px 4px;border-bottom:1px solid #f0f3f9';
+  var tt=['tel','kakao','quote','list'].map(function(t){var a=byT['A|'+t]||0,b=byT['B|'+t]||0;
+    return '<tr><td style="'+cell+'">'+LBL[t]+'</td><td style="'+cell+';text-align:right">'+a+'</td><td style="'+cell+';text-align:right">'+b+'</td><td style="'+cell+';text-align:right;font-weight:700">'+(a+b)+'</td></tr>';}).join('');
+  var pages=Object.keys(byP).sort(function(a,b){return byP[b]-byP[a];}).slice(0,10).map(function(k){return '<tr><td style="'+cell+'">'+E(k)+'</td><td style="'+cell+';text-align:right;font-weight:700">'+byP[k]+'</td></tr>';}).join('');
+  el.innerHTML='<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px"><tr style="color:#7a869c;font-size:11.5px"><td style="padding:4px">버튼</td><td style="text-align:right">A</td><td style="text-align:right">B</td><td style="text-align:right">합계</td></tr>'+tt+'</table>'
+    +(pages?'<div style="margin-top:12px;font-size:12.5px;font-weight:700">문의 버튼이 눌린 페이지</div><table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:4px">'+pages+'</table>':'')
+    +'<div style="font-size:11px;color:#98a3b8;margin-top:6px">최근 '+days+'일 · 총 '+rows.length+'회 · 전화 버튼 0회면 전화번호 노출 위치를 점검하세요</div>';
+}
+
+var _wr=window.wsRender;
+if(typeof _wr==='function'){
+  window.wsRender=function(rows,days){
+    var out=_wr.apply(this,arguments);
+    try{hpFix();}catch(e){}
+    rpdVisit(days).catch(function(){});
+    rpdClicks(days).catch(function(){});
+    return out;
+  };
+}
+
+/* 5) 전환 탭의 블로그 표·죽은 블로그 조회 제거 — 구글 검색어만 남김 */
+window.wsBlogLoad=async function(){
+  try{
+    var ge=document.getElementById('ws-gsc'); if(!ge||!SB())return;
+    var site2=((document.getElementById('ws-site')||{}).value)||'ALL';
+    var gk=await SB().rpc('rpc_web_gsc_top');
+    var cell='padding:5px 4px;border-bottom:1px solid #f0f3f9';
+    ge.innerHTML=(!gk.error&&gk.data&&gk.data.length)
+      ?('<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px">'+gk.data.map(function(r){
+          return '<tr><td style="'+cell+'">'+E(r['검색어'])+'</td><td style="'+cell+';text-align:right;color:#7a869c">'+(r['노출']||0)+'노출</td><td style="'+cell+';text-align:right;color:#7a869c">'+(r['클릭']||0)+'클릭</td><td style="'+cell+';text-align:right;font-weight:700">'+(r['순위']!=null?r['순위']+'위':'-')+'</td></tr>';}).join('')
+        +'</table><div style="font-size:11px;color:#98a3b8;margin-top:6px">realplanjeju.com 구글 검색 성과 · 매일 07:50 자동수집'+(site2!=='ALL'?' · 사이트 필터 미적용(도메인 전체)':'')+'</div>')
+      :'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">데이터 없음</div>';
+  }catch(e){}
+};
+
+function boot(){
+  try{hpFix();}catch(e){}
+  var h=location.hash||'#dashboard';
+  if(h.indexOf('dashboard')>-1&&SB()){setTimeout(function(){window.wsDashSummary();},1200);}
+}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}else{boot();}
+})();
+</script>
+<!-- RP-DASH-V2 end -->
 </body>
 </html>

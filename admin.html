@@ -11557,7 +11557,7 @@ setTimeout(tick,300);
     var w=document.createElement('div');w.id='ss-modal';
     w.innerHTML='<div class="bx"><div class="mh">👁 미리보기 — 홈'+r['사이트']+'에서 이렇게 보입니다<button class="ss-x" style="border:0;background:none;font-size:20px;cursor:pointer">×</button></div>'
       +'<div class="pv"><div style="text-align:center;margin-bottom:16px"><div style="font-size:12px;letter-spacing:.2em;color:#4A85F6;font-weight:800">SEASON OFFER</div><div style="font-size:24px;font-weight:800">시즌 추천 상품</div></div>'
-      +'<div class="pv-card"><img src="'+E(r['포스터_url'])+'" alt=""><div><h3>'+E(bu)+'<span class="pv-bdg">'+m+'월 추천</span></h3><ul>'
+      +'<div class="pv-card"><img src="'+E(r['포스터_url'])+'" alt=""><div><h3>'+E(bu)+'<span class="pv-bdg">'+m+'월 추천</span></h3>'+(r['헤드라인']?'<p style="font-weight:800;margin:0 0 6px">'+E(r['헤드라인'])+'</p>':'')+(r['상세문안']?'<p style="font-size:14px;color:#6b7280;margin:0 0 10px">'+E(r['상세문안'])+'</p>':'')+'<ul>'
       +(r['버튼']||[]).map(function(b){return '<li><span>'+E(b['이름'])+'</span></li>';}).join('')+'</ul>'
       +(r['상세문안']?'<p style="font-size:14px;color:#6b7280;white-space:pre-line">'+E(r['상세문안'])+'</p>':'')
       +'<span class="cta">이 상품으로 견적 문의</span></div></div>'

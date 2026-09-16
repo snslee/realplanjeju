@@ -11507,7 +11507,7 @@ setTimeout(tick,300);
       var rej=mine.filter(function(r){return r['상태']==='반려'&&r['반려_사유']!=='새 판으로 대체';})[0]||null;
       var cur=wait||ok;var live=liveOf(site,slot);
       var pill,pc,cls='';
-      if(wait){pill=(ok&&wait['포스터_url']===ok['포스터_url'])?'✏️ 문구 수정안 · 승인 대기':'승인 대기';pc='#b45309';cls=' wait';cnt.wait++;}
+      if(wait){pill=(ok&&wait['포스터_url']===ok['포스터_url'])?'✏️ 문구 수정안 · 승인 대기':'승인 대기';pc='#b45309';cls=' wait';cnt.wait++;if(ok&&ok['게시_시작일']<=today)cnt.live++;}
       else if(ok&&ok['게시_시작일']<=today){pill='● 홈'+site+'에 게시 중';pc='#15803d';cnt.live++;}
       else if(ok){pill='📅 '+md(ok['게시_시작일'])+' 게시 예정';pc='#1d4ed8';cnt.sched++;}
       else{pill='비어 있음';pc='#94a3b8';cnt.empty++;}

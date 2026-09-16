@@ -11112,10 +11112,10 @@ setInterval(build,700);
   },true);
 })();
 </script>
-<!-- RP-DASH-V2 start (2026-09-16 대시보드·홈페이지 관리 개편 v1.1 · 원본 무수정 런타임 교체 · 이 블록만 지우면 원복) -->
+<!-- RP-DASH-V2 start (2026-09-16 대시보드·홈페이지 관리 개편 v1.2 · 원본 무수정 런타임 교체 · 이 블록만 지우면 원복) -->
 <script id="rp-dash-v2">
 (function(){
-if(window.RP_DASH_V2)return; window.RP_DASH_V2='1.1';
+if(window.RP_DASH_V2)return; window.RP_DASH_V2='1.2';
 function q(s){return document.querySelector(s);}
 function E(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function N(v){v=Number(v);return isFinite(v)?v.toLocaleString('ko-KR'):'-';}
@@ -11173,24 +11173,57 @@ async function kpiApply(force){
   new MutationObserver(function(){clearTimeout(t);t=setTimeout(function(){kpiApply(false);},250);}).observe(grid,{childList:true,subtree:true,characterData:true});
 })();
 
-/* 2) 대시보드 방문 줄 삭제 → 유입·전환표 머리에 30일 한 줄 */
-var _dashTok=0;
-window.wsDashSummary=async function(){
-  var my=++_dashTok;
+/* 2) 대시보드 유입→문의 전환표 — 원본 로더는 첫 화면이 대시보드일 때 한 번만 돌고(다른 메뉴에서 넘어오면 안 돈다),
+      원본 loadDashboard 연결 코드도 끊겨 있다. 대시보드가 보일 때마다 이 블록이 직접 그린다. */
+var _infBusy=false;
+function dashVisible(){var v=document.getElementById('view-dashboard');return !!(v&&!v.hidden&&v.offsetParent!==null);}
+async function dashInflow(force){
+  var el=document.getElementById('inflow-body'),head=document.getElementById('inflow-box');
+  if(!el||!head||!SB()||_infBusy)return;
+  var at=Number(el.getAttribute('data-rpd-at')||0);
+  if(!force&&at&&(Date.now()-at)<180000)return;
+  _infBusy=true;
   try{
-    var box=document.getElementById('ws-dash'); if(box)box.hidden=true;
-    var head=document.getElementById('inflow-box'); if(!head||!SB())return;
-    var r=await SB().rpc('rpc_web_visit_summary',{p_days:30,p_site:'ALL'});
-    if(my!==_dashTok||r.error||!r.data)return;
-    var d=r.data;
+    var ss=await SB().auth.getSession(); if(!ss||!ss.data||!ss.data.session){_infBusy=false;return;}
+    var res=await Promise.all([
+      SB().from('v_inflow_funnel').select('채널,세션,문의,전환율_pct,표본부족,집계시작일').limit(80),
+      SB().rpc('rpc_web_visit_summary',{p_days:30,p_site:'ALL'})
+    ]);
+    var r=res[0],v=res[1];
     var t=head.querySelector('span'); if(t)t.textContent='사람 방문 기준 · 봇·관리자·사이트 내부 이동 제외';
     var line=document.getElementById('rpd-inflow-line');
-    if(!line){line=document.createElement('div');line.id='rpd-inflow-line';line.style.cssText='font-size:12.5px;color:#56627a;margin:2px 0 8px';head.insertBefore(line,document.getElementById('inflow-body'));}
-    line.innerHTML='최근 30일 사람 방문 <b style="color:#2B62C4">'+N(d['합계'])+'</b>세션 (오늘 '+N(d['오늘'])+')'
-      +' · 홈페이지 경유 문의 <b style="color:#2B62C4">'+N(d['홈페이지_문의'])+'</b>건 · 전환 '+P(d['문의_전환_pct'])
-      +' <a href="#website" style="margin-left:6px;color:#2B62C4;font-weight:700">상세 →</a>';
-  }catch(e){}
-};
+    if(!line){line=document.createElement('div');line.id='rpd-inflow-line';line.style.cssText='font-size:12.5px;color:#56627a;margin:2px 0 8px';head.insertBefore(line,el);}
+    if(!v.error&&v.data){var d=v.data;
+      line.innerHTML='최근 30일 사람 방문 <b style="color:#2B62C4">'+N(d['합계'])+'</b>세션 (오늘 '+N(d['오늘'])+')'
+        +' · 홈페이지 경유 문의 <b style="color:#2B62C4">'+N(d['홈페이지_문의'])+'</b>건 · 전환 '+P(d['문의_전환_pct'])
+        +' <a href="#website" style="margin-left:6px;color:#2B62C4;font-weight:700">상세 →</a>';}
+    else{line.textContent='방문 요약을 불러오지 못했습니다: '+((v.error&&v.error.message)||'응답 없음');}
+    if(r.error){
+      el.innerHTML='<div style="color:#c0392b">전환표를 불러오지 못했습니다: '+E(r.error.message)+' <button type="button" id="rpd-inf-retry" style="margin-left:6px;border:1px solid #cfd8e3;background:#fff;border-radius:6px;padding:2px 8px;cursor:pointer">다시 시도</button></div>';
+      var rb=document.getElementById('rpd-inf-retry'); if(rb)rb.onclick=function(){dashInflow(true);};
+      el.setAttribute('data-rpd-at','0');
+    }else{
+      var rows=(r.data||[]).filter(function(x){return (x['세션']||0)>0||(x['문의']||0)>0;});
+      rows.sort(function(a,b){return (b['문의']-a['문의'])||(b['세션']-a['세션']);});
+      var hid=rows.filter(function(x){return (x['문의']||0)===0&&(x['세션']||0)<5;});
+      rows=rows.filter(function(x){return (x['문의']||0)>0||(x['세션']||0)>=5;});
+      var since=(r.data&&r.data[0]&&r.data[0]['집계시작일'])||'';
+      var cell='padding:5px 4px;border-bottom:1px solid #f0f3f9';
+      var h='<table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="color:#7a869c"><th style="padding:4px;text-align:left;font-weight:600">채널</th><th style="text-align:right;font-weight:600">사람 세션</th><th style="text-align:right;font-weight:600">문의</th><th style="text-align:right;font-weight:600">전환율</th></tr>';
+      rows.forEach(function(x){var hot=(x['문의']||0)>0;
+        h+='<tr><td style="'+cell+'">'+E(x['채널'])+(x['표본부족']?' <span style="font-size:10.5px;color:#c08a00;border:1px solid #e8d7a8;border-radius:4px;padding:0 4px">표본부족</span>':'')+'</td>'
+          +'<td style="'+cell+';text-align:right;color:#7a869c">'+((x['세션']||0)?N(x['세션']):'—')+'</td>'
+          +'<td style="'+cell+';text-align:right;font-weight:700;color:'+(hot?'#2B62C4':'#98a3b8')+'">'+N(x['문의']||0)+'</td>'
+          +'<td style="'+cell+';text-align:right;font-weight:700">'+(x['전환율_pct']!=null?Number(x['전환율_pct'])+'%':'—')+'</td></tr>';});
+      if(hid.length){var hs=0;hid.forEach(function(x){hs+=(x['세션']||0);});
+        h+='<tr><td colspan="4" style="padding:6px 4px;color:#98a3b8;font-size:11.5px">· 세션 5 미만·문의 0 채널 '+hid.length+'개(세션 합 '+hs+') — '+hid.map(function(x){return E(x['채널']);}).join(', ')+'</td></tr>';}
+      h+='</table><div style="font-size:11px;color:#98a3b8;margin-top:6px">'+E(since)+' 이후 누적 · 직접문의·지인소개는 웹 방문이 없어 전환율을 계산하지 않습니다 · 문의 3건 미만은 표본부족</div>';
+      el.innerHTML=h; el.setAttribute('data-rpd-at',String(Date.now()));
+    }
+  }catch(e){ try{el.setAttribute('data-rpd-at','0');}catch(_){} }
+  _infBusy=false;
+}
+window.wsDashSummary=function(){return dashInflow(true);};
 
 /* 3) 문의 목록 — 견적 방치 배지 (표가 다시 그려질 때마다 상태·무접촉일 칸을 읽어 붙인다) */
 function qBadges(){
@@ -11234,9 +11267,11 @@ function hpFix(){
   }
   if(hub){
     var bAt=''; try{bAt=localStorage.getItem('rp_staff_b_at')||'';}catch(e){}
-    hub.innerHTML='<span>이 PC의 홈페이지 방문은 통계에서 뺍니다 —</span><span style="color:#2E7D32;font-weight:700">A ✓ 자동</span>'
+    var hh='<span>이 PC의 홈페이지 방문은 통계에서 뺍니다 —</span><span style="color:#2E7D32;font-weight:700">A ✓ 자동</span>'
       +'<span style="color:'+(bAt?'#2E7D32':'#9a5b00')+';font-weight:700">B '+(bAt?'✓ '+E(bAt):'미표시')+'</span>'
       +'<button type="button" id="rpd-staff-b" style="border:1px solid #cfd8e3;background:#fff;border-radius:6px;padding:3px 9px;font-size:12px;cursor:pointer">B 사이트에 직원 표시</button>';
+    if(hub._h===hh)return;
+    hub._h=hh; hub.innerHTML=hh;
     var btn=document.getElementById('rpd-staff-b');
     if(btn)btn.onclick=function(){ window.open('https://marketing.realplanjeju.com/#rpstaff','_blank'); try{localStorage.setItem('rp_staff_b_at',kst(new Date()));}catch(e){} hpFix(); };
   }
@@ -11352,12 +11387,19 @@ window.wsBlogLoad=async function(){
   }catch(e){}
 };
 
-function boot(){
-  try{hpFix();}catch(e){}
-  var h=location.hash||'#dashboard';
-  if(h.indexOf('dashboard')>-1&&SB()){setTimeout(function(){window.wsDashSummary();kpiApply(true);},1200);}
+function tick(){
+  try{
+    if(dashVisible()){
+      var box=document.getElementById('ws-dash'); if(box&&!box.hidden)box.hidden=true;
+      dashInflow(false);
+      if(kpiDirty())kpiApply(false);
+    }
+    var wv=document.getElementById('view-website'); if(wv&&!wv.hidden)hpFix();
+  }catch(e){}
 }
-if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}else{boot();}
+try{hpFix();}catch(e){}
+setInterval(tick,1500);
+setTimeout(tick,300);
 })();
 </script>
 <!-- RP-DASH-V2 end -->

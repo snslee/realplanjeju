@@ -2147,7 +2147,7 @@ window._rtLatest=function(rows){
   (rows||[]).forEach(r=>{
     const k=(r.채널||'')+'||'+(r.키워드||'');
     const d=String(r.측정_일자||'');
-    if(!best[k]||d>best[k]._d){best[k]={ch:r.채널,kw:r.키워드,순위:(r.순위==null?null:Number(r.순위)),_d:d};}
+    if(!best[k]||d>best[k]._d){best[k]={ch:r.채널,kw:r.키워드,순위:((r.순위==null||Number(r.순위)>=999)?null:Number(r.순위)),_d:d};}
   });
   return Object.values(best);
 };

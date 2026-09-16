@@ -5432,6 +5432,218 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 <!-- RP-MENU-V2 end -->
+<!-- RP-YT-TRAVEL start · v1.36.0 · 2026-09-16 유튜브 운영 › 리얼플랜여행 칸 재구성(동영상 방 요청 v2 · 회사 시스템 방 · 대표 승인) -->
+<style id="trv-css">
+#t13 .trv-tbl{width:100%;border-collapse:collapse;font-size:.76rem}
+#t13 .trv-tbl th{background:#f8fafc;text-align:left;position:sticky;top:0;z-index:1}
+#t13 .trv-tbl td,#t13 .trv-tbl th{padding:6px 8px;vertical-align:top;border-top:1px solid #eef2f7}
+#t13 .trv-box{background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px}
+#t13 .trv-chip{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.7rem;white-space:nowrap;border:1px solid}
+#t13 .trv-empty{padding:12px;color:#b45309;background:#fffbeb;border-radius:10px;font-size:.78rem}
+#t13 .trv-used b{display:inline-block;background:#eff6ff;color:#1d4ed8;border-radius:5px;padding:0 5px;margin:0 2px 2px 0}
+#t13 .trv-row{display:flex;gap:10px;align-items:center;padding:6px 10px;border-top:1px solid #f1f5f9;font-size:.78rem}
+#t13 .trv-row.past{opacity:.45}
+#t13 .trv-cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+@media(max-width:700px){#t13 .trv-cmp{grid-template-columns:1fr}}
+</style>
+<script id="trv-js">
+(function(){
+  var CH='리얼플랜여행', GENIE='사장님 마케팅 지니', BASE=1515, DOW='일월화수목금토';
+  var S={slots:null,rules:null,inq:null,last:null,views:{},used:{},plan:false,planRows:null,busy:false,at:0};
+  function E(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function N(n){return (+n||0).toLocaleString();}
+  function gid(id){return document.getElementById(id);}
+  function kpi(t,v,sub,col){return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:11px 14px"><div style="font-size:.71rem;color:#64748b">'+E(t)+'</div><div style="font-size:1.16rem;font-weight:800;margin-top:2px'+(col?';color:'+col:'')+'">'+E(v)+'</div>'+(sub?'<div style="font-size:.68rem;color:#94a3b8;margin-top:2px">'+E(sub)+'</div>':'')+'</div>';}
+  function today(){return new Date(Date.now()+9*3600e3).toISOString().slice(0,10);}
+  function dd(a,b){return Math.round((Date.parse(a+'T00:00:00Z')-Date.parse(b+'T00:00:00Z'))/864e5);}
+  function md(s){if(!s)return '—';s=String(s).slice(0,10);var p=s.split('-'),w=new Date(Date.UTC(+p[0],+p[1]-1,+p[2])).getUTCDay();return (+p[1])+'/'+(+p[2])+'('+DOW[w]+')';}
+  function addD(s,n){var t=new Date(Date.parse(String(s).slice(0,10)+'T00:00:00Z')+n*864e5);return t.toISOString().slice(0,10);}
+  function vid(u){var m=String(u||'').match(/(?:youtu\.be\/|v=|shorts\/|live\/)([A-Za-z0-9_-]{11})/);return m?m[1]:null;}
+  var SC={'확정':['#f0fdf4','#166534','#bbf7d0'],'임시':['#fff7ed','#c2410c','#fed7aa'],'보류':['#f1f5f9','#475569','#cbd5e1'],
+          '제작준비':['#eff6ff','#1d4ed8','#bfdbfe'],'대본작성':['#fff7ed','#c2410c','#fed7aa'],'주제확정':['#f8fafc','#334155','#e2e8f0'],
+          '촬영완료':['#ecfeff','#0e7490','#a5f3fc'],'편집중':['#fef9c3','#854d0e','#fde68a'],'예약완료':['#f0fdf4','#166534','#bbf7d0'],'발행':['#f0fdf4','#166534','#bbf7d0'],
+          '대기':['#f8fafc','#64748b','#e2e8f0'],'통과':['#f0fdf4','#166534','#bbf7d0'],'미달':['#fef2f2','#b91c1c','#fecaca']};
+  function chip(s){var c=SC[s]||['#f8fafc','#334155','#e2e8f0'];return '<span class="trv-chip" style="background:'+c[0]+';color:'+c[1]+';border-color:'+c[2]+'">'+E(s||'—')+'</span>';}
+  function errBox(what,e){return '<div class="trv-empty">⛔ '+E(what)+' 조회 실패 — '+E(e)+'</div>';}
+
+  async function load(force){
+    if(typeof sb==='undefined'||S.busy)return;
+    if(!force&&S.slots&&Date.now()-S.at<60000){render();return;}
+    S.busy=true;
+    try{
+      var r5=await sb.from('mk_youtube_slots').select('슬롯번호,발행일,촬영일,코너,상태,핵심키워드,최종제목,영상url,편집지시서,업로드패키지').eq('채널',CH).order('발행일',{ascending:true}).limit(60);
+      var r6=await sb.from('mk_youtube_channel_rules').select('채널,순번,구분,항목,내용,상태,확정일,근거').order('순번',{ascending:true}).limit(200);
+      var r7=await sb.from('mk_inquiry_attribution').select('슬롯번호,utm_medium,신청일시').eq('콘텐츠유형','유튜브').limit(1000);
+      var r9=await sb.from('mk_youtube_assets').select('발행일').eq('채널',CH).order('발행일',{ascending:false}).limit(1);
+      S.slots=r5.error?{err:r5.error.message}:(r5.data||[]);
+      S.rules=r6.error?{err:r6.error.message}:(r6.data||[]);
+      S.inq=r7.error?{err:r7.error.message}:(r7.data||[]).filter(function(x){return /^R\d/.test(x['슬롯번호']||'')||x['utm_medium']==='yt_travel';});
+      S.last=(!r9.error&&r9.data&&r9.data[0])?String(r9.data[0]['발행일']).slice(0,10):null;
+      S.used={};S.views={};
+      var ids=[],mats=[];
+      if(Array.isArray(S.slots))S.slots.forEach(function(s){
+        var v=vid(s['영상url']);if(v)ids.push(v);
+        var ed=s['편집지시서']||{};(ed['재료']||[]).forEach(function(m){var id=m&&m['영상id'];if(!id)return;(S.used[id]=S.used[id]||[]).push(s['슬롯번호']);if(mats.indexOf(id)<0)mats.push(id);});
+      });
+      if(ids.length){var r8=await sb.from('mk_youtube_assets').select('영상id,조회수').in('영상id',ids);if(!r8.error)(r8.data||[]).forEach(function(x){S.views[x['영상id']]=+x['조회수']||0;});}
+      if(mats.length){var rp=await sb.from('mk_youtube_assets').select('영상id,제목,형식,조회수,길이_초,촬영시즌,대상,현장실측').in('영상id',mats);S.planRows=rp.error?[]:(rp.data||[]);}
+      else S.planRows=[];
+      S.at=Date.now();
+    }catch(e){S.slots={err:String(e&&e.message||e)};}
+    finally{S.busy=false;}
+    render();
+  }
+
+  function render(){
+    var p=gid('ytc-travel');if(!p)return;
+    var sl=Array.isArray(S.slots)?S.slots:[];var T=today();
+    var pub=sl.filter(function(s){return vid(s['영상url']);});
+    var chipEl=gid('ytc-travel-n');if(chipEl&&Array.isArray(S.slots))chipEl.textContent='621편 · 새 롱폼 '+pub.length+'/'+sl.length;
+    /* 확정 띠 */
+    var band=gid('trv-band');
+    if(band)band.innerHTML='✅ <b>확정</b> · 롱폼 15~20분 · 대표 토크 5분 + 장소별 나레이션 · 매주 <b>금 18:00</b> · 목적지 <b>홈A</b>(realplanjeju.com) · 설계 v1.2';
+    /* 요약 6 */
+    var k=gid('yt-kpi');
+    if(k){
+      if(!Array.isArray(S.slots)){k.innerHTML=errBox('편성(mk_youtube_slots)',S.slots&&S.slots.err);}
+      else{
+        var nx=sl.filter(function(s){return s['상태']!=='보류'&&!vid(s['영상url'])&&String(s['발행일']).slice(0,10)>=T;})[0]||null;
+        var views=pub.reduce(function(a,s){var v=S.views[vid(s['영상url'])];return a+(v||0);},0);
+        var dl=S.last?dd(T,S.last):null;
+        k.innerHTML=
+          kpi('📅 다음 발행',nx?nx['슬롯번호']+' · '+md(nx['발행일']):'—',nx?'D-'+dd(String(nx['발행일']).slice(0,10),T)+' · 매주 금 18:00':'남은 편성 없음',nx?'#1d4ed8':'')
+         +kpi('🔧 준비 단계',nx?nx['상태']:'—',nx?nx['슬롯번호']+' · 토크·나레이션 '+md(nx['촬영일']):'')
+         +kpi('🎬 새 롱폼',pub.length+' / '+sl.length,'영상 주소가 들어간 편',pub.length?'':'#94a3b8')
+         +kpi('👀 단체편 누적 조회',pub.length?N(views)+'회':'—',pub.length?'새 롱폼 '+pub.length+'편 합계':'발행 0편 · 측정 없음',pub.length?'':'#94a3b8')
+         +kpi('📞 유튜브발 문의',Array.isArray(S.inq)?S.inq.length+'건':'—',Array.isArray(S.inq)?'귀속 뷰 · 여행 채널만':'조회 실패')
+         +kpi('⏸ 마지막 업로드',S.last||'—',dl!=null?dl+'일 경과 · 옛 채널':'',dl!=null&&dl>30?'#dc2626':'');
+        k.style.gridTemplateColumns='repeat(auto-fit,minmax(150px,1fr))';
+      }
+    }
+    /* ① 확정 사항 */
+    var ru=gid('trv-rules'),rh=gid('trv-rules-n');
+    if(ru){
+      if(!Array.isArray(S.rules)){ru.innerHTML=errBox('확정 사항(mk_youtube_channel_rules)',S.rules&&S.rules.err);}
+      else{
+        var R=S.rules.filter(function(x){return x['채널']===CH&&x['상태']!=='폐기';});
+        var c={};R.forEach(function(x){c[x['상태']]=(c[x['상태']]||0)+1;});
+        if(rh)rh.textContent='· mk_youtube_channel_rules · '+R.length+'건('+Object.keys(c).map(function(z){return z+' '+c[z];}).join(' · ')+') · 폐기는 숨김';
+        ru.innerHTML=R.length?('<div style="overflow:auto;max-height:420px"><table class="trv-tbl"><thead><tr><th style="width:30px">#</th><th style="width:64px">구분</th><th style="width:120px">항목</th><th>내용</th><th style="width:56px">상태</th><th style="width:48px">확정일</th><th style="width:140px">근거</th></tr></thead><tbody>'
+          +R.map(function(x){return '<tr'+(x['상태']==='보류'?' style="opacity:.7"':'')+'><td style="color:#94a3b8">'+E(x['순번'])+'</td><td>'+E(x['구분'])+'</td><td><b>'+E(x['항목'])+'</b></td><td>'+E(x['내용'])+'</td><td>'+chip(x['상태'])+'</td><td style="color:#64748b">'+(x['확정일']?String(x['확정일']).slice(5).replace('-','/'):'—')+'</td><td style="color:#64748b;font-size:.7rem">'+E(x['근거']||'')+'</td></tr>';}).join('')
+          +'</tbody></table></div>'):'<div class="trv-empty">확정 사항 없음 — mk_youtube_channel_rules 채널=리얼플랜여행 0행</div>';
+      }
+    }
+    /* 지니 접이식 */
+    var gr=gid('genie-rules');
+    if(gr&&Array.isArray(S.rules)){
+      var G=S.rules.filter(function(x){return x['채널']===GENIE&&x['상태']!=='폐기';});
+      var open=gr.querySelector('details')&&gr.querySelector('details').open;
+      gr.innerHTML='<details'+(open?' open':'')+' style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:8px 12px"><summary style="cursor:pointer;font-size:.8rem;font-weight:700;color:#1e40af">📌 확정 사항 '+G.length+'건 보기 <span style="font-weight:500;color:#94a3b8">· 채널=사장님 마케팅 지니</span></summary>'
+        +(G.length?'<table class="trv-tbl" style="margin-top:8px"><thead><tr><th style="width:64px">구분</th><th style="width:120px">항목</th><th>내용</th><th style="width:56px">상태</th><th style="width:48px">확정일</th></tr></thead><tbody>'
+        +G.map(function(x){return '<tr><td>'+E(x['구분'])+'</td><td><b>'+E(x['항목'])+'</b></td><td>'+E(x['내용'])+'</td><td>'+chip(x['상태'])+'</td><td style="color:#64748b">'+(x['확정일']?String(x['확정일']).slice(5).replace('-','/'):'—')+'</td></tr>';}).join('')+'</tbody></table>':'<div class="trv-empty" style="margin-top:8px">0행</div>')
+        +'</details>';
+    }else if(gr&&S.rules&&S.rules.err){gr.innerHTML=errBox('지니 확정 사항',S.rules.err);}
+    if(!Array.isArray(S.slots)){['trv-slots','trv-shoot','trv-perf'].forEach(function(id){var el=gid(id);if(el)el.innerHTML=errBox('편성(mk_youtube_slots)',S.slots&&S.slots.err);});return;}
+    if(!sl.length){['trv-slots','trv-shoot','trv-perf'].forEach(function(id){var el=gid(id);if(el)el.innerHTML='<div class="trv-empty">편성 없음 — mk_youtube_slots 채널=리얼플랜여행 0행</div>';});return;}
+    /* ② 편성표 */
+    var so=gid('trv-slots');
+    if(so)so.innerHTML='<div style="overflow:auto"><table class="trv-tbl"><thead><tr><th style="width:40px">편</th><th style="width:74px">발행일</th><th style="width:80px">코너</th><th>제목</th><th style="width:220px">장소(재료)</th><th style="width:70px">상태</th><th style="width:60px">착지</th><th style="width:44px">영상</th></tr></thead><tbody>'
+      +sl.map(function(s){
+        var ed=s['편집지시서']||{},pk=s['업로드패키지']||{};
+        var places=(ed['재료']||[]).map(function(m){return m&&m['장소'];}).filter(Boolean).join(' · ');
+        var t=s['최종제목']?E(s['최종제목']):(s['핵심키워드']?'<span style="color:#64748b">'+E(s['핵심키워드'])+'</span> <small style="color:#94a3b8">(제목 전 · 핵심키워드)</small>':'<span style="color:#cbd5e1">—</span>');
+        var lu=String(pk['착지_url']||'');var land='<span style="color:#cbd5e1">—</span>';
+        if(lu){land=/^https:\/\/(www\.)?realplanjeju\.com\//.test(lu)?'<a href="'+E(lu)+'" target="_blank" rel="noopener" style="color:#16a34a;font-weight:700" title="'+E(lu)+'">홈A ✔</a>':'<a href="'+E(lu)+'" target="_blank" rel="noopener" style="color:#dc2626;font-weight:700" title="'+E(lu)+'">⚠ 홈A 아님</a>';}
+        var v=vid(s['영상url']);
+        return '<tr'+(s['상태']==='보류'?' style="opacity:.6"':'')+'><td style="font-weight:800">'+E(s['슬롯번호'])+'</td><td style="white-space:nowrap">'+md(s['발행일'])+'</td><td>'+E(s['코너']||'')+'</td><td>'+t+'</td><td style="font-size:.7rem;color:#475569">'+(places?E(places):'<span style="color:#cbd5e1">—</span>')+'</td><td>'+chip(s['상태'])+'</td><td>'+land+'</td><td>'+(v?'<a href="https://youtu.be/'+v+'" target="_blank" rel="noopener" style="color:#2563eb">▶</a>':'<span style="color:#cbd5e1">—</span>')+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+    /* ③ 촬영 일정 */
+    var sh=gid('trv-shoot');
+    if(sh){
+      var ev={};
+      sl.forEach(function(s){var ed=s['편집지시서']||{};
+        if(ed['새촬영일'])(ev[String(ed['새촬영일']).slice(0,10)+'|🎥 새 촬영']=ev[String(ed['새촬영일']).slice(0,10)+'|🎥 새 촬영']||[]).push(s['슬롯번호']);
+        if(s['촬영일'])(ev[String(s['촬영일']).slice(0,10)+'|🎙 토크·나레이션']=ev[String(s['촬영일']).slice(0,10)+'|🎙 토크·나레이션']||[]).push(s['슬롯번호']);});
+      var keys=Object.keys(ev).sort();
+      sh.innerHTML=keys.length?('<div style="max-height:320px;overflow:auto;padding:4px 0">'+keys.map(function(key){var a=key.split('|'),past=a[0]<T;
+        return '<div class="trv-row'+(past?' past':'')+'"><b style="width:78px">'+md(a[0])+'</b><span style="background:'+(a[1].indexOf('새 촬영')>-1?'#fef3c7':'#eff6ff')+';border-radius:6px;padding:1px 8px;font-size:.72rem;width:120px">'+a[1]+'</span><span style="font-weight:700;color:#1d4ed8">'+ev[key].join(' ')+'</span>'+(a[0]===T?' <span class="trv-chip" style="color:#b45309;border-color:#fcd34d">오늘</span>':'')+'</div>';}).join('')+'</div>')
+        :'<div class="trv-empty">촬영 일정 없음 — 촬영일·편집지시서.새촬영일이 비어 있음</div>';
+    }
+    /* ④ 성과·판정 */
+    var pf=gid('trv-perf');
+    if(pf){
+      var inqBy={};(Array.isArray(S.inq)?S.inq:[]).forEach(function(x){var k2=x['슬롯번호']||'';inqBy[k2]=(inqBy[k2]||0)+1;});
+      function judge(s){var pd=String(s['발행일']).slice(0,10),v=vid(s['영상url']),jd=addD(pd,28);
+        var vw=v?S.views[v]:null,iq=inqBy[s['슬롯번호']]||0;
+        var el=!v?'발행 전 (D-'+dd(pd,T)+')':(dd(T,pd)+'일 경과');
+        var res='대기';if(v&&(vw>BASE||iq>0))res='통과';else if(v&&T>=jd)res='미달';
+        return {pd:pd,v:v,vw:vw,iq:iq,jd:jd,el:el,res:res};}
+      function card(no,label){var s=sl.filter(function(x){return x['슬롯번호']===no;})[0];if(!s)return '';var j=judge(s);
+        return '<div class="trv-box" style="padding:10px 12px;margin:0"><div style="font-size:.72rem;color:#64748b">'+no+' · '+label+'</div><div style="font-size:1.05rem;font-weight:800;'+(j.v?'':'color:#94a3b8')+'">'+(j.v&&j.vw!=null?N(j.vw)+'회':'— 회')+'</div><div style="font-size:.68rem;color:#94a3b8">판정일 '+md(j.jd)+' · 기준선 '+N(BASE)+' · '+j.res+'</div></div>';}
+      pf.innerHTML='<div class="trv-cmp">'+card('R01','나레이션 <b>중간중간</b>')+card('R02','나레이션 <b>계속</b>')+'</div>'
+        +'<div style="font-size:.7rem;color:#64748b;margin:0 0 6px">R01 1차 판정 10/23 · R01~R04 계속·조정 판정 11/13 · 통과 = 28일 조회 '+N(BASE)+'회 초과 또는 단체 관련 댓글·문의 1건 이상</div>'
+        +'<div class="trv-box" style="overflow:auto;max-height:300px"><table class="trv-tbl"><thead><tr><th style="width:40px">편</th><th style="width:74px">발행일</th><th>경과</th><th style="text-align:right;width:70px">조회</th><th style="text-align:right;width:64px">기준선</th><th style="text-align:right;width:44px">문의</th><th style="width:78px">판정일</th><th style="width:56px">판정</th></tr></thead><tbody>'
+        +sl.map(function(s){var j=judge(s);return '<tr'+(s['상태']==='보류'?' style="opacity:.6"':'')+'><td style="font-weight:800">'+E(s['슬롯번호'])+'</td><td>'+md(j.pd)+'</td><td style="color:#64748b">'+j.el+'</td><td style="text-align:right">'+(j.v&&j.vw!=null?N(j.vw):'<span style="color:#94a3b8">—</span>')+'</td><td style="text-align:right">'+N(BASE)+'</td><td style="text-align:right">'+(j.v?j.iq:'<span style="color:#94a3b8">—</span>')+'</td><td>'+md(j.jd)+'</td><td>'+chip(j.res)+'</td></tr>';}).join('')
+        +'</tbody></table></div>';
+    }
+    addPlanBtn();addUsed();
+  }
+
+  /* ⑥ 재고 — 「쓴 편」 열 + 「편성에 쓴 재료」 필터 */
+  function addPlanBtn(){
+    var q=gid('yt-q');if(!q||gid('trv-plan-btn'))return;
+    var n=Object.keys(S.used).length;
+    var b=document.createElement('button');b.id='trv-plan-btn';b.className='filter-btn yt-f';b.textContent='🎬 편성에 쓴 재료 '+n+'편';
+    b.onclick=function(){window.ytFilter('plan',b);};
+    q.parentNode.insertBefore(b,q);
+  }
+  function usedCell(id){var u=S.used[id]||[];if(!u.length)return '<span style="color:#cbd5e1">—</span>';var h=u.map(function(x){return '<b>'+E(x)+'</b>';}).join('');if(u.length>1)h+='<span style="color:#b45309" title="같은 재료를 여러 편에 씀">⚠중복</span>';return h;}
+  function headUsed(){
+    var tb=gid('yt-list');if(!tb)return;var tr=tb.closest('table').querySelector('thead tr');
+    if(tr&&!tr.querySelector('.trv-used-h')){var th=document.createElement('th');th.className='trv-used-h';th.style.width='96px';th.textContent='쓴 편';tr.insertBefore(th,tr.lastElementChild);}
+  }
+  function addUsed(){
+    var tb=gid('yt-list');if(!tb)return;headUsed();
+    Array.prototype.forEach.call(tb.rows,function(tr){
+      var cs=tr.querySelector('td[colspan]');if(cs){cs.setAttribute('colspan','9');return;}
+      if(tr.querySelector('.trv-used'))return;
+      var a=tr.querySelector('a[href*="youtu.be/"]');var id=a?String(a.getAttribute('href')).split('/').pop():'';
+      var td=document.createElement('td');td.className='trv-used';td.innerHTML=usedCell(id);
+      tr.insertBefore(td,tr.lastElementChild);
+    });
+  }
+  function renderPlan(){
+    var tb=gid('yt-list');if(!tb)return;headUsed();
+    var q=((gid('yt-q')||{}).value)||'';
+    var order={};Object.keys(S.used).forEach(function(id){order[id]=S.used[id][0];});
+    var rows=(S.planRows||[]).filter(function(x){return !q||(x['제목']||'').indexOf(q)>-1;}).sort(function(a,b){return String(order[a['영상id']]).localeCompare(String(order[b['영상id']]));});
+    var c=gid('yt-cnt');if(c)c.textContent=rows.length+'편';
+    var SCC={'확인완료':'#16a34a','변경있음':'#b45309','발행불가':'#dc2626'};
+    tb.innerHTML=rows.map(function(x){var sm=x['현장실측']||'미실측',s=+x['길이_초']||0;
+      return '<tr style="border-top:1px solid #f1f5f9"><td style="padding:7px">'+E(String(x['제목']||'').slice(0,70))+'</td><td>'+E(x['형식']||'')+'</td><td style="text-align:right;font-weight:700">'+N(x['조회수'])+'</td><td style="text-align:right">'+(s?(s>=60?Math.round(s/60)+'분':s+'초'):'')+'</td><td>'+E(x['촬영시즌']||'')+'</td><td>'+E(x['대상']||'')+'</td><td style="color:'+(SCC[sm]||'#94a3b8')+'">'+E(sm)+'</td><td class="trv-used">'+usedCell(x['영상id'])+'</td><td><a href="https://youtu.be/'+E(x['영상id'])+'" target="_blank" style="color:#2563eb">열기</a></td></tr>';}).join('')
+      ||'<tr><td colspan="9" style="padding:12px;color:#64748b">편성 재료로 지정된 영상이 없습니다(편집지시서.재료)</td></tr>';
+  }
+
+  /* 기존 함수 감싸기 — 원본은 그대로 두고 뒤에 붙인다 */
+  var _init=window.ytInit;
+  if(typeof _init==='function'){
+    window.ytInit=async function(force){var r;try{r=await _init.apply(this,arguments);}catch(e){}load(!!force);return r;};
+  }
+  var _yf=window.ytFilter;
+  if(typeof _yf==='function'){
+    window.ytFilter=function(f,el){
+      if(f==='plan'){S.plan=true;document.querySelectorAll('#t13 .yt-f').forEach(function(b){b.classList.remove('active');});if(el)el.classList.add('active');window.renderYtList();return;}
+      S.plan=false;return _yf.apply(this,arguments);
+    };
+  }
+  var _rl=window.renderYtList;
+  if(typeof _rl==='function'){
+    window.renderYtList=function(){if(S.plan){renderPlan();return;}var r=_rl.apply(this,arguments);try{addUsed();}catch(e){}return r;};
+  }
+  window.__rpYtTravel='v1.36.0';
+})();
+</script>
+<!-- RP-YT-TRAVEL end -->
 
 </body>
 </html>

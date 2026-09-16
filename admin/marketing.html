@@ -5331,8 +5331,8 @@ var ST={
     return [chipLv(a&&daysAgo(a.등록일)<=14?'ok':'wn','사진 마지막 등록 '+(a?String(a.등록일).slice(5,10):'없음')),chipLv('ok','영상 설계 마지막 수정 '+(b?String(b.수정일).slice(5,10):'없음')),chipLv('ok','BGM 마지막 등록 '+(c?String(c.등록일).slice(5,10):'없음'))];},
   tchan:async function(){var a=await one(sb.from('mk_channel_algorithm').select('마지막_점검일').order('마지막_점검일',{ascending:true}).limit(1));var q=await sb.from('v_channel_card_queue').select('created_at').limit(200);var rows=(q&&q.data)||[];var old=rows.reduce(function(m,x){var d=daysAgo(x.created_at);return d>m?d:m;},0);
     var da=a?daysAgo(a.마지막_점검일):null;return [chipLv(da==null||da>35?'bad':da>28?'wn':'ok','채널 알고리즘 점검 '+(a?String(a.마지막_점검일).slice(5):'없음')),chipLv(old>7?'wn':'ok','발송 대기 카드 '+rows.length+'장'+(rows.length?' · 최장 '+old+'일':''))];},
-  t13:async function(){var a=await one(sb.from('mk_youtube_assets').select('수집일').order('수집일',{ascending:false}).limit(1));var m=await cnt(sb.from('mk_youtube_metrics').select('*',{count:'exact',head:true}));var l=await cnt(sb.from('mk_short_links').select('*',{count:'exact',head:true}).eq('자산종류','유튜브'));
-    var da=a?daysAgo(a.수집일):null;return [chipLv(da==null||da>35?'bad':'ok','리얼플랜여행 영상 수집 '+(a?String(a.수집일).slice(5,10):'없음')+(da!=null?' ('+da+'일 전 · 매월 1일 자동)':'')),chipLv(m?'ok':'bad','지니 성과 지표 '+(m||0)+'행'+(m?'':' — Analytics 연동 전')),chipLv('ok','유튜브 단축링크 '+(l||0)+'개')];}
+  t13:async function(){var a=await one(sb.from('mk_youtube_assets').select('갱신일').order('갱신일',{ascending:false}).limit(1));var m=await cnt(sb.from('mk_youtube_metrics').select('*',{count:'exact',head:true}));var l=await cnt(sb.from('mk_short_links').select('*',{count:'exact',head:true}).eq('자산종류','유튜브'));
+    var da=a?daysAgo(a.갱신일):null;return [chipLv(da==null||da>8?'bad':'ok','리얼플랜여행 영상 수집 '+(a?String(a.갱신일).slice(5,10):'없음')+(da!=null?' ('+da+'일 전 · 매주 월 13:00 자동)':'')),chipLv(m?'ok':'bad','지니 성과 지표 '+(m||0)+'행'+(m?'':' — Analytics 연동 전')),chipLv('ok','유튜브 단축링크 '+(l||0)+'개')];}
 };
 async function loadStrip(pid){
   var f=ST[pid];if(!f||typeof sb==='undefined')return;

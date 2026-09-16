@@ -4891,9 +4891,9 @@ document.addEventListener('change',function(e){
 })();
 </script>
 
-<!-- RP-MENU-V2 start · v1.35.0 · 2026-09-16 메뉴 재편 1단계 -->
+<!-- RP-MENU-V2 start · v1.35.1 · 2026-09-16 메뉴 재편 1단계 + 데이터 상태 띠 -->
 <script>
-/* ══ RP-MENU-V2 — 마케팅 운영 메뉴 재편 1단계 (v1.35.0 · 2026-09-16 대표 승인) ══════════
+/* ══ RP-MENU-V2 — 마케팅 운영 메뉴 재편 1단계 (v1.35.0 → v1.35.1 데이터 상태 띠·업로드 채널 대조·메뉴 기록 · 2026-09-16 대표 승인) ══════════
    원본 HTML은 손대지 않고, 페이지가 뜬 뒤 구역을 옮겨 담는다(편성 탭 schInit 과 같은 방식).
    되돌리기 = RP-MENU-V2 start~end 주석 사이 스크립트 블록 하나를 걷어내면 원상태.
    16 → 14 메뉴 · 잠자는 거인 폐지(목록은 키워드·기회로) · CTR·색인은 순위·클릭 진단 하위탭으로
@@ -4902,8 +4902,8 @@ document.addEventListener('change',function(e){
 (function(){
 'use strict';
 if(window.__rpMenuV2)return;
-window.__rpMenuV2='v1.35.0';
-var VER='v1.35.0';
+window.__rpMenuV2='v1.35.1';
+var VER='v1.35.1';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -4983,6 +4983,7 @@ function buildT5(){
   return true;
 }
 function t5Sub(s){
+  if(T5SUB!==s)logMenu('t5',s);
   T5SUB=s;
   ['entry','ctr','idx'].forEach(function(k){var d=$('t5-'+k);if(d)d.style.display=(k===s)?'':'none';});
   var bar=$('t5-subbar');if(bar)bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-s')===s);});
@@ -5149,7 +5150,7 @@ function buildT8(){
   return true;
 }
 function kiSubV2(w){
-  if(PANES.indexOf(w)<0)w='a';KI_SUB=w;
+  if(PANES.indexOf(w)<0)w='a';if(KI_SUB!==w)logMenu('t8',w);KI_SUB=w;
   try{if(window._rk)window._rk.sub=(w==='b'?'b':'a');}catch(_){}
   PANES.forEach(function(k){var d=$('t8'+k);if(d)d.style.display=(k===w)?'':'none';var b=$('ki-sub-'+k);if(b)b.classList.toggle('active',k===w);});
   if((w==='b'||w==='d'||w==='e')&&!window._kiWarehouseLoaded){window._kiWarehouseLoaded=true;if(window.loadWarehouse)window.loadWarehouse();}
@@ -5282,17 +5283,104 @@ async function loadFactAlert(){
   el.innerHTML='<b>사실 신선도</b><span class="mv2-chip '+(a?'mv2-bad':'mv2-ok')+'">만료일 지난 사실 '+a+'건</span><span class="mv2-chip '+(b?'mv2-wn':'mv2-ok')+'">만료일 없는 사실 '+b+'건</span><span class="mv2-mut">만료된 사실은 초안 허브가 그대로 주입할 수 있으니 재검증 후 날짜를 갱신하세요</span>';
 }
 
+/* ───────── 6-2. 메뉴별 데이터 상태 띠 (v1.35.1) ───────── */
+function stripFor(pid){
+  var p=$(pid);if(!p)return null;
+  var el=$('mv2-st-'+pid);
+  if(!el){el=document.createElement('div');el.id='mv2-st-'+pid;el.className='mv2-strip';
+    var anchor=p.querySelector(':scope > .sec-nav')||p.firstElementChild;
+    if(pid==='t11'&&$('mv2-fact'))anchor=$('mv2-fact');
+    if(pid==='t15'&&$('mv2-rw-ctr'))anchor=$('mv2-rw-ctr');
+    p.insertBefore(el,anchor?anchor.nextSibling:p.firstChild);}
+  return el;
+}
+function chipLv(lv,txt){return '<span class="mv2-chip '+(lv==='bad'?'mv2-bad':lv==='wn'?'mv2-wn':'mv2-ok')+'">'+txt+'</span>';}
+function ymdKst(){return kst();}
+async function one(q){try{var r=await q;return r&&r.data&&r.data[0]?r.data[0]:null;}catch(e){return null;}}
+async function cnt(q){try{var r=await q;return r&&typeof r.count==='number'?r.count:null;}catch(e){return null;}}
+var ST={
+  tcs:async function(){var r=await one(sb.from('v_cs_inbox').select('발생시각').order('발생시각',{ascending:true}).limit(1));var n=await cnt(sb.from('v_cs_inbox').select('*',{count:'exact',head:true}));
+    var d=r?daysAgo(r.발생시각):null;return [chipLv(n?'wn':'ok','답 기다리는 일 '+(n||0)+'건'),d!=null?chipLv(d>7?'bad':d>3?'wn':'ok','가장 오래 기다린 건 '+d+'일'):''];},
+  t5:async function(){var a=await cnt(sb.from('mk_blog_publish_log').select('*',{count:'exact',head:true}).eq('진입판정','측정중'));var r=await one(sb.from('mk_blog_publish_log').select('현재순위_측정일').order('현재순위_측정일',{ascending:false,nullsFirst:false}).limit(1));
+    var d=r?daysAgo(r.현재순위_측정일):null;return [chipLv(d==null||d>2?'bad':'ok','현재 순위 측정 '+(r?String(r.현재순위_측정일).slice(5):'없음')),chipLv(a>100?'wn':'ok','D+N 측정중 '+(a||0)+'건'),chipLv('ok','네이버 순위 자 = SERP 실측')];},
+  t12:async function(){var a=await cnt(sb.from('mk_improvement_suggestions').select('*',{count:'exact',head:true}).in('상태',['제안','open','열림','대기']));var b=await cnt(sb.from('mk_draft_feedback').select('*',{count:'exact',head:true}).in('상태',['open','재발']));
+    return [chipLv(a>100?'bad':a>20?'wn':'ok','미처리 개선 제안 '+(a||0)+'건'),chipLv(b>10?'wn':'ok','피드백 미해결·재발 '+(b||0)+'건'),'<span class="mv2-mut">개선 제안 상태값이 제안·open·열림·대기로 섞여 있습니다</span>'];},
+  t8:async function(){var a=await one(sb.from('mk_inflow_keywords').select('생성일').eq('출처','creator_advisor').order('생성일',{ascending:false}).limit(1));var b=await one(sb.from('mk_top_posts').select('측정월').order('측정월',{ascending:false}).limit(1));var c=await one(sb.from('mk_revenue_keywords').select('수정일').order('수정일',{ascending:false}).limit(1));
+    var da=a?daysAgo(a.생성일):null,lm=lastMonths(1)[0],bm=b?String(b.측정월).slice(0,7):null;
+    return [chipLv(c&&daysAgo(c.수정일)<=7?'ok':'wn','매출 키워드 갱신 '+(c?String(c.수정일).slice(5,10):'없음')),chipLv(da==null||da>14?'bad':'ok','네이버 실검색어 TOP 수집 '+(a?String(a.생성일).slice(5,10):'없음')+(da!=null?' ('+da+'일 전)':'')),chipLv(bm&&bm>=lm?'ok':'bad','상위 글 마지막 월 '+(bm||'없음'))];},
+  tsch:async function(){var d=new Date(Date.now()+9*3600e3);d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+1);var nm=d.toISOString().slice(0,7);var e=new Date(d);e.setUTCMonth(e.getUTCMonth()+1);var nm2=e.toISOString().slice(0,7);
+    var r=await sb.from('mk_blog_slots').select('발행일').gte('발행일',nm+'-01').lt('발행일',nm2+'-01').limit(1000);var rows=(r&&r.data)||[];var days={};rows.forEach(function(x){days[x.발행일]=1;});var nd=Object.keys(days).length;
+    var pl=await cnt(sb.from('mk_slot_plan').select('*',{count:'exact',head:true}).eq('계획월',nm+'-01').in('상태',['확정','승인대기','초안']));
+    var left=Math.ceil((Date.parse(nm+'-01T00:00:00+09:00')-Date.now())/86400e3);
+    return [chipLv(nd<20?'bad':'ok',nm.slice(5)+'월 슬롯 '+rows.length+'개 · '+nd+'일치'),chipLv(pl?'ok':'bad',nm.slice(5)+'월 편성안 '+(pl?'있음':'없음')),'<span class="mv2-mut">'+nm.slice(5)+'월 시작까지 '+left+'일</span>'];},
+  t15:async function(){var a=await one(sb.from('mk_blog_drafts').select('리라이트_반영일').not('리라이트_반영일','is',null).order('리라이트_반영일',{ascending:false}).limit(1));var b=await one(sb.from('mk_blog_drafts').select('리라이트_착수일').not('리라이트_착수일','is',null).order('리라이트_착수일',{ascending:false}).limit(1));
+    var da=a?daysAgo(a.리라이트_반영일):null;return [chipLv(da==null||da>14?'bad':'ok','마지막 라이브 반영 '+(a?String(a.리라이트_반영일).slice(5):'없음')+(da!=null?' ('+da+'일 전)':'')),chipLv('ok','마지막 착수 '+(b?String(b.리라이트_착수일).slice(5):'없음'))];},
+  t10:async function(){var n=await cnt(sb.from('mk_portfolio').select('*',{count:'exact',head:true}));var u=await cnt(sb.from('mk_portfolio').select('*',{count:'exact',head:true}).or('네이버_url.is.null,네이버_url.eq.').or('티스토리_url.is.null,티스토리_url.eq.'));
+    return [chipLv('ok','실사례 '+(n||0)+'건'),chipLv(u>n/2?'wn':'ok','글 URL 없는 사례 '+(u||0)+'건')];},
+  t14:async function(){var a=await one(sb.from('mk_photo_assets').select('등록일').order('등록일',{ascending:false}).limit(1));var b=await one(sb.from('mk_video_designs').select('수정일').order('수정일',{ascending:false}).limit(1));var c=await one(sb.from('mk_bgm_library').select('등록일').order('등록일',{ascending:false}).limit(1));
+    return [chipLv(a&&daysAgo(a.등록일)<=14?'ok':'wn','사진 마지막 등록 '+(a?String(a.등록일).slice(5,10):'없음')),chipLv('ok','영상 설계 마지막 수정 '+(b?String(b.수정일).slice(5,10):'없음')),chipLv('ok','BGM 마지막 등록 '+(c?String(c.등록일).slice(5,10):'없음'))];},
+  tchan:async function(){var a=await one(sb.from('mk_channel_algorithm').select('마지막_점검일').order('마지막_점검일',{ascending:true}).limit(1));var q=await sb.from('v_channel_card_queue').select('created_at').limit(200);var rows=(q&&q.data)||[];var old=rows.reduce(function(m,x){var d=daysAgo(x.created_at);return d>m?d:m;},0);
+    var da=a?daysAgo(a.마지막_점검일):null;return [chipLv(da==null||da>35?'bad':da>28?'wn':'ok','채널 알고리즘 점검 '+(a?String(a.마지막_점검일).slice(5):'없음')),chipLv(old>7?'wn':'ok','발송 대기 카드 '+rows.length+'장'+(rows.length?' · 최장 '+old+'일':''))];},
+  t13:async function(){var a=await one(sb.from('mk_youtube_assets').select('수집일').order('수집일',{ascending:false}).limit(1));var m=await cnt(sb.from('mk_youtube_metrics').select('*',{count:'exact',head:true}));var l=await cnt(sb.from('mk_short_links').select('*',{count:'exact',head:true}).eq('자산종류','유튜브'));
+    var da=a?daysAgo(a.수집일):null;return [chipLv(da==null||da>35?'bad':'ok','리얼플랜여행 영상 수집 '+(a?String(a.수집일).slice(5,10):'없음')+(da!=null?' ('+da+'일 전 · 매월 1일 자동)':'')),chipLv(m?'ok':'bad','지니 성과 지표 '+(m||0)+'행'+(m?'':' — Analytics 연동 전')),chipLv('ok','유튜브 단축링크 '+(l||0)+'개')];}
+};
+async function loadStrip(pid){
+  var f=ST[pid];if(!f||typeof sb==='undefined')return;
+  var el=stripFor(pid);if(!el)return;
+  if(!el.innerHTML)el.innerHTML='<b>데이터 상태</b> <span class="mv2-mut">확인 중…</span>';
+  try{var parts=await f();el.innerHTML='<b style="margin-right:4px">데이터 상태</b>'+parts.filter(Boolean).join('');}catch(e){warn('strip '+pid,e);el.innerHTML='<b>데이터 상태</b> <span class="mv2-mut">확인 실패</span>';}
+}
+
+/* ───────── 6-3. 네이버 업로드 채널 오선택 방지 (v1.35.1) ───────── */
+var NVIDX=null;
+function nrm(t){return String(t||'').replace(/[^가-힣0-9A-Za-z]/g,'').slice(0,14);}
+async function nvIndex(){
+  if(NVIDX)return NVIDX;var idx={};
+  function add(ch,t){var k=nrm(t);if(k.length<6||!/네이버$/.test(ch||''))return;(idx[k]=idx[k]||{})[ch]=1;}
+  var a=await sb.from('mk_blog_publish_log').select('채널,rss_제목').like('채널','%네이버').limit(1000);(a.data||[]).forEach(function(x){add(x.채널,x.rss_제목);});
+  for(var f=0;f<6000;f+=1000){var b=await sb.from('mk_top_posts').select('채널,제목').range(f,f+999);var d=(b&&b.data)||[];d.forEach(function(x){add(x.채널,x.제목);});if(d.length<1000)break;}
+  NVIDX=idx;return idx;
+}
+async function nvGuard(){
+  window.__mv2NvMismatch=false;window.__mv2NvAck=false;
+  var box=$('nv-preview');if(!box)return;
+  var old=$('mv2-nv-guard');if(old)old.remove();
+  var g=document.createElement('div');g.id='mv2-nv-guard';g.className='mv2-note';box.appendChild(g);
+  var P=[];try{P=(typeof nvParsed!=='undefined'&&nvParsed)?nvParsed:[];}catch(_){}
+  var titles=[];P.forEach(function(p){if(/순위/.test(p.종류||''))(p.rows||[]).forEach(function(r){if(r.제목)titles.push(nrm(r.제목));});});
+  var sel=($('nv-channel')||{}).value;
+  if(!titles.length){g.innerHTML='⚠️ 이 파일들에는 글 제목이 없어 블로그를 자동으로 맞춰 보지 못했습니다(조회수·재방문율·사용시간 파일). <b>채널이 '+E(sel)+'가 맞는지</b> 한 번 더 확인하세요. 순위 파일을 같이 올리면 자동 대조됩니다.';return;}
+  var idx=await nvIndex();var score={};
+  titles.forEach(function(k){var hit=idx[k];if(hit)Object.keys(hit).forEach(function(ch){score[ch]=(score[ch]||0)+1;});});
+  var best=Object.keys(score).sort(function(a,b){return score[b]-score[a];})[0];
+  var txt=Object.keys(score).map(function(ch){return ch+' '+score[ch];}).join(' · ')||'일치 0';
+  if(best&&best!==sel&&(score[best]||0)>(score[sel]||0)){window.__mv2NvMismatch=true;
+    g.innerHTML='<b style="color:#b91c1c">🛑 채널이 파일과 달라 보입니다</b> — 선택 <b>'+E(sel)+'</b> · 파일 글 제목은 <b>'+E(best)+'</b>와 가장 많이 일치합니다('+E(txt)+'). 채널을 바꾸거나, 맞다면 [적재]를 한 번 더 누르세요.';}
+  else g.innerHTML='✅ 제목 대조: '+E(txt)+' — 선택한 <b>'+E(sel)+'</b>와 맞습니다.';
+}
+
+/* ───────── 6-4. 메뉴 클릭 기록 (v1.35.1 · web_관리자메뉴로그) ───────── */
+var _lastLog='',_lastAt=0;
+function logMenu(tab,sub){
+  try{var key=tab+'|'+(sub||'');var now=Date.now();if(key===_lastLog&&now-_lastAt<3000)return;_lastLog=key;_lastAt=now;
+    var lab=NAV[tab]?NAV[tab].textContent.replace(/\s+/g,' ').trim():tab;
+    sb.from('web_관리자메뉴로그').insert({탭:tab+' '+lab,하위:sub||null,버전:VER}).then(function(r){if(r&&r.error)warn('menulog',r.error);});
+  }catch(e){warn('menulog',e);}
+}
+
 /* ───────── 7. 연결 ───────── */
 function wireAll(){
   var sw=window.switchTab;
   if(typeof sw==='function'&&!sw.__mv2){
     var ns=function(id,el){
-      if(id==='t4'){sw.call(this,'t8',NAV.t8);kiSubV2('c');return;}
-      if(id==='tctr'){sw.call(this,'t5',NAV.t5);t5Sub('ctr');return;}
+      if(id==='t4'){sw.call(this,'t8',NAV.t8);kiSubV2('c');logMenu('t8','c·옛 잠자는 거인');return;}
+      if(id==='tctr'){sw.call(this,'t5',NAV.t5);t5Sub('ctr');logMenu('t5','ctr·옛 CTR');return;}
       var r=sw.apply(this,arguments);
       if(id==='t8'&&KI_SUB!=='a')setTimeout(function(){kiSubV2(KI_SUB);},0);
       if(id==='t15')safe('rwctr',function(){loadRwCtrCard().catch(function(e){warn('rwctr',e);});});
       if(id==='t11')safe('fact',function(){loadFactAlert().catch(function(e){warn('fact',e);});});
+      logMenu(id,id==='t8'?KI_SUB:(id==='t5'?T5SUB:null));
+      if(ST[id])setTimeout(function(){loadStrip(id);},id==='tsch'?600:50);
       return r;
     };
     ns.__mv2=true;ns.__orig=sw;window.switchTab=ns;
@@ -5306,6 +5394,9 @@ function wireAll(){
   wrap('loadChannelDiagnosis',fixD7);
   wrap('loadCTR',fixCTR);
   wrap('loadIndexNow',fixIndex);
+  wrap('nvPreview',nvGuard);
+  wrap('nvCommit',null,function(){if(window.__mv2NvMismatch&&!window.__mv2NvAck){window.__mv2NvAck=true;if(window.showToast)window.showToast('채널이 파일과 달라 보입니다 — 확인 후 다시 누르면 적재됩니다');return false;}});
+  safe('nvsel',function(){var s=$('nv-channel');if(s)s.addEventListener('change',function(){if($('mv2-nv-guard'))nvGuard().catch(function(e){warn('nvguard',e);});});});
 }
 function boot(){
   var ok={};
@@ -5316,13 +5407,14 @@ function boot(){
   ok.t8=safe('t8',buildT8);
   ok.t6=safe('t6',buildT6);
   safe('wire',wireAll);
-  safe('badge',function(){var b=document.querySelector('.hdr-badge');if(b)b.textContent=VER;});
+  safe('badge',function(){var b=document.querySelector('.hdr-badge');if(b)b.textContent=VER;document.title=document.title.replace(/v\d+\.\d+\.\d+/,VER);});
   ['t1','t5','t8','t6'].forEach(function(id){var p=$(id);if(!p)return;p.querySelectorAll('.sec-off').forEach(function(n){n.classList.remove('sec-off');});});
   safe('secnav',function(){var n=$('t1')&&$('t1').querySelector(':scope > .sec-nav');if(n)n.remove();if(typeof window.buildSecNavs==='function')window.buildSecNavs();});
   /* 이미 통계 탭이 그려진 뒤라면 새 구역을 바로 채운다 */
   var logged=!!($('hdr-email')&&$('hdr-email').textContent.trim());
   safe('t1load',function(){if(logged&&$('t1')&&$('t1').classList.contains('active')&&(typeof sb!=='undefined')){if(window.loadGiantsNaver)window.loadGiantsNaver();loadFresh().catch(function(e){warn('fresh',e);});loadUpGrid().catch(function(e){warn('grid',e);});}});
   safe('t6load',function(){if(logged&&(typeof sb!=='undefined')&&$('algo-body')){loadAlgoV2().catch(function(){});loadSkillRulesV2().catch(function(){});}});
+  safe('stripload',function(){if(logged&&(typeof sb!=='undefined')){var a=document.querySelector('.tab-panel.active');if(a&&ST[a.id])loadStrip(a.id);}});
   window.__rpMenuV2State=ok;
   try{console.info('[menu-v2] 적용 '+VER,JSON.stringify(ok));}catch(_){}
 }

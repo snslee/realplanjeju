@@ -11547,7 +11547,7 @@ setTimeout(tick,300);
       +'<div class="ss-sub">클로드가 포스터를 만들어 올리면 여기서 <b>미리보기 → 승인</b>만 누르세요. 승인하면 홈A·B에 바로 표시됩니다(게시 시작일 전이면 그날 0시). 사이트마다 2칸 · 칸마다 한 달에 1장</div></div>'
       +'<div class="ss-mon"><button data-act="m-1">◀</button><b>'+st.m.slice(0,4)+'년 '+(+st.m.slice(5,7))+'월</b><button data-act="m+1">▶</button></div></div>'
       +'<div class="ss-sum"><span>승인 대기 <b style="color:#b45309">'+cnt.wait+'</b></span><span>게시 중 <b style="color:#15803d">'+cnt.live+'</b></span><span>게시 예정 <b style="color:#1d4ed8">'+cnt.sched+'</b></span><span>비어 있음 <b>'+cnt.empty+'</b></span>'
-      +(owner?'':'<span style="color:#b45309">이 계정은 보기만 가능합니다(승인은 대표 계정)</span>')+'<button class="ss-btn" data-act="reload" style="margin-left:auto">↻ 새로고침</button></div>'
+      +(owner?'':'<span style="color:#b45309">이 계정은 보기만 가능합니다(승인은 대표 계정)</span>')+(function(){var y=(st.d&&st.d['동기화'])||[];if(!y.length)return '';return '<span title="검색·AI 수집기가 읽는 홈 파일 글자 반영 시각">홈 글자 반영 '+y.map(function(x){return '홈'+x['사이트']+' '+hm(x['시각'])+(x['오류']?' <b style="color:#b91c1c">오류</b>':' ✔');}).join(' · ')+'</span>';})()+'<button class="ss-btn" data-act="reload" style="margin-left:auto">↻ 새로고침</button></div>'
       +'<div class="ss-grid">'+html+'</div>';
   }
   function findRow(id){var rows=(st.d&&st.d['행'])||[];for(var i=0;i<rows.length;i++)if(rows[i].id===id)return rows[i];return null;}

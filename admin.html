@@ -1251,7 +1251,7 @@ function getConsultationTemplate(bu){
   return TEMPLATES[bu]||null;
 }
 const $=(s,p=document)=>p.querySelector(s);
-const $=(s,p=document)=>Array.from(p.querySelectorAll(s));
+const $$=(s,p=document)=>Array.from(p.querySelectorAll(s));
 const show=el=>{if(typeof el==='string')el=$(el);if(el)el.hidden=false;};
 const hide=el=>{if(typeof el==='string')el=$(el);if(el)el.hidden=true;};
 function showLoading(){show('#loading-overlay');}
@@ -1896,7 +1896,7 @@ function setPagination(total,page){
   pgEl.innerHTML='<span>전체 <b>'+total+'</b>건 · 페이지 <b>'+page+'</b> / '+pages+' · 페이지당 '+PAGE_SIZE+'건</span>'+
     '<span class="page-nav">'+html+'</span>';
   // active 클래스 직접 부여
-  $('.page-btn').forEach(b=>{
+  $$('.page-btn').forEach(b=>{
     if(parseInt(b.getAttribute('data-page'))===page&&!b.disabled&&b.textContent.trim()===String(page))
       b.classList.add('active');
   });

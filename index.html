@@ -706,7 +706,7 @@ async function loadContent(){
 /* 2) 방문 로그 — IP 미저장·실도메인에서만·편집 모드 제외 */
 function logVisit(){
   try{
-    if(!sb||wantEdit())return;
+    try{if(/rpstaff/.test(location.hash))localStorage.setItem('rp_staff','1');}catch(e){}if(!sb||wantEdit())return;
     if(!/realplanjeju\.com$/.test(location.hostname))return;
     var sid=null;
     try{sid=sessionStorage.getItem('rp_sid');if(!sid){sid=Math.random().toString(36).slice(2)+Date.now().toString(36);sessionStorage.setItem('rp_sid',sid);}}catch(e){}

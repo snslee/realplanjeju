@@ -11112,10 +11112,10 @@ setInterval(build,700);
   },true);
 })();
 </script>
-<!-- RP-DASH-V2 start (2026-09-16 대시보드·홈페이지 관리 개편 v1.0 · 원본 무수정 런타임 교체 · 이 블록만 지우면 원복) -->
+<!-- RP-DASH-V2 start (2026-09-16 대시보드·홈페이지 관리 개편 v1.1 · 원본 무수정 런타임 교체 · 이 블록만 지우면 원복) -->
 <script id="rp-dash-v2">
 (function(){
-if(window.RP_DASH_V2)return; window.RP_DASH_V2='1.0';
+if(window.RP_DASH_V2)return; window.RP_DASH_V2='1.1';
 function q(s){return document.querySelector(s);}
 function E(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function N(v){v=Number(v);return isFinite(v)?v.toLocaleString('ko-KR'):'-';}
@@ -11126,11 +11126,9 @@ function kst(d){return new Date(d).toLocaleDateString('en-CA',{timeZone:'Asia/Se
 /* 0) 직원 표시 — 관리자 화면을 연 브라우저는 홈A(같은 주소) 방문을 직원으로 기록 */
 try{localStorage.setItem('rp_staff','1');}catch(e){}
 
-/* 1) 대시보드 KPI 6칸 — rpc_dashboard_kpis v2 값으로 이름·값 교체 */
-var _rk=window.renderKpis;
-window.renderKpis=function(j){
-  j=j||{};
-  if(!j.kpi_version){ if(typeof _rk==='function') return _rk(j); return; }
+/* 1) 대시보드 KPI 6칸 — 원본 렌더 함수는 전역이 아니므로(스코프 안) 카드가 채워지는 것을 지켜보고 v2 값으로 덮어쓴다 */
+var _kpiBusy=false,_kpiLast=null,_kpiAt=0;
+function kpiPaint(j){
   function card(key,label,val,sub,alert){
     var c=q('.kpi-card[data-kpi="'+key+'"]'); if(!c)return;
     var l=c.querySelector('.kpi-label'),v=c.querySelector('.kpi-value'),s=c.querySelector('.kpi-sub');
@@ -11138,6 +11136,7 @@ window.renderKpis=function(j){
     if(v){v.textContent=val;v.style.fontSize='';v.style.color=alert?'#c0392b':'';}
     if(s)s.textContent=sub;
     c.style.borderLeftColor=alert?'#c0392b':'';
+    c.setAttribute('data-rpd',val);
   }
   card('new','오늘 신규 문의',N(j.new_count),'최근 7일 '+N(j.new_7d)+'건',false);
   card('unresponsive','미응답 (24h+)',N(j.unresponsive_count),'열린 문의 · 접촉 기록 없음',Number(j.unresponsive_count)>0);
@@ -11150,7 +11149,29 @@ window.renderKpis=function(j){
   if(par&&!par._rpdOrder){par._rpdOrder=1;['new','unresponsive','in_progress','top_bu','completed','dropout'].forEach(function(k){var c=q('.kpi-card[data-kpi="'+k+'"]');if(c)par.appendChild(c);});}
   var tb=q('.kpi-card[data-kpi="top_bu"]');
   if(tb&&!tb._rpdLink){tb._rpdLink=1;tb.style.cursor='pointer';tb.title='문의 목록 열기';tb.addEventListener('click',function(){location.hash='#customers';});}
-};
+}
+function kpiDirty(){
+  var bad=false;
+  document.querySelectorAll('.kpi-card[data-kpi]').forEach(function(c){var v=c.querySelector('.kpi-value');if(!v)return;var t=v.textContent;if(t!=='-'&&t!==c.getAttribute('data-rpd'))bad=true;});
+  return bad;
+}
+async function kpiApply(force){
+  if(_kpiBusy||!SB())return;
+  if(!force&&!kpiDirty())return;
+  _kpiBusy=true;
+  try{
+    var fresh=(Date.now()-_kpiAt)<15000&&_kpiLast;
+    var j=fresh?_kpiLast:null;
+    if(!j){var r=await SB().rpc('rpc_dashboard_kpis'); if(!r.error&&r.data&&r.data.kpi_version){j=r.data;_kpiLast=j;_kpiAt=Date.now();}}
+    if(j)kpiPaint(j);
+  }catch(e){}
+  _kpiBusy=false;
+}
+(function(){
+  var grid=q('.kpi-grid'); if(!grid||!window.MutationObserver)return;
+  var t=null;
+  new MutationObserver(function(){clearTimeout(t);t=setTimeout(function(){kpiApply(false);},250);}).observe(grid,{childList:true,subtree:true,characterData:true});
+})();
 
 /* 2) 대시보드 방문 줄 삭제 → 유입·전환표 머리에 30일 한 줄 */
 var _dashTok=0;
@@ -11171,26 +11192,25 @@ window.wsDashSummary=async function(){
   }catch(e){}
 };
 
-/* 3) 문의 목록 — 견적 방치 배지 */
-var _rct=window.renderCustomersTable;
-if(typeof _rct==='function'){
-  window.renderCustomersTable=function(rows){
-    var out=_rct.apply(this,arguments);
-    try{(rows||[]).forEach(function(r){
-      var st=r['고객상태']; if(st!=='견적발송'&&st!=='계약대기')return;
-      var nc=Number(r['무접촉일']); if(!(nc>=14))return;
-      var no=String(r['접수번호']||''); var tr=null;
-      document.querySelectorAll('.customers-table tbody tr').forEach(function(x){if(x.getAttribute('data-inq')===no)tr=x;});
-      if(!tr||tr.querySelector('.rpd-qbadge'))return;
-      var td=tr.children[4]; if(!td)return;
-      var b=document.createElement('span'); b.className='rpd-qbadge';
-      b.textContent=(nc>=30?'견적 30일+':'견적 14일+');
-      b.style.cssText='display:inline-block;margin-left:5px;padding:1px 6px;border-radius:8px;font-size:10.5px;font-weight:700;background:'+(nc>=30?'#fbe6e9':'#fdf1dc')+';color:'+(nc>=30?'#b3263a':'#9a5b00');
-      td.appendChild(b);
-    });}catch(e){}
-    return out;
-  };
+/* 3) 문의 목록 — 견적 방치 배지 (표가 다시 그려질 때마다 상태·무접촉일 칸을 읽어 붙인다) */
+function qBadges(){
+  document.querySelectorAll('.customers-table tbody tr').forEach(function(tr){
+    var td=tr.children[4],nc=tr.children[7]; if(!td||!nc||td.querySelector('.rpd-qbadge'))return;
+    var st=(td.querySelector('.status-badge')||td).textContent.trim();
+    if(st!=='견적발송'&&st!=='계약대기')return;
+    var m=(nc.textContent||'').match(/(\d+)\s*일/); if(!m)return;
+    var n=Number(m[1]); if(n<14)return;
+    var b=document.createElement('span'); b.className='rpd-qbadge';
+    b.textContent=(n>=30?'견적 30일+':'견적 14일+');
+    b.style.cssText='display:inline-block;margin-left:5px;padding:1px 6px;border-radius:8px;font-size:10.5px;font-weight:700;background:'+(n>=30?'#fbe6e9':'#fdf1dc')+';color:'+(n>=30?'#b3263a':'#9a5b00');
+    td.appendChild(b);
+  });
 }
+(function(){
+  var tb=q('.customers-table tbody'); if(!tb||!window.MutationObserver)return;
+  var t=null;
+  new MutationObserver(function(){clearTimeout(t);t=setTimeout(qBadges,150);}).observe(tb,{childList:true});
+})();
 
 /* 4) 홈페이지 관리 */
 function hpFix(){
@@ -11335,7 +11355,7 @@ window.wsBlogLoad=async function(){
 function boot(){
   try{hpFix();}catch(e){}
   var h=location.hash||'#dashboard';
-  if(h.indexOf('dashboard')>-1&&SB()){setTimeout(function(){window.wsDashSummary();},1200);}
+  if(h.indexOf('dashboard')>-1&&SB()){setTimeout(function(){window.wsDashSummary();kpiApply(true);},1200);}
 }
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}else{boot();}
 })();

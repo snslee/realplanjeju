@@ -5363,7 +5363,7 @@ async function nvGuard(){
 var _lastLog='',_lastAt=0;
 function logMenu(tab,sub){
   try{var key=tab+'|'+(sub||'');var now=Date.now();if(key===_lastLog&&now-_lastAt<3000)return;_lastLog=key;_lastAt=now;
-    var lab=NAV[tab]?NAV[tab].textContent.replace(/\s+/g,' ').trim():tab;
+    var lab=NAV[tab]?[].slice.call(NAV[tab].childNodes).filter(function(n){return n.nodeType===3;}).map(function(n){return n.textContent;}).join('').replace(/\s+/g,' ').trim():tab;
     sb.from('web_관리자메뉴로그').insert({탭:tab+' '+lab,하위:sub||null,버전:VER}).then(function(r){if(r&&r.error)warn('menulog',r.error);});
   }catch(e){warn('menulog',e);}
 }

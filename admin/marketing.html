@@ -981,7 +981,7 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
     </div>
     <div class="tab-panel" id="t13">
       <div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div><h2 style="font-size:1.2rem;font-weight:700">▶️ 유튜브 운영</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">🧞 <b>사장님 마케팅 지니</b> <a href="https://www.youtube.com/@%EC%82%AC%EC%9E%A5%EB%8B%98%EB%A7%88%EC%BC%80%ED%8C%85%EC%A7%80%EB%8B%88" target="_blank" style="color:#2563eb">@사장님마케팅지니</a> · <b id="genie-hd-ct">0편 · 구독 0</b><br><span style="color:#b45309">📆 편성표는 「편성 → ▶️ 유튜브」 탭으로 옮겼습니다(2026-09-13 v1.33.0). 구 채널 621편은 아래 ✈️ 칩 안에만 있습니다.</span></p></div>
+        <div><h2 style="font-size:1.2rem;font-weight:700">▶️ 유튜브 운영</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">🧞 <b>사장님 마케팅 지니</b> <a href="https://www.youtube.com/@%EC%82%AC%EC%9E%A5%EB%8B%98%EB%A7%88%EC%BC%80%ED%8C%85%EC%A7%80%EB%8B%88" target="_blank" style="color:#2563eb">@사장님마케팅지니</a> · <b id="genie-hd-ct">0편 · 구독 0</b><br><span style="color:#1e40af">✈️ <b>리얼플랜여행</b> = 국내여행(단체) 롱폼 · 매주 금 18:00 · 목적지 <b>홈A</b> &nbsp;/&nbsp; 🧞 <b>지니</b> = 매주 화 · 목적지 <b>홈B</b></span><br><span style="color:#94a3b8;font-size:.74rem">지니 편성표는 「편성 → ▶️ 유튜브」 탭 · 두 채널은 목록·합계를 섞지 않습니다</span></p></div>
         <button onclick="snsRefresh()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
       <div id="sns-youtube" class="sns-panel">
@@ -993,10 +993,11 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
              DB 에 채널 컬럼을 넣고(대표 승인) 화면도 채널 단위로 갈랐다. -->
         <div id="yt-chan-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
           <button id="ytc-btn-genie" onclick="ytChan('genie')" style="padding:8px 15px;border:1px solid #2563eb;border-radius:9px;background:#e8effe;color:#1d4ed8;font-size:.85rem;font-weight:700;cursor:pointer">🧞 사장님 마케팅 지니 <span style="font-weight:500;color:#64748b">신규</span></button>
-          <button id="ytc-btn-travel" onclick="ytChan('travel')" style="padding:8px 15px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#334155;font-size:.85rem;font-weight:700;cursor:pointer">✈️ 리얼플랜여행 <span style="font-weight:500;color:#64748b">621편</span></button>
+          <button id="ytc-btn-travel" onclick="ytChan('travel')" style="padding:8px 15px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#334155;font-size:.85rem;font-weight:700;cursor:pointer">✈️ 리얼플랜여행 <span id="ytc-travel-n" style="font-weight:500;color:#64748b">621편</span></button>
         </div>
         <div id="ytc-genie">
-        <div id="genie-note" style="background:#f0f7ff;border:1px solid #cfe0fb;color:#1e40af;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:14px">🧞 <b>목표는 수익창출이 아니라 문의</b>입니다. 주제는 <b>3원천 교차</b>(①지식인 ②AI 모델별 리서치 ③유튜브 전수조사)로만 정하고 <b>블로그에서 끌어오지 않습니다</b>. 정본 = 스킬 <code>realplan-genie v1.3</code>.</div>
+        <div id="genie-note" style="background:#f0f7ff;border:1px solid #cfe0fb;color:#1e40af;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:14px">🧞 <b>목표는 수익창출이 아니라 문의</b>입니다. 주제는 <b>3원천 교차</b>(①지식인 ②AI 모델별 리서치 ③유튜브 전수조사)로만 정하고 <b>블로그에서 끌어오지 않습니다</b>. 정본 = 스킬 <code>realplan-genie v1.6</code> · <b>문의 목적지 = 홈B(marketing.realplanjeju.com)</b>.</div>
+        <div id="genie-rules" style="margin:-4px 0 14px"></div>
 
         <div style="margin:6px 0 8px"><h3 style="font-size:1rem;font-weight:700">① 🎯 성장 로드맵 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· G1 0→1,000 · 관문은 편당 조회 하나다</span></h3></div>
         <div id="genie-road" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:8px"></div>
@@ -1016,12 +1017,21 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
 
         </div>
         <div id="ytc-travel" style="display:none">
-        <div id="yt-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
-<div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">① 채널 현황 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_assets 정본 · 매월 1일 13:00 자동 수집(youtube-inventory-monthly)</span></h3></div>
+        <div id="trv-band" style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-size:.78rem;padding:9px 12px;border-radius:8px;margin-bottom:12px">✅ 확정 사항 불러오는 중…</div>
+<div id="yt-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px"></div>
+<div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">① 확정 사항 <span id="trv-rules-n" style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_channel_rules · 채널=리얼플랜여행</span></h3></div>
+<div id="trv-rules" class="trv-box"></div>
+<div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">② 편성표 R01~R14 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_slots · 채널=리얼플랜여행 · 매주 금 18:00 · 착지는 홈A만</span></h3></div>
+<div id="trv-slots" class="trv-box"></div>
+<div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">③ 촬영 일정 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· 새 촬영 = 편집지시서.새촬영일 · 토크·나레이션 = 촬영일 · 지난 날짜는 흐리게</span></h3></div>
+<div id="trv-shoot" class="trv-box"></div>
+<div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">④ 성과·판정 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· 기준선 = 옛 롱폼 최고 1,515회 · 판정일 = 발행+28일</span></h3></div>
+<div id="trv-perf"></div>
+<div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">⑤ 채널 현황 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_assets 정본 · 매주 월 13:00 자동 수집(youtube-inventory-weekly-mon-1300kst)</span></h3></div>
         <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">형식</th><th style="text-align:right">편수</th><th style="text-align:right">총조회</th><th style="text-align:right">평균</th><th style="text-align:right">최고</th><th>마지막 발행</th></tr></thead><tbody id="yt-form"><tr><td colspan="6" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody></table></div>
         <div id="yt-trend" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;font-size:.76rem;margin-bottom:16px;color:#64748b"></div>
 
-        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">④ 재고 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· 발행분 621편(재활용 후보) + 미발행 재료 mk_video_sources</span></h3></div>
+        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">⑥ 재고 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· 발행분 621편(재활용 후보) + 미발행 재료 mk_video_sources · 「쓴 편」 = 새 롱폼 편집지시서 재료</span></h3></div>
         <div style="font-size:.74rem;color:#64748b;margin:2px 0 6px">🗓 시즌 창 · 소재를 언제까지 써야 하는지 — 놓치면 1년 대기</div>
         <div id="yt-season" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px"></div>
 

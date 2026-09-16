@@ -1880,7 +1880,7 @@ async function loadStats(){ loadFunnel();
   // v1.8.3 — 정본 교체: mk_rank_tracker(핵심키워드 전량). 미진입(순위 NULL)은 평균에서 제외하되 존재는 표에서 본다.
   let navRows=[];
   // v1.15.0 A2 — 여기도 .limit(20000)이 1000행에서 잘린다(현재 887행이라 아직 안 걸렸을 뿐). 페이징 고정.
-  try{ let _f=0;for(;;){ const _r=await sb.from('mk_rank_tracker').select('채널,순위,측정_일자').eq('검색_엔진','naver').not('순위','is',null).gte('측정_일자',since.slice(0,10)).order('측정_일자',{ascending:true}).range(_f,_f+999); if(_r.error)throw _r.error; navRows=navRows.concat(_r.data||[]); if(!_r.data||_r.data.length<1000)break; _f+=1000; if(_f>60000)break; } }catch(e){ navRows=[]; }
+  try{ let _f=0;for(;;){ const _r=await sb.from('mk_rank_tracker').select('채널,순위,측정_일자').eq('검색_엔진','naver_serp').lt('순위',999).gte('측정_일자',since.slice(0,10)).order('측정_일자',{ascending:true}).range(_f,_f+999); if(_r.error)throw _r.error; navRows=navRows.concat(_r.data||[]); if(!_r.data||_r.data.length<1000)break; _f+=1000; if(_f>60000)break; } }catch(e){ navRows=[]; }
   const navD=navRows,navChs=[...new Set(navD.map(r=>r.채널))].sort(),navByD={},navAgg={};
   const navDays=[...new Set(navD.map(r=>String(r.측정_일자||'').slice(5,10)))].filter(Boolean).sort().slice(-14);
   navD.forEach(r=>{const d=String(r.측정_일자||'').slice(5,10);const k=r.채널+'|'+d;if(!navAgg[k])navAgg[k]={s:0,n:0};navAgg[k].s+=Number(r.순위);navAgg[k].n++;});

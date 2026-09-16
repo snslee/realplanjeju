@@ -2157,7 +2157,7 @@ window._rtFetchRows=async function(days){
   const since=new Date(Date.now()-days*86400000).toISOString().slice(0,10);
   let all=[],f=0;const sz=1000;
   for(;;){
-    const{data,error}=await sb.from('mk_rank_tracker').select('채널,키워드,순위,측정_일자').eq('검색_엔진','naver').gte('측정_일자',since).order('측정_일자',{ascending:true}).range(f,f+sz-1);
+    const{data,error}=await sb.from('mk_rank_tracker').select('채널,키워드,순위,측정_일자').eq('검색_엔진','naver_serp').gte('측정_일자',since).order('측정_일자',{ascending:true}).range(f,f+sz-1);
     if(error)throw error;
     all=all.concat(data||[]);
     if(!data||data.length<sz)break;

@@ -1250,5 +1250,45 @@ setMode('view');
 })();
 </script>
 
+<script id="rp-season-js">
+/* RP-SEASON v1.0 (2026-09-16 회사 시스템 방) — 시즌 추천 상품
+   · 관리자에서 대표가 「승인」한 포스터만 rpc_web_season_live 로 읽어 #season 칸을 채운다(배포 없음).
+   · CMS(rp-root) 주입이 칸을 다시 그려도 MutationObserver 로 다시 채운다(현장 이야기 사라짐 사고 방지).
+   · 편집 모드(#rpedit)에서는 손대지 않는다 — 채운 결과가 CMS 에 저장되지 않게. */
+(function(){
+  if(/rpedit/.test(location.hash)||/[?&]edit\b/.test(location.search))return;
+  var data=null,tries=0;
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function slug(p){var a=String(p||'').split('/').filter(Boolean);return a.length?a[a.length-1]:'home';}
+  function fill(){
+    var sec=document.getElementById('season');
+    if(!sec||!data||sec.getAttribute('data-filled')==='1')return;
+    sec.setAttribute('data-filled','1');
+    data.forEach(function(r){
+      var card=sec.querySelector('.sea-card[data-slot="'+r['칸']+'"]');if(!card)return;
+      var p=card.querySelector('.sea-poster');
+      if(p&&r['포스터_url']){p.classList.remove('sea-empty');p.setAttribute('href',r['포스터_url']);p.setAttribute('target','_blank');p.setAttribute('rel','noopener');
+        p.innerHTML='<img src="'+esc(r['포스터_url'])+'" alt="'+esc(r['대체텍스트'])+'" width="'+(r['가로']||1080)+'" height="'+(r['세로']||1440)+'" loading="lazy" decoding="async">';}
+      var bd=card.querySelector('.sea-badge');if(bd&&r['월_숫자']){bd.textContent=r['월_숫자']+'월 추천';bd.hidden=false;}
+      var ul=card.querySelector('.sea-btns'),b=r['버튼']||[];
+      if(ul&&b.length){ul.innerHTML=b.map(function(x){var u=String(x['주소']||'/');
+        u+=(u.indexOf('?')<0?'?':'&')+'utm_medium=season&utm_campaign='+encodeURIComponent(r['utm_campaign']||'')+'&utm_content='+encodeURIComponent(slug(u.split('?')[0]));
+        return '<li><a href="'+esc(u)+'">'+esc(x['이름'])+'</a></li>';}).join('');}
+      if(r['상세문안']&&!card.querySelector('.sea-detail')&&ul){var d=document.createElement('p');d.className='sea-detail';d.textContent=r['상세문안'];ul.parentNode.insertBefore(d,ul.nextSibling);}
+      card.setAttribute('data-month',r['월']||'');
+    });
+  }
+  function load(){
+    var sb=window.__rpSb;
+    if(!sb){if(++tries<30)setTimeout(load,300);return;}
+    sb.rpc('rpc_web_season_live',{'p_사이트':window.__rpSite||'A'}).then(function(r){
+      data=(r&&!r.error&&Array.isArray(r.data))?r.data:[];fill();
+    },function(){data=[];});
+  }
+  var root=document.getElementById('rp-root');
+  if(root&&window.MutationObserver){new MutationObserver(fill).observe(root,{childList:true});}
+  load();
+})();
+</script>
 </body>
 </html>

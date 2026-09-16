@@ -10582,7 +10582,7 @@ async function wsDashSummary(){
   if(inflowTable._done) return;
   try{
    var el=document.getElementById('inflow-body'); if(!el) return; if(!window.sb){ if((inflowTable._n=(inflowTable._n||0)+1)<60){ setTimeout(inflowTable,250); } else { el.textContent='연결 대기 중입니다. 새로고침해 주세요.'; } return; }
-   var r=await window.sb.from('v_inflow_funnel').select('채널,세션,문의,전환율_pct,표본부족,집계시작일').limit(60);
+   if(inflowTable._busy)return; inflowTable._busy=true; var r=await window.sb.from('v_inflow_funnel').select('채널,세션,문의,전환율_pct,표본부족,집계시작일').limit(60);
    if(r.error){ el.textContent='불러오기 실패: '+(r.error.message||''); return; }
    var rows=(r.data||[]).filter(function(x){ return (x.세션||0)>0 || (x.문의||0)>0; });
    if(!rows.length){ el.textContent='데이터 없음'; return; }

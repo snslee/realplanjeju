@@ -11519,7 +11519,8 @@ setTimeout(tick,300);
       if(cur){
         h+='<div class="ss-kv"><span>게시 시작</span><span><b>'+md(cur['게시_시작일'])+'</b>'+(cur['게시_종료일']?' ~ '+md(cur['게시_종료일']):' ~ '+m+'월 말')+'</span></div>';
         h+='<div class="ss-kv"><span>홈 표시</span><span><span class="ss-bdg">'+m+'월 추천</span> · 버튼 '+E((cur['버튼']||[]).map(function(b){return b['이름'];}).join(' · '))+'</span></div>';
-        h+='<div class="ss-kv"><span>홈 글자</span><span>'+(cur['헤드라인']?'<b>'+E(cur['헤드라인'])+'</b><br>':'<span class="ss-warn">제목 없음</span><br>')+(cur['상세문안']?E(cur['상세문안']):'<span class="ss-warn">요약 없음 — 검색·AI가 읽을 글자가 줄어듭니다</span>')+'</span></div>';
+        if(wait&&ok&&wait['포스터_url']===ok['포스터_url'])h+='<div class="ss-kv"><span>지금 글자</span><span style="text-decoration:line-through;color:#94a3b8">'+E(ok['헤드라인']||'')+' · '+E(ok['상세문안']||'')+'</span></div>';
+        h+='<div class="ss-kv"><span>'+((wait&&ok&&wait['포스터_url']===ok['포스터_url'])?'바꿀 글자':'홈 글자')+'</span><span>'+(cur['헤드라인']?'<b>'+E(cur['헤드라인'])+'</b><br>':'<span class="ss-warn">제목 없음</span><br>')+(cur['상세문안']?E(cur['상세문안']):'<span class="ss-warn">요약 없음 — 검색·AI가 읽을 글자가 줄어듭니다</span>')+'</span></div>';
         var ck=cur['검수']||{};
         h+='<div class="ss-kv"><span>클로드 검수</span><span>'+['얼굴','상표','저작권','비율','링크'].map(function(k){return (ck[k]?'<span class="ss-ok">✔</span>':'<span class="ss-warn">✕</span>')+k;}).join(' ')+(ck['메모']?'<br><span style="color:#7a869c">'+E(ck['메모'])+'</span>':'')+'</span></div>';
         h+='<div class="ss-kv"><span>올린 때</span><span>'+E(cur['올린이']||'')+' · '+hm(cur['올린_시각'])+(cur['승인_시각']?' · 승인 '+E(cur['승인자']||'')+' '+hm(cur['승인_시각']):'')+'</span></div>';

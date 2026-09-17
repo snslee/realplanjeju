@@ -11351,7 +11351,7 @@ async function rpdClicks(days){
   var r=await qy; if(my!==_clkTok)return;
   if(r.error){el.innerHTML='<div style="color:#c0392b;font-size:12.5px;margin-top:8px">불러오기 실패: '+E(r.error.message)+'</div>';return;}
   var rows=r.data||[]; var LBL={tel:'전화',kakao:'카카오톡',quote:'견적 요청',list:'목록 복귀',season:'시즌 상품(홈)'};
-  var byT={},byP={}; rows.forEach(function(x){var k=(x['사이트']||'?')+'|'+(x['유형']||'?');byT[k]=(byT[k]||0)+1; if(x['유형']!=='list'){var p=(x['사이트']||'')+' '+(x['페이지']||'/');byP[p]=(byP[p]||0)+1;}});
+  var byT={},byP={}; rows.forEach(function(x){var k=(x['사이트']||'?')+'|'+(x['유형']||'?');byT[k]=(byT[k]||0)+1; if(x['유형']!=='list'&&x['유형']!=='season'){var p=(x['사이트']||'')+' '+(x['페이지']||'/');byP[p]=(byP[p]||0)+1;}});
   var cell='padding:5px 4px;border-bottom:1px solid #f0f3f9';
   var tt=['tel','kakao','quote','list'].map(function(t){var a=byT['A|'+t]||0,b=byT['B|'+t]||0;
     return '<tr><td style="'+cell+'">'+LBL[t]+'</td><td style="'+cell+';text-align:right">'+a+'</td><td style="'+cell+';text-align:right">'+b+'</td><td style="'+cell+';text-align:right;font-weight:700">'+(a+b)+'</td></tr>';}).join('');

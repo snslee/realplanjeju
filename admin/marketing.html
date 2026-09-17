@@ -1434,7 +1434,7 @@ async function loadCS(){
   box.innerHTML='';
   /* ★2026-09-11 — 쓰레드·지식인 탭 분리. 쓰레드 탭 아래에는
      SNS 운영에서 옮겨온 「쓰레드 발행 관리」가 붙는다. */
-  var CSB=[{k:'thread',label:'🧵 쓰레드',test:function(g){return /쓰레드|자문자답/.test(g);}},
+  var CSB=[{k:'thread',label:'📣 SNS·쓰레드',test:function(g){return /쓰레드|자문자답/.test(g);}},
            {k:'kin',label:'🧩 지식인',test:function(g){return /지식인/.test(g);}},
            {k:'etc',label:'📎 기타',test:function(){return true;}}];
   var bkt={thread:[],kin:[],etc:[]};

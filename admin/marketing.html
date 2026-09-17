@@ -5734,6 +5734,103 @@ if(typeof _lc==='function'){
 })();
 </script>
 <!-- RP-SNS-SET end -->
+<!-- RP-SNS-REPLY start · v1.0 · 2026-09-17 고객소통 › SNS 댓글 답변함(인스타·페북·쓰레드) — 자문자답·되묻기 폐지 후 「구독자 댓글에 답하는 방식」 (회사 시스템 방 · 대표 승인) -->
+<script>
+/* 원천 = v_cs_inbox v2 의 「SNS 댓글」 갈래(mk_sns_replies 미응답).
+   쓰기는 화면이 직접 하지 않고 P5-B 소유 함수 rpc_sns_reply_add / rpc_sns_reply_mark 만 부른다(없으면 안내만 띄움).
+   롤백 = 이 블록(RP-SNS-REPLY start~end) 제거 + 탭 라벨·분류식·설명문·VER 역패치. */
+(function(){
+'use strict';
+if(window.__rpSnsReply)return; window.__rpSnsReply='v1.0';
+var PL=['인스타그램','페이스북','쓰레드'];
+function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function $(id){return document.getElementById(id);}
+function say(el,t,c){if(el){el.textContent=t;el.style.color=c||'#64748b';}}
+function safeUrl(u){u=String(u||'');return /^https?:\/\//i.test(u)?u:'';}
+function missing(e){var m=String((e&&(e.code||''))+' '+(e&&(e.message||''))||'');return /PGRST202|42883|Could not find the function|does not exist/i.test(m);}
+var inp='border:1px solid #cbd5e1;border-radius:6px;padding:5px 8px;font-size:.78rem';
+function arrange(){
+  var pane=$('cs-pane-thread');if(!pane)return;
+  if(!$('cs-old-threads')){
+    var hs=pane.querySelectorAll('h3'),h=null;
+    for(var i=0;i<hs.length;i++){if(/쓰레드 (발행 관리|소통 글)/.test(hs[i].textContent)){h=hs[i];break;}}
+    var body=$('cs-threads');
+    if(h&&body){
+      var d=document.createElement('details');d.id='cs-old-threads';d.style.margin='28px 0 0';
+      d.innerHTML='<summary style="cursor:pointer;font-size:.82rem;color:#64748b">📦 옛 쓰레드 편성 기록 — 참여설계(자문자답·되묻기) · 2026-09-17 폐지 · 조회만</summary>';
+      h.parentNode.insertBefore(d,h);d.appendChild(h);d.appendChild(body);
+      h.textContent='옛 쓰레드 슬롯 (mk_sns_slots · 새 편성 없음)';h.style.borderTop='0';h.style.marginTop='10px';h.style.paddingTop='0';
+    }
+  }
+  if(!$('cs-reply-form')){
+    var f=document.createElement('div');f.id='cs-reply-form';
+    f.style.cssText='background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin:14px 0 6px';
+    f.innerHTML='<h3 style="font-size:.95rem;font-weight:700;margin:0 0 4px">💬 댓글 넣기 <span style="color:#94a3b8;font-weight:400;font-size:.78rem">인스타그램·페이스북·쓰레드 · 회사 계정</span></h3>'
+      +'<p style="font-size:.74rem;color:#64748b;margin:0 0 8px">인스타·페북은 <b>Meta 비즈니스 스위트 받은편지함</b>, 쓰레드는 <b>앱 「활동」 탭</b>에서 새 댓글을 보고 붙여 넣습니다. 넣은 댓글은 위 목록에 뜨고, 답글을 달면 <b>답변완료</b>를 누릅니다. 기준 = 게시 당일 댓글은 그날 안에 · 그 외 24시간. 금액·견적은 DM으로, 협력사 제안은 리드 대장으로.</p>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">'
+      +'<select id="csr-pl" style="'+inp+'">'+PL.map(function(p){return '<option>'+p+'</option>';}).join('')+'</select>'
+      +'<input id="csr-url" placeholder="댓글 또는 게시물 주소(선택)" style="'+inp+';width:230px">'
+      +'<input id="csr-who" placeholder="작성자(선택)" style="'+inp+';width:110px">'
+      +'<input id="csr-at" type="datetime-local" title="댓글 단 시각(비우면 지금)" style="'+inp+'">'
+      +'<button id="csr-btn" style="padding:6px 13px;border:1px solid #2563eb;background:#2563eb;color:#fff;border-radius:6px;font-size:.78rem;cursor:pointer">대장에 넣기</button></div>'
+      +'<textarea id="csr-txt" rows="2" placeholder="댓글 내용" style="'+inp+';width:100%;margin-top:6px;box-sizing:border-box"></textarea>'
+      +'<div id="csr-msg" style="font-size:.72rem;margin-top:4px;color:#64748b"></div>';
+    var list=$('cs-list-thread');
+    if(list&&list.parentNode===pane)pane.insertBefore(f,list.nextSibling);else pane.appendChild(f);
+    $('csr-btn').onclick=add;
+  }
+}
+async function add(){
+  var msg=$('csr-msg'),btn=$('csr-btn');
+  var txt=($('csr-txt').value||'').trim();
+  if(!txt){say(msg,'댓글 내용을 넣어 주세요','#dc2626');$('csr-txt').focus();return;}
+  var at=$('csr-at').value,ts=at?new Date(at).toISOString():new Date().toISOString();
+  btn.disabled=true;say(msg,'넣는 중…');
+  try{
+    var r=await sb.rpc('rpc_sns_reply_add',{'p_플랫폼':$('csr-pl').value,'p_퍼머링크':($('csr-url').value||'').trim()||null,'p_작성자':($('csr-who').value||'').trim()||null,'p_내용':txt,'p_작성시각':ts});
+    if(r.error)throw r.error;
+    var d=r.data||{};
+    if(!d.ok)say(msg,d.error||'넣지 못했습니다','#dc2626');
+    else{say(msg,d['중복']?'이미 들어 있는 댓글입니다':'넣었습니다 — 위 목록에 뜹니다','#16a34a');$('csr-txt').value='';$('csr-url').value='';$('csr-who').value='';$('csr-at').value='';setTimeout(function(){window.loadCS();},700);}
+  }catch(e){say(msg,missing(e)?'저장 함수가 아직 없습니다 — P5-B 방 요청(SYS_to_P5B_요청_20260917b) 처리 후 열립니다':'실패 — '+((e&&e.message)||e),'#dc2626');}
+  btn.disabled=false;
+}
+async function mark(id,st,btn){
+  var m=$('csm_'+String(id).replace(/[^a-zA-Z0-9]/g,''));
+  var memo=null;
+  if(st==='답변완료'){memo=window.prompt('단 답글을 붙여 넣어 두면 나중에 문안 학습에 씁니다(선택 — 비워도 됩니다)','');if(memo===null)return;memo=memo.trim()||null;}
+  else if(!window.confirm('답할 필요 없는 댓글(스팸·이모지만 등)로 닫을까요?'))return;
+  btn.disabled=true;say(m,'처리 중…');
+  try{
+    var r=await sb.rpc('rpc_sns_reply_mark',{'p_id':id,'p_상태':st,'p_응답내용':memo});
+    if(r.error)throw r.error;
+    var d=r.data||{};
+    if(!d.ok){say(m,d.error||'처리 실패','#dc2626');btn.disabled=false;return;}
+    say(m,st+' 처리됨','#16a34a');setTimeout(function(){window.loadCS();},700);
+  }catch(e){say(m,missing(e)?'처리 함수가 아직 없습니다(P5-B 요청 대기)':'실패 — '+((e&&e.message)||e),'#dc2626');btn.disabled=false;}
+}
+window.csReplyMark=mark;
+var _cl=window.csLinkCell;
+if(typeof _cl==='function'){
+  window.csLinkCell=function(r){
+    if(r&&String(r['구분']||'')==='SNS 댓글'){
+      var id=String(r['원본_id']||''),k='csm_'+id.replace(/[^a-zA-Z0-9]/g,''),u=safeUrl(r['링크']);
+      var b='padding:4px 10px;border-radius:6px;font-size:.73rem;cursor:pointer;';
+      return (u?'<a href="'+E(u)+'" target="_blank" rel="noopener" style="color:#2563eb">열기</a> ':'')
+        +'<button onclick="csReplyMark(\''+E(id)+'\',\'답변완료\',this)" style="'+b+'border:1px solid #16a34a;background:#16a34a;color:#fff">답변완료</button> '
+        +'<button onclick="csReplyMark(\''+E(id)+'\',\'응답불요\',this)" style="'+b+'border:1px solid #cbd5e1;background:#fff;color:#475569">응답불요</button>'
+        +'<div id="'+k+'" style="font-size:.68rem;color:#94a3b8;margin-top:3px">'+E(r['채널']||'')+'</div>';
+    }
+    return _cl.apply(this,arguments);
+  };
+}
+var _lc=window.loadCS;
+if(typeof _lc==='function'){
+  window.loadCS=async function(){var r;try{r=await _lc.apply(this,arguments);}finally{try{arrange();}catch(e){}}return r;};
+}
+})();
+</script>
+<!-- RP-SNS-REPLY end -->
 
 </body>
 </html>

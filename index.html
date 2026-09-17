@@ -1298,6 +1298,21 @@ setMode('view');
       data=(r&&!r.error&&Array.isArray(r.data))?r.data:[];fill();
     },function(){data=[];});
   }
+  /* v1.2 클릭 기록 — 상품 버튼(b1~b4)·포스터(p)·견적 버튼(q). 위치 = 캠페인:종류(예 2610tr:b1), 페이지 = 지금 주소(자료실 집계와 섞이지 않게) */
+  var CODE={travel:'tr',event:'ev',marketing:'mk',edu:'ed'};
+  document.addEventListener('click',function(e){try{
+    var a=e.target.closest&&e.target.closest('#season a');if(!a)return;
+    var card=a.closest('.sea-card');if(!card)return;
+    var sb=window.__rpSb;if(!sb||!/realplanjeju\.com$/.test(location.hostname))return;
+    var camp=card.getAttribute('data-camp')||'';
+    if(!camp){var mo=(card.getAttribute('data-month')||'').replace('-','');camp=(mo.length===6?mo.slice(2):'')+(CODE[card.getAttribute('data-slot')]||'');}
+    var k;
+    if(a.classList.contains('sea-poster'))k='p';
+    else if(a.classList.contains('sea-cta'))k='q';
+    else{var li=a.closest('li'),ul=li&&li.parentNode;k='b'+(ul?Array.prototype.indexOf.call(ul.children,li)+1:0);}
+    var sid=null;try{sid=sessionStorage.getItem('rp_sid');}catch(_){}
+    sb.rpc('rpc_web_log_click',{p_사이트:window.__rpSite||'A',p_유형:'season',p_세션:sid,p_페이지:location.pathname||'/',p_위치:(camp+':'+k).slice(0,20)}).then(function(){},function(){});
+  }catch(_){}},true);
   var root=document.getElementById('rp-root');
   if(root&&window.MutationObserver){new MutationObserver(fill).observe(root,{childList:true});}
   load();

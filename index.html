@@ -1288,7 +1288,7 @@ setMode('view');
       if(ul&&b.length){ul.innerHTML=b.map(function(x){var u=String(x['주소']||'/');
         u+=(u.indexOf('?')<0?'?':'&')+'utm_medium=season&utm_campaign='+encodeURIComponent(r['utm_campaign']||'')+'&utm_content='+encodeURIComponent(slug(u.split('?')[0]));
         return '<li><a href="'+esc(u)+'">'+esc(x['이름'])+'</a></li>';}).join('');}
-      card.setAttribute('data-month',r['월']||'');
+      card.setAttribute('data-month',r['월']||'');card.setAttribute('data-camp',r['utm_campaign']||'');
     });
   }
   function load(){

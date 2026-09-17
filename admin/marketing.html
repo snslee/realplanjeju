@@ -5644,6 +5644,96 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 <!-- RP-YT-TRAVEL end -->
+<!-- RP-SNS-SET start · v1.0 · 2026-09-17 고객소통 › SNS(인스타·페북·쓰레드) 이달의 상품 게시 세트 1단계 — 조회 전용(회사 시스템 방 · 대표 승인 「권장 번들 진행」) -->
+<script>
+/* 원천 = mk_notification_queue 의 SEASON_POST(P5-A 발송 예약) — 읽기만 한다. DB 쓰기 0.
+   게시 주소 3칸·성과 입력은 P5-B 대장(mk_sns_slots 3채널 확장) 완료 후 2단계에서 붙인다.
+   롤백 = 이 블록(RP-SNS-SET start~end)과 라벨 1곳('📣 SNS·쓰레드' → '🧵 쓰레드')·VER 1곳을 되돌린다. */
+(function(){
+'use strict';
+if(window.__rpSnsSet)return; window.__rpSnsSet='v1.0';
+var BU={travel:'국내여행',event:'행사이벤트',marketing:'온라인마케팅',edu:'마케팅교육'};
+var KIND={poster:'포스터',case:'실사례',season:'시즌 콘텐츠'};
+var DOW=['일','월','화','수','목','금','토'];
+function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function doc(h){try{return new DOMParser().parseFromString(String(h||''),'text/html');}catch(_){return null;}}
+function plain(h){var d=doc(h);return d&&d.body?(d.body.textContent||''):String(h||'');}
+function preOf(h){var d=doc(h);var p=d&&d.querySelector('pre');return p?p.textContent:'';}
+function kst(ts){if(!ts)return '';var d=new Date(ts);return d.toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});}
+function ymdDate(s){return new Date(Date.UTC(+s.slice(0,4),+s.slice(4,6)-1,+s.slice(6,8)));}
+function todayKst(){var t=new Date(Date.now()+9*3600e3);return new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth(),t.getUTCDate()));}
+function ensure(){
+  var pane=document.getElementById('cs-pane-thread');if(!pane)return null;
+  var box=document.getElementById('cs-sns-sets');
+  if(!box){
+    box=document.createElement('div');box.id='cs-sns-sets';box.style.marginBottom='22px';
+    pane.insertBefore(box,pane.firstChild);
+    var hs=pane.querySelectorAll('h3');
+    for(var i=0;i<hs.length;i++){if(/쓰레드 발행 관리/.test(hs[i].textContent)){hs[i].innerHTML='🧵 쓰레드 소통 글 <span style="color:#94a3b8;font-weight:400;font-size:.8rem">· 옛 참여설계 편성 — 2026-09-17부터 신규 편성 중지(크론 200 정지 · P5-B 결정 대기)</span>';break;}}
+  }
+  return box;
+}
+window.snsSetLoad=async function(){
+  var box=ensure();if(!box)return;
+  box.innerHTML='<p style="color:#94a3b8;font-size:.85rem">SNS 게시 세트 불러오는 중…</p>';
+  var from=new Date(Date.now()-21*864e5).toISOString();
+  var r=await sb.from('mk_notification_queue').select('중복키,발송_예정시각,발송완료,발송_시각,시도횟수,마지막_오류,이미지_url,메시지').eq('이벤트_코드','SEASON_POST').gte('발송_예정시각',from).order('발송_예정시각',{ascending:true}).limit(400);
+  if(r.error){box.innerHTML='<p style="color:#dc2626;font-size:.85rem">SNS 세트 조회 실패: '+E(r.error.message)+'</p>';return;}
+  var sets={},order=[];
+  (r.data||[]).forEach(function(x){var p=String(x['중복키']||'').split(':');if(p.length<4||p[0]!=='SEASON')return;var k=p[1]+':'+p[2];
+    if(!sets[k]){sets[k]={d:p[1],slug:p[2],rows:[]};order.push(k);}sets[k].rows.push(x);});
+  var today=todayKst(), dow=(today.getUTCDay()+6)%7, mon=new Date(today.getTime()-dow*864e5), sun=new Date(mon.getTime()+6*864e5);
+  var wk=0,fail=0,next=null;
+  var rowsH=order.map(function(k){
+    var s=sets[k], dd=ymdDate(s.d), bu=s.slug.split('-')[0], kind=s.slug.split('-').slice(1).join('-');
+    if(dd>=mon&&dd<=sun)wk++;
+    var sent=s.rows.filter(function(x){return x['발송완료'];}).length, tot=s.rows.length;
+    var bad=s.rows.filter(function(x){return !x['발송완료']&&(x['시도횟수']||0)>0&&x['마지막_오류'];});
+    if(bad.length)fail++;
+    var first=s.rows[0];
+    if(!sent&&!next&&dd>=today)next=s;
+    var st=bad.length?'<span style="color:#dc2626;font-weight:700">발송 실패 '+bad.length+'</span><div style="font-size:.68rem;color:#dc2626">'+E(String(bad[0]['마지막_오류']).slice(0,60))+'</div>'
+      :sent===tot?'<span style="color:#16a34a;font-weight:700">발송 완료</span><div style="font-size:.68rem;color:#94a3b8">'+E(kst(s.rows[s.rows.length-1]['발송_시각']||first['발송_시각']))+' · '+tot+'건</div>'
+      :sent?'<span style="color:#b45309;font-weight:700">일부 발송 '+sent+'/'+tot+'</span>'
+      :'<span style="color:#2563eb;font-weight:700">예약</span><div style="font-size:.68rem;color:#94a3b8">'+E(kst(first['발송_예정시각']))+' · '+tot+'건</div>';
+    var img=null,fix=false;s.rows.forEach(function(x){if(x['이미지_url']){img=x['이미지_url'];fix=/:fix/.test(x['중복키']);}});
+    var tx={ig:'',fb:'',th:''},link='';
+    s.rows.forEach(function(x){var m=String(x['메시지']||''),t=plain(m);
+      if(/인스타그램 문안/.test(t))tx.ig=preOf(m)||t;
+      else if(/페이스북 문안/.test(t))tx.fb=preOf(m)||t;
+      else if(/쓰레드 문안/.test(t))tx.th=preOf(m)||t;
+      var u=t.match(/https:\/\/(?:marketing\.)?realplanjeju\.com\/\?[^\s<]*#season/);if(u&&!link)link=u[0];});
+    var pre=function(l,v){return v?'<div style="font-size:.72rem;font-weight:700;margin:8px 0 3px">'+l+'</div><pre style="white-space:pre-wrap;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px;font-size:.74rem;margin:0">'+E(v)+'</pre>':'';};
+    var txt=(tx.ig||tx.fb||tx.th)?'<details><summary style="cursor:pointer;color:#2563eb;font-size:.76rem">문안 3종 보기</summary>'+pre('인스타그램',tx.ig)+pre('페이스북',tx.fb)+pre('쓰레드',tx.th)+'</details>':'<span style="color:#94a3b8;font-size:.74rem">문안 없음</span>';
+    var isToday=+dd===+today;
+    return '<tr style="border-top:1px solid #e2e8f0'+(isToday?';background:#eff6ff':'')+'">'
+      +'<td style="padding:8px;white-space:nowrap;font-weight:700">'+(+s.d.slice(4,6))+'/'+(+s.d.slice(6,8))+'('+DOW[dd.getUTCDay()]+')'+(isToday?' <span style="color:#2563eb">오늘</span>':'')+'</td>'
+      +'<td style="padding:8px;white-space:nowrap">'+E(BU[bu]||bu)+'</td>'
+      +'<td style="padding:8px;white-space:nowrap">'+E(KIND[kind]||kind)+'</td>'
+      +'<td style="padding:8px">'+st+'</td>'
+      +'<td style="padding:8px">'+(img?'<a href="'+E(img)+'" target="_blank" rel="noopener"><img src="'+E(img)+'" alt="" loading="lazy" style="width:54px;height:72px;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0"></a>'+(fix?'<div style="font-size:.64rem;color:#b45309">교체본</div>':''):'-')+'</td>'
+      +'<td style="padding:8px;min-width:220px">'+txt+(link?'<div style="font-size:.66rem;color:#64748b;margin-top:4px;word-break:break-all">첫 댓글 링크: '+E(link)+'</div>':'')+'</td>'
+      +'<td style="padding:8px;font-size:.72rem;color:#94a3b8">P5-B 대장 연결 후<br>주소 3칸·성과 입력</td></tr>';
+  }).join('');
+  var tile=function(t,v,c,sub){return '<div style="flex:1;min-width:150px;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;background:#fff"><div style="font-size:.72rem;color:#64748b">'+t+'</div><div style="font-size:1.3rem;font-weight:700;color:'+c+';margin-top:2px">'+v+'</div>'+(sub?'<div style="font-size:.68rem;color:#94a3b8">'+sub+'</div>':'')+'</div>';};
+  var h='<h3 style="font-size:1rem;font-weight:700;margin:4px 0 6px">📣 이달의 상품 SNS 게시 세트 <span style="color:#94a3b8;font-weight:400;font-size:.8rem">인스타그램·페이스북·쓰레드 · 회사 계정 · 대표 수동 게시</span></h3>'
+    +'<p style="font-size:.74rem;color:#64748b;margin:0 0 10px">텔레그램(마케팅방)으로 나간 세트를 그대로 보여줍니다 — <b>조회 전용</b>. 링크는 세 곳 모두 <b>첫 댓글</b>. 게시 주소·성과 입력 칸은 P5-B 대장 확장 후 여기에 열립니다.</p>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">'
+    +tile('이번 주 세트',wk+' / 3',wk>=3?'#16a34a':'#b45309','목표 주3회(월·수·금)')
+    +tile('다음 예약',next?((+next.d.slice(4,6))+'/'+(+next.d.slice(6,8))+' '+(BU[next.slug.split('-')[0]]||'')):'없음',next?'#2563eb':'#dc2626',next?(KIND[next.slug.split('-').slice(1).join('-')]||''):'예약된 세트가 없습니다')
+    +tile('발송 실패',fail+'건',fail?'#dc2626':'#16a34a','마지막_오류 기준')
+    +'</div>';
+  h+=order.length?'<div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px"><table style="width:100%;border-collapse:collapse;font-size:.8rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">날짜</th><th style="padding:8px">사업부</th><th style="padding:8px">종류</th><th style="padding:8px">발송</th><th style="padding:8px">포스터·카드</th><th style="padding:8px">문안</th><th style="padding:8px">게시 확인</th></tr></thead><tbody>'+rowsH+'</tbody></table></div>'
+    :'<p style="color:#b45309;font-size:.85rem">최근 3주 안에 SEASON_POST 세트가 없습니다.</p>';
+  box.innerHTML=h;
+};
+var _lc=window.loadCS;
+if(typeof _lc==='function'){
+  window.loadCS=async function(){var r;try{r=await _lc.apply(this,arguments);}finally{try{window.snsSetLoad();}catch(e){}}return r;};
+}
+})();
+</script>
+<!-- RP-SNS-SET end -->
 
 </body>
 </html>

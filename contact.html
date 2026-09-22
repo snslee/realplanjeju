@@ -641,6 +641,7 @@ small{font-size:12px}
     /* --- 최초 터치 보존 (2026-07-30) — 문의 제출 시 유입_상세(jsonb)로 넘긴다 --- */
     (function(){
       try{
+        try{var qi=new URLSearchParams(location.search).get('item');if(qi&&/^[A-Za-z]{2}(-[A-Za-z0-9]+)+$/.test(qi))sessionStorage.setItem('rp_item',qi.toUpperCase())}catch(e){}
         if(sessionStorage.getItem('rp_src0')) return;
         var q0=new URLSearchParams(location.search), ref0=(document.referrer||'');
         var s0=q0.get('utm_source')||'';
@@ -765,7 +766,7 @@ small{font-size:12px}
           p_동의_콘텐츠: false,
           p_동의_마케팅: form['동의_마케팅'].checked,
           p_세션: RP_SID,
-          p_유입_상세: (function(){try{var t=JSON.parse(sessionStorage.getItem('rp_src0')||'{}');return Object.keys(t).length?t:null}catch(e){return null}})()
+          p_유입_상세: (function(){try{var t=JSON.parse(sessionStorage.getItem('rp_src0')||'{}');var i=sessionStorage.getItem('rp_item');if(i)t.item=i;return Object.keys(t).length?t:null}catch(e){return null}})()
         });
 
         if (error) throw error;

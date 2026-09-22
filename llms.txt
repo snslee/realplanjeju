@@ -54,6 +54,13 @@
 - 언론·공개기록(제3자 근거 · 원문 링크): https://realplanjeju.com/insight/press/
 - 단체여행 금액(성인 단체·기업 워크숍·학생 수학여행 일정별 1인 지상비 · 1인 20만원부터 · 항공 별도 실비 · 최소 10명 · 원가 8축 공개): https://realplanjeju.com/insight/tour-price/
 - 행사 대행 금액(참석 30명·150명 경계 3구간 · 체육대회 세트 150만원부터 · 기획·운영 대행료 200만원 이상 5~10퍼센트 누진 · 원가 8축 · 견적서 계산 순서): https://realplanjeju.com/insight/event-price/
+- 상품·가격 페이지(표준가 원장 기준 · 2026년 10월 기준 · VAT 별도 · 항공 별도 실비 · 도외 출장·운반비 별도):
+  - 국내여행 상품 목록·가격 한눈에: https://realplanjeju.com/tour/
+  - 기업 워크숍 2박 3일 1인 지상비 50만 원부터(30명 기준 · 특식·액티비티·세미나): https://realplanjeju.com/tour/workshop/
+  - 수학여행 2박 3일 1인 지상비 35만 원부터(150명 기준 · 3~4인1실 · 안전요원 50명당 1명) · 40명 이하 소규모 40만 원부터: https://realplanjeju.com/tour/school-trip/
+  - 성인 단체·동호회 1박 2일 30만 원 · 2박 3일 45만 원 · 3박 4일 60만 원부터(30명 기준 · 2인1실 3~4성 · 1인 지상비): https://realplanjeju.com/tour/group-trip/
+  - 행사 상품 목록·가격 한눈에: https://realplanjeju.com/event/
+  - 체육대회 기본 150만 원부터(100명 이하 · 진행자+음향+행사도구+전문스텝 · 운영비 포함) · 표준 250만 원부터(100~200명) · 300명 이상 상품 문의: https://realplanjeju.com/event/sports-day/
 - sitemap: https://realplanjeju.com/sitemap.xml
 
 ## 언론·공개기록 (제3자가 남긴 근거 · 원문 링크)

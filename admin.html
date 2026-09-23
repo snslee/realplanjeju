@@ -495,6 +495,7 @@ table.qt-items td.narrow input{text-align:right}
 <a href="#dashboard" class="nav-item" data-nav="dashboard" title="1. 대시보드 (KPI·미응답 알림)"><span class="nav-icon">📊</span><span class="nav-text">대시보드</span></a>
 <a href="#website" class="nav-item" data-nav="website" title="8. 홈페이지 (사이트 편집·방문자 통계·유입경로 / P2)"><span class="nav-icon">🌐</span><span class="nav-text">홈페이지</span><span class="nav-phase">P2</span></a>
 <a href="#customers" class="nav-item" data-nav="customers" title="2. 고객 — 거래·공문·계약 통합 운영 (360° 뷰)"><span class="nav-icon">👥</span><span class="nav-text">고객</span></a>
+<a href="#price" class="nav-item" data-nav="price" title="가격표 — 4개 사업부 품목 단가·업체별 단가·기준 견적(유형)·공통 규칙 (대표 2명)"><span class="nav-icon">💲</span><span class="nav-text">가격표</span></a>
 <a href="#approval" class="nav-item" data-nav="approval" title="3. 결재 — 품의·지출결의·경비·인장 통합 인박스 (v2.9-B / Day 7~8)"><span class="nav-icon">📝</span><span class="nav-text">결재</span><span class="nav-phase">v2.9-B</span></a>
 <a href="#hr" class="nav-item" data-nav="hr" title="5. 인사 (휴가·출장·근태·급여 / Phase 2f)"><span class="nav-icon">👤</span><span class="nav-text">인사</span><span class="nav-phase">2f</span></a>
 <a href="#accounting" class="nav-item" data-nav="accounting" title="6. 회계 (통합 손익·매출·매입·세무사 export / Phase 2e)"><span class="nav-icon">💰</span><span class="nav-text">회계</span><span class="nav-phase">2e</span></a>
@@ -605,6 +606,11 @@ table.qt-items td.narrow input{text-align:right}
   <div id="vendor-pagination" style="display:flex;justify-content:center;gap:8px;padding:16px"></div>
 </section>
 
+<section id="view-price" class="page" hidden>
+  <div class="page-header"><div><div class="page-title">💲 가격표</div><div class="page-subtitle">4개 사업부 가격 — 품목 단가 · 업체별 단가(여행) · 기준 견적(유형) · 공통 규칙 · 원가·마진은 대표 2명만</div></div></div>
+  <div id="prp-body"></div>
+</section>
+
 <!-- v2.13.4-α2 Phase 2: B-1b 거래처 상세 모달 (read-only / fixed overlay) -->
 <div id="vendor-detail-modal" hidden style="position:fixed;inset:0;background:rgba(30,58,95,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px">
   <div style="background:#fff;border-radius:12px;width:100%;max-width:880px;max-height:92vh;overflow:auto;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
@@ -621,6 +627,7 @@ table.qt-items td.narrow input{text-align:right}
       <button type="button" class="vd-tab-btn" data-tab="basic" onclick="window.switchVendorTab('basic')" style="padding:10px 18px;border:none;background:#e6f1fb;color:#0c447c;font-size:13px;font-weight:500;cursor:pointer;border-right:1px solid #d6dce5">📋 기본 정보</button>
       <button type="button" class="vd-tab-btn" data-tab="contacts" onclick="window.switchVendorTab('contacts')" style="padding:10px 18px;border:none;background:#f1efe8;color:#5a6478;font-size:13px;font-weight:500;cursor:pointer;border-right:1px solid #d6dce5">👥 담당자 <span id="vd-tab-contacts-count" style="opacity:0.7"></span></button>
       <button type="button" class="vd-tab-btn" data-tab="trades" onclick="window.switchVendorTab('trades')" style="padding:10px 18px;border:none;background:#f1efe8;color:#5a6478;font-size:13px;font-weight:500;cursor:pointer">📄 거래 내역</button>
+      <button type="button" class="vd-tab-btn" data-tab="rates" onclick="window.switchVendorTab('rates')" style="padding:10px 18px;border:none;background:#f1efe8;color:#5a6478;font-size:13px;font-weight:500;cursor:pointer;border-left:1px solid #d6dce5">💲 단가</button>
     </div>
     <!-- 탭 1: 기본 정보 -->
     <div id="vd-pane-basic" class="vd-pane" style="padding:18px 20px">
@@ -647,6 +654,10 @@ table.qt-items td.narrow input{text-align:right}
         <div>거래 내역 (견적서·납품서·거래명세서·발주서·정산서)</div>
         <div style="margin-top:6px;font-size:11.5px">다음 회기에서 구현 예정</div>
       </div>
+    </div>
+    <!-- 탭 4: 단가 (RP-PRICE v1.0 · 가격표와 같은 표) -->
+    <div id="vd-pane-rates" class="vd-pane" hidden style="padding:18px 20px">
+      <div id="vd-rates-content" style="font-size:13px;color:#1a2332">불러오는 중…</div>
     </div>
     <!-- 모달 푸터 (v2.13.4-α3 Phase 3) -->
     <div style="padding:12px 20px;border-top:1px solid #d6dce5;display:flex;justify-content:flex-end;gap:8px;background:#f5f7fa;border-radius:0 0 12px 12px">
@@ -3832,7 +3843,7 @@ async function setPrimaryContact(id){
 window.setPrimaryContact = setPrimaryContact;
 
 function switchVendorTab(name){
-  ['basic','contacts','trades'].forEach(n => {
+  ['basic','contacts','trades','rates'].forEach(n => {
     const pane = document.getElementById('vd-pane-'+n);
     if(pane) pane.hidden = (n !== name);
     const btn = document.querySelector(`.vd-tab-btn[data-tab="${n}"]`);
@@ -4038,6 +4049,11 @@ function handleRoute(){
     case 'bid':/* RP-WEB v4 */
       state.activeTab='bid';show('#view-bid');
       $('.nav-item[data-nav="bid"]').classList.add('active');break;
+    case 'price':/* RP-PRICE v1.0 */
+      state.activeTab='price';show('#view-price');
+      {const _n=$('.nav-item[data-nav="price"]');if(_n)_n.classList.add('active');}
+      if(typeof rpPriceInit==='function')rpPriceInit();
+      break;
     /* RP-WEB v2: mkhub 라우트 제거 — 마케팅은 사이드바 직접 링크 */
     case 'admin':
       if (!canAccess('admin_management','read')) { location.hash='#dashboard'; return; }
@@ -4376,6 +4392,8 @@ function qtBuildCreateForm(){
 </div>
 </div>
 </div>
+
+<div class="qt-panel" id="pr-type-panel"></div>
 
 <!-- v2.11.9 R1: 영역 1.5 panel 완전 제거 (인원·박일·도착·출발시간은 Phase 2에서 영역 2로 이동) -->
 
@@ -6047,6 +6065,7 @@ async function qtSaveDraft(){
     try {
       await sb.from('quotations').update({
         '안_번호': state.qt.안_번호 || 1,
+        '견적종류': (state.qt._pr ? '가견적' : '세부'), '기준견적_id': (state.qt._pr ? state.qt._pr.기준견적_id : null), '가격버전': (state.qt._pr ? state.qt._pr.가격버전 : null),
         '인원_성인': state.qt.인원_성인,
         '인원_아동': state.qt.인원_아동,
         '박일수': (typeof qtCalcNights==='function' ? (qtCalcNights() ?? state.qt.박일수) : state.qt.박일수),
@@ -9886,26 +9905,72 @@ document.addEventListener('DOMContentLoaded',init);
   function vdOf(id){return id?((P.master.vendors||[]).filter(function(x){return x.id===id;})[0]||null):null;}
   function apAutoCat(f){var sel=el('apf-cat');if(!sel||sel.value)return;var nm=VD_CAT[f];if(!nm)return;var c=(P.master.cats||[]).filter(function(x){return x.카테고리명===nm;})[0];if(c){sel.value=c.id;}}
   function fieldOpt(sel){return '<option value="">분야(선택)</option>'+VD_FIELDS.map(function(f){return '<option value="'+f+'"'+(sel===f?' selected':'')+'>'+f+'</option>';}).join('');}
+  var AP_R={};
+  function apRatesOf(vid){ if(!vid) return []; if(AP_R[vid]) return AP_R[vid]; AP_R[vid]=[];
+    sbc().from('pr_업체단가').select('id,품목,조건,대상,원가,판매가,단위,분류').eq('vendor_id',vid).eq('활성',true).order('품목').then(function(r){ if(!r.error&&r.data&&r.data.length){AP_R[vid]=r.data;renderItems();} });
+    return AP_R[vid]; }
+  function apRateLabel(r){return r.품목+(r.조건?' · '+r.조건:'')+(r.대상&&r.대상!=='공통'?' ('+r.대상+')':'')+(r.원가!=null?' — '+Number(r.원가).toLocaleString('ko-KR'):'');}
   function renderItems(){
     var box=el('apf-items'); if(!box)return;
     var rows=P.items.map(function(it,i){
+      var rs=apRatesOf(it.거래처_id);
+      var cur=rs.filter(function(r){return r.id===it.업체단가_id;})[0];
+      var rOpt='<option value="">'+(rs.length?'(단가표 품목 고르기)':(it.거래처_id?'(단가표 없음 — 직접 입력)':'(거래처 먼저)'))+'</option>'+rs.map(function(r){return '<option value="'+r.id+'"'+(it.업체단가_id===r.id?' selected':'')+'>'+eq(apRateLabel(r))+'</option>';}).join('');
+      var jd='';
+      if(cur&&Number(it.단가)>0){
+        if(cur.원가==null) jd='<span style="color:#7a4a00">원가 미등록 → 승인 때 등록</span>';
+        else if(Math.round(Number(it.단가))===Number(cur.원가)) jd='<span style="color:#146c3a">✓ 등록 원가와 같음</span>';
+        else jd='<span style="color:#b35c00">⚠ 등록 '+Number(cur.원가).toLocaleString('ko-KR')+' → '+Number(it.단가).toLocaleString('ko-KR')+'</span><label style="display:block;font-size:10.5px;margin-top:2px"><input type="checkbox"'+(it.원가처리==='갱신'?' checked':'')+' onchange="apItem('+i+',\'원가처리\',this.checked?\'갱신\':\'\')"> 결재 때 원가 갱신</label>';
+      } else if(!it.업체단가_id&&it.거래처_id&&Number(it.단가)>0&&it.품목){
+        jd='<label style="font-size:10.5px"><input type="checkbox"'+(it.원가처리==='신규'?' checked':'')+' onchange="apItem('+i+',\'원가처리\',this.checked?\'신규\':\'\')"> 단가표에 새로 등록</label>';
+      }
       return '<tr>'
-        +'<td><input list="apVdDL" value="'+eq(it.거래처명||'')+'" oninput="apItem('+i+',\'거래처명\',this.value)" onchange="apVendorPickByName('+i+',this.value)" placeholder="거래처 검색·직접입력" style="'+inp()+';width:180px">'
+        +'<td><input list="apVdDL" value="'+eq(it.거래처명||'')+'" oninput="apItem('+i+',\'거래처명\',this.value)" onchange="apVendorPickByName('+i+',this.value)" placeholder="거래처 검색·직접입력" style="'+inp()+';width:170px">'
           +(vdOf(it.거래처_id)
             ? '<div style="font-size:10px;color:#0c447c;margin-top:2px">✓ 등록 거래처 · '+eq(vdOf(it.거래처_id).분야||'분야 미지정')+'</div>'
-            : '<select onchange="apItem('+i+',\'분야\',this.value)" style="'+inp()+';width:180px;margin-top:2px;font-size:11px">'+fieldOpt(it.분야||'')+'</select>')+'</td>'
-        +'<td><input value="'+eq(it.입금은행||'')+'" oninput="apItem('+i+',\'입금은행\',this.value)" placeholder="은행" style="'+inp()+';width:64px"></td>'
-        +'<td><input value="'+eq(it.입금계좌번호||'')+'" oninput="apItem('+i+',\'입금계좌번호\',this.value)" placeholder="입금계좌번호" style="'+inp()+';width:140px"></td>'
-        +'<td><input value="'+eq(it.예금주||'')+'" oninput="apItem('+i+',\'예금주\',this.value)" placeholder="예금주" style="'+inp()+';width:90px"></td>'
-        +'<td><input type="number" value="'+(it.금액||'')+'" oninput="apItem('+i+',\'금액\',this.value)" style="'+inp()+';width:100px;text-align:right"></td>'
-        +'<td><input value="'+eq(it.비고||'')+'" oninput="apItem('+i+',\'비고\',this.value)" placeholder="비고" style="'+inp()+';width:130px"></td>'
+            : '<select onchange="apItem('+i+',\'분야\',this.value)" style="'+inp()+';width:170px;margin-top:2px;font-size:11px">'+fieldOpt(it.분야||'')+'</select>')+'</td>'
+        +'<td><select onchange="apPickRate('+i+',this.value)" style="'+inp()+';width:180px;font-size:11px">'+rOpt+'</select><input value="'+eq(it.품목||'')+'" oninput="apItem('+i+',\'품목\',this.value)" placeholder="품목 (예: 2일차 석식)" style="'+inp()+';width:180px;margin-top:2px;font-size:11px"></td>'
+        +'<td><input type="number" value="'+(it.단가||'')+'" oninput="apItem('+i+',\'단가\',this.value)" onchange="apItemDone()" placeholder="1인·1실 단가" style="'+inp()+';width:92px;text-align:right"></td>'
+        +'<td><input type="number" value="'+(it.수량||'')+'" oninput="apItem('+i+',\'수량\',this.value)" onchange="apItemDone()" placeholder="인원·수량" style="'+inp()+';width:66px;text-align:right"></td>'
+        +'<td><input type="number" id="apf-amt-'+i+'" value="'+(it.금액||'')+'" oninput="apItem('+i+',\'금액\',this.value)" style="'+inp()+';width:100px;text-align:right"></td>'
+        +'<td style="font-size:11px;min-width:120px">'+jd+'</td>'
+        +'<td><input value="'+eq(it.입금은행||'')+'" oninput="apItem('+i+',\'입금은행\',this.value)" placeholder="은행" style="'+inp()+';width:60px"></td>'
+        +'<td><input value="'+eq(it.입금계좌번호||'')+'" oninput="apItem('+i+',\'입금계좌번호\',this.value)" placeholder="입금계좌번호" style="'+inp()+';width:130px"></td>'
+        +'<td><input value="'+eq(it.예금주||'')+'" oninput="apItem('+i+',\'예금주\',this.value)" placeholder="예금주" style="'+inp()+';width:84px"></td>'
+        +'<td><input value="'+eq(it.비고||'')+'" oninput="apItem('+i+',\'비고\',this.value)" placeholder="비고" style="'+inp()+';width:110px"></td>'
         +'<td style="text-align:center"><input type="checkbox"'+(it.거래처저장?' checked':'')+' onchange="apItemChk('+i+',this.checked)" title="거래처 DB에 저장"></td>'
         +'<td><button class="acc-btn ghost" style="padding:3px 8px;font-size:11px;border-color:#b91c1c;color:#b91c1c" onclick="apDelItem('+i+')">삭제</button></td></tr>';
     }).join('');
-    box.innerHTML=vendorDL()+'<div style="overflow-x:auto"><table class="acc-table" style="min-width:860px"><tr><th>거래처 (검색·직접입력)</th><th>입금은행</th><th>입금계좌번호</th><th>예금주</th><th>금액</th><th>비고</th><th>저장</th><th></th></tr>'+rows
-      +'<tr><td colspan="4" style="text-align:right;font-weight:700">합계</td><td style="text-align:right;font-weight:700;color:#0c447c">'+fmtW(itemsTotal())+'</td><td colspan="3"><button class="acc-btn ghost" style="padding:4px 10px;font-size:12px" onclick="apAddItem()">＋ 품목 행 추가</button></td></tr></table></div>';
+    box.innerHTML=vendorDL()+'<div style="overflow-x:auto"><table class="acc-table" style="min-width:1260px"><tr><th>거래처 (검색·직접입력)</th><th>품목 (단가표)</th><th>단가</th><th>수량</th><th>금액</th><th>원가 판정 🔒</th><th>입금은행</th><th>입금계좌번호</th><th>예금주</th><th>비고</th><th>저장</th><th></th></tr>'+rows
+      +'<tr><td colspan="4" style="text-align:right;font-weight:700">합계</td><td style="text-align:right;font-weight:700;color:#0c447c">'+fmtW(itemsTotal())+'</td><td colspan="7"><button class="acc-btn ghost" style="padding:4px 10px;font-size:12px" onclick="apAddItem()">＋ 품목 행 추가</button> <button class="acc-btn" style="padding:4px 10px;font-size:12px" onclick="apLoadFromQuote()">📥 견적에서 불러오기</button> <span style="font-size:11px;color:#64748b">단가 × 수량을 넣으면 금액이 자동 · 승인 때 원가가 가격표에 확인·반영됩니다</span></td></tr></table></div>';
   }
-  window.apItem=function(i,f,v){if(P.items[i]){P.items[i][f]=v;if(f==='금액')renderItems();}};
+  window.apItemDone=function(){renderItems();};
+  window.apPickRate=function(i,rid){var it=P.items[i];if(!it)return;it.업체단가_id=rid||'';
+    var r=(AP_R[it.거래처_id]||[]).filter(function(x){return x.id===rid;})[0];
+    if(r){it.품목=r.품목+(r.조건?' · '+r.조건:'')+(r.대상&&r.대상!=='공통'?' ('+r.대상+')':'');if(!(Number(it.단가)>0)&&r.원가!=null)it.단가=r.원가;it.분류=r.분류||'';
+      if(Number(it.단가)>0&&Number(it.수량)>0)it.금액=Math.round(Number(it.단가)*Number(it.수량));}
+    it.원가처리='';renderItems();};
+  window.apLoadFromQuote=function(){
+    var cid=(el('apf-cust')||{}).value;
+    if(!cid){alert('먼저 위의 「행사 선택 (접수건)」에서 고객을 고르세요.\n그 고객의 확정 견적에서 거래처·품목·원가를 불러옵니다.');return;}
+    sbc().rpc('rpc_ap_quote_lines',{p_customer_id:cid}).then(function(r){
+      if(r.error){alert(r.error.message);return;}
+      var d=r.data||{};if(!d['견적']){alert('이 고객의 견적이 없습니다');return;}
+      var ls=d.lines||[];if(!ls.length){alert('불러올 품목이 없습니다');return;}
+      var nLink=ls.filter(function(l){return l['업체단가_id'];}).length;
+      if(!confirm('견적 '+d['견적']['견적번호']+' ('+(d['견적']['상태']||'')+')에서 '+ls.length+'줄을 불러옵니다.\n업체 단가 연결 '+nLink+'줄 · 나머지는 거래처·단가를 직접 넣어 주세요.\n\n빈 줄은 지우고 아래에 붙입니다. 진행할까요?'))return;
+      P.items=P.items.filter(function(it){return (it.거래처명&&String(it.거래처명).trim())||Number(it.금액)>0;});
+      ls.forEach(function(l){
+        var v=l['거래처_id']?(P.master.vendors||[]).filter(function(x){return x.id===l['거래처_id'];})[0]:null;
+        P.items.push({거래처_id:l['거래처_id']||'',거래처명:l['거래처명']||'',입금은행:(v&&v.은행)||l['입금은행']||'',입금계좌번호:(v&&v.계좌번호)||l['입금계좌번호']||'',예금주:(v&&v.예금주)||l['예금주']||'',
+          금액:l['금액']||'',비고:'',분야:(v&&v.분야)||'',거래처저장:false,품목:l['품목']||l['견적_품명']||'',단가:l['단가']||'',수량:l['수량']||'',업체단가_id:l['업체단가_id']||'',분류:l['분류']||'',원가처리:''});
+      });
+      renderItems();
+    }).catch(function(e){alert(e.message||e);});
+  };
+  window.apItem=function(i,f,v){var it=P.items[i];if(!it)return;it[f]=v;
+    if(f==='단가'||f==='수량'){var u=Number(it.단가),q=Number(it.수량);if(u>0&&q>0){it.금액=Math.round(u*q);var a=el('apf-amt-'+i);if(a)a.value=it.금액;}}
+    else if(f==='원가처리')renderItems();};
   window.apItemChk=function(i,c){if(P.items[i])P.items[i].거래처저장=c;};
   /* v2.37: 이름으로 거래처를 집는다 — 목록에 있으면 계좌·분야 자동, 없으면 직접입력 */
   window.apVendorPickByName=function(i,name){var it=P.items[i];if(!it)return;it.거래처명=name;
@@ -9999,7 +10064,7 @@ document.addEventListener('DOMContentLoaded',init);
     var p={유형:t,제목:el('apf-title').value,내용:el('apf-body').value,사업부:el('apf-bu').value};
     if(t==='지출결의'||t==='경비정산'){
       var manualAmt=Number((el('apf-amount')||{}).value)||0;var items=P.items.filter(function(it){return (it.거래처명&&String(it.거래처명).trim())||Number(it.금액)>0;})
-        .map(function(it){return {거래처_id:it.거래처_id||'',거래처명:it.거래처명||'',입금은행:it.입금은행||'',입금계좌번호:it.입금계좌번호||'',예금주:it.예금주||'',금액:Number(it.금액)||0,비고:it.비고||'',분야:it.분야||'',거래처저장:it.거래처저장?'true':''};});
+        .map(function(it){return {거래처_id:it.거래처_id||'',거래처명:it.거래처명||'',입금은행:it.입금은행||'',입금계좌번호:it.입금계좌번호||'',예금주:it.예금주||'',금액:Number(it.금액)||0,비고:it.비고||'',분야:it.분야||'',거래처저장:it.거래처저장?'true':'',품목:it.품목||'',단가:it.단가||'',수량:it.수량||'',업체단가_id:it.업체단가_id||'',원가처리:it.원가처리||'',분류:it.분류||''};});
       if(items.length===0&&manualAmt<=0){alert('지출 품목 1건 또는 총 금액을 입력하세요');return;}
       if(items.length>0&&itemsTotalOf(items)<=0){alert('금액 합계가 0입니다');return;}
       p.품목=items;if(items.length===0&&manualAmt>0)p.금액=String(manualAmt);
@@ -10067,7 +10132,7 @@ document.addEventListener('DOMContentLoaded',init);
       var d=r.data||{};var a=d['결재']||{};var items=d['품목']||[];
       var itemRows=items.map(function(it,i){
         var acct=(it.입금은행||it.입금계좌번호)?(esc(it.입금은행||'')+' '+esc(it.입금계좌번호||'')+(it.입금계좌번호?' <button class="acc-btn ghost" style="padding:1px 6px;font-size:10.5px" onclick="apCopy(\''+eq(it.입금계좌번호)+'\')">복사</button>':'')):'-';
-        return '<tr><td>'+(i+1)+'</td><td>'+esc(it.거래처명||'')+'</td><td style="text-align:right">'+fmtW(it.금액)+'</td><td>'+acct+'</td><td>'+esc(it.예금주||'')+'</td></tr>';
+        return '<tr><td>'+(i+1)+'</td><td>'+esc(it.거래처명||'')+((it.품목||it.단가)?'<div style="font-size:11px;color:#5a6478">'+esc(it.품목||'')+(it.단가?' · '+fmtW(it.단가)+' × '+(it.수량||'-'):'')+(it.원가처리?' · 원가 '+esc(it.원가처리):'')+'</div>':'')+'</td><td style="text-align:right">'+fmtW(it.금액)+'</td><td>'+acct+'</td><td>'+esc(it.예금주||'')+'</td></tr>';
       }).join('');
       var itemTbl=items.length?('<div style="font-weight:700;margin:14px 0 4px">지출 품목 '+items.length+'건</div><div style="overflow-x:auto"><table class="acc-table" style="min-width:560px"><tr><th>#</th><th>거래처</th><th>금액</th><th>입금계좌</th><th>예금주</th></tr>'+itemRows
         +'<tr><td colspan="2" style="text-align:right;font-weight:700">합계</td><td style="text-align:right;font-weight:700;color:#0c447c">'+fmtW(itemsTotalOf(items))+'</td><td colspan="2"></td></tr></table></div>'):'';
@@ -10108,7 +10173,7 @@ document.addEventListener('DOMContentLoaded',init);
     sbc().rpc('rpc_ap_detail',{p_id:id}).then(function(r){
       if(r.error){alert(r.error.message);return;}
       var d=r.data||{};var a=d['결재']||{};var items=d['품목']||[];
-      a.__items=items.map(function(it){var v=vdOf(it.거래처_id||'');return {거래처_id:it.거래처_id||'',거래처명:it.거래처명||'',입금은행:it.입금은행||'',입금계좌번호:it.입금계좌번호||'',예금주:it.예금주||'',금액:it.금액||'',비고:it.비고||'',분야:(v&&v.분야)||'',거래처저장:false};});
+      a.__items=items.map(function(it){var v=vdOf(it.거래처_id||'');return {거래처_id:it.거래처_id||'',거래처명:it.거래처명||'',입금은행:it.입금은행||'',입금계좌번호:it.입금계좌번호||'',예금주:it.예금주||'',금액:it.금액||'',비고:it.비고||'',분야:(v&&v.분야)||'',거래처저장:false,품목:it.품목||'',단가:it.단가||'',수량:it.수량||'',업체단가_id:it.업체단가_id||'',원가처리:'',분류:it.분류||''};});
       P.editId=id;P.tab='draft';apModalClose();
       document.querySelectorAll('[data-ap-tab]').forEach(function(b){b.classList.toggle('active',b.dataset.apTab==='draft');});
       rDraft(a);
@@ -11859,5 +11924,476 @@ setTimeout(tick,300);
 })();
 </script>
 <!-- RP-SEASON-ADMIN v1.1 end -->
+<!-- RP-PRICE v1.0 (2026-09-23 · 가격표 메뉴 · 견적 유형 선택 · 거래처 단가 탭 · 지출결의 단가×수량) -->
+<style id="rp-price-css">
+.prp-wrap{font-size:13px;color:#1a2332}
+.prp-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.prp-tab{padding:8px 14px;border:1px solid #d6dce5;border-radius:8px;background:#fff;cursor:pointer;font-size:13px;font-weight:500;color:#5a6478}
+.prp-tab.on{background:#1e3a5f;color:#fff;border-color:#1e3a5f}
+.prp-sub{display:flex;gap:4px;border-bottom:1px solid #d6dce5;margin-bottom:10px}
+.prp-sub button{padding:7px 14px;border:none;background:transparent;border-bottom:3px solid transparent;cursor:pointer;font-size:12.5px;color:#5a6478}
+.prp-sub button.on{border-bottom-color:#e8590c;color:#1a2332;font-weight:600}
+.prp-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.prp-bar input,.prp-bar select{padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px}
+.prp-chip{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;background:#f1f5f9;color:#475569;margin-right:4px;cursor:pointer}
+.prp-chip.warn{background:#fdecea;color:#a32d2d}
+.prp-t{width:100%;border-collapse:collapse;font-size:12px;background:#fff}
+.prp-t th{background:#1f3a5f;color:#fff;padding:6px 7px;text-align:left;font-weight:500;position:sticky;top:0}
+.prp-t td{border-bottom:1px solid #e3e8f0;padding:6px 7px;vertical-align:top}
+.prp-t tr:hover td{background:#f8fafc}
+.prp-r{text-align:right;white-space:nowrap}
+.prp-st{padding:1px 7px;border-radius:9px;font-size:11px;white-space:nowrap}
+.prp-st.확정{background:#d9f2e3;color:#146c3a}.prp-st.추정{background:#fff3cd;color:#7a5a00}.prp-st.확인필요{background:#fdecea;color:#a32d2d}
+.prp-bad{color:#b42318;font-weight:600}.prp-ok{color:#146c3a}
+.prp-btn{padding:6px 12px;border-radius:6px;font-size:12px;border:1px solid #1D9E75;background:#E1F5EE;color:#04342C;font-weight:600;cursor:pointer}
+.prp-btn.ghost{background:#fff;border-color:#cbd5e1;color:#334155;font-weight:500}
+.prp-btn.sm{padding:3px 8px;font-size:11px}
+.prp-lock{font-size:11px;color:#b35c00}
+.prp-modal{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:10050;display:flex;align-items:flex-start;justify-content:center;padding:40px 14px;overflow:auto}
+.prp-modal>div{background:#fff;border-radius:12px;max-width:760px;width:100%;padding:18px 20px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.prp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.prp-grid label{font-size:11px;color:#5a6478;display:block;margin-bottom:2px}
+.prp-grid input,.prp-grid select,.prp-grid textarea{width:100%;box-sizing:border-box;padding:6px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;font-family:inherit}
+.prp-types{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin:8px 0}
+.prp-type{border:1px solid #d6dce5;border-radius:8px;padding:9px 10px;cursor:pointer;background:#fff}
+.prp-type:hover{border-color:#378ADD}
+.prp-type.on{border:2px solid #e8590c;background:#fff8f0}
+.prp-type b{display:block;font-size:12.5px;margin-bottom:2px}
+.prp-type span{font-size:11px;color:#5a6478}
+.prp-inbox{margin-top:10px;background:#fff8f0;border:1px solid #f0d2b0;border-radius:8px;padding:9px 12px;font-size:12px}
+@media (max-width:720px){.prp-grid{grid-template-columns:1fr 1fr}}
+</style>
+<script id="rp-price-js">
+(function(){
+  'use strict';
+  var V='RP-PRICE v1.0';
+  function S(){return window.sb;}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function won(v){return (v==null||v==='')?'—':Number(v).toLocaleString('ko-KR');}
+  function num(v){if(v==null)return null;var s=String(v).replace(/[^0-9.\-]/g,'');if(s==='')return null;var n=Number(s);return isNaN(n)?null:n;}
+  function note(m,t){try{if(typeof toast==='function')toast(m,t||'info');else alert(m);}catch(e){alert(m);}}
+  function today(){try{return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul'}).format(new Date());}catch(e){return new Date().toISOString().slice(0,10);}}
+  var BU=['국내여행','행사이벤트','온라인마케팅','마케팅교육'];
+  var BU_ICON={'국내여행':'🏝','행사이벤트':'🎤','온라인마케팅':'📱','마케팅교육':'📚'};
+  var CATS=['숙박','식당','관광체험','차량','인력','보험','기타'];
+  var C={rates:null,prods:null,types:null,lines:null,rules:null,vendors:null};
+
+  /* ── 공통: 마진 판정 (숙박 10% · 식당 입금가 + 2,000원) ── */
+  function margin(r){
+    var c=num(r.원가),s=num(r.판매가);
+    if(c==null||s==null||s<=0)return {txt:'—',bad:false};
+    var g=s-c,p=Math.round(g/s*1000)/10;
+    if(r.분류==='숙박')return {txt:p+'%',bad:p<10,why:'숙박 하한 10%'};
+    if(r.분류==='식당')return {txt:'+'+g.toLocaleString('ko-KR'),bad:g<2000,why:'식당 하한 +2,000원'};
+    return {txt:p+'%',bad:g<0,why:'역마진'};
+  }
+  function suggestSale(cat,cost){
+    cost=num(cost);if(cost==null)return null;
+    if(cat==='숙박')return Math.ceil(cost/0.9/1000)*1000;
+    if(cat==='식당')return cost+2000;
+    return null;
+  }
+  function expired(r){return r.유효_끝&&String(r.유효_끝)<today();}
+
+  /* ── 데이터 ── */
+  function loadRates(force){
+    if(C.rates&&!force)return Promise.resolve(C.rates);
+    return S().from('pr_업체단가').select('*').order('분류').order('업체명').then(function(r){if(r.error)throw r.error;C.rates=r.data||[];return C.rates;});
+  }
+  function loadProds(force){
+    if(C.prods&&!force)return Promise.resolve(C.prods);
+    return S().from('product_catalog').select('id,사업부,카테고리,품명,내용,기본_단가,기본_단위,코드,규격,다일규칙,근거,버전,적용일,다음_검토일,is_active').not('코드','is',null).order('코드').then(function(r){if(r.error)throw r.error;C.prods=r.data||[];return C.prods;});
+  }
+  function loadTypes(force){
+    if(C.types&&!force)return Promise.resolve(C.types);
+    return Promise.all([
+      S().from('pr_기준견적').select('*').eq('활성',true).order('정렬'),
+      S().from('pr_기준견적_줄').select('*').order('순서'),
+      S().from('pr_사업부규칙').select('*')
+    ]).then(function(a){a.forEach(function(r){if(r.error)throw r.error;});C.types=a[0].data||[];C.lines=a[1].data||[];C.rules=a[2].data||[];return C.types;});
+  }
+  function loadVendors(force){
+    if(C.vendors&&!force)return Promise.resolve(C.vendors);
+    return S().from('vd_vendors').select('id,거래처명,거래처_분야,사업부분류_목록,계좌_은행,계좌_번호,계좌_예금주').is('deleted_at',null).eq('is_active',true).order('거래처명').then(function(r){if(r.error)throw r.error;C.vendors=r.data||[];return C.vendors;});
+  }
+  function usedCount(rid){if(!C.lines)return 0;var ids={};C.lines.forEach(function(l){if(l.업체단가_id===rid)ids[l.기준견적_id]=1;});return Object.keys(ids).length;}
+  function usedTypes(rid){if(!C.lines||!C.types)return [];var ids={};C.lines.forEach(function(l){if(l.업체단가_id===rid)ids[l.기준견적_id]=1;});return C.types.filter(function(t){return ids[t.id];}).map(function(t){return t.유형;});}
+
+  /* ── 단가 추가·수정 모달 (가격표 메뉴와 거래처 단가 탭이 같이 쓴다) ── */
+  function rateModal(row,preset,after){
+    row=row||{};preset=preset||{};
+    loadVendors().then(function(vs){
+      var r=Object.assign({사업부:'국내여행',분류:'숙박',대상:'공통',단위:'인',vat:'포함',상태:'확정',활성:true},preset,row);
+      var vName=r.업체명||'';
+      if(r.vendor_id){var v=vs.filter(function(x){return x.id===r.vendor_id;})[0];if(v)vName=v.거래처명;}
+      var dl='<datalist id="prp-vd-dl">'+vs.map(function(v){return '<option value="'+esc(v.거래처명)+'">'+esc(v.거래처_분야||'')+'</option>';}).join('')+'</datalist>';
+      function opt(list,sel){return list.map(function(x){return '<option'+(x===sel?' selected':'')+'>'+x+'</option>';}).join('');}
+      var m=document.createElement('div');m.className='prp-modal';m.id='prp-rate-modal';
+      m.innerHTML='<div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b style="font-size:15px">'+(r.id?'단가 수정':'＋ 단가 추가')+'</b><button class="prp-btn ghost sm" data-x>닫기</button></div>'
+        +'<div class="prp-lock" style="margin-bottom:8px">🔒 원가·마진은 대표 2명만 봅니다 · 고객 견적서에는 판매가만 나갑니다 · 여행은 평균가 금지 — 업체·품목·조건마다 한 줄</div>'+dl
+        +'<div class="prp-grid">'
+        +'<div><label>사업부</label><select id="prf-bu">'+opt(BU,r.사업부)+'</select></div>'
+        +'<div><label>분류</label><select id="prf-cat">'+opt(CATS,r.분류)+'</select></div>'
+        +'<div style="grid-column:span 2"><label>업체 (거래처에서 검색 · 없으면 거래처·외주에서 먼저 등록)</label><input id="prf-vd" list="prp-vd-dl" value="'+esc(vName)+'" '+(preset.vendor_id?'readonly':'')+'></div>'
+        +'<div style="grid-column:span 2"><label>품목 (예: 트리플 · 흑돼지구이 1.5인분 · 입장)</label><input id="prf-item" value="'+esc(r.품목||'')+'"></div>'
+        +'<div><label>조건 (객실타입·조식·식사 구분)</label><input id="prf-cond" value="'+esc(r.조건||'')+'"></div>'
+        +'<div><label>대상</label><select id="prf-tgt">'+opt(['공통','학생','교사','성인','아동'],r.대상)+'</select></div>'
+        +'<div><label>단위</label><input id="prf-unit" value="'+esc(r.단위||'')+'" placeholder="인 · 실 · 대 · 명"></div>'
+        +'<div><label>원가(입금가) 🔒</label><input id="prf-cost" inputmode="numeric" value="'+(r.원가==null?'':r.원가)+'"></div>'
+        +'<div><label>판매가 <span id="prf-sug" style="color:#1D9E75"></span></label><input id="prf-sale" inputmode="numeric" value="'+(r.판매가==null?'':r.판매가)+'"></div>'
+        +'<div><label>VAT</label><select id="prf-vat">'+opt(['포함','별도','면세'],r.vat||'포함')+'</select></div>'
+        +'<div><label>시즌 시작</label><input type="date" id="prf-s1" value="'+(r.시즌_시작||'')+'"></div>'
+        +'<div><label>시즌 끝</label><input type="date" id="prf-s2" value="'+(r.시즌_끝||'')+'"></div>'
+        +'<div><label>유효 끝</label><input type="date" id="prf-end" value="'+(r.유효_끝||'')+'"></div>'
+        +'<div><label>상태</label><select id="prf-st">'+opt(['확정','추정','확인필요'],r.상태)+'</select></div>'
+        +'<div style="grid-column:span 2"><label>근거 (요금표·견적서·지출결의 — 파일 경로나 메일 제목)</label><input id="prf-src" value="'+esc(r.출처||'')+'"></div>'
+        +'<div style="grid-column:span 2"><label>메모 (원가 표기가 복잡할 때 · 예: 조식 포함 정산가)</label><input id="prf-memo" value="'+esc(r.원가_표기||'')+'"></div>'
+        +'<div style="grid-column:span 4"><label>비고</label><input id="prf-note" value="'+esc(r.비고||'')+'"></div>'
+        +'</div><div id="prf-mg" style="margin-top:8px;font-size:12px"></div>'
+        +'<div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">'+(r.id?'<button class="prp-btn ghost" data-off>'+(r.활성===false?'다시 쓰기':'쓰지 않음(보관)')+'</button>':'')+'<button class="prp-btn" data-save>💾 저장</button></div></div>';
+      document.body.appendChild(m);
+      function q(id){return m.querySelector('#'+id);}
+      function refresh(){
+        var cat=q('prf-cat').value,cost=q('prf-cost').value,sug=suggestSale(cat,cost);
+        q('prf-sug').textContent=sug?'(자동 제안 '+sug.toLocaleString('ko-KR')+(cat==='숙박'?' · 하한 10%':' · 하한 +2,000')+')':'';
+        if(sug&&!q('prf-sale').value)q('prf-sale').placeholder=String(sug);
+        var mg=margin({분류:cat,원가:cost,판매가:q('prf-sale').value||sug});
+        q('prf-mg').innerHTML=mg.txt==='—'?'':('마진 <b class="'+(mg.bad?'prp-bad':'prp-ok')+'">'+mg.txt+'</b>'+(mg.bad?' — '+mg.why+' 미달':''));
+      }
+      ['prf-cat','prf-cost','prf-sale'].forEach(function(id){q(id).addEventListener('input',refresh);q(id).addEventListener('change',refresh);});
+      refresh();
+      m.addEventListener('click',function(e){if(e.target===m||e.target.hasAttribute('data-x'))m.remove();});
+      var off=m.querySelector('[data-off]');
+      if(off)off.onclick=function(){S().from('pr_업체단가').update({활성:r.활성===false,updated_at:new Date().toISOString()}).eq('id',r.id).then(function(x){if(x.error){alert(x.error.message);return;}m.remove();C.rates=null;note('변경했습니다','success');if(after)after();});};
+      m.querySelector('[data-save]').onclick=function(){
+        var name=q('prf-vd').value.trim();var v=vs.filter(function(x){return x.거래처명===name;})[0];
+        if(!v&&!preset.vendor_id){if(!confirm('「'+name+'」은(는) 등록된 거래처가 아닙니다.\n거래처 연결 없이 저장하면 지출결의와 연결되지 않습니다.\n\n그래도 저장할까요? (권장: 거래처·외주에서 먼저 등록)'))return;}
+        var item=q('prf-item').value.trim();if(!item){alert('품목을 적어 주세요');return;}
+        var sale=num(q('prf-sale').value);if(sale==null){var sg=suggestSale(q('prf-cat').value,q('prf-cost').value);if(sg&&confirm('판매가가 비어 있습니다. 자동 제안 '+sg.toLocaleString('ko-KR')+'원으로 저장할까요?'))sale=sg;}
+        var p={사업부:q('prf-bu').value,분류:q('prf-cat').value,vendor_id:preset.vendor_id||(v?v.id:null),업체명:v?v.거래처명:(name||r.업체명||null),
+          품목:item,조건:q('prf-cond').value.trim()||null,대상:q('prf-tgt').value,단위:q('prf-unit').value.trim()||null,
+          원가:num(q('prf-cost').value),원가_표기:q('prf-memo').value.trim()||null,판매가:sale,vat:q('prf-vat').value,
+          시즌_시작:q('prf-s1').value||null,시즌_끝:q('prf-s2').value||null,유효_끝:q('prf-end').value||null,상태:q('prf-st').value,
+          출처:q('prf-src').value.trim()||null,비고:q('prf-note').value.trim()||null,확인일:today(),updated_at:new Date().toISOString()};
+        if(p.원가!=null)p.원가=Math.round(p.원가);if(p.판매가!=null)p.판매가=Math.round(p.판매가);
+        var mg=margin(p);if(mg.bad&&!confirm('마진이 하한 미만입니다 ('+mg.why+' · 지금 '+mg.txt+').\n그래도 저장할까요?'))return;
+        var job=r.id?S().from('pr_업체단가').update(p).eq('id',r.id):S().from('pr_업체단가').insert(Object.assign({활성:true},p));
+        job.then(function(x){if(x.error){alert('저장 실패: '+x.error.message);return;}m.remove();C.rates=null;note('단가를 저장했습니다 — 가격표·유형 견적에 바로 적용됩니다','success');if(after)after();});
+      };
+    }).catch(function(e){alert(e.message||e);});
+  }
+  window.rpPriceRateModal=rateModal;
+
+  /* ═════════ 1. 가격표 메뉴 ═════════ */
+  var PG={bu:'국내여행',sub:'rates',q:'',cat:'',flt:''};
+  function pageEl(){return document.getElementById('prp-body');}
+  window.rpPriceInit=function(){
+    var b=pageEl();if(!b)return;
+    b.innerHTML='<div style="padding:30px;color:#8a94a6">불러오는 중…</div>';
+    Promise.all([loadRates(true),loadProds(true),loadTypes(true)]).then(render).catch(function(e){b.innerHTML='<div style="padding:20px;color:#b42318">불러오기 실패: '+esc(e.message||e)+'</div>';});
+  };
+  window.rpPriceSet=function(k,v){PG[k]=v;if(k==='bu'){PG.sub=(v==='국내여행'?'rates':(v==='공통'?'rules':'prods'));PG.cat='';PG.flt='';PG.q='';}if(k==='sub'){PG.flt='';}render();};
+  function render(){
+    var b=pageEl();if(!b)return;
+    var h='<div class="prp-wrap"><div class="prp-tabs">'+BU.map(function(x){return '<button class="prp-tab'+(PG.bu===x?' on':'')+'" onclick="rpPriceSet(\'bu\',\''+x+'\')">'+BU_ICON[x]+' '+x+'</button>';}).join('')
+      +'<button class="prp-tab'+(PG.bu==='공통'?' on':'')+'" onclick="rpPriceSet(\'bu\',\'공통\')">⚙ 공통 규칙</button></div>';
+    if(PG.bu!=='공통'){
+      var subs=PG.bu==='국내여행'?[['rates','업체별 단가 (숙박·식당·관광·차량)'],['types','기준 견적 (유형)'],['prods','공통 품목']]:[['prods','품목 단가'],['types','기준 견적 (유형)']];
+      h+='<div class="prp-sub">'+subs.map(function(s){return '<button class="'+(PG.sub===s[0]?'on':'')+'" onclick="rpPriceSet(\'sub\',\''+s[0]+'\')">'+s[1]+'</button>';}).join('')+'</div>';
+    }
+    if(PG.bu==='공통')h+=renderRules();
+    else if(PG.sub==='rates')h+=renderRates();
+    else if(PG.sub==='types')h+=renderTypes();
+    else h+=renderProds();
+    b.innerHTML=h+'</div>';
+    var qi=document.getElementById('prp-q');if(qi&&PG._focus){qi.focus();qi.setSelectionRange(qi.value.length,qi.value.length);PG._focus=false;}
+  }
+  window.rpPriceQ=function(v){PG.q=v;PG._focus=true;render();};
+  function matchQ(s){if(!PG.q)return true;return String(s).toLowerCase().indexOf(PG.q.toLowerCase())>=0;}
+  function renderRates(){
+    var all=(C.rates||[]).filter(function(r){return r.사업부===PG.bu;});
+    var cnt={전체:all.length,확정:0,추정:0,확인필요:0,마진미달:0,기간만료:0,보관:0};
+    all.forEach(function(r){if(r.활성===false){cnt.보관++;return;}cnt[r.상태]=(cnt[r.상태]||0)+1;if(margin(r).bad)cnt.마진미달++;if(expired(r))cnt.기간만료++;});
+    var rows=all.filter(function(r){
+      if(PG.cat&&r.분류!==PG.cat)return false;
+      if(PG.flt==='보관'){if(r.활성!==false)return false;}else if(r.활성===false)return false;
+      if(PG.flt==='마진미달'&&!margin(r).bad)return false;
+      if(PG.flt==='기간만료'&&!expired(r))return false;
+      if(['확정','추정','확인필요'].indexOf(PG.flt)>=0&&r.상태!==PG.flt)return false;
+      return matchQ([r.업체명,r.품목,r.조건,r.대상,r.출처,r.비고].join(' '));
+    });
+    var chips=['확정','추정','확인필요','마진미달','기간만료','보관'].map(function(k){return '<span class="prp-chip'+((k==='마진미달'||k==='기간만료'||k==='확인필요')&&cnt[k]?' warn':'')+'" onclick="rpPriceSet(\'flt\',\''+(PG.flt===k?'':k)+'\')" style="'+(PG.flt===k?'outline:2px solid #1e3a5f':'')+'">'+k+' '+(cnt[k]||0)+'</span>';}).join('');
+    var h='<div class="prp-bar"><input id="prp-q" placeholder="업체·품목·근거 검색" value="'+esc(PG.q)+'" oninput="rpPriceQ(this.value)" style="width:220px">'
+      +'<select onchange="rpPriceSet(\'cat\',this.value)"><option value="">분류 전체</option>'+CATS.map(function(c){return '<option'+(PG.cat===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>'
+      +'<span style="font-size:12px;color:#5a6478">전체 '+cnt.전체+'줄</span> '+chips
+      +'<span style="margin-left:auto"></span><button class="prp-btn" onclick="rpPriceRateModal(null,{사업부:\''+PG.bu+'\'},rpPriceInit)">＋ 단가 추가</button></div>'
+      +'<div class="prp-lock" style="margin-bottom:6px">🔒 원가·마진 칸은 대표 2명만 보입니다 · 새 업체는 <a href="#vendor">거래처·외주</a>에서 먼저 등록 → 거래처 상세 「💲 단가」 탭에서 넣어도 여기 바로 보입니다</div>';
+    h+='<div style="overflow:auto;max-height:70vh"><table class="prp-t"><tr><th>분류</th><th>업체</th><th>품목 · 조건 · 대상</th><th>단위</th><th class="prp-r">원가 🔒</th><th class="prp-r">판매가</th><th class="prp-r">마진</th><th>상태</th><th>유효 끝</th><th>확인일</th><th>쓰이는 유형</th><th></th></tr>';
+    rows.forEach(function(r){
+      var mg=margin(r),ex=expired(r),ut=usedTypes(r.id);
+      h+='<tr'+(r.활성===false?' style="opacity:.5"':'')+'><td>'+esc(r.분류)+'</td><td><b>'+esc(r.업체명||'')+'</b>'+(r.vendor_id?'':'<div class="prp-bad" style="font-size:10.5px">거래처 미연결</div>')+'</td>'
+        +'<td>'+esc(r.품목||'')+(r.조건?' · '+esc(r.조건):'')+(r.대상&&r.대상!=='공통'?' · <b>'+esc(r.대상)+'</b>':'')+(r.시즌_시작?'<div style="font-size:10.5px;color:#5a6478">시즌 '+esc(r.시즌_시작)+'~'+esc(r.시즌_끝||'')+'</div>':'')+'</td>'
+        +'<td>'+esc(r.단위||'')+'</td><td class="prp-r">'+(r.원가!=null?won(r.원가):(r.원가_표기?'<span style="font-size:10.5px">'+esc(r.원가_표기)+'</span>':'<span style="color:#94a3b8">미등록</span>'))+'</td>'
+        +'<td class="prp-r"><b>'+won(r.판매가)+'</b></td><td class="prp-r '+(mg.bad?'prp-bad':'')+'" title="'+esc(mg.why||'')+'">'+mg.txt+'</td>'
+        +'<td><span class="prp-st '+esc(r.상태)+'">'+esc(r.상태||'')+'</span></td><td'+(ex?' class="prp-bad"':'')+'>'+esc(r.유효_끝||'—')+(ex?' 만료':'')+'</td><td>'+esc(r.확인일||'')+'</td>'
+        +'<td style="font-size:11px;color:#5a6478">'+(ut.length?esc(ut.slice(0,3).join(' · '))+(ut.length>3?' 외 '+(ut.length-3):''):'—')+'</td>'
+        +'<td><button class="prp-btn ghost sm" onclick="rpPriceEditRate(\''+r.id+'\')">수정</button></td></tr>';
+    });
+    if(!rows.length)h+='<tr><td colspan="12" style="text-align:center;padding:24px;color:#94a3b8">조건에 맞는 단가가 없습니다</td></tr>';
+    return h+'</table></div>';
+  }
+  window.rpPriceEditRate=function(id){var r=(C.rates||[]).filter(function(x){return x.id===id;})[0];if(r)rateModal(r,{},rpPriceInit);};
+  function prefixOf(bu){return {'국내여행':'TR-','행사이벤트':'EV-','온라인마케팅':'MK-','마케팅교육':'ED-'}[bu];}
+  function renderProds(){
+    var pf=prefixOf(PG.bu);
+    var rows=(C.prods||[]).filter(function(p){return p.코드&&p.코드.indexOf(pf)===0&&p.is_active!==false&&matchQ([p.코드,p.품명,p.규격,p.근거].join(' '));});
+    var h='<div class="prp-bar"><input id="prp-q" placeholder="코드·품명·근거 검색" value="'+esc(PG.q)+'" oninput="rpPriceQ(this.value)" style="width:220px"><span style="font-size:12px;color:#5a6478">'+rows.length+'개 품목 · 가견적은 이 단가를 그대로 씁니다</span></div>';
+    h+='<div style="overflow:auto;max-height:70vh"><table class="prp-t"><tr><th>코드</th><th>품명</th><th>규격</th><th class="prp-r">가견적 단가</th><th>단위</th><th>여러 날</th><th>근거</th><th>다음 검토</th><th></th></tr>';
+    rows.forEach(function(p){
+      var due=p.다음_검토일&&String(p.다음_검토일)<=today();
+      h+='<tr><td style="font-family:monospace;font-size:11px">'+esc(p.코드)+'</td><td><b>'+esc(p.품명)+'</b></td><td style="font-size:11.5px">'+esc(p.규격||'')+'</td><td class="prp-r"><b>'+won(p.기본_단가)+'</b></td><td>'+esc(p.기본_단위||'')+'</td>'
+        +'<td style="font-size:11px">'+esc({'장비80':'장비 (둘째 날부터 80%)','인력100':'인력 (매일 100%)','1회':'1회만'}[p.다일규칙]||p.다일규칙||'')+'</td>'
+        +'<td style="font-size:11px;color:#5a6478;max-width:260px">'+esc(p.근거||'')+'</td><td'+(due?' class="prp-bad"':'')+'>'+esc(p.다음_검토일||'')+'</td>'
+        +'<td><button class="prp-btn ghost sm" onclick="rpPriceEditProd(\''+p.id+'\')">수정</button></td></tr>';
+    });
+    return h+'</table></div>';
+  }
+  window.rpPriceEditProd=function(id){
+    var p=(C.prods||[]).filter(function(x){return x.id===id;})[0];if(!p)return;
+    var m=document.createElement('div');m.className='prp-modal';
+    m.innerHTML='<div><b style="font-size:15px">품목 단가 수정 — '+esc(p.코드)+'</b><div class="prp-grid" style="margin-top:10px">'
+      +'<div style="grid-column:span 2"><label>품명</label><input id="pp-n" value="'+esc(p.품명)+'"></div><div><label>가견적 단가</label><input id="pp-p" inputmode="numeric" value="'+(p.기본_단가==null?'':Math.round(p.기본_단가))+'"></div><div><label>단위</label><input id="pp-u" value="'+esc(p.기본_단위||'')+'"></div>'
+      +'<div style="grid-column:span 4"><label>규격 (고객 견적서에 보이는 설명)</label><input id="pp-s" value="'+esc(p.규격||'')+'"></div>'
+      +'<div style="grid-column:span 3"><label>근거 (무엇을 보고 정했나)</label><input id="pp-g" value="'+esc(p.근거||'')+'"></div><div><label>다음 검토일</label><input type="date" id="pp-d" value="'+esc(p.다음_검토일||'')+'"></div></div>'
+      +'<div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px"><button class="prp-btn ghost" data-x>닫기</button><button class="prp-btn" data-s>💾 저장</button></div></div>';
+    document.body.appendChild(m);
+    m.addEventListener('click',function(e){if(e.target===m||e.target.hasAttribute('data-x'))m.remove();});
+    m.querySelector('[data-s]').onclick=function(){
+      var np=num(m.querySelector('#pp-p').value);if(np==null){alert('단가를 넣어 주세요');return;}
+      S().from('product_catalog').update({품명:m.querySelector('#pp-n').value.trim(),기본_단가:np,기본_단위:m.querySelector('#pp-u').value.trim()||null,규격:m.querySelector('#pp-s').value.trim()||null,근거:m.querySelector('#pp-g').value.trim()||null,다음_검토일:m.querySelector('#pp-d').value||null,적용일:today(),updated_at:new Date().toISOString()}).eq('id',id)
+        .then(function(x){if(x.error){alert(x.error.message);return;}m.remove();note('저장했습니다 — 가견적에 바로 적용','success');rpPriceInit();});
+    };
+  };
+  function ruleText(t){
+    var rr={N:'인원 × ',S:'학생 × ',T:'교사 × ',fix:'고정 ',room:'객실(',day:'일수·버스 ',per:'인원 ÷ '};
+    return function(l){
+      if(l.수량규칙==='room')return '객실 = 인원 ÷ '+l.규칙값+' (올림) × 박수';
+      if(l.수량규칙==='day')return l.규칙값+' × 버스 대수(45명당 1대) × 일수';
+      if(l.수량규칙==='per')return '인원 ÷ '+l.규칙값+' (올림)';
+      if(l.수량규칙==='fix')return '고정 '+l.규칙값;
+      return (rr[l.수량규칙]||'')+l.규칙값;
+    };
+  }
+  function renderTypes(){
+    var ts=(C.types||[]).filter(function(t){return t.사업부===PG.bu;});
+    var h='<div class="prp-lock" style="margin-bottom:8px">유형은 실제 진행 건을 기준으로 만든 표준안입니다 · 고객에게는 기준 학교·기업명을 보이지 않습니다 · 견적은 <b>고객 › 거래 › 견적 작성</b>에서 유형을 고르면 바로 채워집니다</div>';
+    ts.forEach(function(t){
+      var ls=(C.lines||[]).filter(function(l){return l.기준견적_id===t.id;});
+      h+='<details style="border:1px solid #d6dce5;border-radius:8px;margin-bottom:6px;background:#fff"><summary style="padding:9px 12px;cursor:pointer"><b>'+esc(t.유형)+'</b> <span style="font-size:11.5px;color:#5a6478">· '+esc(t.인원_구간||'')+' · 기본 '+(t.기본_인원||'-')+'명 · '+(t.기본_일수||1)+'일 · 품목 '+ls.length+'줄'+(t.계약형태_기본==='강사개인'?' · 강사 개인 계약(3.3%)':'')+'</span> <span style="font-size:11px;color:#94a3b8">'+esc(t.코드)+'</span></summary>'
+        +'<div style="padding:4px 12px 12px"><div style="font-size:11.5px;color:#5a6478;margin-bottom:6px">'+esc(t.설명||'')+(t.내부_기준건?' · <span class="prp-lock">🔒 내부 기준 건: '+esc(t.내부_기준건)+'</span>':'')+'</div>'
+        +'<table class="prp-t"><tr><th>#</th><th>분류</th><th>품목</th><th>수량 계산</th><th class="prp-r">단가(유형 저장값)</th><th>연동</th><th>옵션</th></tr>'
+        +ls.map(function(l){var f=ruleText(t);return '<tr'+(l.기본포함?'':' style="color:#7a5a00"')+'><td>'+l.순서+'</td><td>'+esc(l.카테고리_대분류||'')+'</td><td>'+esc(l.품목명)+'</td><td style="font-size:11px">'+esc(f(l))+'</td><td class="prp-r">'+won(l.단가)+'</td><td style="font-size:11px">'+(l.단가_고정?'고정':(l.업체단가_id?'업체 단가':(l.product_id?'품목 단가':'—')))+'</td><td style="font-size:11px">'+(l.기본포함?'':'선택 · '+esc(l.옵션그룹||''))+'</td></tr>';}).join('')
+        +'</table><div style="margin-top:6px"><button class="prp-btn ghost sm" onclick="rpPriceTry(\''+esc(t.코드)+'\','+(t.기본_인원||0)+',this)">지금 단가로 계산해 보기 ('+(t.기본_인원||'-')+'명)</button> <span class="prp-try"></span></div></div></details>';
+    });
+    return h||'<div style="padding:20px;color:#94a3b8">유형이 없습니다</div>';
+  }
+  window.rpPriceTry=function(code,n,btn){
+    var out=btn.parentNode.querySelector('.prp-try');out.textContent='계산 중…';
+    S().rpc('fn_pr_quote_calc',{p_코드:code,p_인원:n||null}).then(function(r){
+      if(r.error){out.textContent='실패: '+r.error.message;return;}var d=r.data;
+      out.innerHTML='소계 '+won(d.소계)+' · '+esc(d.대행료_표기||'대행료')+' '+won(d.대행료)+' · 부가세 '+won(d.부가세)+' · <b>합계 '+won(d.합계)+'원</b>'+(d['1인']?' · 1인 '+won(d['1인']):'')+(d.단가_바뀐_줄?' · <span class="prp-bad">유형 저장값과 다른 단가 '+d.단가_바뀐_줄+'줄(지금 단가 적용)</span>':'');
+    });
+  };
+  function renderRules(){
+    var rs=C.rules||[];
+    var h='<table class="prp-t"><tr><th>사업부</th><th>대행료 이름</th><th>방식</th><th>부가세</th><th>유효</th><th>메모</th></tr>';
+    rs.forEach(function(r){
+      h+='<tr><td><b>'+esc(r.사업부)+'</b></td><td>'+esc(r.대행료_표기명||'')+'</td><td>'+esc(r.대행료방식)+(r.대행료방식==='정률'?' '+r.대행료율+'%':'')+(r.대행료방식==='누진'?' (200만 미만 0 · 500만까지 10% · 2천만까지 8% · 5천만까지 7% · 초과 5%)':'')+'</td><td>'+esc(r.vat방식)+'</td><td>'+(r.유효일수||30)+'일</td><td style="font-size:11.5px;color:#5a6478">'+esc(r.비고||'')+'</td></tr>';
+    });
+    h+='</table><div class="prp-inbox"><b>공통 규칙</b><ul style="margin:6px 0 0;padding-left:18px;line-height:1.7">'
+      +'<li>여행 숙박·식당·관광지는 <b>업체별 단가</b>만 씁니다 (평균가 금지)</li>'
+      +'<li>마진 하한 — 숙박 10% · 식당 입금가 + 1인 2,000원 · 미달이면 빨간색</li>'
+      +'<li>강사료 — 강사 개인 계약: 3.3% 원천징수·부가세 없음 / 법인 계약: 부가세 10%</li>'
+      +'<li>원가는 지출결의서가 <b>승인되는 순간</b> 자동 확인·갱신됩니다 (「결재 때 원가 갱신」을 표시한 줄만 교체)</li>'
+      +'<li>가견적 고지문: '+esc((rs[0]||{}).고지문||'')+'</li></ul></div>';
+    return h;
+  }
+
+  /* ═════════ 2. 거래처 상세 「단가」 탭 ═════════ */
+  window.rpVendorRates=function(vid){
+    var box=document.getElementById('vd-rates-content');if(!box)return;
+    if(!vid){box.innerHTML='<div style="padding:20px;color:#94a3b8">거래처를 먼저 저장해 주세요</div>';return;}
+    box.innerHTML='<div style="padding:20px;color:#8a94a6">불러오는 중…</div>';
+    Promise.all([
+      S().from('pr_업체단가').select('*').eq('vendor_id',vid).order('분류').order('품목'),
+      S().from('ap_결재_품목').select('id,결재_id,품목,단가,수량,금액,원가처리,업체단가_id,created_at').eq('거래처_id',vid).order('created_at',{ascending:false}).limit(12),
+      loadTypes()
+    ]).then(function(a){
+      var rates=(a[0].data||[]),aps=(a[1].data||[]);
+      var ids=aps.map(function(x){return x.결재_id;}).filter(Boolean);
+      var getAp=ids.length?S().from('ap_결재').select('id,제목,결재일,기안일,상태').in('id',ids):Promise.resolve({data:[]});
+      var rid=rates.map(function(r){return r.id;});
+      var getH=rid.length?S().from('pr_업체단가_이력').select('*').in('업체단가_id',rid).order('created_at',{ascending:false}).limit(10):Promise.resolve({data:[]});
+      return Promise.all([getAp,getH]).then(function(b){
+        var apm={};(b[0].data||[]).forEach(function(x){apm[x.id]=x;});
+        var h='<div style="display:flex;justify-content:space-between;align-items:center"><b>이 거래처의 단가 '+rates.length+'줄</b><button class="prp-btn" onclick="rpVendorRateAdd()">＋ 단가 추가</button></div>'
+          +'<div class="prp-lock" style="margin:4px 0 8px">🔒 원가·마진은 대표 2명만 · 가격표 메뉴 「업체별 단가」와 같은 표 — 여기서 넣으면 가격표·유형 견적에 바로 적용</div>'
+          +'<table class="prp-t"><tr><th>품목</th><th>조건·대상</th><th class="prp-r">원가 🔒</th><th class="prp-r">판매가</th><th>판정</th><th>상태</th><th>쓰이는 유형</th><th>유효</th><th></th></tr>';
+        rates.forEach(function(r){var mg=margin(r);var ut=usedTypes(r.id);
+          h+='<tr'+(r.활성===false?' style="opacity:.5"':'')+'><td><b>'+esc(r.품목)+'</b></td><td>'+esc([r.조건,r.대상].filter(Boolean).join(' · '))+'</td><td class="prp-r">'+(r.원가!=null?won(r.원가):'<span style="color:#94a3b8">미등록</span>')+'</td><td class="prp-r"><b>'+won(r.판매가)+'</b></td>'
+            +'<td class="'+(mg.bad?'prp-bad':'prp-ok')+'">'+mg.txt+(mg.bad?' ⚠':(mg.txt!=='—'?' ✓':''))+'</td><td><span class="prp-st '+esc(r.상태)+'">'+esc(r.상태)+'</span></td><td style="font-size:11px">'+esc(ut.join(' · ')||'—')+'</td><td'+(expired(r)?' class="prp-bad"':'')+'>'+esc(r.유효_끝||'—')+'</td>'
+            +'<td><button class="prp-btn ghost sm" data-rid="'+r.id+'">수정</button></td></tr>';});
+        if(!rates.length)h+='<tr><td colspan="9" style="text-align:center;padding:18px;color:#94a3b8">아직 단가가 없습니다 — [＋ 단가 추가]로 요금표의 여행사가를 넣어 주세요</td></tr>';
+        h+='</table>';
+        h+='<div class="prp-inbox"><b>최근 지출결의</b> <span style="font-size:11px;color:#7a4a00">(결재에서 「단가 × 수량」으로 적으면 승인 때 원가가 자동 확인·갱신됩니다)</span><table class="prp-t" style="margin-top:6px"><tr><th>결재일</th><th>제목</th><th>품목</th><th class="prp-r">금액</th><th class="prp-r">단가 × 수량</th><th>원가 처리</th></tr>';
+        aps.forEach(function(x){var a2=apm[x.결재_id]||{};h+='<tr><td>'+esc(String(a2.결재일||a2.기안일||x.created_at||'').slice(0,10))+'</td><td>'+esc(a2.제목||'')+'</td><td>'+esc(x.품목||'')+'</td><td class="prp-r">'+won(x.금액)+'</td><td class="prp-r">'+(x.단가?won(x.단가)+' × '+(x.수량||'-'):'<span style="color:#94a3b8">총액만</span>')+'</td><td>'+esc(x.원가처리||(a2.상태==='기안'?'승인 대기':'—'))+'</td></tr>';});
+        if(!aps.length)h+='<tr><td colspan="6" style="text-align:center;padding:12px;color:#94a3b8">지출결의 없음</td></tr>';
+        h+='</table></div>';
+        var hs=b[1].data||[];
+        if(hs.length){h+='<div style="margin-top:10px"><b style="font-size:12.5px">원가 변경 이력</b><table class="prp-t" style="margin-top:4px"><tr><th>일시</th><th>구분</th><th class="prp-r">이전</th><th class="prp-r">새 원가</th><th>근거</th></tr>'
+          +hs.map(function(x){return '<tr><td>'+esc(String(x.created_at).slice(0,16).replace('T',' '))+'</td><td>'+esc(x.구분)+'</td><td class="prp-r">'+won(x.이전_원가)+'</td><td class="prp-r">'+won(x.새_원가)+'</td><td>'+esc(x.메모||'')+'</td></tr>';}).join('')+'</table></div>';}
+        box.innerHTML=h;
+        box.querySelectorAll('[data-rid]').forEach(function(bt){bt.onclick=function(){var r=rates.filter(function(x){return x.id===bt.getAttribute('data-rid');})[0];rateModal(r,{vendor_id:vid},function(){rpVendorRates(vid);});};});
+      });
+    }).catch(function(e){box.innerHTML='<div style="color:#b42318;padding:12px">불러오기 실패: '+esc(e.message||e)+'</div>';});
+  };
+  window.rpVendorRateAdd=function(){
+    var vid=(typeof _currentVendorId!=='undefined')?_currentVendorId:null;if(!vid){alert('거래처를 먼저 저장해 주세요');return;}
+    var t=(document.getElementById('vd-modal-title')||{}).textContent||'';
+    rateModal(null,{vendor_id:vid,업체명:t},function(){rpVendorRates(vid);});
+  };
+
+  /* ═════════ 3. 견적 작성 — 유형 선택 ═════════ */
+  var QT={code:null,last:null};
+  function qtS(){return (window.state&&window.state.qt)||(typeof state!=='undefined'?state.qt:null);}
+  window.rpQtTypes=function(){
+    var box=document.getElementById('pr-type-panel');if(!box)return;var s=qtS();if(!s)return;
+    if(!s.bu){box.innerHTML='<h3><span class="qt-step-num">★</span>가견적 유형 선택 <span style="font-size:11px;font-weight:400;color:#5a6478">— 사업부를 먼저 고르면 유형 목록이 나옵니다</span></h3>';return;}
+    loadTypes().then(function(){
+      var ts=(C.types||[]).filter(function(t){return t.사업부===s.bu;});
+      var cur=ts.filter(function(t){return t.코드===QT.code;})[0];
+      var isTour=s.bu==='국내여행',isEdu=s.bu==='마케팅교육';
+      var h='<h3 style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px"><span><span class="qt-step-num">★</span>가견적 — 유형을 고르면 본문 항목이 바로 채워집니다</span><span style="font-size:11px;font-weight:400;color:#5a6478">채운 뒤 행 추가·삭제·수정은 아래 3번 표에서 자유롭게</span></h3>'
+        +'<div class="prp-types">'+ts.map(function(t){return '<div class="prp-type'+(QT.code===t.코드?' on':'')+'" onclick="rpQtPick(\''+esc(t.코드)+'\')"><b>'+esc(t.유형)+'</b><span>'+esc(t.인원_구간||'')+(t.기본_인원?' · 기본 '+t.기본_인원+'명':'')+(t.기본_일수>1?' · '+t.기본_일수+'일':'')+'</span></div>';}).join('')+'</div>';
+      if(cur){
+        h+='<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;background:#f6fbff;border:1px solid #bcd3ee;border-radius:8px;padding:10px">'
+          +(cur.기본_인원!=null?'<div class="qt-field" style="margin:0"><label>'+(isTour?'총 인원':'인원')+'</label><input type="number" id="prq-n" min="1" value="'+(QT.n||cur.기본_인원)+'" style="width:90px"></div>':'')
+          +(isTour?'<div class="qt-field" style="margin:0"><label>교사·인솔 (빈칸 = 20% 자동)</label><input type="number" id="prq-t" min="0" value="'+(QT.t==null?'':QT.t)+'" style="width:110px"></div>':'')
+          +'<div class="qt-field" style="margin:0"><label>'+(isTour?'일수 (2박3일 = 3)':'일수')+'</label><input type="number" id="prq-d" min="1" value="'+(QT.d||cur.기본_일수||1)+'" style="width:80px"></div>'
+          +(isEdu?'<div class="qt-field" style="margin:0"><label>계약 형태</label><select id="prq-c" style="width:220px"><option value="강사개인"'+(((QT.c||cur.계약형태_기본)==='강사개인')?' selected':'')+'>강사 개인 (3.3% 원천징수 · 부가세 없음)</option><option value="법인"'+(((QT.c||cur.계약형태_기본)==='법인')?' selected':'')+'>법인 (부가세 10%)</option></select></div>':'')
+          +'<button class="prp-btn" onclick="rpQtApply()" style="padding:8px 16px">⚡ 이 유형으로 채우기</button></div>';
+      }
+      h+='<div style="margin-top:10px;display:flex;gap:8px;align-items:center"><span style="font-size:12px;color:#5a6478">🔎 가격표에서 품목 추가</span><input id="prq-find" list="prq-find-dl" placeholder="업체·품목 이름 (예: 진돼지 · LED · 보조강사)" style="flex:1;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px" onchange="rpQtFindPick(this)"><datalist id="prq-find-dl"></datalist></div>'
+        +'<div id="prq-box"></div>';
+      box.innerHTML=h;
+      fillFind(s.bu);
+      if(QT.last&&QT.last.사업부===s.bu)showBox(QT.last);
+    });
+  };
+  window.rpQtPick=function(code){QT.code=code;QT.n=null;QT.t=null;QT.d=null;QT.c=null;rpQtTypes();};
+  var FIND={};
+  function fillFind(bu){
+    Promise.all([loadRates(),loadProds()]).then(function(){
+      FIND={};var opts=[];
+      (C.rates||[]).filter(function(r){return r.사업부===bu&&r.활성!==false&&r.판매가!=null;}).forEach(function(r){
+        var k=(r.업체명||'')+' · '+r.품목+(r.조건?' · '+r.조건:'')+(r.대상&&r.대상!=='공통'?' ('+r.대상+')':'')+' — '+Number(r.판매가).toLocaleString('ko-KR')+'원/'+(r.단위||'');
+        FIND[k]={type:'rate',r:r};opts.push(k);});
+      var pf=prefixOf(bu);
+      (C.prods||[]).filter(function(p){return p.코드&&p.코드.indexOf(pf)===0&&p.is_active!==false;}).forEach(function(p){
+        var k=p.품명+(p.규격?' · '+p.규격:'')+' — '+Number(p.기본_단가||0).toLocaleString('ko-KR')+'원 ['+p.코드+']';FIND[k]={type:'prod',p:p};opts.push(k);});
+      var dl=document.getElementById('prq-find-dl');if(dl)dl.innerHTML=opts.map(function(o){return '<option value="'+esc(o)+'">';}).join('');
+    });
+  }
+  function catOfRate(r){return {'숙박':['숙박','숙소'],'식당':['식사',''],'관광체험':['여행코스','관광지'],'차량':['교통','버스'],'인력':['인건비',''],'보험':['기타','보험']}[r.분류]||['기타',''];}
+  window.rpQtFindPick=function(inp){
+    var f=FIND[inp.value];if(!f)return;var s=qtS();if(!s)return;
+    var row={유형:'item',카테고리_대분류:'',카테고리_중분류:'',품명:'',수량:1,단위:'',단가:0,금액:0,비고:'',내용:'',일정_표시:'',식사_컬럼:'',견적서_표시:true,일정표_표시:false};
+    if(s.bu==='국내여행'){row.일차=null;row.시간='';}
+    if(f.type==='rate'){var r=f.r,c=catOfRate(r);row.카테고리_대분류=c[0];row.카테고리_중분류=c[1];row.품명=(r.업체명?r.업체명+' ':'')+r.품목+(r.조건?' · '+r.조건:'')+(r.대상&&r.대상!=='공통'?' ('+r.대상+')':'');row.단위=r.단위||'';row.단가=Number(r.판매가)||0;row.업체단가_id=r.id;}
+    else{var p=f.p;row.카테고리_대분류=p.카테고리||'';row.품명=p.품명;row.단위=p.기본_단위||'';row.단가=Number(p.기본_단가)||0;row.product_id=p.id;}
+    row.금액=row.수량*row.단가;
+    s.items.push(row);inp.value='';
+    if(typeof qtRenderItems==='function')qtRenderItems();if(typeof qtUpdateAll==='function')qtUpdateAll();
+    note('「'+row.품명+'」 추가 — 수량을 확인하세요','success');
+  };
+  window.rpQtApply=function(){
+    var s=qtS();if(!s||!QT.code)return;
+    var n=num((document.getElementById('prq-n')||{}).value),t=num((document.getElementById('prq-t')||{}).value),d=num((document.getElementById('prq-d')||{}).value);
+    var c=(document.getElementById('prq-c')||{}).value||null;
+    QT.n=n;QT.t=t;QT.d=d;QT.c=c;
+    var real=(s.items||[]).filter(function(it){return it&&it.유형!=='subtotal'&&((it.품명&&String(it.품명).trim())||+it.단가>0);});
+    var mode='replace';
+    if(real.length){if(!confirm('본문 항목 '+real.length+'줄이 이미 있습니다.\n\n[확인] = 유형 품목으로 바꾸기\n[취소] = 그대로 두고 아래에 추가'))mode='append';}
+    S().rpc('fn_pr_quote_calc',{p_코드:QT.code,p_인원:n,p_교사:t,p_일수:d,p_계약형태:c}).then(function(r){
+      if(r.error){alert('계산 실패: '+r.error.message);return;}
+      var x=r.data;QT.last=x;
+      var isTour=s.bu==='국내여행';
+      var rows=(x.items||[]).map(function(it){
+        var row={유형:'item',카테고리_대분류:it.카테고리_대분류||'',카테고리_중분류:it.카테고리_중분류||'',품명:it.품목명,수량:Math.round(Number(it.수량)*100)/100,단위:it.단위||'',단가:Number(it.단가)||0,
+          금액:0,비고:'',내용:'',일정_표시:'',식사_컬럼:'',견적서_표시:true,일정표_표시:false,업체단가_id:it.업체단가_id||null,product_id:it.product_id||null,기준견적:x.코드};
+        row.금액=Math.round(row.수량*row.단가);if(isTour){row.일차=null;row.시간='';}return row;});
+      if(mode==='replace')s.items=rows;else s.items=s.items.concat(rows);
+      if(s.itemsByAn&&s.안_번호)s.itemsByAn[s.안_번호]=s.items;
+      s._pr={코드:x.코드,기준견적_id:x.기준견적_id,가격버전:today()};
+      /* 인원 */
+      if(isTour&&x.교사>0){s.인원_성인=x.교사;s.인원_아동=x.학생;}else if(x.인원){s.인원_성인=x.인원;s.인원_아동=0;}
+      var pa=document.getElementById('qt-people-adult'),pc=document.getElementById('qt-people-child');
+      if(pa)pa.value=s.인원_성인==null?'':s.인원_성인;if(pc)pc.value=s.인원_아동==null?'':s.인원_아동;
+      /* 대행료·부가세 */
+      var fr=document.getElementById('qt-fee-rate'),fo=document.getElementById('qt-opt-fee'),vo=document.getElementById('qt-opt-vat');
+      var eff=x.소계>0?Math.round(x.대행료/x.소계*1000)/10:0;
+      if(fo)fo.checked=x.대행료>0;
+      if(fr&&x.대행료>0){fr.step='any';fr.value=String(eff);}
+      if(vo)vo.checked=(x.부가세>0&&!isTour);
+      if(typeof qtSetTrim==='function')qtSetTrim('없음');
+      /* 제목·고지문 */
+      var ti=document.getElementById('qt-title');
+      if(ti&&!ti.value.trim()){ti.value=x.유형+' 가견적';s.title=ti.value;}
+      var memo=x.고지문+' (유효기간 '+(x.유효일수||30)+'일)'+(x.원천징수_3_3?' · 강사료는 강사 개인 지급 건으로 부가세가 없으며, 지급 시 3.3%('+Number(x.원천징수_3_3).toLocaleString('ko-KR')+'원)를 원천징수합니다.':'');
+      if(!s.note||s.note.indexOf('본 가견적은')<0){s.note=(s.note?s.note+'\n':'')+memo;var ne=document.getElementById('qt-note');if(ne)ne.value=s.note;}
+      if(typeof qtRenderItems==='function')qtRenderItems();
+      if(typeof qtUpdateAll==='function')qtUpdateAll();
+      showBox(x);
+      note('「'+x.유형+'」 '+rows.length+'줄을 채웠습니다 — 필요 없는 줄은 ×로 지우세요','success');
+    });
+  };
+  function showBox(x){
+    var b=document.getElementById('prq-box');if(!b)return;
+    var mg=x.원가_확인_매출>0?Math.round((x.원가_확인_매출-x.원가_합계)/x.원가_확인_매출*1000)/10:null;
+    var memos=(x.items||[]).filter(function(i){return i.비고;}).map(function(i){return '<li>'+esc(i.품목명)+' — '+esc(i.비고)+'</li>';}).join('');
+    var opts=(x.items||[]).length;
+    b.innerHTML='<div class="prp-inbox"><b>🔒 내부 확인 (대표 2명만 · 고객 견적서에 안 나감)</b>'
+      +'<div style="margin-top:4px">유형 계산 합계 <b>'+won(x.합계)+'원</b>'+(x['1인']?' · 1인 '+won(x['1인'])+'원':'')+' · '+esc(x.대행료_표기||'대행료')+' '+won(x.대행료)+(x.대행료>0?' ('+esc(x.대행료방식)+')':'')+' · 부가세 '+won(x.부가세)+(x.vat방식?' ('+esc(x.vat방식)+')':'')+'</div>'
+      +(x.원가_합계>0?'<div>원가가 등록된 품목 매출 '+won(x.원가_확인_매출)+' / 원가 '+won(x.원가_합계)+' → 마진 <b class="'+(mg<10?'prp-bad':'prp-ok')+'">'+mg+'%</b></div>':'')
+      +(x.단가_바뀐_줄?'<div class="prp-bad">유형 저장값과 다른 단가 '+x.단가_바뀐_줄+'줄 — 지금 가격표 단가로 채웠습니다</div>':'')
+      +(x.원천징수_3_3?'<div>강사 개인 계약: 원천징수 3.3% '+won(x.원천징수_3_3)+' · 강사 실수령 '+won(x.강사_실수령)+'</div>':'')
+      +(x.사업부==='국내여행'?'<div style="color:#7a4a00">여행 알선수수료 부가세(수수료분 10%)는 현재 견적서 방식대로 따로 표기하지 않습니다 — 필요하면 4번 옵션에서 켜세요</div>':'')
+      +(memos?'<div style="margin-top:4px">품목 메모<ul style="margin:2px 0 0;padding-left:18px">'+memos+'</ul></div>':'')
+      +'<div style="margin-top:4px;color:#5a6478">5번 비고에 가견적 고지문을 넣었습니다 · 저장하면 견적 종류가 「가견적」으로 기록됩니다</div></div>';
+  }
+  /* 사업부 선택·견적 작성 진입 때 유형 칸 다시 그리기 */
+  function wrap(name,after){
+    var o=window[name];if(typeof o!=='function'||o.__rpPrice)return false;
+    var w=function(){var r=o.apply(this,arguments);try{if(r&&typeof r.then==='function')r.then(function(){after();});else after();}catch(e){console.warn(V,e);}return r;};
+    w.__rpPrice=true;window[name]=w;return true;
+  }
+  function hookQt(){
+    wrap('qtSelectBU',function(){if(QT.last&&qtS()&&QT.last.사업부!==qtS().bu){QT.code=null;QT.last=null;}rpQtTypes();});
+    wrap('loadQuotationCreate',function(){QT.code=null;QT.last=null;rpQtTypes();});
+  }
+
+  /* ═════════ 4. 거래처 「단가」 탭 클릭 → 불러오기 ═════════ */
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('.vd-tab-btn[data-tab="rates"]');
+    if(b){var vid=(typeof _currentVendorId!=='undefined')?_currentVendorId:null;rpVendorRates(vid);}
+  });
+
+  function boot(){hookQt();if(document.getElementById('pr-type-panel'))rpQtTypes();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  setTimeout(boot,1500);
+  window.RP_PRICE_VER=V;
+})();
+</script>
+<!-- RP-PRICE v1.0 end -->
 </body>
 </html>

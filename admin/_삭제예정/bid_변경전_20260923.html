@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex, nofollow">
+<title>입찰 조회 | 리얼플랜제주 관리자</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',-apple-system,'Malgun Gothic',sans-serif;background:#f4f6fb;color:#1e293b;font-size:14px}
+.top{background:#1e3a5f;color:#fff;padding:12px 22px;display:flex;align-items:center;gap:12px}
+.top b{font-size:15px}.top .sp{flex:1}.top a{color:#cfe0ff;text-decoration:none;font-size:13px}
+.wrap{max-width:1280px;margin:22px auto;padding:0 18px}
+.title{font-size:19px;font-weight:700;margin-bottom:4px}.sub{font-size:12.5px;color:#64748b;margin-bottom:16px}
+.card{background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:18px;margin-bottom:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+label{font-size:12px;color:#5a6478;display:block}
+select,input{margin-top:4px;padding:8px;border:1px solid #cfd8e6;border-radius:8px;font-size:13px}
+button{padding:9px 16px;background:#2563eb;color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px}
+button.g{background:#eef2fb;color:#334155}
+.tabs{display:flex;gap:8px;margin:4px 0 12px}
+.tabs button{background:#eef2fb;color:#475569;padding:7px 16px}.tabs button.on{background:#2563eb;color:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 10px;border-bottom:2px solid #e3e9f4;color:#64748b;white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #f0f3f8;vertical-align:top}tr:hover td{background:#f8fafc}
+.tag{display:inline-block;background:#eff6ff;color:#2563eb;border-radius:20px;padding:1px 9px;font-size:11.5px}
+.score{display:inline-block;font-weight:700;border-radius:8px;padding:3px 9px;font-size:13px;min-width:38px;text-align:center}
+.s-hi{background:#d1fae5;color:#065f46}.s-mid{background:#fef3c7;color:#92400e}.s-lo{background:#fee2e2;color:#991b1b}.s-na{background:#eef2f7;color:#94a3b8}
+.verd{font-size:11.5px;color:#475569;display:block;margin-top:3px}
+.mark{background:#fff7e6;color:#b45309;border:1px solid #fde3b3;padding:4px 9px;border-radius:7px;cursor:pointer;font-size:12px}
+.mark.on{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
+.pbtn{background:#eef2fb;color:#2563eb;border:1px solid #dbe4f5;padding:4px 9px;border-radius:7px;cursor:pointer;font-size:12px;margin-left:4px}
+.status{font-size:12.5px;color:#7a8598;margin:8px 0}
+.note{font-size:11.5px;color:#98a3b8;margin-top:10px;line-height:1.7}
+a.link{color:#2563eb;text-decoration:none}a.link:hover{text-decoration:underline}
+.hide{display:none}
+.ov{position:fixed;inset:0;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+.ov.hide{display:none!important}
+.modal{background:#fff;border-radius:14px;max-width:900px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.mhd{padding:14px 18px;border-bottom:1px solid #eef2f7;display:flex;align-items:center;gap:10px}
+.mhd b{font-size:14.5px;flex:1}
+.mbd{padding:16px 18px;overflow:auto}
+.mft{padding:12px 18px;border-top:1px solid #eef2f7;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#ptext{width:100%;min-height:360px;border:1px solid #cfd8e6;border-radius:8px;padding:12px;font-size:13px;line-height:1.7;font-family:inherit}
+/* 2026-07-30 대표 승인: 확인(열람) 표시 · 마감 D-n · 정렬 · 페이지 내비게이션 */
+tr.seen td{background:#fbfcfe}
+tr.seen a.link,tr.seen .nm{color:#a3aec0!important;font-weight:400}
+tr.seen .tag{opacity:.6}
+a.link:visited{color:#7c3aed}
+.dd{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;margin-left:6px;white-space:nowrap}
+.dd-r{background:#fee2e2;color:#991b1b}.dd-y{background:#fef3c7;color:#92400e}.dd-g{background:#eef2f7;color:#64748b}.dd-x{background:#f1f5f9;color:#a3aec0}
+.eye{background:#f5f7fc;color:#94a3b8;border:1px solid #e3e9f4;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:12px;margin-left:4px}
+.eye.on{background:#e8f0ff;color:#2563eb;border-color:#c7dbff}
+.sortbar{display:flex;gap:8px;align-items:center;margin:2px 0 10px;flex-wrap:wrap}
+.sortbar .sb{background:#eef2fb;color:#475569;padding:6px 12px;font-size:12.5px;font-weight:600;border-radius:8px;cursor:pointer;border:1px solid #dbe4f5;user-select:none}
+.sortbar .sb.on{background:#1e3a5f;color:#fff;border-color:#1e3a5f}
+.pager{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.pager button{background:#eef2fb;color:#334155;padding:6px 11px;font-size:12.5px;font-weight:600}
+.pager button.on{background:#2563eb;color:#fff}
+.pager button:disabled{opacity:.35;cursor:default}
+.pager .pinfo{font-size:12px;color:#7a8598;margin:0 8px}
+</style>
+</head>
+<body>
+<div class="top"><b>📑 리얼플랜제주 · 입찰 조회</b><span class="sp"></span><span id="who" style="font-size:12px;color:#cfe0ff"></span><a href="../admin.html">← 관리자 홈</a></div>
+<div class="wrap">
+  <div class="title">📑 입찰 공고 · AI 적합도 분석 · 제안서 <span class="tag">나라장터 · 자동수집</span></div>
+  <div class="sub">제주 기반(지역제한 제주 또는 제주·서귀포 발주기관) 공고를 매일 08:00 자동수집·텔레그램 알림합니다. <b>2026-07-30부터 알림 상한 5천만원 → 1억원</b>(1억 초과는 알림에서만 빠지고 이 목록에는 💰1억초과 배지로 표시됩니다 — 판단은 대표님이 하십니다). 적합도 분석은 코워크(Claude)에 '입찰 분석해줘'라고 요청하면 반영됩니다. 위원(평가·심사·심의·자문·선정) 모집 공고는 <b>여행·행사·마케팅·교육 관련 분야만</b> 자동수집됩니다(매일 08:15·14:10 / ⭐재위촉유력·⚠응찰겹침 배지 · 공법·건설 등 무관 분야 자동 제외). 수집 소스는 <b>제주도청·제주시·서귀포시·제주도의회(고시·일반·입찰)·제주도교육청</b> 6곳입니다. <b>기본 정렬은 마감 임박순</b>(마감 지난 건은 맨 뒤)이며, <b>한 번 열어본 공고는 회색으로 바뀝니다</b>. 마감 시각은 한국시간(KST) 기준입니다.</div>
+  <div id="gate" class="card hide" style="color:#b45309">로그인 또는 입찰 권한이 필요합니다. <a class="link" href="../admin.html">관리자 홈에서 로그인</a> 후 다시 열어주세요.</div>
+  <div id="app" class="hide">
+    <div class="tabs">
+      <button id="tabList" class="on" onclick="setTab('list')">🤖 AI 분석 목록</button>
+      <button id="tabFav" onclick="setTab('fav')">⭐ 관심공고</button>
+      <button id="tabSearch" onclick="setTab('search')">🔎 직접 조회</button>
+    </div>
+    <div id="searchbar" class="card hide">
+      <div class="row">
+        <div><label>직접 키워드<br><input id="kw" type="text" placeholder="예: 축제" style="min-width:150px"></label></div>
+        <div><label>발주기관<br><input id="org" type="text" placeholder="예: 제주" style="min-width:150px"></label></div>
+        <div><label>시작일<br><input id="sd" type="date"></label></div>
+        <div><label>종료일<br><input id="ed" type="date"></label></div>
+        <button onclick="doSearch()">조회</button>
+      </div>
+      <div class="note">직접 조회는 원본 공고만(적합도 미분석). 분석·제안서는 AI목록에서.</div>
+    </div>
+    <div id="status" class="status"></div>
+    <div id="sortbar" class="sortbar">
+      <span style="font-size:12px;color:#5a6478">정렬</span>
+      <span id="sbDl" class="sb on" onclick="setSort('deadline')">⏰ 마감 임박순</span>
+      <span id="sbRc" class="sb" onclick="setSort('recent')">🆕 최신 등록순</span>
+      <span style="flex:1"></span>
+      <label style="font-size:12px;color:#5a6478">한 페이지
+        <select id="pgSize" onchange="setPageSize(this.value)" style="margin-left:4px;padding:5px 8px">
+          <option value="15">15건</option><option value="25" selected>25건</option><option value="50">50건</option><option value="99999">전체</option>
+        </select></label>
+    </div>
+    <div class="card" style="overflow:auto"><table id="tbl"></table><div id="pager" class="pager"></div></div>
+  </div>
+</div>
+
+<div id="ov" class="ov hide"><div class="modal">
+  <div class="mhd"><b id="mtitle">제안서</b><button class="g" onclick="closeM()">닫기</button></div>
+  <div class="mbd">
+    <div class="row" style="margin-bottom:10px">
+      <div><label>규격서(과업지시서) PDF 첨부 — 선택 (hwp는 PDF로 저장 후 첨부)<br><input id="pfile" type="file" accept="application/pdf"></label></div>
+      <button onclick="genProposal()">🤖 초안 생성</button>
+    </div>
+    <div id="pstat" class="note"></div>
+    <textarea id="ptext" placeholder="아직 제안서가 없습니다. 규격서를 첨부(선택)하고 [초안 생성]을 누르세요."></textarea>
+  </div>
+  <div class="mft">
+    <button onclick="saveProposal()">💾 저장</button>
+    <button class="g" onclick="downloadDoc()">⬇ docx 다운로드</button>
+    <span id="pinfo" class="note" style="margin:0"></span>
+  </div>
+</div></div>
+
+<script>
+const SUPABASE_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
+const SUPABASE_KEY='sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce'}});
+let TAB='list',curNo=null,curName=null;
+/* 2026-07-30: 정렬·페이지·확인표시 상태 */
+let SORT='deadline',PAGE=1,PSIZE=25,ROWS=[],ANA=true,HIST=false;
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function fdt(s){if(!s)return '-';var d=new Date(s);if(isNaN(d.getTime()))return String(s).replace('T',' ').slice(0,16);return new Date(d.getTime()+9*3600000).toISOString().slice(0,16).replace('T',' ');}
+function won(v){if(v==null)return '';return Math.round(v/10000).toLocaleString()+'만';}
+function scoreCell(x){var s=x['적합도'];if(s==null)return '<span class="score s-na">-</span>';var c=s>=70?'s-hi':(s>=50?'s-mid':'s-lo');return '<span class="score '+c+'">'+s+'</span><span class="verd">'+esc(x['참여판정']||'')+(x['승산등급']?' · 승산'+esc(x['승산등급']):'')+'</span>';}
+async function boot(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){document.getElementById('gate').classList.remove('hide');return;}
+  document.getElementById('who').textContent=session.user.email||'';
+  try{const r=await sb.rpc('rpc_bid_keywords');if(r.error)throw r.error;}catch(e){document.getElementById('gate').classList.remove('hide');document.getElementById('gate').textContent='입찰 권한이 없습니다.';return;}
+  document.getElementById('app').classList.remove('hide');
+  const t=new Date(),a=new Date(t.getTime()-7*86400000);document.getElementById('ed').value=t.toISOString().slice(0,10);document.getElementById('sd').value=a.toISOString().slice(0,10);
+  loadList();
+}
+function setTab(x){TAB=x;document.getElementById('tabList').classList.toggle('on',x==='list');document.getElementById('tabFav').classList.toggle('on',x==='fav');document.getElementById('tabSearch').classList.toggle('on',x==='search');document.getElementById('searchbar').classList.toggle('hide',x!=='search');if(x==='list')loadList();else if(x==='fav')loadFav();else {ROWS=[];document.getElementById('tbl').innerHTML='';document.getElementById('pager').innerHTML='';}}
+function sortLabel(){return SORT==='deadline'?'마감 임박순':'최신 등록순';}
+async function loadList(){const st=document.getElementById('status');st.textContent='불러오는 중…';try{const r=await sb.rpc('rpc_bid_list',{'_정렬':SORT});if(r.error){st.textContent='오류: '+r.error.message;return;}const rows=r.data||[];const n=rows.filter(function(x){return !x['확인일시'];}).length;st.textContent='수집·분석 공고 '+rows.length+'건 · 미확인 '+n+'건 ('+sortLabel()+')';render(rows,true);}catch(e){st.textContent='실패: '+e;}}
+async function loadFav(){const st=document.getElementById('status');st.textContent='관심공고…';try{const r=await sb.rpc('rpc_bid_list',{'_상태':'관심','_정렬':SORT});if(r.error){st.textContent='오류: '+r.error.message;return;}const rows=r.data||[];let sx='';try{const s=await sb.rpc('rpc_bid_stats');if(!s.error&&s.data){const d=s.data;sx=' · 낙찰 '+(d['낙찰']||0)+' · 유찰 '+(d['유찰']||0)+(d['승률']!=null?' · 승률 '+d['승률']+'%':'');}}catch(e){}st.textContent='관심공고 '+rows.length+'건 ('+sortLabel()+')'+sx;render(rows,true,true);}catch(e){st.textContent='실패: '+e;}}
+function setSort(s){SORT=s;PAGE=1;document.getElementById('sbDl').classList.toggle('on',s==='deadline');document.getElementById('sbRc').classList.toggle('on',s==='recent');if(TAB==='list')loadList();else if(TAB==='fav')loadFav();else paint();}
+function setPageSize(v){PSIZE=parseInt(v,10)||25;PAGE=1;paint();}
+function ts(v){if(!v)return null;var t=new Date(v).getTime();return isNaN(t)?null:t;}
+function sortRows(rows){var a=rows.slice();
+  if(SORT==='recent'){a.sort(function(p,q){return (ts(q['게시일시'])||0)-(ts(p['게시일시'])||0);});return a;}
+  function bk(x){var t=ts(x['마감일시']);if(t===null)return 1;return t<Date.now()?2:0;}
+  a.sort(function(p,q){var bp=bk(p),bq=bk(q);if(bp!==bq)return bp-bq;
+    if(bp===1)return (ts(q['게시일시'])||0)-(ts(p['게시일시'])||0);
+    var d=(ts(p['마감일시'])||0)-(ts(q['마감일시'])||0);if(d!==0)return bp===2?-d:d;
+    return (ts(q['게시일시'])||0)-(ts(p['게시일시'])||0);});
+  return a;}
+function dday(s){if(!s)return '<span class="dd dd-x">마감미상</span>';
+  var t=ts(s);if(t===null)return '';
+  var d=Math.ceil((t-Date.now())/86400000);
+  if(d<0)return '<span class="dd dd-x">마감</span>';
+  var c=d<=2?'dd-r':(d<=7?'dd-y':'dd-g');
+  return '<span class="dd '+c+'">'+(d===0?'오늘':'D-'+d)+'</span>';}
+async function seen(no){try{var r=ROWS.filter(function(x){return x['공고번호']===no;})[0];if(r&&!r['확인일시'])r['확인일시']=new Date().toISOString();paint();await sb.rpc('rpc_bid_seen',{'_공고번호':no});}catch(e){}}
+async function doSearch(){const st=document.getElementById('status');const kw=document.getElementById('kw').value.trim(),org=document.getElementById('org').value.trim(),sd=document.getElementById('sd').value,ed=document.getElementById('ed').value;st.textContent='조회 중…';document.getElementById('tbl').innerHTML='';try{const r=await sb.functions.invoke('bid-search',{body:{'키워드':kw,'기관':org,'시작일':sd,'종료일':ed}});if(r.error){st.textContent='오류: '+r.error.message;return;}const d=r.data||{};if(d.error){st.textContent='오류: '+d.error;return;}const rows=d['결과']||[];st.textContent='매칭 '+rows.length+'건 (원본)';render(rows,false);}catch(e){st.textContent='조회 실패: '+e;}}
+function render(rows,ana,hist){ROWS=rows||[];ANA=!!ana;HIST=!!hist;PAGE=1;paint();}
+function divTag(x){var d=x['업무구분']||'';if(!d)return '';var bg='#eef2f7',fg='#64748b';
+  if(d==='위원모집'){bg='#ede9fe';fg='#6d28d9';}else if(d==='입찰'){bg='#ffe4e6';fg='#9f1239';}else if(d==='용역'){bg='#e0f2fe';fg='#075985';}
+  return ' <span class="tag" style="background:'+bg+';color:'+fg+'">'+esc(d)+'</span>';}
+function paint(){const tb=document.getElementById('tbl'),pg=document.getElementById('pager');
+  const all=sortRows(ROWS||[]);
+  if(!all.length){tb.innerHTML='<tbody><tr><td style="color:#98a3b8;padding:16px">결과 없음 — 자동수집 전이거나(API 활성화 대기) 조건에 맞는 공고가 없습니다.</td></tr></tbody>';if(pg)pg.innerHTML='';return;}
+  const total=all.length,pages=Math.max(1,Math.ceil(total/PSIZE));
+  if(PAGE>pages)PAGE=pages; if(PAGE<1)PAGE=1;
+  const rows=all.slice((PAGE-1)*PSIZE,(PAGE-1)*PSIZE+PSIZE);
+  const ana=ANA,hist=HIST;
+  let h='<thead><tr>'+(ana?'<th>적합도</th>':'')+'<th>공고명</th><th>발주기관</th><th>추정가</th><th>마감</th>'+(hist?'<th>이력</th>':'')+'<th></th></tr></thead><tbody>';
+  h+=rows.map(function(x){var no=x['공고번호'],on=x['관심상태']?'on':'',url=x['공고url'],sn=!!x['확인일시'];
+    var nm=url?('<a class="link" href="'+esc(url)+'" target="_blank" onclick="seen(\''+esc(no)+'\')">'+esc(x['공고명'])+'</a>'):('<span class="nm">'+esc(x['공고명'])+'</span>');
+    var pb=ana?'<span class="pbtn" onclick="openM(\''+esc(no)+'\',\''+esc((x['공고명']||'').replace(/\x27/g," "))+'\')">📝 제안서</span>':'';
+    var eye='<span class="eye'+(sn?' on':'')+'" title="'+(sn?'확인함 — '+esc(fdt(x['확인일시'])):'아직 확인 안 함 (클릭하면 확인 처리)')+'" onclick="seen(\''+esc(no)+'\')">'+(sn?'👁 확인':'○ 미확인')+'</span>';
+    return '<tr'+(sn?' class="seen"':'')+'>'+(ana?'<td>'+scoreCell(x)+'</td>':'')+'<td style="max-width:380px">'+nm+'<br><span class="tag">'+esc(x['매칭키워드']||'')+'</span>'+(x['사업부']?' <span class="tag" style="background:#e0edff;color:#1d4ed8">'+esc(x['사업부'])+'</span>':'')+divTag(x)+(x['배지']?' <span class="tag" style="background:#fff3d6;color:#b45309">'+esc(x['배지'])+'</span>':'')+(x['원천']==='고시공고'?' <span class="tag" style="background:#eee7ff;color:#6d28d9">고시공고</span>':'')+'</td><td>'+esc(x['공고기관']||'')+'</td><td>'+won(x['추정가격'])+'</td><td style="white-space:nowrap">'+fdt(x['마감일시'])+dday(x['마감일시'])+'</td>'+(hist?'<td>'+histCell(x)+'</td>':'')+'<td style="white-space:nowrap"><span class="mark '+on+'" onclick="mark(this,\''+esc(no)+'\')">'+(x['관심상태']?'⭐':'관심')+'</span>'+eye+pb+'</td></tr>';
+  }).join('');tb.innerHTML=h+'</tbody>';
+  if(pg)pg.innerHTML=pagerHtml(total,pages);}
+function pagerHtml(total,pages){
+  if(pages<=1)return '<span class="pinfo">전체 '+total+'건</span>';
+  var s='<button onclick="goPage(1)"'+(PAGE===1?' disabled':'')+'>« 처음</button>'+
+        '<button onclick="goPage('+(PAGE-1)+')"'+(PAGE===1?' disabled':'')+'>‹ 이전</button>';
+  var st=Math.max(1,PAGE-2),en=Math.min(pages,st+4); st=Math.max(1,en-4);
+  for(var i=st;i<=en;i++)s+='<button class="'+(i===PAGE?'on':'')+'" onclick="goPage('+i+')">'+i+'</button>';
+  s+='<button onclick="goPage('+(PAGE+1)+')"'+(PAGE===pages?' disabled':'')+'>다음 ›</button>'+
+     '<button onclick="goPage('+pages+')"'+(PAGE===pages?' disabled':'')+'>마지막 »</button>'+
+     '<span class="pinfo">'+PAGE+' / '+pages+' 쪽 · 전체 '+total+'건</span>';
+  return s;}
+function goPage(p){PAGE=p;paint();window.scrollTo({top:0,behavior:'smooth'});}
+async function mark(el,no){try{const r=await sb.rpc('rpc_bid_mark',{'_공고번호':no,'_상태':'검토'});if(r.error){alert('저장 실패: '+r.error.message);return;}el.classList.add('on');el.textContent='⭐';}catch(e){alert('실패: '+e);}}
+// ===== 제안서 모달 =====
+async function openM(no,name){curNo=no;curName=name;document.getElementById('mtitle').textContent='제안서 — '+name;document.getElementById('ptext').value='';document.getElementById('pstat').textContent='';document.getElementById('pinfo').textContent='';document.getElementById('pfile').value='';document.getElementById('ov').classList.remove('hide');
+  try{const r=await sb.rpc('rpc_bid_proposal_get',{'_공고번호':no});if(!r.error&&r.data&&r.data['본문']){document.getElementById('ptext').value=r.data['본문'];document.getElementById('pinfo').textContent='기존 초안('+(r.data['상태']||'')+') · '+fdt(r.data['수정일시']);}}catch(e){}}
+function closeM(){document.getElementById('ov').classList.add('hide');}
+function readFileB64(f){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result).split(',')[1]);};r.onerror=rej;r.readAsDataURL(f);});}
+async function genProposal(){const st=document.getElementById('pstat');st.textContent='AI가 제안서 초안을 작성 중입니다… (30초~1분)';
+  var body={'공고번호':curNo};const f=document.getElementById('pfile').files[0];
+  try{ if(f){ st.textContent='규격서 첨부 읽는 중…'; body['규격서_pdf']=await readFileB64(f); st.textContent='AI 작성 중…(규격서 반영)'; }
+    const r=await sb.functions.invoke('bid-proposal',{body:body});
+    if(r.error){st.textContent='오류: '+r.error.message;return;}const d=r.data||{};if(d.error){st.textContent='오류: '+d.error;return;}
+    document.getElementById('ptext').value=d['본문']||'';st.textContent='초안 생성 완료 — 검토·수정 후 저장/다운로드하세요.';
+  }catch(e){st.textContent='실패: '+e;}}
+async function saveProposal(){const t=document.getElementById('ptext').value;try{const r=await sb.rpc('rpc_bid_proposal_save',{'_공고번호':curNo,'_제목':curName+' 제안서','_본문':t,'_상태':'수정'});if(r.error){alert('저장 실패: '+r.error.message);return;}document.getElementById('pstat').textContent='저장됨.';}catch(e){alert('실패: '+e);}}
+function mdToHtml(md){var lines=md.split('\n'),out=[],intbl=false;
+  function inl(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');}
+  for(var i=0;i<lines.length;i++){var l=lines[i];
+    if(/^\s*\|/.test(l)){ if(/^\s*\|[\s:|-]+\|?\s*$/.test(l))continue; var cells=l.split('|').slice(1,-1).map(function(c){return inl(c.trim());}); if(!intbl){out.push('<table border="1" cellspacing="0" cellpadding="5" style="border-collapse:collapse;width:100%">');intbl=true;} out.push('<tr>'+cells.map(function(c){return '<td>'+c+'</td>';}).join('')+'</tr>'); continue;}
+    if(intbl){out.push('</table>');intbl=false;}
+    if(/^#\s/.test(l))out.push('<h1>'+inl(l.replace(/^#\s/,''))+'</h1>');
+    else if(/^##\s/.test(l))out.push('<h2>'+inl(l.replace(/^##\s/,''))+'</h2>');
+    else if(/^###\s/.test(l))out.push('<h3>'+inl(l.replace(/^###\s/,''))+'</h3>');
+    else if(/^\s*[-*]\s/.test(l))out.push('<p style="margin-left:14px">• '+inl(l.replace(/^\s*[-*]\s/,''))+'</p>');
+    else if(l.trim()==='')out.push('<br>');
+    else out.push('<p>'+inl(l)+'</p>');}
+  if(intbl)out.push('</table>');return out.join('\n');}
+function downloadDoc(){var md=document.getElementById('ptext').value;if(!md){alert('내용이 없습니다.');return;}
+  var html='<html xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>body{font-family:맑은 고딕,Malgun Gothic;font-size:11pt;line-height:1.6}h1{font-size:18pt}h2{font-size:14pt;margin-top:14pt}h3{font-size:12pt}td{font-size:10.5pt}</style></head><body>'+mdToHtml(md)+'</body></html>';
+  var blob=new Blob(['﻿'+html],{type:'application/msword'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(curName||'제안서').slice(0,40)+'_제안서.doc';a.click();}
+function histCell(x){var no=x['공고번호'];var cur=x['관심상태']||'검토';var opts=['검토','참여','투찰','낙찰','유찰','제외'].map(function(s){return '<option'+(s===cur?' selected':'')+'>'+s+'</option>';}).join('');return '<select onchange="setOutcome(\''+esc(no)+'\',this.value)" style="padding:4px;border:1px solid #cfd8e6;border-radius:6px;font-size:12px">'+opts+'</select>';}
+async function setOutcome(no,stt){var amt=null;if(stt==='투찰'||stt==='낙찰'||stt==='유찰'){var v=prompt('투찰금액(원) 입력 — 모르면 비워두세요','');if(v&&v.replace(/[^0-9]/g,''))amt=parseInt(v.replace(/[^0-9]/g,''),10);}try{const r=await sb.rpc('rpc_bid_outcome',{'_공고번호':no,'_상태':stt,'_투찰금액':amt});if(r.error){alert('실패: '+r.error.message);return;}loadFav();}catch(e){alert('실패: '+e);}}
+boot();
+</script>
+</body>
+</html>

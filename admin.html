@@ -11924,7 +11924,7 @@ setTimeout(tick,300);
 })();
 </script>
 <!-- RP-SEASON-ADMIN v1.1 end -->
-<!-- RP-PRICE v1.0 (2026-09-23 · 가격표 메뉴 · 견적 유형 선택 · 거래처 단가 탭 · 지출결의 단가×수량) -->
+<!-- RP-PRICE v1.1 (2026-09-24 · 1단계: 마진 하한 삭제·실비 · 시즌 단가 · 전 사업부 업체별 단가 · 지출 원장) -->
 <style id="rp-price-css">
 .prp-wrap{font-size:13px;color:#1a2332}
 .prp-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
@@ -11945,6 +11945,8 @@ setTimeout(tick,300);
 .prp-st{padding:1px 7px;border-radius:9px;font-size:11px;white-space:nowrap}
 .prp-st.확정{background:#d9f2e3;color:#146c3a}.prp-st.추정{background:#fff3cd;color:#7a5a00}.prp-st.확인필요{background:#fdecea;color:#a32d2d}
 .prp-bad{color:#b42318;font-weight:600}.prp-ok{color:#146c3a}
+.prp-sb{display:inline-block;padding:0 6px;border-radius:8px;font-size:10.5px;background:#e0ecff;color:#1e3a8a;margin-left:4px}
+.prp-sea{display:inline-block;padding:0 6px;border-radius:8px;font-size:10.5px;background:#f1f5f9;color:#334155}
 .prp-btn{padding:6px 12px;border-radius:6px;font-size:12px;border:1px solid #1D9E75;background:#E1F5EE;color:#04342C;font-weight:600;cursor:pointer}
 .prp-btn.ghost{background:#fff;border-color:#cbd5e1;color:#334155;font-weight:500}
 .prp-btn.sm{padding:3px 8px;font-size:11px}
@@ -11966,7 +11968,7 @@ setTimeout(tick,300);
 <script id="rp-price-js">
 (function(){
   'use strict';
-  var V='RP-PRICE v1.0.1';
+  var V='RP-PRICE v1.1';
   function S(){return window.sb;}
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function won(v){return (v==null||v==='')?'—':Number(v).toLocaleString('ko-KR');}
@@ -11975,24 +11977,22 @@ setTimeout(tick,300);
   function today(){try{return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul'}).format(new Date());}catch(e){return new Date().toISOString().slice(0,10);}}
   var BU=['국내여행','행사이벤트','온라인마케팅','마케팅교육'];
   var BU_ICON={'국내여행':'🏝','행사이벤트':'🎤','온라인마케팅':'📱','마케팅교육':'📚'};
-  var CATS=['숙박','식당','관광체험','차량','인력','보험','기타'];
-  var C={rates:null,prods:null,types:null,lines:null,rules:null,vendors:null};
+  var CATS_BU={'국내여행':['숙박','식당','관광체험','차량','항공','인력','보험','기타'],'행사이벤트':['무대·음향','대관·식음','식음·케이터링','식당','MC·진행','인력','인쇄·제작','기념품','체험','기타'],'온라인마케팅':['콘텐츠 외주','광고','제작','기타'],'마케팅교육':['강사','교재·자료','대관','식음','기타']};
+  var CATS=CATS_BU['국내여행'];
+  function catsOf(bu){var b=(CATS_BU[bu]||['기타']).slice();(C.rates||[]).forEach(function(r){if(r.사업부===bu&&r.분류&&b.indexOf(r.분류)<0)b.push(r.분류);});return b;}
+  var SEASONS=['연중','봄','여름','가을','겨울','성수기','준성수기','비수기'];
+  var C={rates:null,prods:null,types:null,lines:null,rules:null,vendors:null,ledger:null};
 
-  /* ── 공통: 마진 판정 (숙박 10% · 식당 입금가 + 2,000원) ── */
+  /* ── 공통: 차액 참고 (2026-09-24 대표: 마진 하한 없음 · 원가=판매가는 실비 처리) ── */
   function margin(r){
+    if(r.실비)return {txt:'실비',bad:false,silbi:true};
     var c=num(r.원가),s=num(r.판매가);
     if(c==null||s==null||s<=0)return {txt:'—',bad:false};
+    if(c===s)return {txt:'실비',bad:false,silbi:true};
     var g=s-c,p=Math.round(g/s*1000)/10;
-    if(r.분류==='숙박')return {txt:p+'%',bad:p<10,why:'숙박 하한 10%'};
-    if(r.분류==='식당')return {txt:'+'+g.toLocaleString('ko-KR'),bad:g<2000,why:'식당 하한 +2,000원'};
-    return {txt:p+'%',bad:g<0,why:'역마진'};
+    return {txt:p+'%',bad:false,why:'차액 '+g.toLocaleString('ko-KR')+'원 (참고)'};
   }
-  function suggestSale(cat,cost){
-    cost=num(cost);if(cost==null)return null;
-    if(cat==='숙박')return Math.ceil(cost/0.9/1000)*1000;
-    if(cat==='식당')return cost+2000;
-    return null;
-  }
+  function suggestSale(){return null;}
   function expired(r){return r.유효_끝&&String(r.유효_끝)<today();}
 
   /* ── 데이터 ── */
@@ -12002,7 +12002,7 @@ setTimeout(tick,300);
   }
   function loadProds(force){
     if(C.prods&&!force)return Promise.resolve(C.prods);
-    return S().from('product_catalog').select('id,사업부,카테고리,품명,내용,기본_단가,기본_단위,코드,규격,다일규칙,근거,버전,적용일,다음_검토일,is_active').not('코드','is',null).order('코드').then(function(r){if(r.error)throw r.error;C.prods=r.data||[];return C.prods;});
+    return S().from('product_catalog').select('id,사업부,카테고리,품명,내용,기본_단가,기본_단위,코드,규격,다일규칙,근거,버전,적용일,다음_검토일,is_active,가격방식').not('코드','is',null).order('코드').then(function(r){if(r.error)throw r.error;C.prods=r.data||[];return C.prods;});
   }
   function loadTypes(force){
     if(C.types&&!force)return Promise.resolve(C.types);
@@ -12030,18 +12030,24 @@ setTimeout(tick,300);
       function opt(list,sel){return list.map(function(x){return '<option'+(x===sel?' selected':'')+'>'+x+'</option>';}).join('');}
       var m=document.createElement('div');m.className='prp-modal';m.id='prp-rate-modal';
       m.innerHTML='<div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b style="font-size:15px">'+(r.id?'단가 수정':'＋ 단가 추가')+'</b><button class="prp-btn ghost sm" data-x>닫기</button></div>'
-        +'<div class="prp-lock" style="margin-bottom:8px">🔒 원가·마진은 대표 2명만 봅니다 · 고객 견적서에는 판매가만 나갑니다 · 여행은 평균가 금지 — 업체·품목·조건마다 한 줄</div>'+dl
+        +'<div class="prp-lock" style="margin-bottom:8px">🔒 원가는 대표 2명만 봅니다 · 고객 견적서에는 판매가만 나갑니다 · 평균가 금지 — 업체·품목·조건·시즌마다 한 줄 · 원가는 지출결의서 실지출 기준</div>'+dl
         +'<div class="prp-grid">'
         +'<div><label>사업부</label><select id="prf-bu">'+opt(BU,r.사업부)+'</select></div>'
-        +'<div><label>분류</label><select id="prf-cat">'+opt(CATS,r.분류)+'</select></div>'
+        +'<div><label>분류</label><select id="prf-cat">'+opt(catsOf(r.사업부),r.분류)+'</select></div>'
         +'<div style="grid-column:span 2"><label>업체 (거래처에서 검색 · 없으면 거래처·외주에서 먼저 등록)</label><input id="prf-vd" list="prp-vd-dl" value="'+esc(vName)+'" '+(preset.vendor_id?'readonly':'')+'></div>'
         +'<div style="grid-column:span 2"><label>품목 (예: 트리플 · 흑돼지구이 1.5인분 · 입장)</label><input id="prf-item" value="'+esc(r.품목||'')+'"></div>'
         +'<div><label>조건 (객실타입·조식·식사 구분)</label><input id="prf-cond" value="'+esc(r.조건||'')+'"></div>'
         +'<div><label>대상</label><select id="prf-tgt">'+opt(['공통','학생','교사','성인','아동'],r.대상)+'</select></div>'
         +'<div><label>단위</label><input id="prf-unit" value="'+esc(r.단위||'')+'" placeholder="인 · 실 · 대 · 명"></div>'
-        +'<div><label>원가(입금가) 🔒</label><input id="prf-cost" inputmode="numeric" value="'+(r.원가==null?'':r.원가)+'"></div>'
-        +'<div><label>판매가 <span id="prf-sug" style="color:#1D9E75"></span></label><input id="prf-sale" inputmode="numeric" value="'+(r.판매가==null?'':r.판매가)+'"></div>'
+        +'<div><label>원가(실지출·입금가) 🔒</label><input id="prf-cost" inputmode="numeric" value="'+(r.원가==null?'':r.원가)+'"></div>'
+        +'<div><label>판매가 (견적 기준)</label><input id="prf-sale" inputmode="numeric" value="'+(r.판매가==null?'':r.판매가)+'"></div>'
         +'<div><label>VAT</label><select id="prf-vat">'+opt(['포함','별도','면세'],r.vat||'포함')+'</select></div>'
+        +'<div><label>시즌</label><select id="prf-sea">'+opt(SEASONS,r.시즌||'연중')+'</select></div>'
+        +'<div><label>요일</label><input id="prf-dow" value="'+esc(r.요일||'')+'" placeholder="주중 · 주말 · 연휴"></div>'
+        +'<div><label>원가 단위</label><select id="prf-cu">'+opt(['단가','건'],r.원가단위||'단가')+'</select></div>'
+        +'<div><label>실비 (원가 그대로 청구)</label><select id="prf-sb">'+opt(['아니오','예'],r.실비?'예':'아니오')+'</select></div>'
+        +'<div><label>근거 건수</label><input id="prf-n" inputmode="numeric" value="'+(r.근거건수==null?'':r.근거건수)+'"></div>'
+        +'<div style="grid-column:span 3"><label>기준 기간 · 범위</label><input id="prf-per" value="'+esc(r.기준기간||'')+'" placeholder="예: 2025-10~2026-09 · 최저~최고"></div>'
         +'<div><label>시즌 시작</label><input type="date" id="prf-s1" value="'+(r.시즌_시작||'')+'"></div>'
         +'<div><label>시즌 끝</label><input type="date" id="prf-s2" value="'+(r.시즌_끝||'')+'"></div>'
         +'<div><label>유효 끝</label><input type="date" id="prf-end" value="'+(r.유효_끝||'')+'"></div>'
@@ -12054,13 +12060,10 @@ setTimeout(tick,300);
       document.body.appendChild(m);
       function q(id){return m.querySelector('#'+id);}
       function refresh(){
-        var cat=q('prf-cat').value,cost=q('prf-cost').value,sug=suggestSale(cat,cost);
-        q('prf-sug').textContent=sug?'(자동 제안 '+sug.toLocaleString('ko-KR')+(cat==='숙박'?' · 하한 10%':' · 하한 +2,000')+')':'';
-        if(sug&&!q('prf-sale').value)q('prf-sale').placeholder=String(sug);
-        var mg=margin({분류:cat,원가:cost,판매가:q('prf-sale').value||sug});
-        q('prf-mg').innerHTML=mg.txt==='—'?'':('마진 <b class="'+(mg.bad?'prp-bad':'prp-ok')+'">'+mg.txt+'</b>'+(mg.bad?' — '+mg.why+' 미달':''));
+        var mg=margin({원가:num(q('prf-cost').value),판매가:num(q('prf-sale').value),실비:q('prf-sb').value==='예'});
+        q('prf-mg').innerHTML=mg.txt==='—'?'':(mg.silbi?'<span class="prp-sb">실비</span> 원가 그대로 청구하는 품목':'차액 참고 <b>'+mg.txt+'</b> · '+esc(mg.why||'')+' — 하한 없음');
       }
-      ['prf-cat','prf-cost','prf-sale'].forEach(function(id){q(id).addEventListener('input',refresh);q(id).addEventListener('change',refresh);});
+      ['prf-cat','prf-cost','prf-sale','prf-sb'].forEach(function(id){q(id).addEventListener('input',refresh);q(id).addEventListener('change',refresh);});
       refresh();
       m.addEventListener('click',function(e){if(e.target===m||e.target.hasAttribute('data-x'))m.remove();});
       var off=m.querySelector('[data-off]');
@@ -12069,14 +12072,14 @@ setTimeout(tick,300);
         var name=q('prf-vd').value.trim();var v=vs.filter(function(x){return x.거래처명===name;})[0];
         if(!v&&!preset.vendor_id){if(!confirm('「'+name+'」은(는) 등록된 거래처가 아닙니다.\n거래처 연결 없이 저장하면 지출결의와 연결되지 않습니다.\n\n그래도 저장할까요? (권장: 거래처·외주에서 먼저 등록)'))return;}
         var item=q('prf-item').value.trim();if(!item){alert('품목을 적어 주세요');return;}
-        var sale=num(q('prf-sale').value);if(sale==null){var sg=suggestSale(q('prf-cat').value,q('prf-cost').value);if(sg&&confirm('판매가가 비어 있습니다. 자동 제안 '+sg.toLocaleString('ko-KR')+'원으로 저장할까요?'))sale=sg;}
+        var sale=num(q('prf-sale').value);
         var p={사업부:q('prf-bu').value,분류:q('prf-cat').value,vendor_id:preset.vendor_id||(v?v.id:null),업체명:v?v.거래처명:(name||r.업체명||null),
           품목:item,조건:q('prf-cond').value.trim()||null,대상:q('prf-tgt').value,단위:q('prf-unit').value.trim()||null,
           원가:num(q('prf-cost').value),원가_표기:q('prf-memo').value.trim()||null,판매가:sale,vat:q('prf-vat').value,
           시즌_시작:q('prf-s1').value||null,시즌_끝:q('prf-s2').value||null,유효_끝:q('prf-end').value||null,상태:q('prf-st').value,
-          출처:q('prf-src').value.trim()||null,비고:q('prf-note').value.trim()||null,확인일:today(),updated_at:new Date().toISOString()};
+          출처:q('prf-src').value.trim()||null,비고:q('prf-note').value.trim()||null,확인일:today(),updated_at:new Date().toISOString(),
+          시즌:q('prf-sea').value||'연중',요일:q('prf-dow').value.trim()||null,원가단위:q('prf-cu').value,실비:q('prf-sb').value==='예',근거건수:num(q('prf-n').value),기준기간:q('prf-per').value.trim()||null};
         if(p.원가!=null)p.원가=Math.round(p.원가);if(p.판매가!=null)p.판매가=Math.round(p.판매가);
-        var mg=margin(p);if(mg.bad&&!confirm('마진이 하한 미만입니다 ('+mg.why+' · 지금 '+mg.txt+').\n그래도 저장할까요?'))return;
         var job=r.id?S().from('pr_업체단가').update(p).eq('id',r.id):S().from('pr_업체단가').insert(Object.assign({활성:true},p));
         job.then(function(x){if(x.error){alert('저장 실패: '+x.error.message);return;}m.remove();C.rates=null;note('단가를 저장했습니다 — 가격표·유형 견적에 바로 적용됩니다','success');if(after)after();});
       };
@@ -12089,21 +12092,22 @@ setTimeout(tick,300);
   function pageEl(){return document.getElementById('prp-body');}
   window.rpPriceInit=function(){
     var b=pageEl();if(!b)return;
-    b.innerHTML='<div style="padding:30px;color:#8a94a6">불러오는 중…</div>';
+    b.innerHTML='<div style="padding:30px;color:#8a94a6">불러오는 중…</div>';C.ledger=null;
     Promise.all([loadRates(true),loadProds(true),loadTypes(true)]).then(render).catch(function(e){b.innerHTML='<div style="padding:20px;color:#b42318">불러오기 실패: '+esc(e.message||e)+'</div>';});
   };
-  window.rpPriceSet=function(k,v){PG[k]=v;if(k==='bu'){PG.sub=(v==='국내여행'?'rates':(v==='공통'?'rules':'prods'));PG.cat='';PG.flt='';PG.q='';}if(k==='sub'){PG.flt='';}render();};
+  window.rpPriceSet=function(k,v){PG[k]=v;if(k==='bu'){PG.sub=(v==='공통'?'rules':'rates');PG.cat='';PG.flt='';PG.q='';}if(k==='sub'){PG.flt='';PG.sea='';}render();};
   function render(){
     var b=pageEl();if(!b)return;
     var h='<div class="prp-wrap"><div class="prp-tabs">'+BU.map(function(x){return '<button class="prp-tab'+(PG.bu===x?' on':'')+'" onclick="rpPriceSet(\'bu\',\''+x+'\')">'+BU_ICON[x]+' '+x+'</button>';}).join('')
       +'<button class="prp-tab'+(PG.bu==='공통'?' on':'')+'" onclick="rpPriceSet(\'bu\',\'공통\')">⚙ 공통 규칙</button></div>';
     if(PG.bu!=='공통'){
-      var subs=PG.bu==='국내여행'?[['rates','업체별 단가 (숙박·식당·관광·차량)'],['types','기준 견적 (유형)'],['prods','공통 품목']]:[['prods','품목 단가'],['types','기준 견적 (유형)']];
+      var subs=[['rates',PG.bu==='국내여행'?'업체별 단가 (숙박·식당·관광·차량)':'업체별 단가 (지출결의 기준)'],['prods',PG.bu==='국내여행'?'공통 품목':'품목 단가 (판매가)'],['types','기준 견적 (유형)'],['ledger','지출 원장 (근거)']];
       h+='<div class="prp-sub">'+subs.map(function(s){return '<button class="'+(PG.sub===s[0]?'on':'')+'" onclick="rpPriceSet(\'sub\',\''+s[0]+'\')">'+s[1]+'</button>';}).join('')+'</div>';
     }
     if(PG.bu==='공통')h+=renderRules();
     else if(PG.sub==='rates')h+=renderRates();
     else if(PG.sub==='types')h+=renderTypes();
+    else if(PG.sub==='ledger')h+=renderLedger();
     else h+=renderProds();
     b.innerHTML=h+'</div>';
     var qi=document.getElementById('prp-q');if(qi&&PG._focus){qi.focus();qi.setSelectionRange(qi.value.length,qi.value.length);PG._focus=false;}
@@ -12112,34 +12116,58 @@ setTimeout(tick,300);
   function matchQ(s){if(!PG.q)return true;return String(s).toLowerCase().indexOf(PG.q.toLowerCase())>=0;}
   function renderRates(){
     var all=(C.rates||[]).filter(function(r){return r.사업부===PG.bu;});
-    var cnt={전체:all.length,확정:0,추정:0,확인필요:0,마진미달:0,기간만료:0,보관:0};
-    all.forEach(function(r){if(r.활성===false){cnt.보관++;return;}cnt[r.상태]=(cnt[r.상태]||0)+1;if(margin(r).bad)cnt.마진미달++;if(expired(r))cnt.기간만료++;});
+    var cnt={전체:all.length,확정:0,추정:0,확인필요:0,실비:0,원가없음:0,기간만료:0,보관:0};
+    all.forEach(function(r){if(r.활성===false){cnt.보관++;return;}cnt[r.상태]=(cnt[r.상태]||0)+1;if(margin(r).silbi)cnt.실비++;if(r.원가==null&&!r.원가_표기)cnt.원가없음++;if(expired(r))cnt.기간만료++;});
     var rows=all.filter(function(r){
       if(PG.cat&&r.분류!==PG.cat)return false;
       if(PG.flt==='보관'){if(r.활성!==false)return false;}else if(r.활성===false)return false;
-      if(PG.flt==='마진미달'&&!margin(r).bad)return false;
+      if(PG.flt==='실비'&&!margin(r).silbi)return false;
+      if(PG.flt==='원가없음'&&!(r.원가==null&&!r.원가_표기))return false;
+      if(PG.sea&&(r.시즌||'연중')!==PG.sea)return false;
       if(PG.flt==='기간만료'&&!expired(r))return false;
       if(['확정','추정','확인필요'].indexOf(PG.flt)>=0&&r.상태!==PG.flt)return false;
-      return matchQ([r.업체명,r.품목,r.조건,r.대상,r.출처,r.비고].join(' '));
+      return matchQ([r.업체명,r.품목,r.조건,r.대상,r.출처,r.비고,r.시즌,r.기준기간].join(' '));
     });
-    var chips=['확정','추정','확인필요','마진미달','기간만료','보관'].map(function(k){return '<span class="prp-chip'+((k==='마진미달'||k==='기간만료'||k==='확인필요')&&cnt[k]?' warn':'')+'" onclick="rpPriceSet(\'flt\',\''+(PG.flt===k?'':k)+'\')" style="'+(PG.flt===k?'outline:2px solid #1e3a5f':'')+'">'+k+' '+(cnt[k]||0)+'</span>';}).join('');
+    var chips=['확정','추정','확인필요','실비','원가없음','기간만료','보관'].map(function(k){return '<span class="prp-chip'+((k==='원가없음'||k==='기간만료'||k==='확인필요')&&cnt[k]?' warn':'')+'" onclick="rpPriceSet(\'flt\',\''+(PG.flt===k?'':k)+'\')" style="'+(PG.flt===k?'outline:2px solid #1e3a5f':'')+'">'+k+' '+(cnt[k]||0)+'</span>';}).join('');
     var h='<div class="prp-bar"><input id="prp-q" placeholder="업체·품목·근거 검색" value="'+esc(PG.q)+'" oninput="rpPriceQ(this.value)" style="width:220px">'
-      +'<select onchange="rpPriceSet(\'cat\',this.value)"><option value="">분류 전체</option>'+CATS.map(function(c){return '<option'+(PG.cat===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>'
+      +'<select onchange="rpPriceSet(\'cat\',this.value)"><option value="">분류 전체</option>'+catsOf(PG.bu).map(function(c){return '<option'+(PG.cat===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>'
+      +'<select onchange="rpPriceSet(\'sea\',this.value)"><option value="">시즌 전체</option>'+SEASONS.map(function(c){return '<option'+(PG.sea===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>'
       +'<span style="font-size:12px;color:#5a6478">전체 '+cnt.전체+'줄</span> '+chips
       +'<span style="margin-left:auto"></span><button class="prp-btn" onclick="rpPriceRateModal(null,{사업부:\''+PG.bu+'\'},rpPriceInit)">＋ 단가 추가</button></div>'
-      +'<div class="prp-lock" style="margin-bottom:6px">🔒 원가·마진 칸은 대표 2명만 보입니다 · 새 업체는 <a href="#vendor">거래처·외주</a>에서 먼저 등록 → 거래처 상세 「💲 단가」 탭에서 넣어도 여기 바로 보입니다</div>';
-    h+='<div style="overflow:auto;max-height:70vh"><table class="prp-t"><tr><th>분류</th><th>업체</th><th>품목 · 조건 · 대상</th><th>단위</th><th class="prp-r">원가 🔒</th><th class="prp-r">판매가</th><th class="prp-r">마진</th><th>상태</th><th>유효 끝</th><th>확인일</th><th>쓰이는 유형</th><th></th></tr>';
+      +'<div class="prp-lock" style="margin-bottom:6px">🔒 원가 칸은 대표 2명만 보입니다 · 원가 = 최근 1년 지출결의 실지급(시즌 안 최근값 · 범위 표시) · 마진 하한 없음 · 새 업체는 <a href="#vendor">거래처·외주</a>에서 먼저 등록 → 거래처 상세 「💲 단가」 탭에서 넣어도 여기 바로 보입니다</div>';
+    h+='<div style="overflow:auto;max-height:70vh"><table class="prp-t"><tr><th>분류</th><th>업체</th><th>품목 · 조건 · 대상</th><th>시즌</th><th>단위</th><th class="prp-r">원가 🔒</th><th class="prp-r">판매가</th><th class="prp-r">차액(참고)</th><th>근거</th><th>상태</th><th>유효 끝</th><th>확인일</th><th>쓰이는 유형</th><th></th></tr>';
     rows.forEach(function(r){
       var mg=margin(r),ex=expired(r),ut=usedTypes(r.id);
       h+='<tr'+(r.활성===false?' style="opacity:.5"':'')+'><td>'+esc(r.분류)+'</td><td><b>'+esc(r.업체명||'')+'</b>'+(r.vendor_id?'':'<div class="prp-bad" style="font-size:10.5px">거래처 미연결</div>')+'</td>'
         +'<td>'+esc(r.품목||'')+(r.조건?' · '+esc(r.조건):'')+(r.대상&&r.대상!=='공통'?' · <b>'+esc(r.대상)+'</b>':'')+(r.시즌_시작?'<div style="font-size:10.5px;color:#5a6478">시즌 '+esc(r.시즌_시작)+'~'+esc(r.시즌_끝||'')+'</div>':'')+'</td>'
-        +'<td>'+esc(r.단위||'')+'</td><td class="prp-r">'+(r.원가!=null?won(r.원가):(r.원가_표기?'<span style="font-size:10.5px">'+esc(r.원가_표기)+'</span>':'<span style="color:#94a3b8">미등록</span>'))+'</td>'
-        +'<td class="prp-r"><b>'+won(r.판매가)+'</b></td><td class="prp-r '+(mg.bad?'prp-bad':'')+'" title="'+esc(mg.why||'')+'">'+mg.txt+'</td>'
+        +'<td><span class="prp-sea">'+esc(r.시즌||'연중')+'</span>'+(r.요일?'<div style="font-size:10.5px;color:#5a6478">'+esc(r.요일)+'</div>':'')+'</td>'
+        +'<td>'+esc(r.단위||'')+(r.원가단위==='건'?'<div style="font-size:10.5px;color:#7a5a00">건 단위</div>':'')+'</td><td class="prp-r">'+(r.원가!=null?won(r.원가):(r.원가_표기?'<span style="font-size:10.5px">'+esc(r.원가_표기)+'</span>':'<span style="color:#94a3b8">미등록</span>'))
+        +(r.원가_최저!=null&&r.원가_최고!=null&&r.원가_최저!==r.원가_최고?'<div style="font-size:10.5px;color:#5a6478">범위 '+won(r.원가_최저)+'~'+won(r.원가_최고)+'</div>':'')+'</td>'
+        +'<td class="prp-r"><b>'+won(r.판매가)+'</b></td><td class="prp-r" title="'+esc(mg.why||'')+'">'+(mg.silbi?'<span class="prp-sb">실비</span>':mg.txt)+'</td>'
+        +'<td style="font-size:11px">'+(r.근거건수?r.근거건수+'건':'—')+(r.원가_최근일?'<div style="color:#5a6478;font-size:10.5px">최근 '+esc(r.원가_최근일)+'</div>':'')+'</td>'
         +'<td><span class="prp-st '+esc(r.상태)+'">'+esc(r.상태||'')+'</span></td><td'+(ex?' class="prp-bad"':'')+'>'+esc(r.유효_끝||'—')+(ex?' 만료':'')+'</td><td>'+esc(r.확인일||'')+'</td>'
         +'<td style="font-size:11px;color:#5a6478">'+(ut.length?esc(ut.slice(0,3).join(' · '))+(ut.length>3?' 외 '+(ut.length-3):''):'—')+'</td>'
         +'<td><button class="prp-btn ghost sm" onclick="rpPriceEditRate(\''+r.id+'\')">수정</button></td></tr>';
     });
-    if(!rows.length)h+='<tr><td colspan="12" style="text-align:center;padding:24px;color:#94a3b8">조건에 맞는 단가가 없습니다</td></tr>';
+    if(!rows.length)h+='<tr><td colspan="14" style="text-align:center;padding:24px;color:#94a3b8">조건에 맞는 단가가 없습니다</td></tr>';
+    return h+'</table></div>';
+  }
+  function renderLedger(){
+    if(!C.ledger){S().from('v_pr_지출근거').select('*').eq('사업부',PG.bu).order('일자',{ascending:false}).limit(500).then(function(r){if(r.error){note('지출 원장 불러오기 실패: '+r.error.message,'warn');C.ledger=[];}else C.ledger=r.data||[];C.ledgerBu=PG.bu;render();});return '<div style="padding:20px;color:#8a94a6">불러오는 중…</div>';}
+    if(C.ledgerBu!==PG.bu){C.ledger=null;return renderLedger();}
+    var rows=C.ledger.filter(function(x){return (!PG.sea||x.시즌===PG.sea)&&matchQ([x.거래처명,x.품목,x.행사명,x.분류,x.비고].join(' '));});
+    var sum=0;rows.forEach(function(x){sum+=Number(x.금액)||0;});
+    var h='<div class="prp-bar"><input id="prp-q" placeholder="거래처·품목·행사 검색" value="'+esc(PG.q)+'" oninput="rpPriceQ(this.value)" style="width:220px">'
+      +'<select onchange="rpPriceSet(\'sea\',this.value)"><option value="">시즌 전체</option>'+SEASONS.map(function(c){return '<option'+(PG.sea===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>'
+      +'<span style="font-size:12px;color:#5a6478">'+rows.length+'건 · 합계 '+won(sum)+'원 (최근 1년 지출결의·통장 지출 · 중복·대납 제외)</span></div>'
+      +'<div class="prp-lock" style="margin-bottom:6px">🔒 내부 전용 — 업체별 단가의 원가 근거입니다 · 단가 = 실지급 ÷ 같은 고객 견적 수량</div>';
+    h+='<div style="overflow:auto;max-height:70vh"><table class="prp-t"><tr><th>일자</th><th>시즌</th><th>거래처</th><th>분류 · 품목</th><th>행사 · 대상</th><th class="prp-r">금액</th><th class="prp-r">수량</th><th class="prp-r">단가</th><th>산출</th><th>출처</th></tr>';
+    rows.forEach(function(x){
+      h+='<tr><td>'+esc(x.일자||'')+'</td><td><span class="prp-sea">'+esc(x.시즌||'')+'</span></td><td><b>'+esc(x.거래처명||'')+'</b></td><td>'+esc([x.분류,x.품목].filter(Boolean).join(' · '))+'</td>'
+        +'<td style="font-size:11px">'+esc(x.행사명||'')+(x.대상군?' · '+esc(x.대상군):'')+'</td><td class="prp-r">'+won(x.금액)+'</td><td class="prp-r">'+(x.수량==null?'—':esc(x.수량)+esc(x.단위||''))+'</td><td class="prp-r"><b>'+won(x.단가)+'</b></td>'
+        +'<td style="font-size:10.5px;color:#5a6478;max-width:200px">'+esc(x.단가_산출||'')+'</td><td style="font-size:10.5px">'+esc(x.원천==='ap'?'지출결의':'통장')+'</td></tr>';
+    });
+    if(!rows.length)h+='<tr><td colspan="10" style="text-align:center;padding:24px;color:#94a3b8">이 사업부의 지출 근거가 없습니다 (최근 1년 지출결의·통장 기준)</td></tr>';
     return h+'</table></div>';
   }
   window.rpPriceEditRate=function(id){var r=(C.rates||[]).filter(function(x){return x.id===id;})[0];if(r)rateModal(r,{},rpPriceInit);};
@@ -12148,10 +12176,10 @@ setTimeout(tick,300);
     var pf=prefixOf(PG.bu);
     var rows=(C.prods||[]).filter(function(p){return p.코드&&p.코드.indexOf(pf)===0&&p.is_active!==false&&matchQ([p.코드,p.품명,p.규격,p.근거].join(' '));});
     var h='<div class="prp-bar"><input id="prp-q" placeholder="코드·품명·근거 검색" value="'+esc(PG.q)+'" oninput="rpPriceQ(this.value)" style="width:220px"><span style="font-size:12px;color:#5a6478">'+rows.length+'개 품목 · 가견적은 이 단가를 그대로 씁니다</span></div>';
-    h+='<div style="overflow:auto;max-height:70vh"><table class="prp-t"><tr><th>코드</th><th>품명</th><th>규격</th><th class="prp-r">가견적 단가</th><th>단위</th><th>여러 날</th><th>근거</th><th>다음 검토</th><th></th></tr>';
+    h+='<div style="overflow:auto;max-height:70vh"><table class="prp-t"><tr><th>코드</th><th>품명</th><th>규격</th><th class="prp-r">가견적 단가</th><th>단위</th><th>가격 방식</th><th>여러 날</th><th>근거</th><th>다음 검토</th><th></th></tr>';
     rows.forEach(function(p){
       var due=p.다음_검토일&&String(p.다음_검토일)<=today();
-      h+='<tr><td style="font-family:monospace;font-size:11px">'+esc(p.코드)+'</td><td><b>'+esc(p.품명)+'</b></td><td style="font-size:11.5px">'+esc(p.규격||'')+'</td><td class="prp-r"><b>'+won(p.기본_단가)+'</b></td><td>'+esc(p.기본_단위||'')+'</td>'
+      h+='<tr><td style="font-family:monospace;font-size:11px">'+esc(p.코드)+'</td><td><b>'+esc(p.품명)+'</b></td><td style="font-size:11.5px">'+esc(p.규격||'')+'</td><td class="prp-r"><b>'+won(p.기본_단가)+'</b></td><td>'+esc(p.기본_단위||'')+'</td><td style="font-size:11px">'+(p.가격방식==='실비'?'<span class="prp-sb">실비</span>':esc(p.가격방식||'정가'))+'</td>'
         +'<td style="font-size:11px">'+esc({'장비80':'장비 (둘째 날부터 80%)','인력100':'인력 (매일 100%)','1회':'1회만'}[p.다일규칙]||p.다일규칙||'')+'</td>'
         +'<td style="font-size:11px;color:#5a6478;max-width:260px">'+esc(p.근거||'')+'</td><td'+(due?' class="prp-bad"':'')+'>'+esc(p.다음_검토일||'')+'</td>'
         +'<td><button class="prp-btn ghost sm" onclick="rpPriceEditProd(\''+p.id+'\')">수정</button></td></tr>';
@@ -12164,13 +12192,14 @@ setTimeout(tick,300);
     m.innerHTML='<div><b style="font-size:15px">품목 단가 수정 — '+esc(p.코드)+'</b><div class="prp-grid" style="margin-top:10px">'
       +'<div style="grid-column:span 2"><label>품명</label><input id="pp-n" value="'+esc(p.품명)+'"></div><div><label>가견적 단가</label><input id="pp-p" inputmode="numeric" value="'+(p.기본_단가==null?'':Math.round(p.기본_단가))+'"></div><div><label>단위</label><input id="pp-u" value="'+esc(p.기본_단위||'')+'"></div>'
       +'<div style="grid-column:span 4"><label>규격 (고객 견적서에 보이는 설명)</label><input id="pp-s" value="'+esc(p.규격||'')+'"></div>'
-      +'<div style="grid-column:span 3"><label>근거 (무엇을 보고 정했나)</label><input id="pp-g" value="'+esc(p.근거||'')+'"></div><div><label>다음 검토일</label><input type="date" id="pp-d" value="'+esc(p.다음_검토일||'')+'"></div></div>'
+      +'<div style="grid-column:span 3"><label>근거 (무엇을 보고 정했나)</label><input id="pp-g" value="'+esc(p.근거||'')+'"></div><div><label>다음 검토일</label><input type="date" id="pp-d" value="'+esc(p.다음_검토일||'')+'"></div>'
+      +'<div style="grid-column:span 2"><label>가격 방식 (실비 = 원가 그대로 청구)</label><input id="pp-m" list="pp-m-dl" value="'+esc(p.가격방식||'정가')+'"><datalist id="pp-m-dl"><option>정가</option><option>실비</option><option>과정별 산정</option><option>실비+20%</option><option>확인필요</option></datalist></div></div>'
       +'<div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px"><button class="prp-btn ghost" data-x>닫기</button><button class="prp-btn" data-s>💾 저장</button></div></div>';
     document.body.appendChild(m);
     m.addEventListener('click',function(e){if(e.target===m||e.target.hasAttribute('data-x'))m.remove();});
     m.querySelector('[data-s]').onclick=function(){
       var np=num(m.querySelector('#pp-p').value);if(np==null){alert('단가를 넣어 주세요');return;}
-      S().from('product_catalog').update({품명:m.querySelector('#pp-n').value.trim(),기본_단가:np,기본_단위:m.querySelector('#pp-u').value.trim()||null,규격:m.querySelector('#pp-s').value.trim()||null,근거:m.querySelector('#pp-g').value.trim()||null,다음_검토일:m.querySelector('#pp-d').value||null,적용일:today(),updated_at:new Date().toISOString()}).eq('id',id)
+      S().from('product_catalog').update({품명:m.querySelector('#pp-n').value.trim(),기본_단가:np,기본_단위:m.querySelector('#pp-u').value.trim()||null,규격:m.querySelector('#pp-s').value.trim()||null,근거:m.querySelector('#pp-g').value.trim()||null,다음_검토일:m.querySelector('#pp-d').value||null,가격방식:m.querySelector('#pp-m').value.trim()||null,적용일:today(),updated_at:new Date().toISOString()}).eq('id',id)
         .then(function(x){if(x.error){alert(x.error.message);return;}m.remove();note('저장했습니다 — 가견적에 바로 적용','success');rpPriceInit();});
     };
   };
@@ -12212,7 +12241,9 @@ setTimeout(tick,300);
     });
     h+='</table><div class="prp-inbox"><b>공통 규칙</b><ul style="margin:6px 0 0;padding-left:18px;line-height:1.7">'
       +'<li>여행 숙박·식당·관광지는 <b>업체별 단가</b>만 씁니다 (평균가 금지)</li>'
-      +'<li>마진 하한 — 숙박 10% · 식당 입금가 + 1인 2,000원 · 미달이면 빨간색</li>'
+      +'<li>원가 = <b>지출결의서 실지출</b> · 최근 1년 · 시즌(봄·여름·가을·겨울·성수기)마다 최근값, 범위는 따로 표시</li>'
+      +'<li>판매가 = 우리 견적서 기준 · 수익은 대행료·인건비로 · <b>마진 하한 없음</b> (원가 그대로 청구 = 실비)</li>'
+      +'<li>근거가 없으면 칸을 비우고 이유를 비고에 적습니다 (추정 금지)</li>'
       +'<li>강사료 — 강사 개인 계약: 3.3% 원천징수·부가세 없음 / 법인 계약: 부가세 10%</li>'
       +'<li>원가는 지출결의서가 <b>승인되는 순간</b> 자동 확인·갱신됩니다 (「결재 때 원가 갱신」을 표시한 줄만 교체)</li>'
       +'<li>가견적 고지문: '+esc((rs[0]||{}).고지문||'')+'</li></ul></div>';
@@ -12237,11 +12268,11 @@ setTimeout(tick,300);
       return Promise.all([getAp,getH]).then(function(b){
         var apm={};(b[0].data||[]).forEach(function(x){apm[x.id]=x;});
         var h='<div style="display:flex;justify-content:space-between;align-items:center"><b>이 거래처의 단가 '+rates.length+'줄</b><button class="prp-btn" onclick="rpVendorRateAdd()">＋ 단가 추가</button></div>'
-          +'<div class="prp-lock" style="margin:4px 0 8px">🔒 원가·마진은 대표 2명만 · 가격표 메뉴 「업체별 단가」와 같은 표 — 여기서 넣으면 가격표·유형 견적에 바로 적용</div>'
-          +'<table class="prp-t"><tr><th>품목</th><th>조건·대상</th><th class="prp-r">원가 🔒</th><th class="prp-r">판매가</th><th>판정</th><th>상태</th><th>쓰이는 유형</th><th>유효</th><th></th></tr>';
+          +'<div class="prp-lock" style="margin:4px 0 8px">🔒 원가는 대표 2명만 · 가격표 메뉴 「업체별 단가」와 같은 표 — 여기서 넣으면 가격표·유형 견적에 바로 적용</div>'
+          +'<table class="prp-t"><tr><th>품목</th><th>조건·대상</th><th class="prp-r">원가 🔒</th><th class="prp-r">판매가</th><th>차액(참고)</th><th>상태</th><th>쓰이는 유형</th><th>유효</th><th></th></tr>';
         rates.forEach(function(r){var mg=margin(r);var ut=usedTypes(r.id);
-          h+='<tr'+(r.활성===false?' style="opacity:.5"':'')+'><td><b>'+esc(r.품목)+'</b></td><td>'+esc([r.조건,r.대상].filter(Boolean).join(' · '))+'</td><td class="prp-r">'+(r.원가!=null?won(r.원가):'<span style="color:#94a3b8">미등록</span>')+'</td><td class="prp-r"><b>'+won(r.판매가)+'</b></td>'
-            +'<td class="'+(mg.bad?'prp-bad':'prp-ok')+'">'+mg.txt+(mg.bad?' ⚠':(mg.txt!=='—'?' ✓':''))+'</td><td><span class="prp-st '+esc(r.상태)+'">'+esc(r.상태)+'</span></td><td style="font-size:11px">'+esc(ut.join(' · ')||'—')+'</td><td'+(expired(r)?' class="prp-bad"':'')+'>'+esc(r.유효_끝||'—')+'</td>'
+          h+='<tr'+(r.활성===false?' style="opacity:.5"':'')+'><td><b>'+esc(r.품목)+'</b></td><td>'+esc([r.조건,r.대상,r.시즌&&r.시즌!=='연중'?r.시즌:null,r.요일].filter(Boolean).join(' · '))+'</td><td class="prp-r">'+(r.원가!=null?won(r.원가):'<span style="color:#94a3b8">미등록</span>')+'</td><td class="prp-r"><b>'+won(r.판매가)+'</b></td>'
+            +'<td>'+(mg.silbi?'<span class="prp-sb">실비</span>':mg.txt)+'</td><td><span class="prp-st '+esc(r.상태)+'">'+esc(r.상태)+'</span></td><td style="font-size:11px">'+esc(ut.join(' · ')||'—')+'</td><td'+(expired(r)?' class="prp-bad"':'')+'>'+esc(r.유효_끝||'—')+'</td>'
             +'<td><button class="prp-btn ghost sm" data-rid="'+r.id+'">수정</button></td></tr>';});
         if(!rates.length)h+='<tr><td colspan="9" style="text-align:center;padding:18px;color:#94a3b8">아직 단가가 없습니다 — [＋ 단가 추가]로 요금표의 여행사가를 넣어 주세요</td></tr>';
         h+='</table>';
@@ -12364,7 +12395,7 @@ setTimeout(tick,300);
     var opts=(x.items||[]).length;
     b.innerHTML='<div class="prp-inbox"><b>🔒 내부 확인 (대표 2명만 · 고객 견적서에 안 나감)</b>'
       +'<div style="margin-top:4px">유형 계산 합계 <b>'+won(x.합계)+'원</b>'+(x['1인']?' · 1인 '+won(x['1인'])+'원':'')+' · '+esc(x.대행료_표기||'대행료')+' '+won(x.대행료)+(x.대행료>0?' ('+esc(x.대행료방식)+')':'')+' · 부가세 '+won(x.부가세)+(x.vat방식?' ('+esc(x.vat방식)+')':'')+'</div>'
-      +(x.원가_합계>0?'<div>원가가 등록된 품목 매출 '+won(x.원가_확인_매출)+' / 원가 '+won(x.원가_합계)+' → 마진 <b class="'+(mg<10?'prp-bad':'prp-ok')+'">'+mg+'%</b></div>':'')
+      +(x.원가_합계>0?'<div>원가가 등록된 품목 매출 '+won(x.원가_확인_매출)+' / 원가 '+won(x.원가_합계)+' → 차액 참고 <b>'+mg+'%</b> (하한 없음)</div>':'')
       +(x.단가_바뀐_줄?'<div class="prp-bad">유형 저장값과 다른 단가 '+x.단가_바뀐_줄+'줄 — 지금 가격표 단가로 채웠습니다</div>':'')
       +(x.원천징수_3_3?'<div>강사 개인 계약: 원천징수 3.3% '+won(x.원천징수_3_3)+' · 강사 실수령 '+won(x.강사_실수령)+'</div>':'')
       +(x.사업부==='국내여행'?'<div style="color:#7a4a00">여행 알선수수료 부가세(수수료분 10%)는 현재 견적서 방식대로 따로 표기하지 않습니다 — 필요하면 4번 옵션에서 켜세요</div>':'')
@@ -12395,6 +12426,6 @@ setTimeout(tick,300);
   window.RP_PRICE_VER=V;
 })();
 </script>
-<!-- RP-PRICE v1.0 end -->
+<!-- RP-PRICE v1.1 end -->
 </body>
 </html>

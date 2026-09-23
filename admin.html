@@ -11968,7 +11968,7 @@ setTimeout(tick,300);
 <script id="rp-price-js">
 (function(){
   'use strict';
-  var V='RP-PRICE v1.1';
+  var V='RP-PRICE v1.1.1';
   function S(){return window.sb;}
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function won(v){return (v==null||v==='')?'—':Number(v).toLocaleString('ko-KR');}
@@ -12153,7 +12153,7 @@ setTimeout(tick,300);
     return h+'</table></div>';
   }
   function renderLedger(){
-    if(!C.ledger){S().from('v_pr_지출근거').select('*').eq('사업부',PG.bu).order('일자',{ascending:false}).limit(500).then(function(r){if(r.error){note('지출 원장 불러오기 실패: '+r.error.message,'warn');C.ledger=[];}else C.ledger=r.data||[];C.ledgerBu=PG.bu;render();});return '<div style="padding:20px;color:#8a94a6">불러오는 중…</div>';}
+    if(!C.ledger){S().from('pr_지출원장').select('*').eq('사업부',PG.bu).eq('제외',false).order('일자',{ascending:false}).limit(500).then(function(r){if(r.error){note('지출 원장 불러오기 실패: '+r.error.message,'warn');C.ledger=[];}else C.ledger=r.data||[];C.ledgerBu=PG.bu;render();});return '<div style="padding:20px;color:#8a94a6">불러오는 중…</div>';}
     if(C.ledgerBu!==PG.bu){C.ledger=null;return renderLedger();}
     var rows=C.ledger.filter(function(x){return (!PG.sea||x.시즌===PG.sea)&&matchQ([x.거래처명,x.품목,x.행사명,x.분류,x.비고].join(' '));});
     var sum=0;rows.forEach(function(x){sum+=Number(x.금액)||0;});
@@ -12164,7 +12164,7 @@ setTimeout(tick,300);
     h+='<div style="overflow:auto;max-height:70vh"><table class="prp-t"><tr><th>일자</th><th>시즌</th><th>거래처</th><th>분류 · 품목</th><th>행사 · 대상</th><th class="prp-r">금액</th><th class="prp-r">수량</th><th class="prp-r">단가</th><th>산출</th><th>출처</th></tr>';
     rows.forEach(function(x){
       h+='<tr><td>'+esc(x.일자||'')+'</td><td><span class="prp-sea">'+esc(x.시즌||'')+'</span></td><td><b>'+esc(x.거래처명||'')+'</b></td><td>'+esc([x.분류,x.품목].filter(Boolean).join(' · '))+'</td>'
-        +'<td style="font-size:11px">'+esc(x.행사명||'')+(x.대상군?' · '+esc(x.대상군):'')+'</td><td class="prp-r">'+won(x.금액)+'</td><td class="prp-r">'+(x.수량==null?'—':esc(x.수량)+esc(x.단위||''))+'</td><td class="prp-r"><b>'+won(x.단가)+'</b></td>'
+        +'<td style="font-size:11px">'+esc(x.행사명||'')+(x.대상군?' · '+esc(x.대상군):'')+'</td><td class="prp-r">'+won(x.금액)+'</td><td class="prp-r">'+(x.수량==null?'—':esc(x.수량)+esc(x.단위||''))+'</td><td class="prp-r"><b>'+(x.단가!=null?won(x.단가):'<span style="font-size:10.5px;color:#7a5a00">건 단위</span>')+'</b></td>'
         +'<td style="font-size:10.5px;color:#5a6478;max-width:200px">'+esc(x.단가_산출||'')+'</td><td style="font-size:10.5px">'+esc(x.원천==='ap'?'지출결의':'통장')+'</td></tr>';
     });
     if(!rows.length)h+='<tr><td colspan="10" style="text-align:center;padding:24px;color:#94a3b8">이 사업부의 지출 근거가 없습니다 (최근 1년 지출결의·통장 기준)</td></tr>';

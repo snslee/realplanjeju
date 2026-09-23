@@ -3420,7 +3420,7 @@ let _currentVendorId = null;
 
 async function openVendorDetail(id){
   if(!id) return;
-  _currentVendorId = id;
+  _currentVendorId = id; window.__rpVendorId = id;
   const modal = document.getElementById('vendor-detail-modal');
   const basic = document.getElementById('vd-basic-content');
   if(!modal || !basic) return;
@@ -3533,7 +3533,7 @@ window.openVendorDetail = openVendorDetail;
 function closeVendorModal(){
   const modal = document.getElementById('vendor-detail-modal');
   if(modal) modal.hidden = true;
-  _currentVendorId = null;
+  _currentVendorId = null; window.__rpVendorId = null;
   _vendorEditMode = false;
   _vendorOriginal = null;
 }
@@ -3617,7 +3617,7 @@ async function saveVendorEdit(){
     /* v2.13.5-α1 안건 A: 등록/저장 분기 + 신규 INSERT 시 _currentVendorId 갱신 */
     const _isInsert = (r.r_action === 'insert');
     toast(`${r.r_거래처명} ${_isInsert?'등록':'저장'} 완료 ✓`,'success');
-    if(_isInsert) _currentVendorId = r.r_id;
+    if(_isInsert){ _currentVendorId = r.r_id; window.__rpVendorId = r.r_id; }
     /* 모달 reload + 목록 reload */
     await openVendorDetail(_currentVendorId);
     if(typeof loadVendors === 'function') loadVendors(0);
@@ -3869,7 +3869,7 @@ function openVendorNew(){
   modal.hidden = false;
   switchVendorTab('basic');
   /* 신규 모드: _currentVendorId = null / 빈 값 / 편집 모드 ON */
-  _currentVendorId = null;
+  _currentVendorId = null; window.__rpVendorId = null;
   /* 모달 헤더 갱신 */
   document.getElementById('vd-modal-title').textContent = '+ 신규 거래처 등록';
   document.getElementById('vd-modal-subtitle').textContent = '필수 항목: 거래처명 · 사업부 (최소 1개) — 등록 후 담당자 추가는 Phase 5';
@@ -7745,7 +7745,7 @@ Object.assign(window, {
   state,
   // 작성 페이지 (영역 B)
   qtSelectCustomer, qtSelectBU, qtToggleCat, qtAddCatItem, qtAddRow,
-  qtUpdItem, qtDelItem, qtToggleGov, qtSetTrim, qtUpdateAll,
+  qtUpdItem, qtDelItem, qtToggleGov, qtSetTrim, qtUpdateAll, qtRenderItems,
   qtUpdRecipient, qtUpdAttach, qtSaveDraft, qtSendPlaceholder, qtSendQuotation,
   qtBuildPdfBase64, qtResetAll, qtFmt,
   // PDF (영역 C)
@@ -11966,12 +11966,12 @@ setTimeout(tick,300);
 <script id="rp-price-js">
 (function(){
   'use strict';
-  var V='RP-PRICE v1.0';
+  var V='RP-PRICE v1.0.1';
   function S(){return window.sb;}
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function won(v){return (v==null||v==='')?'—':Number(v).toLocaleString('ko-KR');}
   function num(v){if(v==null)return null;var s=String(v).replace(/[^0-9.\-]/g,'');if(s==='')return null;var n=Number(s);return isNaN(n)?null:n;}
-  function note(m,t){try{if(typeof toast==='function')toast(m,t||'info');else alert(m);}catch(e){alert(m);}}
+  function note(m,t){try{var d=document.createElement('div');d.textContent=m;d.style.cssText='position:fixed;right:18px;bottom:18px;z-index:10060;max-width:420px;padding:10px 14px;border-radius:8px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.2);color:#fff;background:'+(t==='success'?'#146c3a':(t==='warn'?'#b35c00':'#1e3a5f'));document.body.appendChild(d);setTimeout(function(){d.remove();},3500);}catch(e){console.log(m);}}
   function today(){try{return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul'}).format(new Date());}catch(e){return new Date().toISOString().slice(0,10);}}
   var BU=['국내여행','행사이벤트','온라인마케팅','마케팅교육'];
   var BU_ICON={'국내여행':'🏝','행사이벤트':'🎤','온라인마케팅':'📱','마케팅교육':'📚'};
@@ -12258,7 +12258,7 @@ setTimeout(tick,300);
     }).catch(function(e){box.innerHTML='<div style="color:#b42318;padding:12px">불러오기 실패: '+esc(e.message||e)+'</div>';});
   };
   window.rpVendorRateAdd=function(){
-    var vid=(typeof _currentVendorId!=='undefined')?_currentVendorId:null;if(!vid){alert('거래처를 먼저 저장해 주세요');return;}
+    var vid=window.__rpVendorId||null;if(!vid){alert('거래처를 먼저 저장해 주세요');return;}
     var t=(document.getElementById('vd-modal-title')||{}).textContent||'';
     rateModal(null,{vendor_id:vid,업체명:t},function(){rpVendorRates(vid);});
   };
@@ -12313,7 +12313,7 @@ setTimeout(tick,300);
     else{var p=f.p;row.카테고리_대분류=p.카테고리||'';row.품명=p.품명;row.단위=p.기본_단위||'';row.단가=Number(p.기본_단가)||0;row.product_id=p.id;}
     row.금액=row.수량*row.단가;
     s.items.push(row);inp.value='';
-    if(typeof qtRenderItems==='function')qtRenderItems();if(typeof qtUpdateAll==='function')qtUpdateAll();
+    if(typeof window.qtRenderItems==='function')window.qtRenderItems();if(typeof window.qtUpdateAll==='function')window.qtUpdateAll();
     note('「'+row.품명+'」 추가 — 수량을 확인하세요','success');
   };
   window.rpQtApply=function(){
@@ -12345,14 +12345,14 @@ setTimeout(tick,300);
       if(fo)fo.checked=x.대행료>0;
       if(fr&&x.대행료>0){fr.step='any';fr.value=String(eff);}
       if(vo)vo.checked=(x.부가세>0&&!isTour);
-      if(typeof qtSetTrim==='function')qtSetTrim('없음');
+      if(typeof window.qtSetTrim==='function')window.qtSetTrim('없음');
       /* 제목·고지문 */
       var ti=document.getElementById('qt-title');
       if(ti&&!ti.value.trim()){ti.value=x.유형+' 가견적';s.title=ti.value;}
       var memo=x.고지문+' (유효기간 '+(x.유효일수||30)+'일)'+(x.원천징수_3_3?' · 강사료는 강사 개인 지급 건으로 부가세가 없으며, 지급 시 3.3%('+Number(x.원천징수_3_3).toLocaleString('ko-KR')+'원)를 원천징수합니다.':'');
       if(!s.note||s.note.indexOf('본 가견적은')<0){s.note=(s.note?s.note+'\n':'')+memo;var ne=document.getElementById('qt-note');if(ne)ne.value=s.note;}
-      if(typeof qtRenderItems==='function')qtRenderItems();
-      if(typeof qtUpdateAll==='function')qtUpdateAll();
+      if(typeof window.qtRenderItems==='function')window.qtRenderItems();
+      if(typeof window.qtUpdateAll==='function')window.qtUpdateAll();
       showBox(x);
       note('「'+x.유형+'」 '+rows.length+'줄을 채웠습니다 — 필요 없는 줄은 ×로 지우세요','success');
     });
@@ -12385,10 +12385,11 @@ setTimeout(tick,300);
   /* ═════════ 4. 거래처 「단가」 탭 클릭 → 불러오기 ═════════ */
   document.addEventListener('click',function(e){
     var b=e.target.closest&&e.target.closest('.vd-tab-btn[data-tab="rates"]');
-    if(b){var vid=(typeof _currentVendorId!=='undefined')?_currentVendorId:null;rpVendorRates(vid);}
+    if(b){rpVendorRates(window.__rpVendorId||null);}
   });
 
-  function boot(){hookQt();if(document.getElementById('pr-type-panel'))rpQtTypes();}
+  function boot(){hookQt();var p=document.getElementById('pr-type-panel');if(p&&!p.innerHTML.trim())rpQtTypes();}
+  setInterval(function(){var p=document.getElementById('pr-type-panel');if(p&&p.offsetParent&&!p.innerHTML.trim())rpQtTypes();},1000);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   setTimeout(boot,1500);
   window.RP_PRICE_VER=V;

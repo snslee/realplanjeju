@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.40.0</title>
+<title>리얼플랜제주 마케팅 운영 v1.41.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -4921,7 +4921,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.40.0';
+var VER='v1.41.0';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -5473,7 +5473,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 #t13 .trv2-bar{height:10px;background:#f1f5f9;border-radius:99px;overflow:hidden;margin:3px 0 10px}#t13 .trv2-bar i{display:block;height:100%;background:#059669}
 </style>
 <script id="trv-js">
-/* v1.40.0 · 2026-09-24 공개 상태 칸·필터·칩(공개/전체) · 롭폼 호환 — 롤백 = v1.39.0 파일(md5 607dcbcb)
+/* v1.41.0 · 2026-09-24 대표 결정(3-9 개정): 일부공개=임시 표기 · 비공개 전환 대기 카드 2장(①재료 3-11 ②일부공개 쇼츠 3-9 · 기준 새 롱폼 4편+4번째 28일) — 롤백 = v1.40.0 파일(md5 981a9008)
+   v1.40.0 · 2026-09-24 공개 상태 칸·필터·칩(공개/전체) · 롭폼 호환 — 롤백 = v1.39.0 파일(md5 607dcbcb)
    v1.39.0 · 2026-09-24 리얼플랜여행 탭 = 운영 보드(동영상 방 요청 운영보드 v1 · 회사 시스템 방 · 대표 승인)
    정본 = mk_youtube_channel_rules(v3.0 조항) · decisions · room_status · slots(공정) · metrics · segments · strengths · bench_picks
    규칙: 조회는 모두 채널='리얼플랜여행'(벤치는 트랙) · 없는 값은 「—」 또는 원인 문구 · 숫자를 만들지 않는다 · 링크는 홈A만
@@ -5538,6 +5539,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       if(ids.length){var r8=await sb.from('mk_youtube_assets').select('영상id,조회수').in('영상id',ids);if(!r8.error)(r8.data||[]).forEach(function(x){S.views[x['영상id']]=+x['조회수']||0;});}
       if(mats.length){var rp=await sb.from('mk_youtube_assets').select('영상id,제목,형식,조회수,길이_초,촬영시즌,대상,현장실측').in('영상id',mats);S.planRows=rp.error?[]:(rp.data||[]);}
       else S.planRows=[];
+      S.m28=null;var pubSl=ok(S.slots)?S.slots.filter(function(s){return vid(s['영상url']);}).sort(function(a,b){return String(a['발행일']||'').localeCompare(String(b['발행일']||''));}):[];
+      if(pubSl.length>=4){var r28=await sb.from('mk_youtube_metrics').select('슬롯id,조회수').eq('측정시점','28일').eq('영상형식','롱폼').eq('슬롯id',pubSl[3].id).limit(1);S.m28=(!r28.error&&r28.data&&r28.data[0])?r28.data[0]:null;}
       S.at=Date.now();
     }catch(e){S.slots={err:String(e&&e.message||e)};}
     finally{S.busy=false;}
@@ -5644,7 +5647,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         +'</details>';
     }else if(gr&&S.grules&&S.grules.err){gr.innerHTML=errBox('지니 확정 사항',S.grules.err);}
     if(S.more)renderMore();
-    addPlanBtn();addVisBtns();addUsed();addMonth();addVis();
+    addPlanBtn();addVisBtns();addUsed();addMonth();addVis();renderConv();
   }
 
   /* ① 설계 정본 */
@@ -5864,13 +5867,33 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   function visCount(){var c={'공개':0,'일부공개':0,'비공개':0,none:0,all:0,known:false,day:''};
     Object.keys(S.am).forEach(function(id){var a=S.am[id],v=a['공개상태'];c.all++;if(VC[v]){c[v]++;c.known=true;}else c.none++;if(a['공개상태_확인일']&&a['공개상태_확인일']>c.day)c.day=String(a['공개상태_확인일']);});
     return c;}
-  function visCell(id){var v=(S.am[id]||{})['공개상태'],c=VC[v];return c?'<span class="trv-chip" style="background:'+c[0]+';color:'+c[1]+';border-color:'+c[2]+'">'+E(v)+'</span>':'<span style="color:#cbd5e1">미확인</span>';}
+  function visCell(id){var v=(S.am[id]||{})['공개상태'],c=VC[v];return c?'<span class="trv-chip" style="background:'+c[0]+';color:'+c[1]+';border-color:'+c[2]+'">'+E(v==='일부공개'?'일부공개(임시)':v)+'</span>':'<span style="color:#cbd5e1">미확인</span>';}
   function addVisBtns(){
     var q=gid('yt-q');if(!q||gid('trv-vis-btns'))return;var V=visCount();if(!V.known)return;
     var w=document.createElement('span');w.id='trv-vis-btns';w.style.cssText='display:inline-flex;gap:6px;flex-wrap:wrap';
-    [['vis_pub','🌐 공개만','공개'],['vis_unl','일부공개','일부공개'],['vis_prv','비공개','비공개']].forEach(function(x){
+    [['vis_pub','🌐 공개만','공개'],['vis_unl','일부공개(임시)','일부공개'],['vis_prv','비공개','비공개']].forEach(function(x){
       var b=document.createElement('button');b.className='filter-btn yt-f';b.textContent=x[1]+' '+V[x[2]]+'편';b.onclick=function(){window.ytFilter(x[0],b);};w.appendChild(b);});
     q.parentNode.insertBefore(w,q);
+  }
+  /* v1.41.0 비공개 전환 대기 — ①재료(3-11: 새 편 공개일에 그 편 재료 비공개) ②일부공개 쇼츠(3-9: 새 롱폼 4편 + 4번째 편 28일 조회 확정 시 전부 비공개) */
+  function renderConv(){
+    var h=gid('trv2-inv');if(!h)return;var host=h.closest('div');if(!host||!host.parentNode)return;
+    var box=gid('trv2-conv');if(!box){box=document.createElement('div');box.id='trv2-conv';host.parentNode.insertBefore(box,host.nextSibling);}
+    var V=visCount();if(!V.known){box.innerHTML='';return;}
+    var sl=ok(S.slots)?S.slots:[],pubS={};sl.forEach(function(s){if(vid(s['영상url']))pubS[s['슬롯번호']]=1;});
+    var npub=Object.keys(pubS).length,mat=[];
+    Object.keys(S.used).forEach(function(id){var a=S.am[id]||{};if(!S.used[id].some(function(n){return pubS[n];}))return;if(a['공개상태']==='비공개')return;if(String(a['재활용_상태']||'').indexOf('변경금지')>-1)return;mat.push(id);});
+    var reached=npub>=4&&S.m28&&S.m28['조회수']!=null,u=V['일부공개'];
+    function card(t,v,sub,c){var P={r:['#b91c1c','#fef2f2','#fecaca'],g:['#166534','#f0fdf4','#bbf7d0'],o:['#c2410c','#fff7ed','#fed7aa'],n:['#64748b','#f8fafc','#e2e8f0']}[c];
+      return '<div style="flex:1;min-width:230px;background:'+P[1]+';border:1px solid '+P[2]+';border-radius:10px;padding:10px 13px"><div style="font-size:.74rem;color:#64748b">'+t+'</div><div style="font-size:1.02rem;font-weight:800;margin-top:2px;color:'+P[0]+'">'+v+'</div><div style="font-size:.68rem;color:#94a3b8;margin-top:2px">'+sub+'</div></div>';}
+    var t1='🔒 ① 재료 비공개 대기 <span style="color:#94a3b8">· 3-11</span>',t2='🔒 ② 일부공개(임시) 쇼츠 → 비공개 <span style="color:#94a3b8">· 3-9</span>';
+    var c1=!npub?card(t1,'해당 없음','새 편 공개 0편 — 새 편 공개일에 그 편 재료만 비공개','n')
+      :mat.length?card(t1,mat.length+'편','새 편 공개 '+npub+'편 · 그 편 재료가 아직 공개 — 스튜디오에서 비공개','r')
+      :card(t1,'0편','새 편 공개 '+npub+'편 · 재료 비공개 완료','g');
+    var c2=!reached?card(t2,'기준 미도달 · '+u+'편 대기','기준 = 새 롱폼 4편 발행 + 4번째 편 28일 조회 확정 · 지금 발행 '+Math.min(npub,4)+'/4'+(npub>=4?' · 28일 조회 대기':''),'o')
+      :u?card(t2,'전환 시작 · '+u+'편 남음','기준 도달 — 스튜디오에서 50편 단위 비공개(원본 보관 불필요 · 홈 연결 9편은 변경금지)','r')
+      :card(t2,'완료','일부공개 0편','g');
+    box.innerHTML='<div style="display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 12px">'+c1+c2+'</div>';
   }
   function addVis(){
     var tb=gid('yt-list');if(!tb)return;var tr0=tb.closest('table').querySelector('thead tr');
@@ -5918,7 +5941,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   if(typeof _rl==='function'){
     window.renderYtList=function(){if(S.plan){renderPlan();return;}var r=_rl.apply(this,arguments);try{addUsed();rfApply();addMonth();addVis();}catch(e){}return r;};
   }
-  window.__rpYtTravel='v1.40.0';
+  window.__rpYtTravel='v1.41.0';
 })();
 </script>
 <!-- RP-YT-TRAVEL end -->

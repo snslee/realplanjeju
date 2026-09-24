@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.34.0</title>
+<title>리얼플랜제주 마케팅 운영 v1.40.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -1036,7 +1036,7 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
         <div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">형식</th><th style="text-align:right">편수</th><th style="text-align:right">총조회</th><th style="text-align:right">평균</th><th style="text-align:right">최고</th><th>마지막 발행</th></tr></thead><tbody id="yt-form"><tr><td colspan="6" style="padding:12px;color:#64748b">새로고침을 눌러주세요</td></tr></tbody></table></div>
         <div id="yt-trend" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;font-size:.76rem;margin-bottom:16px;color:#64748b"></div>
 
-        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">옛 영상 재고 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· 발행분 621편(재활용 후보) + 미발행 재료 mk_video_sources · 「쓴 편」 = 새 롱폼 편집지시서 재료</span></h3></div>
+        <div style="margin:16px 0 8px"><h3 style="font-size:1rem;font-weight:700">옛 영상 재고 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· 발행분 <b id="trv2-inv">621편</b> · 재활용 후보 + 미발행 재료 mk_video_sources · 「쓴 편」 = 새 롱폼 편집지시서 재료</span></h3></div>
         <div style="font-size:.74rem;color:#64748b;margin:2px 0 6px">🗓 시즌 창 · 소재를 언제까지 써야 하는지 — 놓치면 1년 대기</div>
         <div id="yt-season" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px"></div>
 
@@ -4754,7 +4754,7 @@ window.renderYtList=function(){
   var a=_yt.assets.filter(function(x){
     if(q&&(x.제목||'').indexOf(q)<0)return false;
     if(_yt.f==='b2b')return x.대상==='B2B';
-    if(_yt.f==='long')return x.형식==='롱폼';
+    if(_yt.f==='long')return x.형식==='롱폼'||x.형식==='롭폼';
     if(_yt.f==='summer')return x.촬영시즌==='여름';
     return true;});
   if(_yt.f==='top')a=a.slice(0,60);
@@ -4921,7 +4921,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.39.0';
+var VER='v1.40.0';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -5473,7 +5473,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 #t13 .trv2-bar{height:10px;background:#f1f5f9;border-radius:99px;overflow:hidden;margin:3px 0 10px}#t13 .trv2-bar i{display:block;height:100%;background:#059669}
 </style>
 <script id="trv-js">
-/* v1.39.0 · 2026-09-24 리얼플랜여행 탭 = 운영 보드(동영상 방 요청 운영보드 v1 · 회사 시스템 방 · 대표 승인)
+/* v1.40.0 · 2026-09-24 공개 상태 칸·필터·칩(공개/전체) · 롭폼 호환 — 롤백 = v1.39.0 파일(md5 607dcbcb)
+   v1.39.0 · 2026-09-24 리얼플랜여행 탭 = 운영 보드(동영상 방 요청 운영보드 v1 · 회사 시스템 방 · 대표 승인)
    정본 = mk_youtube_channel_rules(v3.0 조항) · decisions · room_status · slots(공정) · metrics · segments · strengths · bench_picks
    규칙: 조회는 모두 채널='리얼플랜여행'(벤치는 트랙) · 없는 값은 「—」 또는 원인 문구 · 숫자를 만들지 않는다 · 링크는 홈A만
    롤백 = RP-YT-TRAVEL 블록·#ytc-travel HTML·머리 한 줄·VER 를 v1.38.0 으로 */
@@ -5521,7 +5522,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       var rst=await sb.from('mk_youtube_strengths').select('id,요소,장점,출처영상id,쓴슬롯,편별결과,상태,검증일').eq('채널',CH).limit(300);
       var r7=await sb.from('mk_inquiry_attribution').select('슬롯번호,utm_medium,신청일시').eq('콘텐츠유형','유튜브').limit(1000);
       var r9=await sb.from('mk_youtube_assets').select('발행일').eq('채널',CH).order('발행일',{ascending:false}).limit(1);
-      var ra=await sb.from('mk_youtube_assets').select('영상id,촬영월,재활용_상태').eq('채널',CH).limit(3000);
+      var ra=await sb.from('mk_youtube_assets').select('영상id,촬영월,재활용_상태,공개상태,공개상태_확인일').eq('채널',CH).limit(3000);
+      if(ra.error)ra=await sb.from('mk_youtube_assets').select('영상id,촬영월,재활용_상태').eq('채널',CH).limit(3000);
       S.slots=res(r5);S.rules=res(r6);S.grules=res(r6g);S.dec=res(rd);S.str=res(rst);
       S.room=rs.error?{err:rs.error.message}:((rs.data||[])[0]||null);
       S.inq=r7.error?{err:r7.error.message}:(r7.data||[]).filter(function(x){return /^R\d/.test(x['슬롯번호']||'')||x['utm_medium']==='yt_travel';});
@@ -5583,7 +5585,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     var p=gid('ytc-travel');if(!p)return;
     var sl=ok(S.slots)?S.slots:[];var T=today();
     var pub=sl.filter(function(s){return vid(s['영상url']);});
-    var chipEl=gid('ytc-travel-n');if(chipEl&&ok(S.slots))chipEl.textContent='621편 · 새 롱폼 '+pub.length+'/'+sl.length;
+    var V=visCount(),chipEl=gid('ytc-travel-n');if(chipEl&&ok(S.slots))chipEl.textContent=(V.known?'공개 '+V['공개']+' · 전체 '+V.all:V.all+'편')+' · 새 롱폼 '+pub.length+'/'+sl.length;
+    var inv=gid('trv2-inv');if(inv)inv.textContent=V.all+'편'+(V.known?' (공개 '+V['공개']+' · 일부공개 '+V['일부공개']+' · 비공개 '+V['비공개']+(V.none?' · 미확인 '+V.none:'')+(V.day?' · '+(+V.day.slice(5,7))+'/'+(+V.day.slice(8,10))+' 확인':'')+')':'');
     /* 지금 상태 띠 */
     var band=gid('trv-band');
     if(band){
@@ -5641,7 +5644,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         +'</details>';
     }else if(gr&&S.grules&&S.grules.err){gr.innerHTML=errBox('지니 확정 사항',S.grules.err);}
     if(S.more)renderMore();
-    addPlanBtn();addUsed();addMonth();
+    addPlanBtn();addVisBtns();addUsed();addMonth();addVis();
   }
 
   /* ① 설계 정본 */
@@ -5856,11 +5859,34 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       tr.insertBefore(td,tr.lastElementChild);
     });
   }
-  function rfMatch(id){var st=String((S.am[id]||{})['재활용_상태']||'');return S.rf==='re'?/재생산:R\d/.test(st):S.rf==='lock'?st.indexOf('변경금지')>-1:true;}
+  /* v1.40.0 공개 상태 — mk_youtube_assets.공개상태(공개·일부공개·비공개 · null=미확인) */
+  var VC={'공개':['#f0fdf4','#166534','#bbf7d0'],'일부공개':['#fff7ed','#c2410c','#fed7aa'],'비공개':['#f1f5f9','#475569','#cbd5e1']};
+  function visCount(){var c={'공개':0,'일부공개':0,'비공개':0,none:0,all:0,known:false,day:''};
+    Object.keys(S.am).forEach(function(id){var a=S.am[id],v=a['공개상태'];c.all++;if(VC[v]){c[v]++;c.known=true;}else c.none++;if(a['공개상태_확인일']&&a['공개상태_확인일']>c.day)c.day=String(a['공개상태_확인일']);});
+    return c;}
+  function visCell(id){var v=(S.am[id]||{})['공개상태'],c=VC[v];return c?'<span class="trv-chip" style="background:'+c[0]+';color:'+c[1]+';border-color:'+c[2]+'">'+E(v)+'</span>':'<span style="color:#cbd5e1">미확인</span>';}
+  function addVisBtns(){
+    var q=gid('yt-q');if(!q||gid('trv-vis-btns'))return;var V=visCount();if(!V.known)return;
+    var w=document.createElement('span');w.id='trv-vis-btns';w.style.cssText='display:inline-flex;gap:6px;flex-wrap:wrap';
+    [['vis_pub','🌐 공개만','공개'],['vis_unl','일부공개','일부공개'],['vis_prv','비공개','비공개']].forEach(function(x){
+      var b=document.createElement('button');b.className='filter-btn yt-f';b.textContent=x[1]+' '+V[x[2]]+'편';b.onclick=function(){window.ytFilter(x[0],b);};w.appendChild(b);});
+    q.parentNode.insertBefore(w,q);
+  }
+  function addVis(){
+    var tb=gid('yt-list');if(!tb)return;var tr0=tb.closest('table').querySelector('thead tr');
+    if(tr0&&!tr0.querySelector('.trv2-vis-h')){var th=document.createElement('th');th.className='trv2-vis-h';th.style.width='70px';th.textContent='공개';tr0.insertBefore(th,tr0.children[1]);}
+    Array.prototype.forEach.call(tb.rows,function(tr){
+      var cs=tr.querySelector('td[colspan]');if(cs){cs.setAttribute('colspan','11');return;}
+      if(tr.querySelector('.trv2-vis'))return;
+      var td=document.createElement('td');td.className='trv2-vis';td.style.whiteSpace='nowrap';td.innerHTML=visCell(rowId(tr));
+      tr.insertBefore(td,tr.children[1]);
+    });
+  }
+  function rfMatch(id){var st=String((S.am[id]||{})['재활용_상태']||'');if(S.rf&&S.rf.indexOf('v:')===0)return (S.am[id]||{})['공개상태']===S.rf.slice(2);return S.rf==='re'?/재생산:R\d/.test(st):S.rf==='lock'?st.indexOf('변경금지')>-1:true;}
   function rfApply(){
     if(!S.rf)return;var tb=gid('yt-list');if(!tb)return;var n=0;
     Array.prototype.slice.call(tb.rows).forEach(function(tr){if(tr.querySelector('td[colspan]'))return;if(rfMatch(rowId(tr)))n++;else tr.parentNode.removeChild(tr);});
-    if(!n)tb.innerHTML='<tr><td colspan="10" style="padding:12px;color:#64748b">해당 영상 없음 — mk_youtube_assets.재활용_상태에 「'+(S.rf==='re'?'재생산:R번호':'변경금지')+'」 0건</td></tr>';
+    if(!n)tb.innerHTML='<tr><td colspan="10" style="padding:12px;color:#64748b">해당 영상 없음 — mk_youtube_assets.재활용_상태에 「'+(S.rf==='re'?'재생산:R번호':S.rf==='lock'?'변경금지':S.rf.slice(2))+'」 0건</td></tr>';
     var c=gid('yt-cnt');if(c)c.textContent=n+'편';
   }
   function renderPlan(){
@@ -5873,7 +5899,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     tb.innerHTML=rows.map(function(x){var sm=x['현장실측']||'미실측',s=+x['길이_초']||0;
       return '<tr style="border-top:1px solid #f1f5f9"><td style="padding:7px">'+E(String(x['제목']||'').slice(0,70))+'</td><td>'+E(x['형식']||'')+'</td><td style="text-align:right;font-weight:700">'+N(x['조회수'])+'</td><td style="text-align:right">'+(s?(s>=60?Math.round(s/60)+'분':s+'초'):'')+'</td><td>'+E(x['촬영시즌']||'')+'</td><td>'+E(x['대상']||'')+'</td><td style="color:'+(SCC[sm]||'#94a3b8')+'">'+E(sm)+'</td><td class="trv-used">'+usedCell(x['영상id'])+'</td><td><a href="https://youtu.be/'+E(x['영상id'])+'" target="_blank" style="color:#2563eb">열기</a></td></tr>';}).join('')
       ||'<tr><td colspan="9" style="padding:12px;color:#64748b">편성 재료로 지정된 영상이 없습니다(편집지시서.재료)</td></tr>';
-    addMonth();
+    addMonth();addVis();
   }
 
   /* 기존 함수 감싸기 — 원본은 그대로 두고 뒤에 붙인다 */
@@ -5885,14 +5911,14 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   if(typeof _yf==='function'){
     window.ytFilter=function(f,el){
       if(f==='plan'){S.plan=true;S.rf=null;document.querySelectorAll('#t13 .yt-f').forEach(function(b){b.classList.remove('active');});if(el)el.classList.add('active');window.renderYtList();return;}
-      S.plan=false;S.rf=(f==='rf_re')?'re':(f==='rf_lock')?'lock':null;return _yf.apply(this,arguments);
+      S.plan=false;S.rf=(f==='rf_re')?'re':(f==='rf_lock')?'lock':(f==='vis_pub')?'v:공개':(f==='vis_unl')?'v:일부공개':(f==='vis_prv')?'v:비공개':null;return _yf.apply(this,arguments);
     };
   }
   var _rl=window.renderYtList;
   if(typeof _rl==='function'){
-    window.renderYtList=function(){if(S.plan){renderPlan();return;}var r=_rl.apply(this,arguments);try{addUsed();rfApply();addMonth();}catch(e){}return r;};
+    window.renderYtList=function(){if(S.plan){renderPlan();return;}var r=_rl.apply(this,arguments);try{addUsed();rfApply();addMonth();addVis();}catch(e){}return r;};
   }
-  window.__rpYtTravel='v1.39.0';
+  window.__rpYtTravel='v1.40.0';
 })();
 </script>
 <!-- RP-YT-TRAVEL end -->

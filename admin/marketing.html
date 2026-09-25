@@ -5588,7 +5588,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   function render(){
     var p=gid('ytc-travel');if(!p)return;
     var sl=ok(S.slots)?S.slots:[];var T=today();
-    var pub=sl.filter(function(s){return vid(s['영상url']);});
+    var pub=sl.filter(function(s){return vid(s['영상url'])&&(s['영상형식']||'롱폼')!=='쇼츠';});
     var V=visCount(),chipEl=gid('ytc-travel-n');if(chipEl&&ok(S.slots))chipEl.textContent=(V.known?'공개 '+V['공개']+' · 전체 '+V.all:V.all+'편')+' · 새 롱폼 '+pub.length+'/'+sl.length;
     var inv=gid('trv2-inv');if(inv)inv.textContent=V.all+'편'+(V.known?' (공개 '+V['공개']+' · 일부공개 '+V['일부공개']+' · 비공개 '+V['비공개']+(V.none?' · 미확인 '+V.none:'')+(V.day?' · '+(+V.day.slice(5,7))+'/'+(+V.day.slice(8,10))+' 확인':'')+')':'');
     /* 지금 상태 띠 */

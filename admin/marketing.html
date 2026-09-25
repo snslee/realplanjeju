@@ -5529,6 +5529,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       S.room=rs.error?{err:rs.error.message}:((rs.data||[])[0]||null);
       S.inq=r7.error?{err:r7.error.message}:(r7.data||[]).filter(function(x){return /^R\d/.test(x['슬롯번호']||'')||x['utm_medium']==='yt_travel';});
       S.last=(!r9.error&&r9.data&&r9.data[0])?String(r9.data[0]['발행일']).slice(0,10):null;
+      (function(){var T0=new Date(Date.now()+9*3600e3).toISOString().slice(0,10),mx=null;if(ok(S.slots))S.slots.forEach(function(s){var d=s['발행일']?String(s['발행일']).slice(0,10):null;if(d&&d<=T0&&vid(s['영상url'])&&(!mx||d>mx))mx=d;});if(mx&&(!S.last||mx>S.last))S.last=mx;})();
       S.am={};if(!ra.error)(ra.data||[]).forEach(function(x){S.am[x['영상id']]=x;});
       S.used={};S.views={};S.more=null;
       var ids=[],mats=[];

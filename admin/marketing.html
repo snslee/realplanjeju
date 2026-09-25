@@ -5520,7 +5520,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       var r6g=await sb.from('mk_youtube_channel_rules').select('채널,순번,구분,항목,내용,상태,확정일,근거').eq('채널',GENIE).order('순번',{ascending:true}).limit(100);
       var rd=await sb.from('mk_youtube_decisions').select('결정일,대표말,결정내용,바뀐절번호,이전값,새값,반영위치,출처,생성일').eq('채널',CH).order('결정일',{ascending:false}).order('생성일',{ascending:false}).limit(300);
       var rs=await sb.from('mk_youtube_room_status').select('회기일시,지금상태,다음할일,결정대기,어긋남,작성방').eq('채널',CH).order('회기일시',{ascending:false}).limit(1);
-      var rst=await sb.from('mk_youtube_strengths').select('id,요소,장점,출처영상id,쓴슬롯,편별결과,상태,검증일').eq('채널',CH).limit(300);
+      var rst=await sb.from('mk_youtube_strengths').select('id,요소,장점,출처영상id,쓴슬롯,편별결과,상태,검증일,검증,판정조건').eq('채널',CH).limit(300);
       var r7=await sb.from('mk_inquiry_attribution').select('슬롯번호,utm_medium,신청일시').eq('콘텐츠유형','유튜브').limit(1000);
       var r9=await sb.from('mk_youtube_assets').select('발행일').eq('채널',CH).order('발행일',{ascending:false}).limit(1);
       var ra=await sb.from('mk_youtube_assets').select('영상id,촬영월,재활용_상태,공개상태,공개상태_확인일').eq('채널',CH).limit(3000);

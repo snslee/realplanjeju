@@ -5828,6 +5828,312 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     el.innerHTML=h;
   }
 
+  /* ══ v1.42.0 운영 보드 v2 (2026-09-25 동영상 방 직접 반영 · 대표 지시) ══
+     이 아래 함수는 위 v1.41 같은 이름 함수를 덮어쓴다(같은 스코프 · 나중 선언이 이긴다). 위 원본은 롤백용으로 남김.
+     ① 기준판 = 층(틀·진행중·채택) + 검증 4칸(알고리즘·고객 수요·잘된 영상·우리 성과) · 장점 대장 합침
+     ② 공정판 = 공정기록 완료일 · 관문 결재(✔ 승인 / ! 기록 없음) · 롱폼 아래 쇼츠 줄(부모슬롯id)
+     ③ 편 카드 = 기획·제작·포장·성과 + 배운 것 → 다음 편 · 백업 키 숨김 · 경로는 파일명만 · 벤치 이유는 한 줄
+     ④ 성과·판정 = 롱폼·쇼츠 따로 · 쇼츠 기준선 0/4
+     ⑤ 외부 검증 = 롱폼 벤치 / 쇼츠 벤치 / 플랫폼 공식 근거 / 채널 풀 */
+  var LY={'틀':['#f1f5f9','#334155','#cbd5e1'],'진행중':['#fff7ed','#b45309','#fdba74'],'채택':['#f0fdf4','#166534','#86efac']};
+  var VJ={'부합':['#f0fdf4','#166534','#bbf7d0'],'부분 부합':['#ecfeff','#0e7490','#a5f3fc'],'불일치':['#fef2f2','#b91c1c','#fecaca'],'미조사':['#f8fafc','#64748b','#e2e8f0']};
+  var VK=[['알고리즘','알고리즘'],['고객수요','고객 수요'],['잘된영상','잘된 영상'],['우리성과','우리 성과']];
+  function cc(c,t,title){return '<span class="trv-chip" style="background:'+c[0]+';color:'+c[1]+';border-color:'+c[2]+';margin:0 3px 3px 0"'+(title?' title="'+E(title)+'"':'')+'>'+E(t)+'</span>';}
+  function vchips(v){v=v||{};return VK.map(function(k){var o=v[k[0]]||{},p=o['판정']||'—';
+    var c=VJ[p]||(/기준선/.test(p)?['#eff6ff','#1d4ed8','#bfdbfe']:['#f8fafc','#94a3b8','#e2e8f0']);
+    return cc(c,k[1]+' '+p,o['근거']||'');}).join('');}
+  function jsort(a,b){return jkey(a['절번호']).localeCompare(jkey(b['절번호']))||((+a['순번']||0)-(+b['순번']||0));}
+  function fname(v){var s=String(v==null?'':v);return /[\\\/]/.test(s)&&!isUrl(s)?s.split(/[\\\/]+/).pop():s;}
+  function nice(v){
+    if(v==null||v==='')return '<span style="color:#cbd5e1">—</span>';
+    if(Array.isArray(v))return v.map(nice).join('<br>');
+    if(typeof v==='object')return Object.keys(v).filter(function(k){return k.indexOf('백업_')!==0;}).map(function(k){return '<span style="color:#64748b">'+E(k)+'</span> '+nice(v[k]);}).join('<br>');
+    return isUrl(v)?'<a href="'+E(v)+'" target="_blank" rel="noopener" style="color:#2563eb">'+E(String(v).replace(/^https?:\/\//,'').slice(0,48))+'</a>':E(fname(v));
+  }
+  function why1(r){
+    if(r==null)return '—';var o=r;
+    if(typeof r==='string'){try{o=JSON.parse(r);}catch(e){return E(r);}}
+    if(typeof o!=='object')return E(o);
+    var p=[];
+    if(o['발행'])p.push('발행 '+E(String(o['발행']).slice(2,7)));
+    if(o['채널평소배수']!=null)p.push('평소 '+E(o['채널평소배수'])+'배');
+    if(o['좋아요_pct']!=null)p.push('좋아요 '+E(o['좋아요_pct'])+'%');
+    var t=p.join(' · ');
+    if(o['조건'])t+='<div style="color:#94a3b8;font-size:.68rem">조건: '+E(o['조건'])+(o['조회_확인일']?' · 확인 '+E(String(o['조회_확인일']).slice(5).replace('-','/')):'')+'</div>';
+    return t||E(JSON.stringify(o));
+  }
+  window.trv2Flt=function(f){S.lf=f;renderRules();};
+  window.trv2Xt=function(t){S.xt=t;renderStr();};
+
+
+  /* v1.42.0 — 지침 v2.2 7단계 · 조사 출처 7종 · 적합성 5가지 · 고객 판단 (mk_youtube_slots.조사·적합성·고객판단) */
+  var SRC=[['공식','① 플랫폼 공식'],['검색수요','② 검색 수요(네이버·구글)'],['고객질문','③ 고객 질문'],['AI모델','④ AI 모델별'],['공공통계','⑤ 공공·통계'],['잘된영상','⑥ 잘된 사례'],['우리데이터','⑦ 우리 데이터']];
+  var FIT=[['목적','목적'],['고객','고객'],['재료','재료·역량'],['금지선','금지선'],['정체성','정체성']];
+  function srcDone(o){var t=String(o&&o['상태']||'');return !!t&&!/미조사|기록 없음/.test(t);}
+  function steps(s){
+    var r=s['조사']||{},f=s['적합성']||{},c=s['고객판단']||{},M=S.more;
+    var n2=SRC.filter(function(k){return srcDone(r[k[0]]);}).length;
+    var nb=M&&ok(M.pick)?M.pick.filter(function(x){return x['슬롯id']===s.id;}).length:null;
+    var n4=FIT.filter(function(k){return /통과/.test(String(f[k[0]]||''));}).length;
+    var nm=M&&ok(M.met)?M.met.filter(function(x){return x['슬롯id']===s.id;}).length:null;
+    return [
+      {n:1,t:'주제 정하기',ok:!!s['핵심키워드'],d:s['핵심키워드']||'—'},
+      {n:2,t:'외부 전수조사',ok:n2===7,d:n2+'/7 출처'},
+      {n:3,t:'잘된 사례',ok:nb>0,d:nb==null?'—':nb+'편'},
+      {n:4,t:'적합성 5가지',ok:n4===5,d:n4+'/5 통과'+(f['메모']?' · '+f['메모']:'')},
+      {n:5,t:'고객 판단',ok:!!(c['궁금']||c['필요']),d:c['노림']?'노림 '+c['노림']:'—'},
+      {n:6,t:'보고·승인',ok:gateMark(s,1)==='✔',d:gateMark(s,1)==='✔'?'P1 승인':'P1 결재 전'},
+      {n:7,t:'측정·판정',ok:!!s['판정'],d:s['판정']?'판정 '+s['판정']:(nm?nm+'회 측정':'측정 전')}];
+  }
+  function stepCount(s){return steps(s).filter(function(x){return x.ok;}).length;}
+  function addDays(d,n){var t=Date.parse(String(d).slice(0,10)+'T00:00:00Z')+n*864e5;return new Date(t).toISOString().slice(0,10);}
+  function renderNext(){
+    var tb=gid('trv2-tabs');if(!tb||!ok(S.slots))return;var nx=gid('trv2-next');
+    if(!nx){nx=document.createElement('div');nx.id='trv2-next';nx.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px;font-size:.76rem';tb.parentNode.insertBefore(nx,tb);}
+    var T=today(),best=null;
+    S.slots.forEach(function(s){if(!s['발행일']||!vid(s['영상url']))return;[2,7,28,90].forEach(function(n){var d=addDays(s['발행일'],n);if(d>=T&&(!best||d<best.d))best={d:d,no:s['슬롯번호'],n:n,f:s['영상형식']||'롱폼'};});});
+    var sh=S.slots.filter(function(s){return s['영상형식']==='쇼츠';}),wk=addDays(T,7);
+    var up=sh.filter(function(s){return s['발행일']&&String(s['발행일']).slice(0,10)>=T&&String(s['발행일']).slice(0,10)<=wk;});
+    var p9=S.slots.filter(function(s){return pix(s['공정단계'])===9&&!sh.some(function(k){return k['부모슬롯id']===s.id;});});
+    function box(t,v,c){return '<span style="background:#fff;border:1px solid '+c+';border-radius:8px;padding:5px 10px"><b>'+t+'</b> '+v+'</span>';}
+    nx.innerHTML=box('📏 다음 측정',best?E(best.no)+' '+E(best.f)+' '+best.n+'일 · '+md(best.d)+' 18:00 · 스튜디오 화면':'—','#bfdbfe')
+      +box('🎞 이번 주 쇼츠',up.length?up.map(function(s){return E(s['슬롯번호'])+' '+md(s['발행일']);}).join(' · '):(p9.length?p9.map(function(s){return E(s['슬롯번호'])+' 쇼츠 설계 중';}).join(' · '):'없음'),'#fdba74')
+      +box('🧭 7단계',S.slots.filter(function(s){return (s['영상형식']||'롱폼')!=='쇼츠'&&pix(s['공정단계'])>=0&&pix(s['공정단계'])<=9;}).map(function(s){return E(s['슬롯번호'])+' '+stepCount(s)+'/7';}).join(' · ')||'—','#e2e8f0');
+  }
+
+  /* ① 기준판 */
+  function renderRules(){
+    var ru=gid('trv-rules'),rh=gid('trv-rules-n');if(!ru)return;
+    if(!ok(S.rules)){ru.innerHTML=errBox('기준판(mk_youtube_channel_rules)',S.rules&&S.rules.err);return;}
+    var A=trv();if(!A.length){ru.innerHTML=why('조항 없음 — mk_youtube_channel_rules 채널=리얼플랜여행 0행');return;}
+    var open={};ru.querySelectorAll('details[data-g]').forEach(function(d){open[d.getAttribute('data-g')]=d.open;});
+    var dl=A.filter(function(x){return x['상태']==='폐기';}),live=A.filter(function(x){return x['상태']!=='폐기';});
+    var f=S.lf||'all',L=live.filter(function(x){return f==='all'||x['구분']==='쇼츠';});
+    var by={'틀':[],'진행중':[],'채택':[],'x':[]};L.forEach(function(x){(by[x['층']]||by['x']).push(x);});
+    if(rh)rh.textContent='· 틀 '+by['틀'].length+' · 진행중 '+by['진행중'].length+' · 채택 '+by['채택'].length+(by['x'].length?' · 층 미지정 '+by['x'].length:'')+(dl.length?' · 폐기 '+dl.length+' 숨김':'');
+    var p10=live.filter(function(x){return x['절번호']==='1-0';})[0];
+    var h='';
+    if(p10)h+='<div style="border:1px solid #bfdbfe;background:#eff6ff;border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:.78rem;line-height:1.55"><b style="color:#1d4ed8">1-0 판단 원칙</b> · '+E(p10['내용'])+'</div>';
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px"><span style="display:inline-flex;gap:6px;align-items:center">'
+      +[['all','전체'],['shorts','쇼츠']].map(function(b){return '<button onclick="trv2Flt(\''+b[0]+'\')" style="border:1px solid '+(f===b[0]?'#2563eb':'#e2e8f0')+';color:'+(f===b[0]?'#2563eb':'#475569')+';background:#fff;border-radius:6px;padding:2px 10px;font-size:.74rem;font-weight:700;cursor:pointer">'+b[1]+'</button>';}).join('')
+      +'<span style="font-size:.7rem;color:#64748b">틀 = 대표가 정한 방향·금지선·운영 절차 · 진행중 = 데이터가 없어 대표 의견으로 진행, 외부 검증 대기 · 채택 = 외부 검증 부합</span></span>'
+      +'<label style="font-size:.74rem;cursor:pointer"><input type="checkbox" onchange="trv2Del(this.checked)"'+(S.showDel?' checked':'')+'> 폐기 보기 ('+dl.length+')</label></div>';
+    function head(t,n,c){return '<div style="display:flex;align-items:center;gap:6px;margin:0 0 6px"><b style="font-size:.86rem">'+t+'</b>'+cc(c,n+'건')+'</div>';}
+    function prev(x){return x['이전값']?'<details class="trv2-prev"><summary>▸ 이전 값</summary><div>'+E(x['이전값'])+'</div></details>':'';}
+    function jid(x){return x['절번호']?' id="trv2-r-'+E(x['절번호'])+'"':'';}
+    function card(x,body){return '<div'+jid(x)+' style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:.76rem;line-height:1.5"><div><b>'+E(x['절번호']||'#'+x['순번'])+'</b> <b>'+E(x['항목'])+'</b> '+(x['상태']==='임시'?chip('임시'):'')+'</div>'+body+'</div>';}
+    /* 틀 */
+    var t='';
+    for(var g=0;g<=7;g++){
+      var rows=by['틀'].filter(function(x){return g?(+x['설계단계']===g):!x['설계단계'];}).sort(jsort);if(!rows.length)continue;
+      var key='L'+g,o=(key in open)?open[key]:false;
+      t+='<details class="trv2-stg" data-g="'+key+'"'+(o?' open':'')+'><summary>'+(g?g+'단계 · '+STG[g]:'편 전용')+' '+cc(['#f1f5f9','#475569','#e2e8f0'],String(rows.length))+'</summary><div style="padding:6px 8px">'
+        +rows.map(function(x){return card(x,'<div style="color:#334155">'+E(x['내용'])+'</div>'+prev(x)+'<div style="color:#94a3b8;font-size:.68rem">'+E(x['근거']||'')+(x['확정일']?' · '+String(x['확정일']).slice(5).replace('-','/'):'')+'</div>');}).join('')+'</div></details>';
+    }
+    /* 진행중 */
+    var pg=by['진행중'].slice().sort(jsort).map(function(x){
+      return card(x,'<div style="margin:2px 0">'+cc(['#fff7ed','#b45309','#fdba74'],'출처 '+(x['출처']||'—'))+'</div><div style="color:#334155">'+E(x['내용'])+'</div><div style="margin-top:4px">'+vchips(x['검증'])+'</div>'
+        +(x['검증계획']?'<div style="color:#64748b;font-size:.7rem">검증 계획: '+E(x['검증계획'])+'</div>':'')+prev(x));}).join('');
+    var st=ok(S.str)?S.str:[];
+    if(f==='all'&&st.length)pg+='<div style="font-size:.78rem;font-weight:700;margin:10px 0 6px;color:#b45309">가져온 장점 (장점 대장 '+st.length+')</div>'+st.map(function(x){
+      return '<div style="background:#fff;border:1px dashed #fdba74;border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:.74rem"><b>'+E(x['요소'])+'</b> '+chip(x['상태'])+'<div>'+E(x['장점'])+'</div><div style="margin-top:4px">'+vchips(x['검증'])+'</div>'+(x['판정조건']?'<div style="color:#64748b;font-size:.7rem">판정 조건: '+E(x['판정조건'])+'</div>':'')+'</div>';}).join('');
+    /* 채택 */
+    var ad=by['채택'].slice().sort(jsort).map(function(x){
+      return card(x,'<div style="margin:2px 0">'+(x['근거등급']?chip(x['근거등급'],'근거 '+x['근거등급']):'')+' '+cc(['#f0fdf4','#166534','#bbf7d0'],x['출처']||'')+'</div><div style="color:#334155">'+E(x['내용'])+'</div><div style="margin-top:4px">'+vchips(x['검증'])+'</div><div style="color:#94a3b8;font-size:.68rem">'+E(x['근거']||'')+(x['검증일']?' · 검증 '+String(x['검증일']).slice(5).replace('-','/'):'')+'</div>');}).join('');
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;align-items:start">'
+      +'<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px">'+head('틀 · 대표가 정한다',by['틀'].length,LY['틀'])+(t||why('없음'))+'</div>'
+      +'<div style="background:#fffbf5;border:1px solid #fed7aa;border-radius:10px;padding:10px">'+head('진행중 · 외부 검증 대기',by['진행중'].length,LY['진행중'])+(pg||why('없음'))+'</div>'
+      +'<div style="background:#f7fdf9;border:1px solid #bbf7d0;border-radius:10px;padding:10px">'+head('채택 · 데이터 부합',by['채택'].length,LY['채택'])+(ad||why('없음'))+'</div></div>';
+    if(by['x'].length)h+='<div style="margin-top:8px;font-size:.74rem;color:#b45309">층 미지정 '+by['x'].length+'건 — '+by['x'].map(function(x){return E(x['항목'])+'('+E(String(x['내용']||'').slice(0,30))+')';}).join(' · ')+' · 대표 결정 대기</div>';
+    if(S.showDel&&dl.length)h+='<details class="trv2-stg" open style="margin-top:8px"><summary>폐기 '+dl.length+'</summary><div style="padding:6px 8px">'+dl.map(function(x){return card(x,'<div style="color:#94a3b8">'+E(x['내용'])+'</div>');}).join('')+'</div></details>';
+    ru.innerHTML=h;
+  }
+
+  /* ② 공정판 */
+  function gateMark(s,i){var g=s['관문결재'];if(!Array.isArray(g))return '';
+    var m=g.filter(function(x){if(x==='P'+i)return true;if(!x||typeof x!=='object')return false;var k=String(x['관문']||x['단계']||'');return k==='P'+i||k.indexOf('P'+i+' ')===0;})[0];
+    if(!m)return '';return (m==='P'+i||m['결재']==='승인')?'✔':'!';}
+  function pRec(s,i){var r=s['공정기록'];return r&&r['P'+i]?r['P'+i]:null;}
+  function renderBoard(){
+    var so=gid('trv-slots');if(!so)return;
+    if(!ok(S.slots)){so.innerHTML=errBox('편성(mk_youtube_slots)',S.slots&&S.slots.err);return;}
+    var all=S.slots,T=today();
+    var sl=all.filter(function(s){return (s['영상형식']||'롱폼')!=='쇼츠';}),sh=all.filter(function(s){return s['영상형식']==='쇼츠';});
+    if(!sl.length){so.innerHTML=why('편성 없음 — mk_youtube_slots 채널=리얼플랜여행 0행');return;}
+    var hd='';for(var i=0;i<=10;i++)hd+='<th class="trv2-pc" style="width:38px" title="'+E(PN[i])+'">P'+i+'</th>';
+    function cells(s){var ci=pix(s['공정단계']),c='';
+      for(var i=0;i<=10;i++){var r=pRec(s,i),dn=r&&r['완료'],k='trv2-cell';
+        if(dn||(ci>=0&&i<ci))k+=' done';if(ci===i&&!dn)k+=' now';if(GATE[i])k+=' gate';
+        var gm=GATE[i]?gateMark(s,i):'';var txt=gm?gm:(dn?String(dn).slice(5).replace('-','/').replace(/^0/,''):'');
+        var col=gm==='!'?';background:#fef2f2;color:#b91c1c':'';
+        c+='<td class="trv2-pc" style="width:38px"><span class="'+k+'" style="font-size:.6rem'+col+'" title="P'+i+' '+E(PN[i])+(r?' · '+E((r['완료']||'진행 중')+' · '+(r['내용']||'')):'')+(gm==='!'?' · 관문 결재 기록 없음':'')+'">'+E(txt)+'</span></td>';}
+      return c;}
+    var rows=sl.map(function(s){
+      var ci=pix(s['공정단계']);
+      var t=s['최종제목']?E(s['최종제목']):(s['핵심키워드']?'<span style="color:#64748b">'+E(s['핵심키워드'])+'</span>':'<span style="color:#cbd5e1">—</span>');
+      var lu=layoutUrl(s);
+      var r='<tr'+(s['상태']==='보류'?' style="opacity:.6"':'')+'><td style="font-weight:800"><a href="javascript:void(0)" onclick="trv2Sel(\''+E(s['슬롯번호'])+'\');trv2Tab(\'p3\')" style="color:#0f172a">'+E(s['슬롯번호'])+'</a></td><td>'+t+(ci<0?' <span style="color:#94a3b8;font-size:.7rem">· 단계 없음('+E(s['상태']||'')+')</span>':'')+' <span class="trv-chip" style="background:#f8fafc;color:#334155;border-color:#e2e8f0" title="지침 v2.2 7단계">7단계 '+stepCount(s)+'/7</span>'+(ci<=0?' <span class="trv-chip" style="background:#fff7ed;color:#b45309;border-color:#fdba74" title="제목은 7단계 조사 뒤 확정">조사 전 · 제목 임시</span>':'')+'</td><td style="white-space:nowrap">'+pubCell(s,T)+'</td>'+cells(s)
+        +'<td>'+(lu&&isUrl(lu)?'<a href="'+E(lu)+'" target="_blank" rel="noopener" style="color:#2563eb">열기</a>':'<span style="color:#cbd5e1">—</span>')+'</td><td>'+(s['판정']?chip('A',s['판정']):'<span style="color:#cbd5e1">—</span>')+'</td></tr>';
+      var kids=sh.filter(function(x){return x['부모슬롯id']===s.id;});
+      kids.forEach(function(k){r+='<tr style="background:#fffbf5"><td style="color:#b45309;font-weight:700;padding-left:14px">└ '+E(k['슬롯번호'])+'</td><td><span class="trv-chip" style="background:#fff7ed;color:#b45309;border-color:#fdba74">쇼츠</span> '+E(k['최종제목']||k['핵심키워드']||'')+'</td><td style="white-space:nowrap">'+md(k['발행일'])+'</td>'+cells(k)+'<td></td><td>'+(k['판정']?chip('A',k['판정']):'<span style="color:#cbd5e1">—</span>')+'</td></tr>';});
+      if(!kids.length&&ci===9)r+='<tr style="background:#fffbf5"><td style="color:#b45309;padding-left:14px">└</td><td colspan="15" style="color:#b45309;font-size:.72rem">쇼츠 설계 중 — 롱폼 1편당 1편(진행중 3-13) · 쇼츠 줄은 부모슬롯id로 붙음</td></tr>';
+      return r;}).join('');
+    renderNext();if(!S.more&&!S.moreBusy)loadMore();
+    so.innerHTML='<div style="font-size:.72rem;color:#64748b;margin:0 0 6px">칸 숫자 = 완료일 · 굵은 테두리 = 관문(P1 기획 · P2 대본 · P4 편집 레이아웃 · P7 포장) · ✔ = 결재 승인 · <b style="color:#b91c1c">!</b> = 결재 기록 없음 · 파랑 = 지금 단계 · 칸에 마우스를 올리면 내용</div>'
+      +'<div style="overflow:auto"><table class="trv-tbl"><thead><tr><th style="width:40px">편</th><th style="min-width:200px">제목(없으면 핵심키워드)</th><th style="width:86px">발행일</th>'+hd+'<th style="width:54px">레이아웃</th><th style="width:44px">판정</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+
+  /* ③④⑤ 데이터 — 쇼츠 벤치 추가 */
+  async function loadMore(){
+    if(S.more||S.moreBusy||typeof sb==='undefined'||!ok(S.slots))return;
+    S.moreBusy=true;var M={};
+    try{
+      var ids=S.slots.map(function(s){return s.id;});
+      var rm=ids.length?await sb.from('mk_youtube_metrics').select('슬롯id,측정시점,영상형식,영상id,수집_시각,노출수,노출클릭률_pct,조회수,평균시청지속률_pct,첫30초유지_pct,구독증가,공유,홈A방문,자료실체류_초,문의버튼클릭,문의수,단체댓글').in('슬롯id',ids).limit(2000):{data:[]};
+      var rg=ids.length?await sb.from('mk_youtube_segments').select('슬롯id,영상형식,순번,시작_초,끝_초,구간종류,장소,내용,주요순간,유지율_시작,유지율_끝').in('슬롯id',ids).order('순번',{ascending:true}).limit(3000):{data:[]};
+      var rk=ids.length?await sb.from('mk_youtube_bench_picks').select('슬롯id,영상id,뽑은이유,가져온장점').in('슬롯id',ids).limit(1000):{data:[]};
+      var rb=await sb.from('mk_youtube_benchmarks').select('채널id,채널명,핸들,층,구독자,상태,등재일,비고').eq('트랙',CH).order('구독자',{ascending:false}).limit(500);
+      var rsv=await sb.from('mk_youtube_bench_videos').select('영상id,채널id,제목,발행일,길이_초,조회수,좋아요율_pct,채널평소배수,주제표시,영상형식').eq('트랙',CH).eq('영상형식','쇼츠').limit(500);
+      M.met=res(rm);M.seg=res(rg);M.pick=res(rk);M.bench=res(rb);M.sbv=res(rsv);M.bv={};
+      var vids=ok(M.pick)?M.pick.map(function(x){return x['영상id'];}):[];
+      if(vids.length){var rv=await sb.from('mk_youtube_bench_videos').select('영상id,채널id,제목,조회수,좋아요율_pct,채널평소배수,주제표시,발행일,길이_초').in('영상id',vids);if(!rv.error)(rv.data||[]).forEach(function(x){M.bv[x['영상id']]=x;});}
+    }catch(e){M.err=String(e&&e.message||e);}
+    S.more=M;S.moreBusy=false;
+    renderMore();renderBoard();
+  }
+
+  /* ③ 편 카드 */
+  function renderDetail(){
+    var el=gid('trv2-detail');if(!el)return;
+    if(!ok(S.slots)){el.innerHTML=errBox('편성(mk_youtube_slots)',S.slots&&S.slots.err);return;}
+    if(!S.slots.length){el.innerHTML=why('편성 없음 — mk_youtube_slots 채널=리얼플랜여행 0행');return;}
+    if(!S.sel){var cur=S.slots.filter(function(s){var i=pix(s['공정단계']);return i>=1&&i<=9;})[0];S.sel=(cur||S.slots[0])['슬롯번호'];}
+    var s=slotBy(S.sel)||S.slots[0],M=S.more;
+    var opt=S.slots.map(function(x){return '<option value="'+E(x['슬롯번호'])+'"'+(x===s?' selected':'')+'>'+E(x['슬롯번호'])+(x['영상형식']==='쇼츠'?' [쇼츠]':'')+' · '+E(String(x['최종제목']||x['핵심키워드']||'').slice(0,40))+'</option>';}).join('');
+    var tag=s['편태그']||{},rec=s['편별기록']||{},pk=s['업로드패키지']||{},lu=pk['착지_url'],gw=Array.isArray(s['관문결재'])?s['관문결재']:[],gw2=s['공수']||{};
+    function blk(t,body){return '<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;font-size:.74rem;line-height:1.55;background:#fff"><div style="font-weight:800;color:#1d4ed8;margin-bottom:4px">'+t+'</div>'+body+'</div>';}
+    function kv(k,v){return '<div><span style="color:#64748b">'+E(k)+'</span> '+(v==null||v===''?'<span style="color:#cbd5e1">—</span>':v)+'</div>';}
+    var mt=M&&ok(M.met)?M.met.filter(function(x){return x['슬롯id']===s.id;}):[];
+    function lastM(fm){var o=['2일','7일','28일','90일'],b=null;mt.forEach(function(x){if(x['영상형식']!==fm)return;if(!b||o.indexOf(x['측정시점'])>o.indexOf(b['측정시점']))b=x;});return b;}
+    function mline(fm){var b=lastM(fm);return b?E(b['측정시점'])+' · 조회 '+N(b['조회수'])+(b['노출클릭률_pct']!=null?' · 클릭률 '+E(b['노출클릭률_pct'])+'%':'')+(b['문의수']!=null?' · 문의 '+N(b['문의수']):''):'<span style="color:#94a3b8">측정 전</span>';}
+    var h='<div style="margin-bottom:10px"><select onchange="trv2Sel(this.value)" style="border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;font-size:.8rem;max-width:100%">'+opt+'</select></div>';
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;margin-bottom:10px">'
+      +blk('기획',kv('주제',E(s['핵심키워드']||''))+kv('시험 요소',s['시험요소']?'<b>'+E(s['시험요소'])+'</b>':'')+'<div style="margin-top:3px">'+Object.keys(tag).map(function(k){return '<span class="trv-chip" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;margin:0 3px 3px 0" title="'+E(k)+'">'+E(k)+' '+E(tag[k])+'</span>';}).join('')+'</div>'
+        +kv('벤치',M&&ok(M.pick)?M.pick.filter(function(x){return x['슬롯id']===s.id;}).length+'편':'—'))
+      +blk('제작',kv('촬영',md(s['촬영일']))+kv('대본',nice(rec['대본']))+kv('나레이션',nice(rec['나레이션']))+kv('편집',nice(rec['편집']))+kv('걸린 시간',Object.keys(gw2).length?nice(gw2):''))
+      +blk('포장',kv('제목',E(s['최종제목']||''))+kv('태그',Array.isArray(pk['태그'])?E(pk['태그'].join(' · ')):'')+kv('착지',lu?(/^https:\/\/(www\.)?realplanjeju\.com\//.test(lu)?'<a href="'+E(String(lu).split(' ')[0])+'" target="_blank" rel="noopener" style="color:#16a34a;font-weight:700">홈A ✔</a>'+(/임시/.test(lu)?' <span style="color:#b45309">(임시)</span>':''):'<span style="color:#dc2626;font-weight:700">⚠ 홈A 아님</span>'):'')+kv('영상',s['영상url']?'<a href="'+E(s['영상url'])+'" target="_blank" rel="noopener" style="color:#2563eb">열기</a>':''))
+      +blk('성과',kv('롱폼',mline('롱폼'))+kv('쇼츠',mline('쇼츠'))+kv('4칸 판정',s['판정']?'<b>'+E(s['판정'])+' '+E(QD[s['판정']]||'')+'</b> · '+md(s['판정일']):'<span style="color:#94a3b8">발행 28일 뒤</span>'))
+      +'</div>';
+    var sp=steps(s),rq=s['조사']||{},fq=s['적합성']||{},cq=s['고객판단']||{};
+    h+='<h4 class="trv2-h" style="margin-top:0">7단계 진행 <span style="font-weight:500;color:#94a3b8;font-size:.72rem">· 지침 v2.2 제1조의2 · '+stepCount(s)+'/7</span></h4><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;margin-bottom:8px">'
+      +sp.map(function(x){return '<div style="border:1px solid '+(x.ok?'#bbf7d0':'#e2e8f0')+';background:'+(x.ok?'#f0fdf4':'#fff')+';border-radius:8px;padding:6px 8px;font-size:.72rem"><b>'+x.n+' '+E(x.t)+'</b> '+(x.ok?'✔':'')+'<div style="color:#64748b">'+E(x.d)+'</div></div>';}).join('')+'</div>';
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-bottom:10px">'
+      +blk('조사 출처 7종 (제1조의3)',SRC.map(function(k){var o=rq[k[0]]||{},st=o['상태']||'미조사';return '<div>'+(srcDone(o)?'✔':'<span style="color:#b45309">·</span>')+' '+E(k[1])+' <span style="color:'+(srcDone(o)?'#166534':'#b45309')+'">'+E(st)+'</span>'+(o['근거']?'<div style="color:#64748b;font-size:.68rem;margin-left:12px">'+E(o['근거'])+(o['조회일']?' · '+E(o['조회일']):'')+'</div>':'')+'</div>';}).join(''))
+      +blk('적합성 5가지 · 고객 판단',FIT.map(function(k){var v=fq[k[0]];return cc(v&&/통과/.test(v)?['#f0fdf4','#166534','#bbf7d0']:(v?['#fef2f2','#b91c1c','#fecaca']:['#f8fafc','#94a3b8','#e2e8f0']),k[1]+' '+(v||'—'));}).join('')+(fq['메모']?'<div style="color:#b45309;font-size:.7rem">'+E(fq['메모'])+'</div>':'')
+        +'<div style="margin-top:6px">'+kv('궁금(조회 쪽)',E(cq['궁금']||''))+kv('필요(문의 쪽)',E(cq['필요']||''))+kv('노림',E(cq['노림']||''))+'</div>')+'</div>';
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
+      +blk('이 편에서 배운 것',s['배운것']?E(s['배운것']):'<span style="color:#94a3b8">— P10 측정 뒤 기록</span>')
+      +blk('다음 편에 바꿀 것',s['다음편_바꿀것']?E(s['다음편_바꿀것']):'<span style="color:#94a3b8">—</span>')+'</div>';
+    h+='<h4 class="trv2-h">관문 결재</h4>'+(gw.length?'<div style="display:flex;flex-wrap:wrap;gap:6px">'+gw.map(function(g){if(typeof g!=='object')return chip('A',String(g));var okk=g['결재']==='승인';
+      return '<div style="border:1px solid '+(okk?'#bbf7d0':'#fecaca')+';background:'+(okk?'#f0fdf4':'#fef2f2')+';border-radius:8px;padding:5px 9px;font-size:.72rem"><b>'+E(g['관문']||g['단계']||'')+'</b> '+(okk?'✔ 승인':'! '+E(g['결재']||''))+(g['결재일']?' · '+String(g['결재일']).slice(5).replace('-','/'):'')+'<div style="color:#64748b;font-size:.68rem">'+E(g['근거']||'')+'</div></div>';}).join('')+'</div>':why('관문 결재 기록 없음 — 결재 즉시 기록(제17조 15)'));
+    if(!M)h+='<div style="font-size:.76rem;color:#64748b;margin-top:8px">벤치·구간·측정 불러오는 중…</div>';
+    else if(M.err)h+=errBox('편 카드 데이터',M.err);
+    else{
+      var pk2=ok(M.pick)?M.pick.filter(function(x){return x['슬롯id']===s.id;}):null;
+      h+='<h4 class="trv2-h">편별 벤치</h4>'+(!ok(M.pick)?errBox('편별 벤치',M.pick.err):!pk2.length?why('벤치 없음 — P1 기획 때 뽑음')
+        :'<div style="overflow:auto"><table class="trv-tbl"><thead><tr><th>영상</th><th style="text-align:right">조회</th><th>뽑은 이유</th></tr></thead><tbody>'+pk2.map(function(x){var v=M.bv[x['영상id']]||{};
+          return '<tr><td><a href="https://youtu.be/'+E(x['영상id'])+'" target="_blank" rel="noopener" style="color:#2563eb">'+E(String(v['제목']||x['영상id']).slice(0,50))+'</a></td><td style="text-align:right">'+(v['조회수']!=null?N(v['조회수']):'—')+'</td><td style="font-size:.72rem">'+why1(x['뽑은이유'])+'</td></tr>';}).join('')+'</tbody></table></div>');
+      var sg=ok(M.seg)?M.seg.filter(function(x){return x['슬롯id']===s.id;}):null;
+      h+='<h4 class="trv2-h">구간표</h4>'+(!ok(M.seg)?errBox('구간',M.seg.err):!sg.length?why('구간 없음 — 편집(P5~P6) 뒤 기록')
+        :'<div style="overflow:auto;max-height:260px"><table class="trv-tbl"><thead><tr><th>형식</th><th>시작~끝</th><th>종류</th><th>장소</th><th>주요 순간</th></tr></thead><tbody>'+sg.map(function(x){function t(z){z=+z||0;return Math.floor(z/60)+':'+('0'+Math.floor(z%60)).slice(-2);}
+          return '<tr><td>'+E(x['영상형식'])+'</td><td style="white-space:nowrap">'+t(x['시작_초'])+'~'+t(x['끝_초'])+'</td><td>'+E(x['구간종류'])+'</td><td>'+E(x['장소']||'')+'</td><td>'+(x['주요순간']?'<b>'+E(x['주요순간'])+'</b>':'')+'</td></tr>';}).join('')+'</tbody></table></div>');
+    }
+    var rk=Object.keys(rec).filter(function(k){return k.indexOf('백업_')!==0;});
+    h+='<details class="trv2-stg" style="margin-top:10px"><summary>편별 기록 원본 '+rk.length+'항목 <span style="font-weight:500;color:#94a3b8">· 백업 항목 숨김</span></summary><div style="padding:6px 8px"><table class="trv-tbl"><tbody>'
+      +rk.map(function(k){return '<tr><td style="width:110px;color:#475569">'+E(k)+'</td><td style="font-size:.72rem;word-break:break-all">'+nice(rec[k])+'</td></tr>';}).join('')+'</tbody></table></div></details>';
+    el.innerHTML=h;
+  }
+
+  /* ④ 성과·판정 */
+  function renderGrowth(){
+    var el=gid('trv2-growth');if(!el)return;
+    if(!ok(S.slots)){el.innerHTML=errBox('편성(mk_youtube_slots)',S.slots&&S.slots.err);return;}
+    var M=S.more,all=S.slots,sl=all.filter(function(s){return (s['영상형식']||'롱폼')!=='쇼츠';}),sh=all.filter(function(s){return s['영상형식']==='쇼츠';});
+    var pub=sl.filter(function(s){return vid(s['영상url']);}).length,spub=sh.filter(function(s){return vid(s['영상url']);}).length,judged=sl.filter(function(s){return s['판정'];});
+    var ver=ok(S.str)?S.str.filter(function(x){return x['상태']==='검증됨';}).length:0;
+    var met=M&&ok(M.met)?M.met:[];
+    var base={};met.forEach(function(x){if(x['측정시점']==='28일'&&x['영상형식']==='롱폼')base[x['슬롯id']]=1;});var bn=Math.min(Object.keys(base).length,4);
+    function bar(l,n,t){var p=Math.min(100,Math.round(n/t*100));return '<div style="font-size:.74rem;display:flex;justify-content:space-between"><span>'+l+'</span><b>'+n+' / '+t+'</b></div><div class="trv2-bar"><i style="width:'+p+'%"></i></div>';}
+    var q={A:[],B:[],C:[],D:[]};judged.forEach(function(s){if(q[s['판정']])q[s['판정']].push(s['슬롯번호']);});
+    function qc(k,sub){return '<div class="trv2-q"><b>'+k+' '+QD[k]+'</b><span style="color:#64748b">'+sub+'</span><div>'+q[k].map(function(n){return '<span class="trv-chip" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;margin:2px 2px 0 0">'+E(n)+'</span>';}).join('')+'</div></div>';}
+    var h='<div class="trv2-two"><div><h4 class="trv2-h">4칸 판정 (롱폼) '+(bn<4?cc(['#f1f5f9','#475569','#e2e8f0'],'기준선 대기 '+bn+'/4편'):cc(['#f0fdf4','#166534','#bbf7d0'],'기준선 확정'))+'</h4>'
+      +'<div class="trv2-quad">'+qc('A','조회↑ 문의↑')+qc('B','조회↑ 문의↓')+qc('C','조회↓ 문의↑')+qc('D','조회↓ 문의↓')+'</div>'
+      +'<div style="font-size:.7rem;color:#64748b">첫 4편은 기록만 → 4번째 편 28일 값으로 기준선 확정(6-5) · 판정은 기준선 대비(6-6)</div></div>'
+      +'<div><h4 class="trv2-h">L1 → L2 조건</h4>'+bar('발행 편(롱폼)',pub,12)+bar('판정 편',judged.length,8)+bar('검증 장점',ver,5)
+      +'<h4 class="trv2-h">쇼츠 기준선</h4>'+bar('발행 쇼츠(첫 4편은 기록만)',Math.min(spub,4),4)+'</div></div>';
+    if(!M)h+='<div style="font-size:.76rem;color:#64748b">측정 불러오는 중…</div>';
+    else if(M.err)h+=errBox('성과 데이터',M.err);
+    else if(!ok(M.met))h+=errBox('측정(mk_youtube_metrics)',M.met.err);
+    else{
+      function tbl(fm,list){var by={};met.forEach(function(x){if(x['영상형식']!==fm)return;(by[x['슬롯id']]=by[x['슬롯id']]||{})[x['측정시점']]=x;});
+        var ks=Object.keys(by);
+        if(!ks.length)return why(fm+' 측정 없음 — 스튜디오 동영상 분석 화면에서 2·7·28일 기록(2일 = 발행 +2일 18:00)');
+        return '<div style="overflow:auto"><table class="trv-tbl"><thead><tr><th>편</th><th style="text-align:right">2일 조회</th><th style="text-align:right">7일 조회</th><th style="text-align:right">28일 조회</th><th style="text-align:right">클릭률</th><th style="text-align:right">지속률</th><th style="text-align:right">홈A 방문</th><th style="text-align:right">문의</th></tr></thead><tbody>'
+          +ks.sort(function(a,b){return slotNo(a).localeCompare(slotNo(b));}).map(function(id){var r=by[id];function g(t,k){return r[t]&&r[t][k]!=null?N(r[t][k]):'—';}
+            var last=r['90일']||r['28일']||r['7일']||r['2일']||{};function l(k,suf){return last[k]!=null?E(last[k])+(suf||''):'—';}
+            return '<tr><td style="font-weight:800">'+E(slotNo(id))+'</td><td style="text-align:right">'+g('2일','조회수')+'</td><td style="text-align:right">'+g('7일','조회수')+'</td><td style="text-align:right">'+g('28일','조회수')+'</td><td style="text-align:right">'+l('노출클릭률_pct','%')+'</td><td style="text-align:right">'+l('평균시청지속률_pct','%')+'</td><td style="text-align:right">'+l('홈A방문')+'</td><td style="text-align:right">'+l('문의수')+'</td></tr>';}).join('')+'</tbody></table></div>';}
+      h+='<h4 class="trv2-h">롱폼 측정 추이 <span style="font-weight:500;color:#94a3b8;font-size:.72rem">· 조회 쪽 / 문의 쪽</span></h4>'+tbl('롱폼');
+      h+='<h4 class="trv2-h">쇼츠 측정 추이 <span style="font-weight:500;color:#94a3b8;font-size:.72rem">· 롱폼과 따로 · 넘기지 않고 본 비율·평균 시청률·쇼츠→롱폼 유입</span></h4>'+tbl('쇼츠');
+      var seg=ok(M.seg)?M.seg:[];
+      h+='<h4 class="trv2-h">구간 종류별 이탈 · 다시 봄</h4>';
+      if(!seg.length)h+=why('구간 없음 — 편집 뒤 기록');
+      else{var k2={};seg.forEach(function(x){var t=x['구간종류'];k2[t]=k2[t]||{n:0,out:0,re:0};k2[t].n++;if(x['주요순간']==='이탈')k2[t].out++;if(x['주요순간']==='다시봄')k2[t].re++;});
+        h+='<div style="overflow:auto"><table class="trv-tbl"><thead><tr><th>구간 종류</th><th style="text-align:right">구간 수</th><th style="text-align:right">이탈</th><th style="text-align:right">다시 봄</th></tr></thead><tbody>'
+          +Object.keys(k2).map(function(t){return '<tr><td>'+E(t)+'</td><td style="text-align:right">'+k2[t].n+'</td><td style="text-align:right;color:#b91c1c">'+k2[t].out+'</td><td style="text-align:right;color:#166534">'+k2[t].re+'</td></tr>';}).join('')+'</tbody></table></div>';
+        if(!seg.some(function(x){return x['주요순간'];}))h+='<div style="font-size:.7rem;color:#94a3b8">주요 순간(이탈·다시 봄)은 발행 2일 뒤 스튜디오 시청 지속 시간 화면에서 기록</div>';}
+    }
+    el.innerHTML=h;
+  }
+
+  /* ⑤ 외부 검증 */
+  function renderStr(){
+    var el=gid('trv2-str');if(!el)return;var M=S.more,x=S.xt||'long';
+    var tabs=[['long','롱폼 벤치'],['short','쇼츠 벤치'],['official','플랫폼 공식 근거'],['pool','채널 풀']];
+    var h='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'+tabs.map(function(t){return '<button onclick="trv2Xt(\''+t[0]+'\')" style="border:1px solid '+(x===t[0]?'#2563eb':'#e2e8f0')+';color:'+(x===t[0]?'#2563eb':'#475569')+';background:#fff;border-radius:6px;padding:3px 12px;font-size:.76rem;font-weight:700;cursor:pointer">'+t[1]+'</button>';}).join('')+'</div>';
+    function rule(j){var r=trv().filter(function(z){return z['절번호']===j&&z['상태']!=='폐기';})[0];return r?'<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:.74rem;margin-bottom:8px"><b>'+E(j)+' '+E(r['항목'])+'</b> '+(r['층']?cc(LY[r['층']]||LY['틀'],r['층']):'')+' · '+E(r['내용'])+'</div>':'';}
+    if(!M){el.innerHTML=h+'<div style="font-size:.76rem;color:#64748b">불러오는 중…</div>';return;}
+    if(M.err){el.innerHTML=h+errBox('외부 검증 데이터',M.err);return;}
+    if(x==='long'){
+      h+=rule('5-2');
+      if(!ok(M.pick))h+=errBox('편별 벤치(mk_youtube_bench_picks)',M.pick.err);
+      else if(!M.pick.length)h+=why('롱폼 벤치 없음 — 편 기획 때 뽑음');
+      else h+='<div style="overflow:auto"><table class="trv-tbl"><thead><tr><th style="width:44px">편</th><th>영상</th><th style="text-align:right">조회</th><th>뽑은 이유</th></tr></thead><tbody>'+M.pick.map(function(p){var v=M.bv[p['영상id']]||{};
+        return '<tr><td style="font-weight:800">'+E(slotNo(p['슬롯id']))+'</td><td><a href="https://youtu.be/'+E(p['영상id'])+'" target="_blank" rel="noopener" style="color:#2563eb">'+E(String(v['제목']||p['영상id']).slice(0,56))+'</a></td><td style="text-align:right">'+(v['조회수']!=null?N(v['조회수']):'—')+'</td><td style="font-size:.72rem">'+why1(p['뽑은이유'])+'</td></tr>';}).join('')+'</tbody></table></div>';
+    }else if(x==='short'){
+      h+=rule('3-16');
+      if(!ok(M.sbv))h+=errBox('쇼츠 벤치(mk_youtube_bench_videos 영상형식=쇼츠)',M.sbv.err);
+      else if(!M.sbv.length)h+=why('쇼츠 벤치 없음');
+      else{var sv=M.sbv.slice().sort(function(a,b){return (+b['채널평소배수']||0)-(+a['채널평소배수']||0);});
+        var okn=sv.filter(function(v){return (v['주제표시']||[]).indexOf('조건 충족')>=0;}).length;
+        h+='<div style="font-size:.72rem;color:#64748b;margin-bottom:6px">'+sv.length+'편 · 조건 충족 '+okn+'편 · 나머지는 24개월 밖 참고용</div><div style="overflow:auto"><table class="trv-tbl"><thead><tr><th>영상</th><th style="width:70px">발행</th><th style="text-align:right;width:44px">길이</th><th style="text-align:right">조회</th><th style="text-align:right">평소 배수</th><th style="text-align:right">좋아요율</th><th>특징</th></tr></thead><tbody>'
+          +sv.map(function(v){var t=v['주제표시']||[],good=t.indexOf('조건 충족')>=0;
+            return '<tr'+(good?'':' style="opacity:.7"')+'><td><a href="https://youtube.com/shorts/'+E(v['영상id'])+'" target="_blank" rel="noopener" style="color:#2563eb">'+E(String(v['제목']||v['영상id']).slice(0,40))+'</a></td><td>'+E(String(v['발행일']||'').slice(0,7))+'</td><td style="text-align:right">'+(v['길이_초']!=null?E(v['길이_초'])+'초':'—')+'</td><td style="text-align:right">'+(v['조회수']!=null?N(v['조회수']):'—')+'</td><td style="text-align:right">'+(v['채널평소배수']!=null?E(v['채널평소배수'])+'배':'—')+'</td><td style="text-align:right">'+(v['좋아요율_pct']!=null?E(v['좋아요율_pct'])+'%':'—')+'</td><td>'
+              +t.map(function(z){return cc(z==='조건 충족'?['#f0fdf4','#166534','#bbf7d0']:(/밖/.test(z)?['#f8fafc','#94a3b8','#e2e8f0']:['#eff6ff','#1d4ed8','#bfdbfe']),z);}).join('')+'</td></tr>';}).join('')+'</tbody></table></div>';}
+    }else if(x==='official'){
+      var A=trv().filter(function(z){return z['상태']!=='폐기'&&(z['근거등급']==='A'||z['근거등급']==='B'||(z['검증']&&z['검증']['알고리즘']&&/부합/.test(z['검증']['알고리즘']['판정']||'')));}).sort(jsort);
+      h+='<div style="font-size:.72rem;color:#64748b;margin-bottom:6px">규칙 근거는 A(플랫폼 공식)·B(공식 인물 발언을 신뢰 매체가 인용)만 · C는 시험 항목 · 다음 재조사 2026-12</div>';
+      h+=A.length?'<div style="overflow:auto"><table class="trv-tbl"><thead><tr><th style="width:52px">절</th><th style="width:120px">항목</th><th>내용</th><th style="width:60px">층</th><th>알고리즘 근거</th></tr></thead><tbody>'+A.map(function(z){var al=z['검증']&&z['검증']['알고리즘']||{};
+        return '<tr><td style="font-weight:700">'+E(z['절번호']||'')+'</td><td><b>'+E(z['항목'])+'</b> '+(z['근거등급']?chip(z['근거등급']):'')+'</td><td>'+E(z['내용'])+'</td><td>'+(z['층']?cc(LY[z['층']]||LY['틀'],z['층']):'—')+'</td><td style="font-size:.72rem">'+E(al['근거']||z['근거']||'')+'</td></tr>';}).join('')+'</tbody></table></div>':why('공식 근거 조항 없음');
+    }else{
+      if(!ok(M.bench))h+=errBox('채널 풀(mk_youtube_benchmarks)',M.bench.err);
+      else if(!M.bench.length)h+=why('채널 없음 — mk_youtube_benchmarks 트랙=리얼플랜여행 0행');
+      else h+='<div style="font-size:.72rem;color:#64748b;margin-bottom:6px">열린 목록(5-3) · 성과 영상이 나오면 추가 · 1년간 없으면 제외 · '+M.bench.length+'곳</div><div style="overflow:auto"><table class="trv-tbl"><thead><tr><th>채널</th><th style="width:40px">층</th><th style="text-align:right;width:80px">구독자</th><th style="width:60px">상태</th><th style="width:70px">등재일</th><th>비고</th></tr></thead><tbody>'
+        +M.bench.map(function(b){return '<tr><td><b>'+E(b['채널명']||'')+'</b> <span style="color:#94a3b8;font-size:.7rem">'+E(b['핸들']||'')+'</span></td><td>'+E(b['층']||'')+'</td><td style="text-align:right">'+(b['구독자']!=null?N(b['구독자']):'—')+'</td><td>'+chip(b['상태'])+'</td><td>'+(b['등재일']?String(b['등재일']).slice(0,10):'—')+'</td><td style="font-size:.7rem;color:#64748b">'+E(b['비고']||'')+'</td></tr>';}).join('')+'</tbody></table></div>';
+    }
+    el.innerHTML=h;
+  }
+  /* ══ v1.42.0 끝 ══ */
+
   /* ⑥ 옛 영상 — 「쓴 편」 열 + 「편성에 쓴 재료」 필터 + 촬영월 열 + 재활용 상태 필터 */
   function addPlanBtn(){
     var q=gid('yt-q');if(!q||gid('trv-plan-btn'))return;

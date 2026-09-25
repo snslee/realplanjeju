@@ -5516,7 +5516,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     S.busy=true;
     try{
       var r5=await sb.from('mk_youtube_slots').select('id,슬롯번호,발행일,촬영일,코너,상태,핵심키워드,최종제목,영상url,편집지시서,업로드패키지,파생쇼츠,공정단계,관문결재,편태그,시험요소,레이아웃_url,판정,판정일,다음편_바꿀것,편별기록,영상형식,부모슬롯id,공정기록,공수,배운것,조사,적합성,고객판단').eq('채널',CH).order('슬롯번호',{ascending:true}).limit(60);
-      var r6=await sb.from('mk_youtube_channel_rules').select('채널,순번,구분,항목,내용,상태,확정일,근거,절번호,설계단계,근거등급,정본판,이전값,수정일').eq('채널',CH).order('순번',{ascending:true}).limit(300);
+      var r6=await sb.from('mk_youtube_channel_rules').select('채널,순번,구분,항목,내용,상태,확정일,근거,절번호,설계단계,근거등급,정본판,이전값,수정일,층,출처,검증,검증계획,검증일').eq('채널',CH).order('순번',{ascending:true}).limit(300);
       var r6g=await sb.from('mk_youtube_channel_rules').select('채널,순번,구분,항목,내용,상태,확정일,근거').eq('채널',GENIE).order('순번',{ascending:true}).limit(100);
       var rd=await sb.from('mk_youtube_decisions').select('결정일,대표말,결정내용,바뀐절번호,이전값,새값,반영위치,출처,생성일').eq('채널',CH).order('결정일',{ascending:false}).order('생성일',{ascending:false}).limit(300);
       var rs=await sb.from('mk_youtube_room_status').select('회기일시,지금상태,다음할일,결정대기,어긋남,작성방').eq('채널',CH).order('회기일시',{ascending:false}).limit(1);

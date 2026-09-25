@@ -5628,7 +5628,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         var dl2=S.last?dd(T,S.last):null;
         k.innerHTML=
           kpi('🔧 진행 중인 편',cur?cur['슬롯번호']+' · '+cur['공정단계']:'—',cur?PN[pix(cur['공정단계'])]+(GATE[pix(cur['공정단계'])]?'(관문)':''):'P1~P9 단계인 편 없음',cur?'#1d4ed8':'#94a3b8')
-         +kpi('📅 다음 발행',nx2?nx2['슬롯번호']+' · '+md(nx2['발행일']):'미정',nx2?'D-'+dd(String(nx2['발행일']).slice(0,10),T)+' · 금 18:00':'P8 이상이고 발행일이 남은 편 없음',nx2?'#1d4ed8':'#94a3b8')
+         +kpi('📅 다음 발행',nx2?nx2['슬롯번호']+' · '+md(nx2['발행일']):'미정',nx2?'D-'+dd(String(nx2['발행일']).slice(0,10),T)+' · 금 18:00':'발행일이 남은 롱폼 없음',nx2?'#1d4ed8':'#94a3b8')
          +kpi('🎬 새 롱폼',pub.length+'편','영상 주소가 들어간 R 슬롯',pub.length?'':'#94a3b8')
          +kpi('🌱 L1 진행',pub.length+'/12 · '+judged+'/8 · '+(ver==null?'—':ver)+'/5','발행 · 판정 · 검증 장점')
          +kpi('📞 유튜브발 문의',ok(S.inq)?S.inq.length+'건':'—',ok(S.inq)?'귀속 뷰 · 여행 채널만':'조회 실패')

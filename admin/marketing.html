@@ -5622,7 +5622,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       if(!ok(S.slots)){k.innerHTML=errBox('편성(mk_youtube_slots)',S.slots&&S.slots.err);}
       else{
         var cur=sl.filter(function(s){var i=pix(s['공정단계']);return i>=1&&i<=9;})[0]||null;
-        var nx2=sl.filter(function(s){return pix(s['공정단계'])>=8&&s['발행일']&&String(s['발행일']).slice(0,10)>=T;}).sort(function(a,b){return String(a['발행일']).localeCompare(String(b['발행일']));})[0]||null;
+        var nx2=sl.filter(function(s){return (s['영상형식']||'롱폼')!=='쇼츠'&&s['발행일']&&String(s['발행일']).slice(0,10)>=T&&!(String(s['발행일']).slice(0,10)===T&&vid(s['영상url']));}).sort(function(a,b){return String(a['발행일']).localeCompare(String(b['발행일']));})[0]||null;
         var judged=sl.filter(function(s){return s['판정'];}).length;
         var ver=ok(S.str)?S.str.filter(function(x){return x['상태']==='검증됨';}).length:null;
         var dl2=S.last?dd(T,S.last):null;

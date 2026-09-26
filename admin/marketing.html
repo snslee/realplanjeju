@@ -6606,7 +6606,7 @@ async function loadCtx(ym){
   var q=await Promise.all([
     sb.from('mk_season_calendar').select('월,시즌명,골든타임_사업부,비고'),
     sb.from('customers').select('사업부,신청일시,created_at,시작일').is('deleted_at',null).not('시작일','is',null).gte('created_at','2025-01-01').limit(3000),
-    sb.from('mk_blog_slots').select('발행일,채널,핵심키워드').gte('발행일',prev+'-01').lte('발행일',monthEnd(prev)).limit(3000),
+    sb.from('mk_blog_slots').select('발행일,채널,핵심키워드,상태').gte('발행일',prev+'-01').lte('발행일',monthEnd(prev)).limit(3000),
     sb.from('mk_channel_cards').select('created_at').eq('상태','대기').limit(300)
   ]);
   var sea=(q[0].data||[]).filter(function(r){return r.월===m;})[0]||null;

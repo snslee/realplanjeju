@@ -6685,7 +6685,7 @@ function summary(v){
   var mon=v.it.filter(function(x){return x.d.slice(0,7)===S.ym&&vis(x)&&x.st!=='중단';}),T=today(),from=S.ym+'-01',to=monthEnd(S.ym);
   function gaps(l){var g=[];for(var d=(T>from?T:from);d<=to;d=addD(d,1)){if(gapOf(l,d,mon.filter(function(x){return x.lane===l&&x.d===d;})))g.push(d);}return g;}
   function gtxt(g){if(!g.length)return '<span style="color:#15803d;font-weight:700">빈 평일 없음</span>';var f=g.slice(0,3).map(md).join('·');return '<span class="p4-warn">빈 평일 '+g.length+'일 ('+f+(g.length>3?' 외':'')+')</span>';}
-  var nb=mon.filter(function(x){return x.lane==='blog';}).length,ns=mon.filter(function(x){return x.lane==='sns';}).length;
+  var nb=mon.filter(function(x){return x.lane==='blog';}).length,ns=mon.filter(function(x){return x.lane==='sns'&&!x.old;}).length,no=mon.filter(function(x){return x.lane==='sns'&&x.old;}).length;
   var yl=mon.filter(function(x){return x.lane==='yt'&&x.tm==='18:00';}).length,ys=mon.filter(function(x){return x.lane==='yt'&&x.tm!=='18:00';}).length;
   var c=[];
   if(S.on.blog)c.push('<div class="p4-card">📝 블로그 <b class="big">'+nb+'편</b>'+gtxt(gaps('blog'))+'</div>');

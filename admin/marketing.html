@@ -6716,7 +6716,7 @@ function month(v){
       h+='<td class="day'+(d===T?' today':'')+(d===S.sel?' sel':'')+'" onclick="rpP4.sel(\''+d+'\')"><div class="p4-dn" style="color:'+(dow(d)===0||HOLI[d]?'#b91c1c':'#0f172a')+'">'+Number(d.slice(8))+(HOLI[d]?' <span class="p4-hol">'+HOLI[d]+'</span>':'')+(hasLk?' <span class="p4-lk" title="같은 소재가 다른 채널에도 있음">🔗</span>':'')+'</div>'+ln+(gp.length?'<div class="p4-gap">빈 날: '+gp.join('·')+'</div>':'')+'</td>';}
     if(dow(d)===0){var ws=addD(d,-6);h+='<td class="p4-inq">'+(ws<=T?inqTxt(v.inq,ws,d):'<span class="p4-mut">—</span>')+'</td></tr>';}
   }
-  return h+'</table><div class="p4-mut" style="margin-top:6px">칸 숫자 = 그날 편수 · <b style="color:#b91c1c">빈 날</b> = 평일인데 블로그·SNS가 없거나 금요일 여행 롱폼이 없는 날(오늘 이후만) · 🔗 = 7일 안에 같은 소재가 다른 채널에도 있음 · 채널 소식은 자동 발송 요일로 계산한 예정</div>';
+  return h+'</table><div class="p4-mut" style="margin-top:6px">칸 숫자 = 그날 편수(중단 제외) · <b style="color:#b91c1c">빈 날</b> = 평일인데 블로그·SNS가 없거나 금요일 여행 롱폼이 없는 날(오늘 이후만) · 🔗 = 7일 안에 같은 소재가 다른 채널에도 있음 · 채널 소식은 자동 발송 요일로 계산한 예정</div>';
 }
 function week(v){
   var T=today(),days=[];for(var d=S.wk;d<=addD(S.wk,6);d=addD(d,1))days.push(d);

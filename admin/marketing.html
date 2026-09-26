@@ -6587,7 +6587,7 @@ async function load(from,to){
   Object.keys(sg).forEach(function(k){var g=sg[k],s=g.s,bu=buNorm((s&&s.사업부)||g.bu),ac=(s&&s.계정)||(bu==='마케팅'?'대표':'회사');
     var kind=s&&s.종류?({poster:'포스터',case:'실사례',info:'정보성'}[s.종류]||s.종류):g.ty;
     var t=(s&&s.제목)||(/^(PLAN|SEASON):/.test(g.kw)?'':g.kw)||'(제목 미정)';
-    it.push({d:g.d,lane:'sns',bu:bu,tm:'08:30',tag:ac+' 계정·'+(s&&s.사업부||g.bu||'')+(kind?'·'+kind:''),title:t,kw:t,st:merge(g.st),sub:g.pf.length?g.pf.join('·'):'인스타·페북·쓰레드'});});
+    it.push({d:g.d,lane:'sns',old:!s&&g.pf.length===1,bu:bu,tm:'08:30',tag:ac+' 계정·'+(s&&s.사업부||g.bu||'')+(kind?'·'+kind:''),title:t,kw:t,st:merge(g.st),sub:g.pf.length?g.pf.join('·'):'인스타·페북·쓰레드'});});
   var sent={};(q[3].data||[]).forEach(function(r){var d=kstYmd(new Date(r.발송_시각));sent[d+'|'+r.채널]=1;
     it.push({d:d,lane:'ch',bu:buNorm(r.사업부),tm:new Date(new Date(r.발송_시각).getTime()+9*3600e3).toISOString().slice(11,16),tag:(CHN[r.채널]||r.채널)+' 소식',title:r.제목||r.주제||'',kw:r.제목||r.주제||'',st:st4(r.상태),sub:''});});
   var T=today();for(var d=from;d<=to;d=addD(d,1)){if(d<T)continue;(CH_RULE[dow(d)]||[]).forEach(function(x){if(sent[d+'|'+x[0]])return;

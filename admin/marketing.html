@@ -6612,7 +6612,7 @@ async function loadCtx(ym){
   var sea=(q[0].data||[]).filter(function(r){return r.월===m;})[0]||null;
   var lead={};(q[1].data||[]).forEach(function(r){var b=buNorm(r.사업부);var a=Date.parse(r.시작일+'T00:00:00+09:00'),c=Date.parse(r.신청일시||r.created_at);var n=(a-c)/864e5;if(n>0&&n<400){lead[b]=lead[b]||[];lead[b].push(n);}});
   Object.keys(lead).forEach(function(b){var a=lead[b];lead[b]={avg:Math.round(a.reduce(function(s,x){return s+x;},0)/a.length),n:a.length};});
-  var pb={},seen={};(q[2].data||[]).forEach(function(r){var L=String(r.채널).charAt(1),k=r.발행일+'|'+L+'|'+r.핵심키워드;if(seen[k])return;seen[k]=1;var b=buBlog(L);pb[b]=(pb[b]||0)+1;});
+  var pb={},seen={};(q[2].data||[]).forEach(function(r){var L=String(r.채널).charAt(1),k=r.발행일+'|'+L+'|'+r.핵심키워드;if(seen[k]||r.상태==='halted')return;seen[k]=1;var b=buBlog(L);pb[b]=(pb[b]||0)+1;});
   var w=q[3].data||[],old=w.reduce(function(mx,x){var d=Math.floor((Date.now()-Date.parse(x.created_at))/864e5);return d>mx?d:mx;},0);
   CTX={ym:ym,sea:sea,lead:lead,prevBlog:pb,prevYm:prev,wait:w.length,old:old};return CTX;
 }

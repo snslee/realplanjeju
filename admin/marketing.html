@@ -6671,7 +6671,7 @@ function head(){
 function seasonCards(v){
   if(!CTX)return '';var m=Number(S.ym.slice(5)),g=CTX.sea?JSON.stringify(CTX.sea.골든타임_사업부||[]):'';
   function gold(b){return b==='여행'?/블A/.test(g):b==='행사'?/블B/.test(g):/블C/.test(g);}
-  var cnt={};v.it.forEach(function(x){if(x.lane==='blog'&&x.d.slice(0,7)===S.ym)cnt[x.bu]=(cnt[x.bu]||0)+1;});
+  var cnt={};v.it.forEach(function(x){if(x.lane==='blog'&&x.st!=='중단'&&x.d.slice(0,7)===S.ym)cnt[x.bu]=(cnt[x.bu]||0)+1;});
   var rows=[['여행','🧳 국내여행','출발'],['행사','🎪 행사·이벤트','행사'],['마케팅','📈 마케팅·교육','시작']].filter(function(r){return !S.bu||S.bu===r[0];});
   return '<div class="p4-grid" style="grid-template-columns:repeat('+rows.length+',1fr)">'+rows.map(function(r){
     var L=CTX.lead[r[0]],pb=CTX.prevBlog[r[0]]||0,n=cnt[r[0]]||0,low=pb&&n<pb*0.5;

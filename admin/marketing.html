@@ -6710,7 +6710,7 @@ function month(v){
   for(var d=start;d<=to||dow(d)!==1;d=addD(d,1)){
     if(dow(d)===1)h+='<tr>';
     if(d<from||d>to)h+='<td class="out"><div class="p4-dn">'+Number(d.slice(8))+'</div></td>';
-    else{var ln='',gp=[];LANES.forEach(function(L){if(!S.on[L[0]])return;var a=v.it.filter(function(x){return x.lane===L[0]&&x.d===d&&vis(x);});
+    else{var ln='',gp=[];LANES.forEach(function(L){if(!S.on[L[0]])return;var a=v.it.filter(function(x){return x.lane===L[0]&&x.d===d&&vis(x)&&x.st!=='중단';});
         if(a.length)ln+='<div class="p4-ln"><span>'+L[1]+'</span><span>'+a.length+L[2]+'</span></div>';if(gapOf(L[0],d,a))gp.push(L[1].split(' ').slice(1).join(' '));});
       var hasLk=v.it.some(function(x){return x.d===d&&vis(x)&&x.link&&x.link.length;});
       h+='<td class="day'+(d===T?' today':'')+(d===S.sel?' sel':'')+'" onclick="rpP4.sel(\''+d+'\')"><div class="p4-dn" style="color:'+(dow(d)===0||HOLI[d]?'#b91c1c':'#0f172a')+'">'+Number(d.slice(8))+(HOLI[d]?' <span class="p4-hol">'+HOLI[d]+'</span>':'')+(hasLk?' <span class="p4-lk" title="같은 소재가 다른 채널에도 있음">🔗</span>':'')+'</div>'+ln+(gp.length?'<div class="p4-gap">빈 날: '+gp.join('·')+'</div>':'')+'</td>';}

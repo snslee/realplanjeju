@@ -6689,7 +6689,7 @@ function summary(v){
   var yl=mon.filter(function(x){return x.lane==='yt'&&x.tm==='18:00';}).length,ys=mon.filter(function(x){return x.lane==='yt'&&x.tm!=='18:00';}).length;
   var c=[];
   if(S.on.blog)c.push('<div class="p4-card">📝 블로그 <b class="big">'+nb+'편</b>'+gtxt(gaps('blog'))+'</div>');
-  if(S.on.sns)c.push('<div class="p4-card">📣 SNS <b class="big">'+ns+'세트</b>'+gtxt(gaps('sns'))+'</div>');
+  if(S.on.sns)c.push('<div class="p4-card">📣 SNS <b class="big">'+ns+'세트'+(no?' <span class="p4-mut" style="font-weight:400">+ 옛 쓰레드 글 '+no+'건</span>':'')+'</b>'+gtxt(gaps('sns'))+'</div>');
   if(S.on.ch)c.push('<div class="p4-card">📍 채널 소식 <b class="big">화·수·금 자동</b>대기 카드 '+(CTX?CTX.wait:'-')+'장 · 가장 오래된 것 <span class="'+(CTX&&CTX.old>14?'p4-warn':'')+'">'+(CTX?CTX.old:'-')+'일</span></div>');
   if(S.on.yt&&(!S.bu||S.bu==='여행'))c.push('<div class="p4-card">▶️ 유튜브 (리얼플랜여행) <b class="big">롱폼 '+yl+'편 · 쇼츠 '+ys+'편</b>'+gtxt(gaps('yt')).replace('빈 평일','빈 금요일')+'</div>');
   return '<div class="p4-grid" style="grid-template-columns:repeat('+c.length+',1fr)">'+c.join('')+'</div>'

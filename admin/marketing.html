@@ -6677,7 +6677,7 @@ function seasonCards(v){
     var L=CTX.lead[r[0]],pb=CTX.prevBlog[r[0]]||0,n=cnt[r[0]]||0,low=pb&&n<pb*0.5;
     var tgt=L?(function(){var a=new Date(S.ym+'-15T00:00:00Z');a.setUTCDate(a.getUTCDate()+L.avg);return (a.getUTCMonth()+1)+'월';})():null;
     return '<div class="p4-card" style="border-left:4px solid #0f172a"><b>'+r[1]+'</b>'+(gold(r[0])?' · <b style="color:#1d4ed8">'+m+'월 골든타임</b>':'')
-      +'<br>'+(L?'문의는 '+r[2]+' 평균 <b>'+L.avg+'일 전</b> → '+m+'월 글은 <b>'+tgt+' 전후 '+r[2]+'</b> 대상':'<span class="p4-mut">문의 선행일 데이터 부족</span>')
+      +'<br>'+(L?'문의는 '+r[2]+' 평균 <b>'+L.avg+'일 전</b><span class="p4-mut"> (문의 '+L.n+'건 기준'+(L.n<10?' · 표본 적음':'')+')</span> → '+m+'월 글은 <b>'+tgt+' 전후 '+r[2]+'</b> 대상':'<span class="p4-mut">문의 선행일 데이터 부족</span>')
       +'<br>'+m+'월 블로그 <b>'+n+'편</b> <span class="p4-mut">('+Number(CTX.prevYm.slice(5))+'월 '+pb+'편)</span>'+(low?' <span class="p4-warn">· 지난달의 절반 미만</span>':'')+'</div>';}).join('')+'</div>'
    +(CTX.sea?'<div class="p4-mut" style="margin:-4px 0 10px">시즌 달력 '+m+'월 「'+E(CTX.sea.시즌명)+'」 — '+E(CTX.sea.비고||'')+'</div>':'');
 }

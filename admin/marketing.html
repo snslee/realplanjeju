@@ -6778,9 +6778,9 @@ S.ym=today().slice(0,7);S.wk=monOf(today());
 </script>
 <!-- RP-SCH-V4 end -->
 
-<!-- RP-MEDIA-V2 start · v1.44.0 · 2026-09-27 미디어 관리 화면 개편 1차(① 재고 요약) -->
+<!-- RP-MEDIA-V2 start · v1.45.0 · 2026-09-27 미디어 관리 화면 개편 1차(① 재고 요약)+2차(②③④⑥ 목록) -->
 <script>
-/* ══ RP-MEDIA-V2 — 미디어 관리 v1.44.0 (2026-09-27 대표 승인 「승인」 · 5단계 화면 개편 1차) ══════
+/* ══ RP-MEDIA-V2 — 미디어 관리 v1.45.0 (2026-09-27 대표 승인 「승인」 · 5단계 화면 개편 1차) ══════
    대표 지적: 「로컬 파일과 사용 중인 영상·사진 기록이 안 되고, 정보 파악이 안 되고 가독성이 떨어진다」
    0~3단계(대장 경로 재연결 128행 · SNS 사용 기록 트리거 · 완성본 68건 등록) 뒤 화면을 「질문 단위」 6탭으로 재구성.
    외부 기준: DAM 업계 권장(사용처·권리를 자산에 붙여 관리) · NN/g 점진적 공개(요약 먼저, 상세는 펼쳐서).
@@ -6788,13 +6788,13 @@ S.ym=today().slice(0,7);S.wk=monOf(today());
    데이터: rpc_media_overview() (관리자 전용 · 읽기만) · DB 쓰기 0.
    롤백 = 이 블록(<!-- RP-MEDIA-V2 start … end -->)만 걷어낸다. */
 (function(){
-var VER2='v1.44.0';
+var VER2='v1.45.0';
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function N(n){return (+n||0).toLocaleString();}
 var BU={'여행':'국내여행','행사':'행사·이벤트','마케팅교육':'마케팅교육·컨설팅','온라인마케팅':'온라인마케팅','교육':'마케팅교육·컨설팅','마케팅':'온라인마케팅'};
 var KIND={poster:'포스터',case:'실사례',info:'정보성'};
 var TABS=[['overview','① 재고 요약'],['find','② 사진·영상 찾기'],['usage','③ 어디에 썼나'],['made','④ 완성 제작물'],['bgm','⑤ 음악'],['check','⑥ 점검']];
-var _mv={tab:'overview',data:null,built:false};
+var _mv={tab:'overview',data:null,built:false,loaded:{}};
 
 var CSS='#t14 .mv-tab{padding:7px 14px;border:1px solid #e2e8f0;border-radius:20px;font-size:.82rem;background:#fff;color:#475569;cursor:pointer}'
 +'#t14 .mv-tab.on{background:var(--primary,#1d4ed8);color:#fff;border-color:var(--primary,#1d4ed8);font-weight:700}'
@@ -6828,12 +6828,121 @@ function build(){
   ['md-video','md-design','md-photo'].forEach(function(id){var e=document.getElementById(id); if(e){e.style.display=''; wrap.appendChild(e);}});
   var bgm=document.getElementById('md-bgm'); if(bgm){bgm.style.display='none';}
   document.getElementById('mv-overview').innerHTML='<div class="mv-note">불러오는 중…</div>';
-  document.getElementById('mv-find').innerHTML='<div class="mv-note">② 사진·영상 찾기 — 사업부·종류·연도·행사명·사용상태로 거르는 목록. <b>다음 배포(2차)</b>에서 켭니다. 지금은 ⑥ 점검 → 이전 화면에서 현장영상 재고를 볼 수 있습니다.</div>';
-  document.getElementById('mv-usage').innerHTML='<div class="mv-note">③ 어디에 썼나 — 블로그·SNS·채널 소식 사용 이력 한 표. <b>다음 배포(2차)</b>에서 켭니다. 최근 8건은 ① 재고 요약에 있습니다.</div>';
-  document.getElementById('mv-made').innerHTML='<div class="mv-note">④ 완성 제작물 — 월별 SNS 세트·포스터·릴스·유튜브 완성본. <b>다음 배포(2차)</b>에서 켭니다. 이번 달 세트는 ① 재고 요약에 있습니다.</div>';
+  document.getElementById('mv-find').innerHTML='<div class="mv-note">② 사진·영상 찾기 — 탭을 열면 불러옵니다.</div>';
+  document.getElementById('mv-usage').innerHTML='<div class="mv-note">③ 어디에 썼나 — 탭을 열면 불러옵니다.</div>';
+  document.getElementById('mv-made').innerHTML='<div class="mv-note">④ 완성 제작물 — 탭을 열면 불러옵니다.</div>';
 }
+/* ── 2차(v1.45.0 · 2026-09-27 대표 「승인」) — ② 찾기 · ③ 어디에 썼나 · ④ 완성 제작물 · ⑥ 점검 목록. 데이터 = rpc_media_list(mode) 읽기만 ── */
+var KINDN={'현장영상':'현장영상','영상':'완성영상','릴스':'릴스','사진':'사진','AI생성':'AI 이미지','콜라주':'콜라주','코스맵':'코스맵','단체코스맵':'단체코스맵','배치도':'배치도','큐시트':'큐시트','자료카드':'자료카드','성과카드':'성과카드','자가진단카드':'자가진단카드','카드뉴스':'카드뉴스','포스터':'포스터','문서':'문서'};
+function stTag(s){var c={'미사용':'g','후보선정':'g','미대조':'','사용됨':'o','배제':'r','대체됨':'','기준':'','유사':''}[s]||''; return '<span class="mv-tag '+c+'">'+E(s||'')+'</span>';}
+function fmtSize(b){b=+b||0; if(!b)return ''; return b>1e9?(b/1e9).toFixed(1)+'GB':b>1e6?Math.round(b/1e6)+'MB':Math.round(b/1e3)+'KB';}
+function fmtSec(s){s=+s||0; if(!s)return ''; var m=Math.floor(s/60); return m?m+'분 '+Math.round(s%60)+'초':Math.round(s)+'초';}
+function pager(id,total,page,size,fn){var n=Math.max(1,Math.ceil(total/size)); if(n<=1)return ''; var h='<div style="display:flex;gap:6px;justify-content:center;align-items:center;margin-top:10px;font-size:.8rem;color:#475569">';
+  h+='<button class="mv-tab" '+(page<=1?'disabled':'onclick="'+fn+'('+(page-1)+')"')+'>‹ 이전</button><span>'+page+' / '+n+' 쪽 · '+N(total)+'건</span><button class="mv-tab" '+(page>=n?'disabled':'onclick="'+fn+'('+(page+1)+')"')+'>다음 ›</button></div>'; return h;}
+var SEL='border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;font-size:.8rem;background:#fff;color:#334155';
+/* ② 찾기 */
+var _f={bu:'',kind:'',year:'',status:'',q:'',page:1};
+function findBar(years){
+  var bus=[['','전 사업부'],['여행','국내여행'],['행사','행사·이벤트'],['마케팅교육','마케팅교육·컨설팅'],['온라인마케팅','온라인마케팅']];
+  var kinds=[['','전 종류'],['사진','사진'],['영상','영상(현장·완성·릴스)'],['제작물','제작물(콜라주·코스맵·카드…)'],['AI','AI 이미지']];
+  var sts=[['','전 상태'],['가용','쓸 수 있음'],['사용됨','이미 씀'],['배제','못 씀(배제)'],['후보선정','후보선정'],['미대조','미대조']];
+  function opts(a,cur){return a.map(function(x){return '<option value="'+E(x[0])+'"'+(x[0]===cur?' selected':'')+'>'+E(x[1])+'</option>';}).join('');}
+  var ys=[['','전 연도']].concat((years||[]).map(function(y){return [y,y+'년'];}));
+  return '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">'
+   +'<select style="'+SEL+'" onchange="mvFindSet(\'bu\',this.value)">'+opts(bus,_f.bu)+'</select>'
+   +'<select style="'+SEL+'" onchange="mvFindSet(\'kind\',this.value)">'+opts(kinds,_f.kind)+'</select>'
+   +'<select style="'+SEL+'" onchange="mvFindSet(\'year\',this.value)">'+opts(ys,_f.year)+'</select>'
+   +'<select style="'+SEL+'" onchange="mvFindSet(\'status\',this.value)">'+opts(sts,_f.status)+'</select>'
+   +'<input id="mv-find-q" value="'+E(_f.q)+'" placeholder="파일명 · 행사 폴더 · 장소" style="'+SEL+';min-width:220px" onkeydown="if(event.key===\'Enter\')mvFindSet(\'q\',this.value)">'
+   +'<button class="mv-tab" onclick="mvFindSet(\'q\',document.getElementById(\'mv-find-q\').value)">찾기</button>'
+   +'<button class="mv-tab" onclick="mvFindReset()">초기화</button></div>';
+}
+window.mvFindSet=function(k,v){_f[k]=v; _f.page=1; mvFind();};
+window.mvFindReset=function(){_f={bu:'',kind:'',year:'',status:'',q:'',page:1}; mvFind();};
+window.mvFindPage=function(p){_f.page=p; mvFind();};
+window.mvFind=async function(){
+  var box=document.getElementById('mv-find'); if(!box)return;
+  if(!box.querySelector('#mv-find-list')){box.innerHTML='<div id="mv-find-bar"></div><div id="mv-find-list" class="mv-note">불러오는 중…</div>';}
+  var list=box.querySelector('#mv-find-list');
+  try{
+    var p={mode:'find',page:_f.page,size:50}; ['bu','kind','year','status','q'].forEach(function(k){if(_f[k])p[k]=_f[k];});
+    var r=await sb.rpc('rpc_media_list',{p:p}); if(r.error)throw r.error; var d=r.data||{};
+    box.querySelector('#mv-find-bar').innerHTML=findBar(d.years);
+    var h='<div style="font-size:.8rem;color:#64748b;margin-bottom:6px">'+N(d.total)+'건'+(_f.bu||_f.kind||_f.year||_f.status||_f.q?' (거름 적용)':'')+' · 최근 쓴 것부터</div>';
+    h+='<table class="mv"><tr><th class="l">파일</th><th class="l">폴더(행사·기관)</th><th class="l">종류</th><th class="d">촬영일</th><th class="l">장소</th><th class="l">상태</th><th>쓴 횟수</th><th class="d">최근 사용</th><th class="l">가용</th></tr>';
+    if(!(d.rows||[]).length)h+='<tr><td class="l" colspan="9" style="color:#94a3b8">조건에 맞는 자산이 없습니다</td></tr>';
+    (d.rows||[]).forEach(function(x){
+      var fn=x.원본_url?'<a href="'+E(x.원본_url)+'" target="_blank" style="color:var(--primary,#1d4ed8)">'+E(x.파일명)+'</a>':E(x.파일명);
+      var extra=x.자산종류==='현장영상'||x.자산종류==='영상'?' <span style="color:#94a3b8;font-size:.72rem">'+fmtSec(x.길이_초)+' '+fmtSize(x.크기)+'</span>':'';
+      var fold=(x.폴더||'').replace(/^(여행사|행사|교육 및 컨설팅|블로그사진|02_콘텐츠)\//,'');
+      h+='<tr><td class="l" style="max-width:260px;overflow:hidden;text-overflow:ellipsis" title="'+E(x.파일명)+'">'+fn+extra+'</td><td class="l" style="max-width:300px;overflow:hidden;text-overflow:ellipsis;color:#475569" title="'+E(x.폴더)+'">'+E(fold)+'</td><td class="l">'+E(KINDN[x.자산종류]||x.자산종류)+'</td><td class="d">'+E(x.촬영일||(x.연도?x.연도+'년':''))+'</td><td class="l">'+E(x.장소명||'')+'</td><td class="l">'+stTag(x.사용여부)+'</td><td>'+(x.재사용_횟수||0)+'</td><td class="d">'+E((x.최근사용일||'').slice(2))+'</td><td class="l">'+(x.가용?(x.가용==='가용'?'<span class="mv-tag g">가용</span>':'<span class="mv-tag r">'+E(x.가용)+'</span>'):(x.초상권플래그?'<span class="mv-tag o">얼굴 있음</span>':''))+'</td></tr>';});
+    h+='</table>'+pager('find',d.total,d.page,d.size,'mvFindPage');
+    list.className=''; list.innerHTML=h;
+  }catch(e){list.className='mv-note'; list.innerHTML='<span style="color:#dc2626">찾기 오류: '+E(e.message||e)+'</span>';}
+};
+/* ③ 어디에 썼나 */
+var _u={q:'',status:'',bu:'',page:1};
+window.mvUsageSet=function(k,v){_u[k]=v;_u.page=1;mvUsage();}; window.mvUsagePage=function(p){_u.page=p;mvUsage();};
+window.mvUsage=async function(){
+  var box=document.getElementById('mv-usage'); if(!box)return;
+  if(!box.querySelector('#mv-usage-list')){box.innerHTML='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">'
+    +'<select style="'+SEL+'" onchange="mvUsageSet(\'status\',this.value)"><option value="">모든 사용처</option><option value="블">블로그(전체)</option><option value="블A">블A 국내여행</option><option value="블B">블B 행사</option><option value="블C">블C 마케팅</option><option value="SNS">SNS(인스타·페북·쓰레드)</option><option value="place">플레이스</option><option value="kakao">카카오</option><option value="gbp">구글</option><option value="karrot">당근</option></select>'
+    +'<select style="'+SEL+'" onchange="mvUsageSet(\'bu\',this.value)"><option value="">전 사업부</option><option value="여행">국내여행</option><option value="행사">행사·이벤트</option><option value="마케팅교육">마케팅교육·컨설팅</option><option value="온라인마케팅">온라인마케팅</option></select>'
+    +'<input id="mv-usage-q" placeholder="파일명 · 글 제목" style="'+SEL+';min-width:220px" onkeydown="if(event.key===\'Enter\')mvUsageSet(\'q\',this.value)"><button class="mv-tab" onclick="mvUsageSet(\'q\',document.getElementById(\'mv-usage-q\').value)">찾기</button></div>'
+    +'<div id="mv-usage-list" class="mv-note">불러오는 중…</div>';}
+  var list=box.querySelector('#mv-usage-list');
+  try{
+    var p={mode:'usage',page:_u.page,size:50}; ['q','status','bu'].forEach(function(k){if(_u[k])p[k]=_u[k];});
+    var r=await sb.rpc('rpc_media_list',{p:p}); if(r.error)throw r.error; var d=r.data||{};
+    var h='<div style="font-size:.8rem;color:#64748b;margin-bottom:6px">'+N(d.total)+'건 · 블로그 배정 + SNS·채널 소식 사용 기록 · 최근순</div>';
+    h+='<table class="mv"><tr><th class="d">날짜</th><th class="l">어디에</th><th class="l">사업부</th><th class="l">무엇(글·세트)</th><th class="l">파일</th><th class="l">비고</th></tr>';
+    if(!(d.rows||[]).length)h+='<tr><td class="l" colspan="6" style="color:#94a3b8">기록 없음</td></tr>';
+    (d.rows||[]).forEach(function(x){var t=(x.제목||''); var tt=t.length>48?t.slice(0,48)+'…':t; if(x.글url)tt='<a href="'+E(x.글url)+'" target="_blank" style="color:var(--primary,#1d4ed8)">'+E(tt)+'</a>'; else tt=E(tt);
+      var warn=x.비고&&x.비고.indexOf('⚠')===0;
+      h+='<tr><td class="d">'+E((x.날짜||'').slice(2))+'</td><td class="l">'+whereTag(x.사용처)+'</td><td class="l">'+E(BU[x.사업부]||x.사업부||'')+'</td><td class="l" title="'+E(t)+'">'+tt+'</td><td class="l">'+E(x.파일명||'')+'</td><td class="l" style="color:'+(warn?'#b91c1c':'#64748b')+';font-size:.76rem">'+E(x.비고||'')+'</td></tr>';});
+    h+='</table>'+pager('usage',d.total,d.page,d.size,'mvUsagePage');
+    list.className=''; list.innerHTML=h;
+  }catch(e){list.className='mv-note'; list.innerHTML='<span style="color:#dc2626">이력 오류: '+E(e.message||e)+'</span>';}
+};
+/* ④ 완성 제작물 */
+var _m={month:''};
+window.mvMadeSet=function(v){_m.month=v;mvMade();};
+window.mvMade=async function(){
+  var box=document.getElementById('mv-made'); if(!box)return; box.innerHTML='<div class="mv-note">불러오는 중…</div>';
+  try{
+    var p={mode:'made'}; if(_m.month)p.month=_m.month;
+    var r=await sb.rpc('rpc_media_list',{p:p}); if(r.error)throw r.error; var d=r.data||{};
+    var h='<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><select style="'+SEL+'" onchange="mvMadeSet(this.value)"><option value="">전체 달</option>'+(d.months||[]).map(function(m){return '<option value="'+m+'"'+(m===_m.month?' selected':'')+'>'+m.replace('-','년 ')+'월</option>';}).join('')+'</select><span style="font-size:.76rem;color:#64748b">SNS 완성본 파일 = D:\\리얼플랜\\02_콘텐츠\\SNS아카이브\\월 · 유튜브 = 02_콘텐츠\\유튜브</span></div>';
+    h+='<div class="mv-cap" style="margin-top:6px">SNS 게시 세트 <span>'+(d.sets||[]).length+'세트 · 포스터·카드뉴스·릴스 파일과 연결</span></div>';
+    h+='<table class="mv"><tr><th class="d">게시일</th><th class="l">세트</th><th class="l">계정</th><th>장수</th><th class="l">파일</th></tr>';
+    if(!(d.sets||[]).length)h+='<tr><td class="l" colspan="5" style="color:#94a3b8">게시 세트 없음</td></tr>';
+    (d.sets||[]).forEach(function(s){var files=s.파일||[]; var fl=files.length?files.map(function(f){return f.url?'<a href="'+E(f.url)+'" target="_blank" style="color:var(--primary,#1d4ed8)">'+E(f.파일명)+'</a>':E(f.파일명);}).join(', '):'<span style="color:#dc2626">완성본 파일 미등록</span>';
+      h+='<tr><td class="d">'+E((s.게시일||'').slice(2))+'</td><td class="l"><b>'+E((BU[s.사업부]||s.사업부||'')+' '+(KIND[s.종류]||s.종류||''))+'</b> · '+E((s.제목||'').length>34?(s.제목||'').slice(0,34)+'…':s.제목)+'</td><td class="l"><span class="mv-tag">'+E(s.계정)+'</span></td><td>'+(files.length||'<span style="color:#dc2626">0</span>')+'</td><td class="l" style="font-size:.76rem;color:#475569;max-width:420px;white-space:normal">'+fl+'</td></tr>';});
+    h+='</table>';
+    h+='<div class="mv-cap">영상 완성본·릴스 <span>'+(d.videos||[]).length+'편</span></div><table class="mv"><tr><th class="d">등록일</th><th class="l">파일</th><th class="l">종류</th><th class="l">용도</th><th class="l">사업부</th><th>용량</th><th class="l">폴더</th><th class="l">비고</th></tr>';
+    if(!(d.videos||[]).length)h+='<tr><td class="l" colspan="8" style="color:#94a3b8">없음</td></tr>';
+    (d.videos||[]).forEach(function(v){h+='<tr><td class="d">'+E((v.등록일||'').slice(2))+'</td><td class="l">'+E(v.파일명)+'</td><td class="l">'+E(KINDN[v.자산종류]||v.자산종류)+'</td><td class="l">'+E(v.용도구분||'')+'</td><td class="l">'+E(BU[v.사업부]||v.사업부||'')+'</td><td>'+fmtSize(v.크기)+'</td><td class="l" style="color:#64748b;font-size:.76rem">'+E(v.폴더||'')+'</td><td class="l" style="color:#64748b;font-size:.76rem">'+E(v.비고||'')+'</td></tr>';});
+    h+='</table>';
+    box.innerHTML=h;
+  }catch(e){box.innerHTML='<div class="mv-note"><span style="color:#dc2626">완성 제작물 오류: '+E(e.message||e)+'</span></div>';}
+};
+/* ⑥ 점검 목록 */
+window.mvCheck=async function(){
+  var chk=document.getElementById('mv-check'); if(!chk)return; var box=chk.querySelector('.mv-chk-list'); if(!box){box=document.createElement('div'); box.className='mv-chk-list'; var old=chk.querySelector('details.mv-old'); chk.insertBefore(box,old);} box.innerHTML='<div class="mv-note">점검 목록 불러오는 중…</div>';
+  try{
+    var r=await sb.rpc('rpc_media_list',{p:{mode:'check'}}); if(r.error)throw r.error; var d=r.data||{};
+    function sec(t,sub,body){return '<details class="mv-old" open><summary>'+t+' <span style="font-weight:400;color:#64748b;font-size:.76rem">'+sub+'</span></summary><div>'+body+'</div></details>';}
+    var a=d.배제게시||[]; var h1='<table class="mv"><tr><th class="d">게시일</th><th class="l">어디에</th><th class="l">세트</th><th class="l">파일</th><th class="l">모자이크본</th><th class="l">할 일</th></tr>'+(a.length?a.map(function(x){return '<tr><td class="d">'+E((x.사용일||'').slice(2))+'</td><td class="l">'+whereTag(x.사용처)+'</td><td class="l">'+E(x.제목)+'</td><td class="l">'+E(x.파일명)+'</td><td class="l">'+(x.가용==='가용'?'<span class="mv-tag g">가용</span>':'<span class="mv-tag r">'+E(x.가용||'없음')+'</span>')+'</td><td class="l" style="color:#b91c1c;font-size:.78rem">게시물에서 얼굴이 가려졌는지 확인 → 아니면 사진 교체</td></tr>';}).join(''):'<tr><td class="l" colspan="6" style="color:#94a3b8">없음</td></tr>')+'</table>';
+    var b=d.영상날짜없음||[]; var h2='<table class="mv"><tr><th class="l">폴더</th><th>개수</th><th class="l">예시 파일</th></tr>'+b.map(function(x){return '<tr><td class="l">'+E(x.폴더)+'</td><td>'+N(x.n)+'</td><td class="l" style="color:#64748b">'+E(x.예시)+'</td></tr>';}).join('')+'</table><div style="font-size:.74rem;color:#64748b;margin-top:6px">촬영일은 폴더 이름의 날짜·행사 기록으로 채울 수 있습니다(다음 정비 안건).</div>';
+    var c=d.장소없음||[]; var h3='<table class="mv"><tr><th class="l">사업부</th><th class="l">폴더</th><th>장수</th></tr>'+c.map(function(x){return '<tr><td class="l">'+E(BU[x.사업부]||x.사업부)+'</td><td class="l">'+E(x.폴더)+'</td><td>'+N(x.n)+'</td></tr>';}).join('')+'</table><div style="font-size:.74rem;color:#64748b;margin-top:6px">상위 40개 폴더. 행사·학교 사진은 폴더 자체가 행사명이라 ② 찾기에서 폴더로 찾으면 됩니다.</div>';
+    var e=d.폐지설계||[]; var h4='<table class="mv"><tr><th class="l">채널</th><th class="l">판</th><th class="l">제목</th><th class="l">상태</th><th class="d">만든 날</th><th class="l">파일</th></tr>'+e.map(function(x){return '<tr><td class="l">'+E(x.채널)+'</td><td class="l">'+E(x.버전)+'</td><td class="l">'+E(x.제목)+'</td><td class="l">'+stTag(x.상태)+'</td><td class="d">'+E((x.생성일||'').slice(2))+'</td><td class="l" style="color:#64748b;font-size:.74rem">'+E((x.산출물_경로||'').split('\\').pop())+'</td></tr>';}).join('')+'</table><div style="font-size:.74rem;color:#64748b;margin-top:6px">블로그 영상(blog 모드)은 2026-09 폐지. 기록으로만 둡니다. 컷플랜·게이트 상세는 아래 「이전 화면」에 있습니다.</div>';
+    var f=d.원본소실||[]; var h5='<table class="mv"><tr><th class="l">분류</th><th class="l">제목</th><th class="l">상태</th><th>편수</th><th class="l">경로</th></tr>'+f.map(function(x){return '<tr><td class="l">'+E(x.분류)+'</td><td class="l">'+E(x.제목)+'</td><td class="l">'+(x.사용여부==='원본소실'?'<span class="mv-tag r">원본소실</span>':stTag(x.사용여부))+'</td><td>'+N(x.편수)+'</td><td class="l" style="color:#64748b;font-size:.74rem">'+E(x.경로||'')+'</td></tr>';}).join('')+'</table>';
+    box.innerHTML=sec('🔴 「배제」 사진이 게시된 건',a.length+'건',h1)+sec('🟡 현장영상 촬영일 공란','폴더별 · '+b.reduce(function(s,x){return s+(+x.n||0);},0)+'개',h2)+sec('🟡 사진 장소 공란','폴더별 상위 40',h3)+sec('📁 폐지된 블로그 영상 설계(보관)',e.length+'편',h4)+sec('📁 옛 영상 대장(mk_video_sources · 원본 소실 기록)',f.length+'행',h5);
+  }catch(e){box.innerHTML='<div class="mv-note"><span style="color:#dc2626">점검 오류: '+E(e.message||e)+'</span></div>';}
+};
 window.mvTab=function(k){
   _mv.tab=k;
+  var L={find:window.mvFind,usage:window.mvUsage,made:window.mvMade,check:window.mvCheck}; if(L[k]&&!_mv.loaded[k]){_mv.loaded[k]=true; L[k]();}
   document.querySelectorAll('#mv-bar .mv-tab').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-k')===k);});
   ['overview','find','usage','made','check'].forEach(function(x){var p=document.getElementById('mv-'+x); if(p)p.style.display=(x===k?'':'none');});
   var bgm=document.getElementById('md-bgm'); if(bgm)bgm.style.display=(k==='bgm'?'':'none');
@@ -6880,12 +6989,13 @@ window.mvOverview=async function(){
      +'<div class="mv-two"><div><div class="mv-cap">③ 최근 사용 <span>블로그·SNS·채널 소식 사진 사용 기록 최근 8건 · 전체 '+N(d.usage_total)+'건</span></div>'+recentTable(d.recent)+'</div>'
      +'<div><div class="mv-cap">④ 최근 완성 제작물 <span>SNS 게시 세트 · 파일은 02_콘텐츠\\SNS아카이브\\월</span></div>'+setsTable(d.sets)+'</div></div>'
      +'<div style="font-size:.72rem;color:#94a3b8;margin-top:14px">대장 전체 '+N(d.total)+'건 · 원천 mk_photo_assets · mk_asset_usage · mk_sns_sets · 기준 '+new Date().toLocaleString('ko-KR')+'</div>';
-    var chk=document.getElementById('mv-check'); if(chk){var old=chk.querySelector('.mv-chk'); if(old)old.remove(); var c=document.createElement('div'); c.className='mv-chk'; c.innerHTML=warnBox(d.warn||{})+'<div class="mv-note">점검 항목 상세(끊긴 경로 목록 · 촬영일 공란 목록 · 배제 게시 목록 · 폐지된 블로그 영상 설계 16편 보관)는 <b>다음 배포(2차)</b>에서 켭니다.</div>'; chk.insertBefore(c,chk.firstChild);}
+    var chk=document.getElementById('mv-check'); if(chk){var old=chk.querySelector('.mv-chk'); if(old)old.remove(); var c=document.createElement('div'); c.className='mv-chk'; c.innerHTML=warnBox(d.warn||{}); chk.insertBefore(c,chk.firstChild);}
   }catch(e){box.innerHTML='<div style="color:#dc2626">재고 요약 오류: '+E(e.message||e)+'</div>'; console.error('mvOverview',e);}
 };
 var _origInit=window.mediaInit;
 window.mediaInit=async function(force){
   build();
+  if(force){_mv.loaded={}; if(_mv.tab!=='overview'&&_mv.tab!=='bgm'){_mv.loaded[_mv.tab]=true; ({find:mvFind,usage:mvUsage,made:mvMade,check:mvCheck})[_mv.tab]();}}
   mvOverview();
   try{ if(_origInit) await _origInit(force); }catch(e){console.error('mediaInit(orig)',e);}
   var kpi=document.getElementById('md-kpi'); if(kpi)kpi.style.display='none';

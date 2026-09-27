@@ -6987,7 +6987,7 @@ window.mvOverview=async function(){
     var r=await sb.rpc('rpc_media_overview'); if(r.error)throw r.error;
     var d=r.data||{}; _mv.data=d;
     box.innerHTML=warnBox(d.warn||{})+sumTable(d.summary)
-     +'<div class="mv-two"><div><div class="mv-cap">③ 최근 사용 <span>블로그·SNS·채널 소식 사진 사용 기록 최근 8건 · 전체 '+N(d.usage_total)+'건</span></div>'+recentTable(d.recent)+'</div>'
+     +'<div class="mv-two"><div><div class="mv-cap">③ 최근 사용 <span>블로그·SNS·채널 소식·콜라주 사진 사용 기록 최근 8건 · 전체 '+N(d.usage_total)+'건</span></div>'+recentTable(d.recent)+'</div>'
      +'<div><div class="mv-cap">④ 최근 완성 제작물 <span>SNS 게시 세트 · 파일은 02_콘텐츠\\SNS아카이브\\월</span></div>'+setsTable(d.sets)+'</div></div>'
      +'<div style="font-size:.72rem;color:#94a3b8;margin-top:14px">대장 전체 '+N(d.total)+'건 · 원천 mk_photo_assets · mk_asset_usage · mk_sns_sets · 기준 '+new Date().toLocaleString('ko-KR')+'</div>';
     var chk=document.getElementById('mv-check'); if(chk){var old=chk.querySelector('.mv-chk'); if(old)old.remove(); var c=document.createElement('div'); c.className='mv-chk'; c.innerHTML=warnBox(d.warn||{}); chk.insertBefore(c,chk.firstChild);}

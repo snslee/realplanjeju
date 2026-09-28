@@ -7015,6 +7015,164 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 <!-- RP-MEDIA-V2 end -->
+<!-- RP-CHAN-V2 start · v1.46.0 · 2026-09-28 채널 소식 화면 개편(편성 칸 mk_channel_slots 연동 · 오늘 할 일 → 발송표 → 재고 → 미리보기 → 참고) (회사 시스템 방 · 대표 「권장 번들 진행」) -->
+<style id="chv2-css">
+#tchan > :not(#chv2):not(.mv2-strip){display:none!important}
+#chv2{font-size:.84rem;color:#0f172a}
+#chv2 h2{font-size:1.2rem;font-weight:700;margin:0 0 2px}
+#chv2 .c-sub{color:#64748b;font-size:.8rem;margin-bottom:10px;line-height:1.5}
+#chv2 .c-band{display:inline-flex;flex-wrap:wrap;gap:6px;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:7px 11px;margin:0 0 12px}
+#chv2 .chip{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;border:1px solid;white-space:nowrap}
+#chv2 .g{background:#ecfdf5;color:#047857;border-color:#a7f3d0}#chv2 .o{background:#fff7ed;color:#c2410c;border-color:#fed7aa}#chv2 .r{background:#fef2f2;color:#b91c1c;border-color:#fecaca}#chv2 .b{background:#eef2ff;color:#3730a3;border-color:#c7d2fe}#chv2 .n{background:#f1f5f9;color:#475569;border-color:#e2e8f0}
+#chv2 .sec{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:13px 15px;margin-bottom:13px}
+#chv2 .sec h3{font-size:.98rem;font-weight:700;margin:0 0 8px}#chv2 .sec h3 span{font-weight:400;color:#94a3b8;font-size:.74rem;margin-left:6px}
+#chv2 .todo{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
+#chv2 .todo>div{border-radius:8px;padding:9px 12px;font-size:.82rem;line-height:1.55;border:1px solid}
+#chv2 .todo .r{border-color:#fecaca}#chv2 .todo .o{border-color:#fed7aa}#chv2 .todo .g{border-color:#a7f3d0}
+#chv2 table{width:100%;border-collapse:collapse;font-size:.82rem}#chv2 th{background:#f8fafc;text-align:left;padding:6px 8px;font-weight:700;color:#334155;border-bottom:1px solid #e2e8f0;white-space:nowrap}#chv2 td{padding:6px 8px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+#chv2 tr.past td{color:#94a3b8}#chv2 tr.gap td{background:#fffbeb}
+#chv2 .mut{color:#94a3b8;font-size:.74rem}#chv2 .big{font-size:1.3rem;font-weight:800}
+#chv2 .pl{color:#16a34a;font-weight:700}#chv2 .ka{color:#ca8a04;font-weight:700}#chv2 .gb{color:#2563eb;font-weight:700}#chv2 .kr{color:#ea580c;font-weight:700}
+#chv2 .th{width:40px;height:40px;border-radius:6px;object-fit:cover;border:1px solid #e2e8f0;vertical-align:middle;margin-right:6px;background:#f1f5f9}
+#chv2 .stock{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}#chv2 .stock>div{border:1px solid #e2e8f0;border-radius:8px;padding:9px 12px}
+#chv2 details{margin-top:6px}#chv2 summary{cursor:pointer;color:#334155;font-size:.82rem;font-weight:700;padding:4px 0}
+#chv2 .fold{color:#475569;font-size:.8rem;line-height:1.7;margin-top:4px}
+#chv2 .tag{font-size:.68rem;padding:1px 6px;border-radius:5px;background:#ede9fe;color:#5b21b6;margin-left:4px;white-space:nowrap}
+#chv2 .card{display:flex;gap:12px;padding:10px 0;border-top:1px solid #f1f5f9}#chv2 .card img{width:96px;height:96px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0}
+#chv2 .card .noimg{width:96px;height:96px;border-radius:8px;border:1px dashed #fca5a5;color:#dc2626;font-size:.7rem;display:flex;align-items:center;justify-content:center;text-align:center}
+#chv2 pre{white-space:pre-wrap;font-family:inherit;color:#475569;font-size:.78rem;line-height:1.5;max-height:150px;overflow:auto;background:#f8fafc;border-radius:6px;padding:8px;margin:4px 0 0}
+#chv2 .btn{border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:7px;padding:5px 11px;font-size:.78rem;cursor:pointer;margin-right:6px}
+#chv2 .err{color:#dc2626}
+@media(max-width:760px){#chv2 .todo{grid-template-columns:1fr}#chv2 table{font-size:.76rem}}
+</style>
+<script>
+/* RP-CHAN-V2 v1.46.0 — 원본 loadChannelAll·loadChannelAlgo·loadChannelStock·loadChannelPreview·loadChannelPhotoLog 는 지우지 않고 아래에서 덮어쓴다.
+   원천 = mk_channel_slots(편성 칸 · P5-B 9/26 신설) · v_channel_card_queue(대기) · mk_channel_cards(발송) · rpc_channel_candidates(원천) · mk_sns_sets(같은 주 SNS 주제) · mk_channel_algorithm(참고)
+   DB 쓰기 0 · 롤백 = 이 블록(<!-- RP-CHAN-V2 start … end -->)만 걷어낸다 → 원본 화면·함수 복귀 */
+(function(){
+var CH={place:['①','플레이스','pl','10:00'],kakao:['②','카카오','ka','19:00'],gbp:['③','구글','gb','10:00'],karrot:['④','당근','kr','10:00']};
+var CHO=['place','kakao','gbp','karrot'];
+var OWN={place:['여행','행사'],kakao:['여행','행사'],gbp:['마케팅'],karrot:['마케팅']};
+var DOWK=['일','월','화','수','목','금','토'];
+var GUARD=['장소 섭외','장소섭외','숙소 섭외','숙소섭외','대관','장소 대여','장소대여','공간 대여','공간대여','예약 대행','예약대행','숙소 예약','숙소예약','펜션','단체펜션','커피차','포토부스','푸드트럭','체험단','돌잔치','키즈카페'];
+var PHONE=/(1[5-9]\d{2}[-\s.]?\d{4})|(0\d{1,2}[-\s.]?\d{3,4}[-\s.]?\d{4})/;
+function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function kst(d){return new Date(d.getTime()+9*3600e3).toISOString().slice(0,10);}
+function today(){return kst(new Date());}
+function addD(s,n){var d=new Date(s+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
+function dow(s){return new Date(s+'T00:00:00Z').getUTCDay();}
+function md(s){return s?(+s.slice(5,7))+'/'+(+s.slice(8,10)):'';}
+function dd(s){return DOWK[dow(s)]+' '+md(s);}
+function ago(ts){return Math.floor((Date.now()-new Date(ts).getTime())/864e5);}
+function chip(c,t){return '<span class="chip '+c+'">'+t+'</span>';}
+function chLab(c){var x=CH[c]||['·',c,'n',''];return '<span class="'+x[2]+'">'+x[0]+' '+x[1]+'</span>';}
+function homeOf(bu){return bu==='마케팅'?'marketing.realplanjeju.com':'realplanjeju.com';}
+function checks(c){var body=String(c.내용||''),title=String(c.제목||'');var lines=body.split('\n').filter(function(l){return !/https?:\/\//.test(l);});var ph=(title+'\n'+lines.join('\n')).match(PHONE);var head=title+' '+body.slice(0,200);var g=null;GUARD.forEach(function(p){if(!g&&head.indexOf(p)>=0)g=p;});var home=/utm_medium=channel_card/.test(body);var out=[];
+ out.push('본문 '+body.length+'자');out.push('전화번호 '+(ph?'<b class="err">「'+E(ph[0])+'」</b>':'✅ 없음'));out.push('금지어 '+(g?'<b class="err">「'+E(g)+'」</b>':'✅ 없음'));
+ if(c.채널==='place'||c.채널==='karrot')out.push('홈 CTA '+(home?'✅':'⚠️ 없음(발송 때 자동 보정)'));else if(c.채널==='kakao')out.push('홈=링크 버튼');else out.push('홈=자세히 버튼(칸 이동_url)');
+ out.push('썸네일 '+(c.썸네일_url?'✅':'<b class="err">없음 → 발송 보류</b>'));return out.join(' · ');}
+function tagsOf(c){var t=[];if(c.확산_티어명)t.push(c.확산_티어명.split(' ')[0]);var tg=c.요소태그||[];t.push(tg.indexOf('autogen')>=0?'🤖 자동생성':'✍️ 수동');if(c.슬롯유형)t.push(c.슬롯유형);var a=ago(c.created_at);if(a>=14)t.push(a+'일 대기');return t.map(function(x){return '<span class="tag">'+E(x)+'</span>';}).join('');}
+
+async function load(){
+ var box=document.getElementById('chv2');if(!box)return;var T=today(),f0=addD(T,-7),t1=addD(T,14);
+ box.innerHTML='<h2>📡 채널 소식</h2><div class="c-sub">불러오는 중…</div>';
+ try{
+  var q=await Promise.all([
+   sb.from('mk_channel_slots').select('id,예정일,채널,사업부,카드_id,sns_세트_id,이동_url,상태,보류_사유,발송_시각,유입_수,측정일').gte('예정일',f0).lte('예정일',t1).order('예정일').limit(200),
+   sb.from('v_channel_card_queue').select('*').order('확산_티어').order('확산_순위').order('created_at'),
+   sb.from('mk_channel_cards').select('id,채널,사업부,주제,제목,내용,상태,발송_시각,썸네일_url,사진_url').eq('상태','발송').gte('발송_시각',f0+'T00:00:00+09:00').order('발송_시각',{ascending:false}).limit(60),
+   sb.rpc('rpc_channel_candidates',{p_bu:null,p_days:90}),
+   sb.from('mk_channel_algorithm').select('채널,채널명,알고리즘_버전,업데이트_주기_일,마지막_점검일,운영시사점').eq('활성',true).order('id')
+  ]);
+  var err=[];['편성 칸','대기 카드','발송 카드','원천','알고리즘'].forEach(function(n,i){if(q[i].error)err.push(n+': '+q[i].error.message);});
+  var slots=q[0].data||[],wait=q[1].data||[],sent=q[2].data||[],src=q[3].data||[],algo=q[4].data||[];
+  var cardById={};wait.forEach(function(c){cardById[c.id]=c;});sent.forEach(function(c){cardById[c.id]=cardById[c.id]||c;});
+  var missing=slots.filter(function(s){return s.카드_id&&!cardById[s.카드_id];}).map(function(s){return s.카드_id;});
+  if(missing.length){var m=await sb.from('mk_channel_cards').select('id,채널,사업부,주제,제목,내용,상태,발송_시각,썸네일_url,사진_url').in('id',missing);(m.data||[]).forEach(function(c){cardById[c.id]=c;});}
+  var setIds=slots.map(function(s){return s.sns_세트_id;}).filter(Boolean);var setById={};
+  if(setIds.length){var ss=await sb.from('mk_sns_sets').select('id,제목,사업부,게시일').in('id',setIds.slice(0,100));(ss.data||[]).forEach(function(s){setById[s.id]=s;});}
+
+  /* ---- 계산 ---- */
+  var up=slots.filter(function(s){return s.예정일>=T;}),past=slots.filter(function(s){return s.예정일<T;});
+  var need={};up.forEach(function(s){if(s.상태!=='발송')need[s.채널]=(need[s.채널]||0)+1;});
+  var byCh={};CHO.forEach(function(c){byCh[c]=wait.filter(function(x){return x.채널===c;});});
+  var noThumb=wait.filter(function(x){return !x.썸네일_url;});
+  var oldest=wait.reduce(function(m,x){var a=ago(x.created_at);return a>m?a:m;},0);
+  var old30=wait.filter(function(x){return ago(x.created_at)>=30;});
+  var wk=up.filter(function(s){return s.예정일<=addD(T,6);});
+  var wkAssigned=wk.filter(function(s){return s.상태==='배정'||s.상태==='발송';}).length;
+  var wkGap=wk.filter(function(s){return s.상태==='편성';});
+  var dropped=past.filter(function(s){return s.상태==='빠짐';});
+  var pastSent=past.filter(function(s){return s.상태==='발송';}).length;
+  var bad=wait.filter(function(c){return /err/.test(checks(c));});
+  var inflow=slots.filter(function(s){return s.유입_수!=null;});
+
+  /* ---- ① 오늘 할 일 ---- */
+  var todo=[];
+  var nextDay=up.length?up[0].예정일:null;
+  var nextAssigned=up.filter(function(s){return s.예정일===nextDay&&s.카드_id&&cardById[s.카드_id];});
+  var r1='';nextAssigned.forEach(function(s){var c=cardById[s.카드_id];r1+='🔴 <b>'+dd(s.예정일)+' '+CH[s.채널][1]+' 「'+E(c.제목||c.주제)+'」</b> — 텔레그램 '+CH[s.채널][3]+' 도착 → '+(s.채널==='kakao'?'채널 소식 + 링크 버튼':s.채널==='gbp'?'업데이트 게시 + 자세히 버튼':'소식에 올리기')+'<br>';});
+  if(!r1)r1='🔴 다음 발송('+(nextDay?dd(nextDay):'—')+') 배정 카드 없음 — 수·월 11:00 자동 배정 대기';
+  todo.push('<div class="r">'+r1+'</div>');
+  var r2='';if(wkGap.length)r2+='🟠 <b>이번 주 미배정 칸 '+wkGap.length+'개</b> ('+wkGap.map(function(s){return dd(s.예정일)+' '+CH[s.채널][1]+'·'+s.사업부;}).join(' · ')+') — 4일 전 11:00 자동 배정<br>';
+  if(old30.length)r2+='🟠 <b>30일 넘은 카드 '+old30.length+'장</b> — '+old30.map(function(c){return CH[c.채널][1]+' 「'+E(c.주제)+'」 '+ago(c.created_at)+'일';}).join(' · ')+'<br>';
+  CHO.forEach(function(c){var have=byCh[c].filter(function(x){return x.썸네일_url;}).length;if((need[c]||0)>have)r2+='🟠 <b>'+CH[c][1]+' 재고 부족</b> — 2주 칸 '+need[c]+'개 · 발송 가능 '+have+'장 → 보충 필요<br>';});
+  if(!r2)r2='🟢 미배정 칸·오래된 카드·재고 부족 없음';
+  todo.push('<div class="o">'+r2+'</div>');
+  var r3='';if(dropped.length)r3+='🔴 <b>지난 7일 빠진 칸 '+dropped.length+'개</b> — '+dropped.map(function(s){return dd(s.예정일)+' '+CH[s.채널][1]+'('+E(s.보류_사유||'사유 없음')+')';}).join(' · ')+'<br>';
+  if(noThumb.length)r3+='🟢 썸네일 없는 대기 카드 '+noThumb.length+'장 → 자동 보류(발송 안 됨): '+noThumb.map(function(c){return CH[c.채널][1]+' 「'+E(c.주제)+'」';}).join(' · ')+'<br>';
+  if(bad.length)r3+='🔴 <b>자동 검사 걸린 카드 '+bad.length+'장</b>(전화번호·금지어) — ④에서 확인<br>';
+  r3+='🟢 지난 7일 칸 '+past.length+'개 중 발송 '+pastSent+' · 빠짐 '+dropped.length;
+  todo.push('<div class="'+(dropped.length||bad.length?'r':'g')+'">'+r3+'</div>');
+
+  /* ---- ② 발송표 ---- */
+  function row(s,isPast){var c=s.카드_id?cardById[s.카드_id]:null;var st=s.상태;var stc=st==='발송'?'g':st==='배정'?'b':st==='빠짐'?'r':st==='편성'?'o':'n';
+   var title=c?((c.썸네일_url?'<img class="th" src="'+E(c.썸네일_url)+'">':'')+(s.채널==='gbp'&&!c.제목?'['+E(c.주제)+'] 본문 '+String(c.내용||'').length+'자':E(c.제목||c.주제))+(cardById[c.id]&&cardById[c.id].확산_티어명?tagsOf(cardById[c.id]):'')):(st==='편성'?'<span class="mut">미배정 — 4일 전 11:00 자동 배정 (전속 재고 '+byCh[s.채널].filter(function(x){return OWN[s.채널].indexOf(x.사업부)>=0&&x.썸네일_url;}).length+'장)</span>':'<span class="mut">'+E(s.보류_사유||'')+'</span>');
+   var home=s.채널==='gbp'?(s.이동_url?E(s.이동_url.replace(/^https?:\/\//,'')):'자세히 버튼 → '+homeOf(s.사업부)):s.채널==='kakao'?'링크 버튼 → '+homeOf(s.사업부):homeOf(s.사업부)+' ?utm_content=칸id';
+   var set=s.sns_세트_id&&setById[s.sns_세트_id]?E(setById[s.sns_세트_id].제목||''):'<span class="mut">—</span>';
+   return '<tr class="'+(isPast?'past':'')+(st==='편성'?' gap':'')+'"><td style="white-space:nowrap">'+dd(s.예정일)+'</td><td style="white-space:nowrap">'+chLab(s.채널)+' '+CH[s.채널][3]+'</td><td>'+E(s.사업부)+'</td><td>'+title+'</td><td style="text-align:center">'+(c?(c.썸네일_url?'✅':'<span class="err">없음</span>'):'—')+'</td><td>'+chip(stc,E(st))+'</td><td class="mut" style="font-size:.74rem">'+home+'</td><td class="mut" style="font-size:.74rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+set.replace(/<[^>]+>/g,'')+'">'+set+'</td><td style="text-align:center">'+(s.유입_수==null?'<span class="mut">—</span>':s.유입_수)+'</td></tr>';}
+  var head='<tr><th>예정일</th><th>채널 · 시각</th><th>사업부</th><th>배정 카드</th><th>썸네일</th><th>상태</th><th>홈 링크</th><th>같은 주 SNS 주제</th><th>유입</th></tr>';
+  var tbl='<div style="overflow:auto"><table>'+head+(up.length?up.map(function(s){return row(s,false);}).join(''):'<tr><td colspan="9" class="mut">앞으로 14일 편성 칸이 없습니다 — 칸 생성 크론(월·수·금 11:00 fn_channel_stock_watch) 확인</td></tr>')+'</table></div>';
+  tbl+='<details><summary>▸ 지난 7일 ('+past.length+'칸 · 발송 '+pastSent+' · 빠짐 '+dropped.length+')</summary><div style="overflow:auto"><table>'+head+past.map(function(s){return row(s,true);}).join('')+'</table></div></details>';
+
+  /* ---- ③ 재고 ---- */
+  var stock=CHO.map(function(c){var a=byCh[c],th=a.filter(function(x){return x.썸네일_url;}).length,nd=need[c]||0,mx=a.reduce(function(m,x){var g=ago(x.created_at);return g>m?g:m;},0);var j=th<nd?chip('o','🟠 2주 안 '+(nd-th)+'장 부족'):mx>=30?chip('o','🟠 오래된 카드'):chip('g','🟢 충분');
+   return '<div>'+chLab(c)+' <span class="mut">전속 '+OWN[c].join('·')+'</span><div class="big">'+a.length+'장 <span class="mut" style="font-size:.78rem">/ 2주 칸 '+nd+'</span></div><div class="mut">썸네일 있음 '+th+' · 없음 '+(a.length-th)+' · 최장 '+mx+'일</div><div style="margin-top:5px">'+j+'</div></div>';}).join('');
+  var srcBu={};src.forEach(function(x){srcBu[x.사업부]=(srcBu[x.사업부]||0)+1;});
+  var srcList='<details><summary>▸ 90일 내 미확산 원천 '+src.length+'건 — 여행 '+(srcBu['여행']||0)+' · 행사 '+(srcBu['행사']||0)+' · 마케팅 '+(srcBu['마케팅']||0)+' (자동 보충 재료 · 오래된 것부터)</summary><div class="fold">'+(src.map(function(x){return '['+E(x.블)+'] '+E(x.핵심키워드)+' <span class="mut">('+E(x.슬롯유형)+' · '+x.경과일+'일 전)</span>';}).join('<br>')||'없음')+'</div></details>';
+
+  /* ---- ④ 미리보기 ---- */
+  var prev=CHO.map(function(c,i){var a=byCh[c];var inner=a.map(function(x){var img=x.썸네일_url?'<img src="'+E(x.썸네일_url)+'">':(x.사진_url?'<img src="'+E(x.사진_url)+'" style="opacity:.5">':'<div class="noimg">썸네일<br>없음</div>');
+    var slot=slots.filter(function(s){return s.카드_id===x.id;})[0];
+    return '<div class="card"><div>'+img+'</div><div style="flex:1;min-width:0"><div><b>'+(x.제목?'❶ '+E(x.제목):'['+E(x.주제)+']')+'</b>'+tagsOf(x)+(slot?' <span class="chip b">'+dd(slot.예정일)+' '+E(slot.상태)+'</span>':'')+'</div><div class="mut" style="margin-top:3px">❷ '+checks(x)+(x.사진_구성?' · 🧷 '+E(x.사진_구성):'')+'</div><pre>'+E(x.내용)+'</pre></div></div>';}).join('');
+   return '<details'+(i===0?' open':'')+'><summary>'+chLab(c)+' '+a.length+'장 — '+(a.map(function(x){return E(x.주제)+(x.썸네일_url?'':'(썸네일 없음)');}).join(' · ')||'없음')+'</summary>'+inner+'</details>';}).join('');
+
+  /* ---- ⑤ 참고 ---- */
+  var algoRows=algo.filter(function(a){return /place|kakao|gbp|karrot|플레이스|카카오|구글|당근/.test(String(a.채널)+String(a.채널명));});
+  var algoTbl='<table><tr><th>채널</th><th>버전</th><th>점검</th><th>운영 시사점</th></tr>'+algoRows.map(function(a){var d=a.마지막_점검일?ago(a.마지막_점검일+'T00:00:00+09:00'):999,cyc=a.업데이트_주기_일||35;return '<tr><td>'+E(a.채널명)+'</td><td class="mut">'+E(a.알고리즘_버전)+'</td><td>'+(d>cyc?'🔴':d>cyc*0.8?'🟠':'🟢')+' '+d+'/'+cyc+'일</td><td class="mut">'+E(String(a.운영시사점||'').slice(0,140))+(String(a.운영시사점||'').length>140?'…':'')+'</td></tr>';}).join('')+'</table>';
+  var ref='<details><summary>▸ 채널별 규격 한 줄</summary><div class="fold">① 플레이스 — 본문 2,000자 · 제목 필수 · 네이버 블로그 URL · 홈 CTA = 본문 마지막 줄 · 화·금 10:00 · 톡톡 문의<br>② 카카오 — 본문 2,000자 · 홈 = 링크 버튼(본문 아님) · 화·금 19:00 · 채널 채팅 문의<br>③ 구글 — 본문 1,500자(권장 300) · 자세히 버튼 = 편성 칸의 주제 자료실(utm) · 프로필 웹사이트 = 홈 · 수 10:00<br>④ 당근 — 본문 800자 · 제주 로컬 · 소식으로만 · 글자 10% 이하 썸네일 · 수 10:00<br>공통 — 전화번호 표기 금지 · 정체성 = 기획·운영 대행(장소 섭외·대여 아님) · 썸네일 없으면 4채널 모두 발송 보류(v2.8) · 사진 = 사진관리 승인 자산만</div></details>'
+   +'<details><summary>▸ 알고리즘 점검 (정본은 「기준·알고리즘」 메뉴 · 여기는 4채널 요약)</summary>'+algoTbl+'</details>'
+   +'<details><summary>▸ 유입·성과 — 칸별 유입_수 '+(inflow.length?inflow.length+'칸 측정':'측정 0(월 10:50 rpc_channel_perf_collect · 대시보드와 같은 자 · utm_content=칸 id)')+' · 판정 10/31 · 4주 연속 0이면 「게시 여부 확인」 알림</summary><div class="fold">측정 축 = 홈A·B 통계 대시보드 채널별(네이버플레이스-소식 · 카카오 · 구글비즈니스 · 당근). 플랫폼 조회수·저장수는 공개 API가 없어 재지 않습니다(2026-09-07 대표 A안).</div></details>'
+   +'<details><summary>▸ 사진 사용 이력 → 「미디어 관리」 ③ 최근 사용에서 봅니다</summary></details>';
+
+  var band=chip('b','발송 대기 '+wait.length+'장')+chip(oldest>=30?'o':'n','가장 오래된 카드 '+oldest+'일')+chip(noThumb.length?'r':'g','썸네일 없음 '+noThumb.length+'장')+chip(wkGap.length?'o':'g','이번 주 '+wk.length+'칸 중 '+wkAssigned+'칸 배정')+chip(dropped.length?'r':'g','지난 7일 빠짐 '+dropped.length)+chip('n','유입 측정 '+inflow.length+'칸 · 판정 10/31');
+  box.innerHTML='<h2>📡 채널 소식 <span class="mut" style="font-weight:400">'+(typeof VER!=='undefined'?VER:'')+'</span></h2>'
+   +'<div class="c-sub">스마트플레이스 · 카카오톡 채널 · 구글 비즈니스 · 당근(제주 로컬) — 편성 칸(mk_channel_slots)과 같은 데이터로 봅니다. 발송 = 텔레그램 「리얼플랜 채널소식」 방 도착, 게시 = 대표님이 직접. 편성 달력 「채널 소식」 레인과 같은 칸입니다.</div>'
+   +'<div style="margin-bottom:10px"><button class="btn" onclick="loadChannelAll()">🔄 새로고침</button><span class="c-band" style="margin:0">'+band+'</span></div>'
+   +(err.length?'<div class="sec err">조회 오류: '+E(err.join(' / '))+'</div>':'')
+   +'<div class="sec"><h3>① 오늘 할 일 <span>대표님이 손댈 것만 · 나머지는 자동(칸 생성·배정 월·수·금 11:00 / 발송 화·수·금 / 보충 발송 30분 뒤)</span></h3><div class="todo">'+todo.join('')+'</div></div>'
+   +'<div class="sec"><h3>② 발송표 — 앞으로 14일 <span>편성 칸 원천 · 상태 편성→배정→발송/빠짐 · 미배정 칸은 노란 줄</span></h3>'+tbl+'</div>'
+   +'<div class="sec"><h3>③ 재고 · 막힘 <span>채널 전속 기준 · 앞으로 14일 칸 수 대비</span></h3><div class="stock">'+stock+'</div>'+srcList+'</div>'
+   +'<div class="sec"><h3>④ 발송 대기 카드 미리보기 <span>채널별 · 발송 순서(티어→순위→오래된 순) · 본문 전문 + 자동 검사(발송 기능과 같은 규칙)</span></h3>'+prev+'</div>'
+   +'<div class="sec"><h3>⑤ 참고 <span>기본 접힘</span></h3>'+ref+'</div>';
+ }catch(e){box.innerHTML='<h2>📡 채널 소식</h2><div class="sec err">오류: '+E(e.message||e)+'</div>';}
+}
+function ensure(){var p=document.getElementById('tchan');if(!p)return false;if(!document.getElementById('chv2')){var d=document.createElement('div');d.id='chv2';p.insertBefore(d,p.firstChild);}return true;}
+window.loadChannelAll=function(){if(!ensure())return;load();};
+try{var nv=document.querySelector('.nav-item[title="채널 소식"]');if(nv&&nv.classList.contains('active'))window.loadChannelAll();}catch(_){}
+})();
+</script>
+<!-- RP-CHAN-V2 end -->
 
 
 

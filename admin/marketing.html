@@ -4963,7 +4963,7 @@ function rebuildNav(){
   relabel(NAV.t5,'🏆','순위·클릭 진단','순위·클릭 진단(진입 현황 · 클릭(CTR) · 색인)');
   relabel(NAV.t8,'🔑','키워드·기회','키워드·기회(매출 키워드 · 기회 키워드 · 실검색어 · 상위 글 · 창고)');
   relabel(NAV.t6,'📐','기준·알고리즘','기준·알고리즘(알고리즘 대장 · 스킬 버전 · DB 정본 규칙)');
-  var plan=[['고객',['tcs']],['성과 보기',['t1','t5','t12']],['기회 찾기',['t8']],['만들기',['tsch','t2','t15','t10','t11','t14']],['퍼뜨리기',['tchan','t13']],['기준',['t6']]];
+  var plan=[['고객',['tcs']],['성과 보기',['t1','t5','t12']],['기회 찾기',['t8']],['만들기',['tsch','t2','t10','t11','t14']],['퍼뜨리기',['tchan','t13']],['기준',['t6']]];
   nav.querySelectorAll('.nav-section').forEach(function(s){s.remove();});
   plan.forEach(function(g){var h=document.createElement('div');h.className='nav-section';h.textContent=g[0];nav.appendChild(h);g[1].forEach(function(k){nav.appendChild(NAV[k]);});});
   [NAV.t4,NAV.tctr].forEach(function(n){hide(n);nav.appendChild(n);});

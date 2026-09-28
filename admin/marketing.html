@@ -4956,7 +4956,7 @@ var NAV={};
 function rebuildNav(){
   var nav=document.querySelector('nav.sidebar');if(!nav)return false;
   nav.querySelectorAll('.nav-item').forEach(function(n){var m=(n.getAttribute('onclick')||'').match(/switchTab\('([^']+)'/);if(m)NAV[m[1]]=n;});
-  var need=['tcs','t1','t4','t5','tctr','t12','t2','t15','tsch','t10','t11','t14','t6','t8','tchan','t13'];
+  var need=['tcs','t1','t4','t5','tctr','t12','t2','tsch','t10','t11','t14','t6','t8','tchan','t13']; /* v1.47.0 t15 리라이트 제외 */
   var miss=need.filter(function(k){return !NAV[k];});
   if(miss.length){warn('nav','메뉴 구조가 달라 재편 중단: '+miss.join(','));return false;}
   function relabel(n,icon,text,title){var sp=n.querySelector('span');var b=n.querySelector('b');n.innerHTML='';var s=document.createElement('span');s.textContent=icon;n.appendChild(s);n.appendChild(document.createTextNode(text));if(b)n.appendChild(b);if(title)n.title=title;void sp;}

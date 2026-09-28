@@ -7296,6 +7296,8 @@ window.__sigSet=async function(id,st){try{var r=await sb.from('mk_algo_signals')
 window.__algoRadar=function(p){alert('재조사 요청은 채팅에서 「'+p+' 알고리즘 재조사」로 부탁드립니다 — 회사 시스템 방이 fn_algo_radar_request(\''+p+'\')를 실행해 신호함에 넣습니다(비용 $0.01).');};
 if(!window.__algoOrig&&typeof window.loadAlgo==='function')window.__algoOrig=window.loadAlgo;
 window.loadAlgo=function(){algoLoad();};
+/* v1.48.2 — RP-MENU-V2가 로그인 뒤 window.loadAlgo를 다시 덮어쓰므로 switchTab을 감싸 t6는 이 화면을 띄운다 */
+var _st=window.switchTab;if(typeof _st==='function'){window.switchTab=function(id,el){var r=_st.apply(this,arguments);try{if(id==='t6')setTimeout(algoLoad,60);}catch(_){}return r;};}
 try{var a=document.querySelector('.nav-item.active');if(a){if(/키워드/.test(a.textContent))kwLoad();if(/기준/.test(a.textContent))algoLoad();}}catch(_){}
 })();
 </script>

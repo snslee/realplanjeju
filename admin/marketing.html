@@ -7104,7 +7104,7 @@ async function load(){
   var wkGap=wk.filter(function(s){return s.상태==='편성';});
   var dropped=past.filter(function(s){return s.상태==='빠짐';});
   var pastSent=past.filter(function(s){return s.상태==='발송';}).length;
-  var bad=wait.filter(function(c){return /err/.test(checks(c));});
+  var bad=wait.filter(function(c){var s=checks(c);return /전화번호 <b|금지어 <b/.test(s);});
   var inflow=slots.filter(function(s){return s.유입_수!=null;});
 
   /* ---- ① 오늘 할 일 ---- */

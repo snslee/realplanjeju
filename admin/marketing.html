@@ -7173,6 +7173,133 @@ try{var nv=document.querySelector('.nav-item[title="채널 소식"]');if(nv&&nv.
 })();
 </script>
 <!-- RP-CHAN-V2 end -->
+<!-- RP-KW-V2 start · v1.48.0 · 2026-09-28 키워드·기회 화면 개편(매출 키워드 1행=1키워드 · 채널 칩 · 연계율 · 이번 달 할 일) (회사 시스템 방 · 대표 「권장 번들 진행」) -->
+<style id="kwv2-css">
+#t8:not(.showorig) > :not(#kwv2):not(.mv2-strip){display:none!important}
+#t6:not(.showorig) > :not(#algov2):not(.mv2-strip){display:none!important}
+.v2{font-size:.84rem;color:#0f172a}.v2 h2{font-size:1.2rem;font-weight:700;margin:0 0 2px}.v2 .c-sub{color:#64748b;font-size:.8rem;margin-bottom:10px;line-height:1.5}
+.v2 .chip{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;border:1px solid;white-space:nowrap;margin:0 4px 4px 0}
+.v2 .g{background:#ecfdf5;color:#047857;border-color:#a7f3d0}.v2 .o{background:#fff7ed;color:#c2410c;border-color:#fed7aa}.v2 .r{background:#fef2f2;color:#b91c1c;border-color:#fecaca}.v2 .b{background:#eef2ff;color:#3730a3;border-color:#c7d2fe}.v2 .n{background:#f1f5f9;color:#475569;border-color:#e2e8f0}
+.v2 .sec{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:13px 15px;margin-bottom:13px}.v2 .sec h3{font-size:.98rem;font-weight:700;margin:0 0 8px}.v2 .sec h3 span{font-weight:400;color:#94a3b8;font-size:.74rem;margin-left:6px}
+.v2 .todo{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}.v2 .todo>div{border-radius:8px;padding:9px 12px;font-size:.82rem;line-height:1.55;border:1px solid}
+.v2 .todo .r{border-color:#fecaca}.v2 .todo .o{border-color:#fed7aa}.v2 .todo .g{border-color:#a7f3d0}
+.v2 table{width:100%;border-collapse:collapse;font-size:.8rem}.v2 th{background:#f8fafc;text-align:left;padding:6px 7px;font-weight:700;color:#334155;border-bottom:1px solid #e2e8f0;white-space:nowrap;cursor:pointer}.v2 td{padding:6px 7px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.v2 .mut{color:#94a3b8;font-size:.74rem}.v2 .big{font-size:1.35rem;font-weight:800}
+.v2 .rate{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}.v2 .rate>div{border:1px solid #e2e8f0;border-radius:8px;padding:9px 11px;text-align:center}
+.v2 .bar{height:6px;border-radius:3px;background:#e2e8f0;margin-top:6px}.v2 .bar i{display:block;height:6px;border-radius:3px}
+.v2 .ok{color:#16a34a;font-weight:700;text-align:center}.v2 .no{color:#dc2626;font-weight:700;text-align:center}.v2 .na{color:#cbd5e1;text-align:center}
+.v2 .f{display:inline-block;padding:3px 10px;border-radius:14px;border:1px solid #e2e8f0;font-size:.74rem;margin:0 4px 4px 0;background:#fff;cursor:pointer}.v2 .f.on{background:#2563eb;color:#fff;border-color:#2563eb}
+.v2 details{margin-top:6px}.v2 summary{cursor:pointer;color:#334155;font-size:.82rem;font-weight:700;padding:4px 0}.v2 .fold{color:#475569;font-size:.8rem;line-height:1.7;margin-top:4px}
+.v2 .btn{border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:7px;padding:5px 11px;font-size:.78rem;cursor:pointer;margin-right:6px}.v2 .btn.s{padding:2px 8px;font-size:.7rem}
+.v2 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}.v2 .card{border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;font-size:.8rem;line-height:1.5}.v2 .card .k{color:#475569;margin-top:4px}.v2 .card .im{color:#2563eb;margin-top:4px}.v2 .card .m{color:#94a3b8;font-size:.7rem;margin-top:4px}
+.v2 .err{color:#dc2626}
+@media(max-width:760px){.v2 .todo{grid-template-columns:1fr}.v2 table{font-size:.74rem}}
+</style>
+<script>
+/* RP-KW-V2 / RP-ALGO-V2 v1.48.0 — 원본 화면·함수는 지우지 않고 숨긴다. 「옛 화면 펼치기」로 되살릴 수 있다. DB 쓰기 = 신호함 「반영/보류」 상태 1칸뿐.
+   원천: v_revenue_kw_by_channel(2,018칸) · v_revenue_kw_gap · v_revenue_kw_linkage(주간 자동) · mk_blog_algorithm(대장 한 벌) · mk_algo_signals(변경 신호함 · algo-radar) · mk_skill_registry
+   롤백 = 이 블록(<!-- RP-KW-V2 start … end -->)만 걷어낸다 */
+(function(){
+function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function chip(c,t){return '<span class="chip '+c+'">'+t+'</span>';}
+function N(x){return (x==null?'—':Number(x).toLocaleString());}
+function ago(ts){return ts?Math.floor((Date.now()-new Date(ts.length===10?ts+'T00:00:00+09:00':ts).getTime())/864e5):null;}
+var BU={'국내여행':'국내여행','행사이벤트':'행사·이벤트','온라인마케팅':'온라인마케팅','마케팅교육':'마케팅교육'};
+var COLS=[['블A',/^블A/],['블B',/^블B/],['블C',/^블C/],['자료실',/^자료실/],['홈',/^홈/],['플레이스',/^플레이스$/],['카카오',/^카카오$/],['구글',/^구글$/],['당근',/^당근$/],['인스타',/^인스타$/],['페북',/^페북$/],['쓰레드',/^쓰레드$/],['유튜브',/^유튜브$/]];
+var KS={bu:'',sort:'pri',flt:'',rows:[],link:[]};
+function ensure(id,box){var p=document.getElementById(id);if(!p)return null;var d=document.getElementById(box);if(!d){d=document.createElement('div');d.id=box;d.className='v2';var strip=p.querySelector('.mv2-strip');p.insertBefore(d,strip?strip.nextSibling:p.firstChild);}return d;}
+
+/* ================= 키워드·기회 ================= */
+async function kwLoad(){
+ var box=ensure('t8','kwv2');if(!box)return;box.innerHTML='<h2>🔑 키워드·기회</h2><div class="c-sub">불러오는 중…</div>';
+ try{
+  async function all(){var out=[],from=0;while(true){var r=await sb.from('v_revenue_kw_by_channel').select('id,키워드,사업부,매출단계,검색량,피크월,피크임박,우선순위점수,채널,커버여부,커버url,커버순위').order('id').order('채널').range(from,from+999);if(r.error)return r;out=out.concat(r.data||[]);if((r.data||[]).length<1000||out.length>6000)break;from+=1000;}return {data:out};}
+  var q=await Promise.all([
+   all(),
+   sb.from('v_revenue_kw_gap').select('id,키워드,사업부,매출단계,검색량,피크월,피크임박,우선순위점수,채널배분').limit(500),
+   sb.from('v_revenue_kw_linkage').select('*')
+  ]);
+  var err=[];['채널칸','미커버','연계율'].forEach(function(n,i){if(q[i].error)err.push(n+': '+q[i].error.message);});
+  var cells=q[0].data||[],gap=q[1].data||[],link=q[2].data||[];
+  var kw={};cells.forEach(function(c){var k=kw[c.id]||(kw[c.id]={id:c.id,키워드:c.키워드,사업부:c.사업부,단계:c.매출단계,검색량:c.검색량,피크월:c.피크월||[],피크임박:c.피크임박,우선:c.우선순위점수,ch:{}});k.ch[c.채널]={cover:c.커버여부==='커버',url:c.커버url,rank:c.커버순위};});
+  var rows=Object.keys(kw).map(function(i){return kw[i];});
+  rows.forEach(function(k){k.col={};COLS.forEach(function(cd){var chs=Object.keys(k.ch).filter(function(c){return cd[1].test(c);});if(!chs.length){k.col[cd[0]]=null;return;}k.col[cd[0]]=chs.some(function(c){return k.ch[c].cover;});});
+   k.missing=COLS.filter(function(cd){return k.col[cd[0]]===false;}).map(function(cd){return cd[0];});k.snsyt=k.missing.filter(function(c){return /인스타|페북|쓰레드|유튜브/.test(c);}).length;});
+  KS.rows=rows;KS.link=link;
+  var gapIds={};gap.forEach(function(g){gapIds[g.id]=1;});
+  var peakGap=gap.filter(function(g){return g.피크임박;});
+  var top=rows.filter(function(k){return k.피크임박&&k.missing.length;}).sort(function(a,b){return (b.우선||0)-(a.우선||0);}).slice(0,4);
+  var allMiss=rows.filter(function(k){return k.missing.length>=4;}).sort(function(a,b){return (b.우선||0)-(a.우선||0);}).slice(0,3);
+  var todo='<div class="r">'+(top.length?top.map(function(k){return '🔴 <b>'+E(k.키워드)+'</b>('+N(k.검색량)+' · '+(k.피크월||[]).join('·')+'월 · '+E(BU[k.사업부]||k.사업부)+') — 빈 채널: '+k.missing.join('·');}).join('<br>'):'🟢 피크 임박 키워드에 빈 채널 없음')+'</div>'
+   +'<div class="o">'+(peakGap.length?'🟠 <b>피크 임박 미커버 '+peakGap.length+'건</b> — '+peakGap.map(function(g){return E(g.키워드)+'('+(g.피크월||[]).join('·')+'월)';}).join(' · ')+' → 글이 없음 · 먼저 쓴다<br>':'')+(allMiss.length?'🟠 <b>4채널 이상 빈 키워드</b> — '+allMiss.map(function(k){return E(k.키워드)+'('+k.missing.length+'칸)';}).join(' · '):'')+'</div>'
+   +'<div class="g">🟢 미커버(글 없음) '+gap.length+'건 / 정본 '+rows.length+'<br>'+link.map(function(l){var v=+l.연계율;return (v>=70?'🟢':v>=40?'🟠':'🔴')+' '+E(l.레인)+' '+v+'%';}).join('<br>')+'</div>';
+  var rate='<div class="rate">'+link.map(function(l){var v=+l.연계율,c=v>=70?'#16a34a':v>=40?'#f59e0b':'#dc2626';return '<div><div class="mut">'+E(l.레인)+'</div><div class="big" style="color:'+c+'">'+v+'%</div><div class="mut">'+N(l.건수)+' 중 '+N(l.연결)+'</div><div class="bar"><i style="width:'+Math.max(2,v)+'%;background:'+c+'"></i></div></div>';}).join('')+'</div>';
+  box.innerHTML='<h2>🔑 키워드·기회 <span class="mut" style="font-weight:400">'+(typeof VER!=='undefined'?VER:'')+'</span></h2>'
+   +'<div class="c-sub">매출 키워드 정본 하나(mk_revenue_keywords '+rows.length+')를 블로그·자료실·홈·채널 소식·SNS·유튜브가 같이 씁니다. ✅=그 채널에 글·게시 있음 · ❌=배분됐는데 없음 · ·=그 채널 배분 아님. 연계율 = 편성표가 매출 키워드를 물고 있는 비율(매주 월 자동).</div>'
+   +'<div style="margin-bottom:10px"><button class="btn" onclick="loadKeywordInsight(true)">🔄 새로고침</button><button class="btn" onclick="(function(){var p=document.getElementById(\'t8\');p.classList.toggle(\'showorig\');if(p.classList.contains(\'showorig\')&&window.__kwOrig)window.__kwOrig(true);})()">📂 옛 화면(실검색어·상위 글·창고) 펼치기/접기</button></div>'
+   +(err.length?'<div class="sec err">조회 오류: '+E(err.join(' / '))+'</div>':'')
+   +'<div class="sec"><h3>① 이번 달 할 일 <span>피크 임박(이달·다음 달) × 빈 채널 · 우선순위 순</span></h3><div class="todo">'+todo+'</div></div>'
+   +'<div class="sec"><h3>② 채널별 연계율 <span>기준 70% · v_revenue_kw_linkage · 키워드_id 자동 연결(트리거)</span></h3>'+rate+'</div>'
+   +'<div class="sec"><h3>③ 매출 키워드 목록 <span>1키워드 = 1행 · 칸 클릭 = 근거 URL · 머리글 클릭 = 정렬</span></h3><div id="kw-filters"></div><div style="overflow:auto" id="kw-table"></div></div>';
+  kwRender();
+ }catch(e){box.innerHTML='<h2>🔑 키워드·기회</h2><div class="sec err">오류: '+E(e.message||e)+'</div>';}
+}
+function kwRender(){
+ var f=document.getElementById('kw-filters'),t=document.getElementById('kw-table');if(!f||!t)return;
+ var bus=[['','전체'],['국내여행','국내여행'],['행사이벤트','행사·이벤트'],['온라인마케팅','온라인마케팅'],['마케팅교육','마케팅교육']];
+ var flts=[['','전부'],['peak','피크 임박'],['gap','빈 채널 있음'],['snsyt','SNS·유튜브 빈칸'],['top','문의직전']];
+ f.innerHTML='<span class="mut">사업부 </span>'+bus.map(function(b){return '<span class="f'+(KS.bu===b[0]?' on':'')+'" onclick="window.__kwSet(\'bu\',\''+b[0]+'\')">'+b[1]+'</span>';}).join('')+' <span class="mut">추리기 </span>'+flts.map(function(b){return '<span class="f'+(KS.flt===b[0]?' on':'')+'" onclick="window.__kwSet(\'flt\',\''+b[0]+'\')">'+b[1]+'</span>';}).join('');
+ var rows=KS.rows.filter(function(k){if(KS.bu&&k.사업부!==KS.bu)return false;if(KS.flt==='peak')return k.피크임박;if(KS.flt==='gap')return k.missing.length>0;if(KS.flt==='snsyt')return k.snsyt>0;if(KS.flt==='top')return k.단계==='문의직전';return true;});
+ rows.sort(function(a,b){if(KS.sort==='vol')return (b.검색량||0)-(a.검색량||0);if(KS.sort==='miss')return b.missing.length-a.missing.length;if(KS.sort==='kw')return String(a.키워드).localeCompare(String(b.키워드));return (b.우선||0)-(a.우선||0);});
+ var head='<tr><th onclick="window.__kwSet(\'sort\',\'kw\')">키워드</th><th>사업부</th><th>단계</th><th onclick="window.__kwSet(\'sort\',\'vol\')">검색량</th><th>피크</th>'+COLS.map(function(c){return '<th style="text-align:center">'+c[0]+'</th>';}).join('')+'<th onclick="window.__kwSet(\'sort\',\'miss\')">빈칸</th><th onclick="window.__kwSet(\'sort\',\'pri\')">우선</th></tr>';
+ var body=rows.slice(0,400).map(function(k){var cells=COLS.map(function(cd){var v=k.col[cd[0]];if(v===null)return '<td class="na">·</td>';var chs=Object.keys(k.ch).filter(function(c){return cd[1].test(c)&&k.ch[c].cover;});var u=chs.length?k.ch[chs[0]].url:null;return v?'<td class="ok">'+(u&&/^https?:/.test(u)?'<a href="'+E(u)+'" target="_blank" style="color:#16a34a;text-decoration:none">✅</a>':'✅')+'</td>':'<td class="no">❌</td>';}).join('');
+  return '<tr'+(k.피크임박&&k.missing.length?' style="background:#fffbeb"':'')+'><td><b>'+E(k.키워드)+'</b></td><td>'+E(BU[k.사업부]||k.사업부)+'</td><td>'+E(k.단계)+'</td><td>'+N(k.검색량)+'</td><td>'+((k.피크월||[]).join('·')||'—')+(k.피크임박?' 🔥':'')+'</td>'+cells+'<td style="text-align:center">'+(k.missing.length||'')+'</td><td>'+(k.우선!=null?Math.round(k.우선):'')+'</td></tr>';}).join('');
+ t.innerHTML='<table>'+head+body+'</table><div class="mut" style="margin-top:6px">'+rows.length+'행'+(rows.length>400?' 중 400행 표시':'')+' · 블A·B·C = 네이버·티스토리 어느 쪽이든 글 있으면 ✅ · 채널 소식·SNS·유튜브는 발송·게시·업로드분 기준(커버 원천 뷰 · 매시 7분 갱신)</div>';
+}
+window.__kwSet=function(k,v){KS[k]=v;kwRender();};
+if(!window.__kwOrig&&typeof window.loadKeywordInsight==='function')window.__kwOrig=window.loadKeywordInsight;
+window.loadKeywordInsight=function(){kwLoad();};
+
+/* ================= 기준·알고리즘 ================= */
+async function algoLoad(){
+ var box=ensure('t6','algov2');if(!box)return;box.innerHTML='<h2>📐 기준·알고리즘</h2><div class="c-sub">불러오는 중…</div>';
+ try{
+  var q=await Promise.all([
+   sb.from('mk_blog_algorithm').select('id,플랫폼,채널코드,알고리즘_버전,업데이트_주기_일,마지막_업데이트일,마지막_점검일,핵심변경사항,운영시사점,규격요약,참고링크,활성').order('플랫폼'),
+   sb.from('mk_algo_signals').select('*').order('게시일',{ascending:false,nullsFirst:false}).limit(100),
+   sb.from('mk_skill_registry').select('스킬명,버전,갱신일,체크섬').order('스킬명').limit(100),
+   sb.from('mk_channel_rules').select('id,활성').limit(500)
+  ]);
+  var err=[];['대장','신호함','스킬','규칙'].forEach(function(n,i){if(q[i].error)err.push(n+': '+q[i].error.message);});
+  var al=q[0].data||[],sig=q[1].data||[],sk=q[2].data||[],rules=q[3].data||[];
+  var T=Date.now();al.forEach(function(a){a.d=a.마지막_점검일?Math.floor((T-new Date(a.마지막_점검일+'T00:00:00+09:00').getTime())/864e5):999;a.cyc=a.업데이트_주기_일||35;a.st=!a.활성?'off':a.d>=a.cyc?'over':a.d>=a.cyc-7?'soon':'ok';});
+  var over=al.filter(function(a){return a.st==='over';}),soon=al.filter(function(a){return a.st==='soon';}),off=al.filter(function(a){return a.st==='off';}),ok=al.filter(function(a){return a.st==='ok';});
+  var wait=sig.filter(function(s){return s.상태==='대기';});
+  var band=chip(over.length?'r':'g','주기 초과 '+over.length+(over.length?' ('+over.map(function(a){return a.플랫폼+' '+a.d+'/'+a.cyc;}).join(' · ')+')':''))+chip(soon.length?'o':'n','임박 '+soon.length)+chip(off.length?'o':'g','비활성 '+off.length)+chip('g','정상 '+ok.length)+chip(wait.length?'o':'n','변경 신호 대기 '+wait.length)+chip('n','다음 자동 조사 매월 1일 15:23 · 주간 점검 월 15:15');
+  var todo='<div class="'+(over.length?'r':'g')+'">'+(over.length?over.map(function(a){return '🔴 <b>'+E(a.플랫폼)+'</b> '+a.d+'일/'+a.cyc+' — '+E(a.알고리즘_버전||'')+' 그대로 <button class="btn s" onclick="window.__algoRadar(\''+E(a.플랫폼)+'\')">재조사 요청</button>';}).join('<br>'):'🟢 주기 초과 없음')+'</div>'
+   +'<div class="'+(soon.length||off.length?'o':'g')+'">'+(off.length?off.map(function(a){return '🟠 <b>'+E(a.플랫폼)+'</b> 대장 비활성 — 점검 대상에서 빠져 있음';}).join('<br>')+'<br>':'')+(soon.length?'🟠 임박 — '+soon.map(function(a){return E(a.플랫폼)+' '+a.d+'/'+a.cyc;}).join(' · '):'🟢 임박 없음')+'</div>'
+   +'<div class="'+(wait.length?'o':'g')+'">'+(wait.length?'🟠 <b>변경 신호 '+wait.length+'건 대기</b> — ③에서 반영/보류':'🟢 대기 신호 없음')+'<br>🟢 규칙표 mk_channel_rules '+rules.length+'행(활성 '+rules.filter(function(r){return r.활성;}).length+')</div>';
+  var cards='<div class="cards">'+al.map(function(a){var c=a.st==='over'?'r':a.st==='soon'?'o':a.st==='off'?'n':'g';return '<div class="card"><b style="font-size:.9rem">'+E(a.플랫폼)+'</b> '+chip(c,(a.st==='off'?'비활성 · ':'')+a.d+'/'+a.cyc+'일')+'<div class="k">'+E(String(a.핵심변경사항||'').replace(/^\[[^\]]*\]\s*/,'').slice(0,160))+(String(a.핵심변경사항||'').length>160?'…':'')+'</div>'+(a.운영시사점?'<div class="im">▶ '+E(String(a.운영시사점).slice(0,160))+(String(a.운영시사점).length>160?'…':'')+'</div>':'<div class="im" style="color:#94a3b8">▶ 운영 시사점 없음 — 대장 갱신 때 채운다</div>')+'<div class="m">'+E(a.알고리즘_버전||'')+' · 점검 '+E(a.마지막_점검일||'—')+(a.참고링크?' · <a href="'+E(String(a.참고링크).split(/[\s,]/)[0])+'" target="_blank">원천</a>':'')+'</div>'+(a.규격요약?'<details><summary style="font-size:.72rem;color:#94a3b8">규격 요약</summary><div class="fold">'+E(a.규격요약)+'</div></details>':'')+'</div>';}).join('')+'</div>';
+  var sigT='<table><tr><th>게시일</th><th>플랫폼</th><th>신호</th><th>원천·등급</th><th>상태</th><th>처리</th></tr>'+(sig.length?sig.map(function(s){return '<tr><td style="white-space:nowrap">'+E(s.게시일||s.발견일)+'</td><td>'+E(s.플랫폼)+'</td><td><a href="'+E(s.url)+'" target="_blank">'+E(s.제목||s.url)+'</a>'+(s.요약?'<div class="mut">'+E(String(s.요약).slice(0,140))+'</div>':'')+'</td><td class="mut">'+E(s.원천)+' · '+chip(s.등급==='A'||s.등급==='N0'?'g':'b',E(s.등급))+'</td><td>'+chip(s.상태==='대기'?'o':s.상태==='반영'?'g':'n',E(s.상태))+'</td><td>'+(s.상태==='대기'?'<button class="btn s" onclick="window.__sigSet(\''+s.id+'\',\'반영\')">반영</button><button class="btn s" onclick="window.__sigSet(\''+s.id+'\',\'보류\')">보류</button>':'')+'</td></tr>';}).join(''):'<tr><td colspan="6" class="mut">아직 신호 없음 — 다음 자동 조사 매월 1일 15:23 (algo-radar · 공식·N0·N1만 적재)</td></tr>')+'</table>';
+  var skT='<table><tr><th>스킬</th><th>등재 버전</th><th>등재일</th><th>체크섬</th><th>경과</th></tr>'+sk.map(function(s){var d=ago(s.갱신일);return '<tr><td>'+E(s.스킬명)+'</td><td>'+E(s.버전)+'</td><td>'+E(String(s.갱신일||'').slice(0,10))+'</td><td class="mut">'+E(String(s.체크섬||'').slice(0,8))+'</td><td>'+(d==null?'—':d+'일')+'</td></tr>';}).join('')+'</table><div class="mut" style="margin-top:6px">계정 동기화본과의 md5 대조는 월 1회 realplan-ops skill_drift_check가 한다(결과는 인수인계 문서) — 화면은 등재 대장만 보여준다.</div>';
+  box.innerHTML='<h2>📐 기준·알고리즘 <span class="mut" style="font-weight:400">'+(typeof VER!=='undefined'?VER:'')+'</span></h2>'
+   +'<div class="c-sub">플랫폼 알고리즘 대장 <b>한 벌</b>(mk_blog_algorithm '+al.length+'행 · 채널 소식 탭은 여기를 읽음). 변경 신호는 자동 조사(algo-radar · 공식 원문·N0·N1 뉴스만)가 모아 오고, 대장 반영은 대표 승인 후 사람이 합니다. 규칙 본문은 스킬 references가 정본.</div>'
+   +'<div style="margin-bottom:10px"><button class="btn" onclick="loadAlgo()">🔄 새로고침</button><button class="btn" onclick="(function(){var p=document.getElementById(\'t6\');p.classList.toggle(\'showorig\');if(p.classList.contains(\'showorig\')&&window.__algoOrig)window.__algoOrig();})()">📂 옛 화면(작성 가이드·DB 규칙) 펼치기/접기</button><span>'+band+'</span></div>'
+   +(err.length?'<div class="sec err">조회 오류: '+E(err.join(' / '))+'</div>':'')
+   +'<div class="sec"><h3>① 지금 손댈 것 <span>초과·임박·비활성·대기 신호만</span></h3><div class="todo">'+todo+'</div></div>'
+   +'<div class="sec"><h3>② 플랫폼별 카드 <span>버전 · 점검 · 핵심 변경 · ▶ 우리 편성·스킬에 미치는 것 · 원천</span></h3>'+cards+'</div>'
+   +'<div class="sec"><h3>③ 변경 신호함 <span>algo-radar · 매월 1일 + 재조사 요청 · 등급 A(공식)·N0(정부)·A*(N1 방송·통신) · C는 적재 안 함</span></h3><div style="overflow:auto">'+sigT+'</div></div>'
+   +'<div class="sec"><h3>④ 스킬 등재 대장 <span>mk_skill_registry</span></h3><div style="overflow:auto">'+skT+'</div></div>';
+ }catch(e){box.innerHTML='<h2>📐 기준·알고리즘</h2><div class="sec err">오류: '+E(e.message||e)+'</div>';}
+}
+window.__sigSet=async function(id,st){try{var r=await sb.from('mk_algo_signals').update({상태:st,처리일:new Date(Date.now()+9*3600e3).toISOString().slice(0,10)}).eq('id',id);if(r.error)alert('저장 실패: '+r.error.message);else algoLoad();}catch(e){alert('저장 실패: '+(e.message||e));}};
+window.__algoRadar=function(p){alert('재조사 요청은 채팅에서 「'+p+' 알고리즘 재조사」로 부탁드립니다 — 회사 시스템 방이 fn_algo_radar_request(\''+p+'\')를 실행해 신호함에 넣습니다(비용 $0.01).');};
+if(!window.__algoOrig&&typeof window.loadAlgo==='function')window.__algoOrig=window.loadAlgo;
+window.loadAlgo=function(){algoLoad();};
+try{var a=document.querySelector('.nav-item.active');if(a){if(/키워드/.test(a.textContent))kwLoad();if(/기준/.test(a.textContent))algoLoad();}}catch(_){}
+})();
+</script>
+<!-- RP-KW-V2 end -->
 
 
 

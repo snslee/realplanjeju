@@ -6591,8 +6591,15 @@ async function load(from,to){
     it.push({d:g.d,lane:'sns',old:!s&&g.pf.length===1,bu:bu,tm:'08:30',tag:ac+' 계정·'+(s&&s.사업부||g.bu||'')+(kind?'·'+kind:''),title:t,kw:t,st:merge(g.st),sub:g.pf.length?g.pf.join('·'):'인스타·페북·쓰레드'});});
   var sent={};(q[3].data||[]).forEach(function(r){var d=kstYmd(new Date(r.발송_시각));sent[d+'|'+r.채널]=1;
     it.push({d:d,lane:'ch',bu:buNorm(r.사업부),tm:new Date(new Date(r.발송_시각).getTime()+9*3600e3).toISOString().slice(11,16),tag:(CHN[r.채널]||r.채널)+' 소식',title:r.제목||r.주제||'',kw:r.제목||r.주제||'',st:st4(r.상태),sub:''});});
-  var T=today();for(var d=from;d<=to;d=addD(d,1)){if(d<T)continue;(CH_RULE[dow(d)]||[]).forEach(function(x){if(sent[d+'|'+x[0]])return;
-    it.push({d:d,lane:'ch',bu:'',proj:1,tm:x[1],tag:CHN[x[0]]+' 소식',title:'대기 카드에서 자동 선택',kw:'',st:'예정',sub:'자동 발송'});});}
+  var T=today();
+  /* v1.46.0 채널 소식 = 편성 칸(mk_channel_slots) 실물 · 칸이 없는 날만 요일 규칙으로 예정 표시 */
+  var chS=(q[6]&&q[6].data)||[],hasSlot={},chIds=chS.filter(function(s){return s.카드_id&&s.상태!=='발송';}).map(function(s){return s.카드_id;}),chT={};
+  if(chIds.length){var cc=await sb.from('mk_channel_cards').select('id,주제,제목').in('id',chIds.slice(0,200));(cc.data||[]).forEach(function(c){chT[c.id]=c.제목||c.주제||'';});}
+  var CH_TM={place:'10:00',kakao:'19:00',gbp:'10:00',karrot:'10:00'};
+  chS.forEach(function(s){hasSlot[s.예정일+'|'+s.채널]=1;if(s.상태==='발송'&&sent[s.예정일+'|'+s.채널])return;var ttl=s.카드_id?(chT[s.카드_id]||''):'';var st=s.상태==='빠짐'||s.상태==='취소'?'중단':(s.상태==='발송'?'완료':'예정');
+    it.push({d:s.예정일,lane:'ch',bu:buNorm(s.사업부),proj:ttl?0:1,tm:CH_TM[s.채널]||'',tag:(CHN[s.채널]||s.채널)+' 소식',title:ttl||(s.상태==='편성'?'미배정 · 4일 전 11:00 자동 배정':(s.보류_사유||s.상태)),kw:ttl,st:st,sub:s.상태==='배정'?'배정':s.상태==='편성'?'미배정':s.상태});});
+  for(var d=from;d<=to;d=addD(d,1)){if(d<T)continue;(CH_RULE[dow(d)]||[]).forEach(function(x){if(sent[d+'|'+x[0]]||hasSlot[d+'|'+x[0]])return;
+    it.push({d:d,lane:'ch',bu:'',proj:1,tm:x[1],tag:CHN[x[0]]+' 소식',title:'편성 칸 없음(14일 앞까지 자동 생성)',kw:'',st:'예정',sub:'칸 미생성'});});}
   (q[4].data||[]).forEach(function(r){it.push({d:r.발행일,lane:'yt',bu:'여행',tm:r.영상형식==='롱폼'?'18:00':'',tag:'리얼플랜여행·'+(r.영상형식||''),title:r.최종제목||r.핵심키워드||'',kw:r.최종제목||r.핵심키워드||'',st:st4(r.상태)==='예정'&&/주제확정|기획/.test(r.상태)?'예정':st4(r.상태),raw:r.상태,sub:r.코너||''});});
   /* 🔗 같은 소재 — 7일 안, 서로 다른 채널에서 핵심 낱말이 겹치면 연결 표시 */
   var real=it.filter(function(x){return !x.proj&&x.kw;});real.forEach(function(x){x.tk=toks(x.kw+' '+x.title);});

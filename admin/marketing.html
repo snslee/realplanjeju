@@ -7207,7 +7207,7 @@ function ago(ts){return ts?Math.floor((Date.now()-new Date(ts.length===10?ts+'T0
 var BU={'국내여행':'국내여행','행사이벤트':'행사·이벤트','온라인마케팅':'온라인마케팅','마케팅교육':'마케팅교육'};
 var COLS=[['블A',/^블A/],['블B',/^블B/],['블C',/^블C/],['자료실',/^자료실/],['홈',/^홈/],['플레이스',/^플레이스$/],['카카오',/^카카오$/],['구글',/^구글$/],['당근',/^당근$/],['인스타',/^인스타$/],['페북',/^페북$/],['쓰레드',/^쓰레드$/],['유튜브',/^유튜브$/]];
 var KS={bu:'',sort:'pri',flt:'',rows:[],link:[]};
-function ensure(id,box){var p=document.getElementById(id);if(!p)return null;var d=document.getElementById(box);if(!d){d=document.createElement('div');d.id=box;d.className='v2';var strip=p.querySelector('.mv2-strip');p.insertBefore(d,strip?strip.nextSibling:p.firstChild);}return d;}
+function ensure(id,box){var p=document.getElementById(id);if(!p)return null;var d=document.getElementById(box);if(!d){d=document.createElement('div');d.id=box;d.className='v2';var strip=null;for(var i=0;i<p.children.length;i++){if(p.children[i].classList&&p.children[i].classList.contains('mv2-strip'))strip=p.children[i];}if(strip)p.insertBefore(d,strip.nextSibling);else p.insertBefore(d,p.firstChild);}return d;}
 
 /* ================= 키워드·기회 ================= */
 async function kwLoad(){

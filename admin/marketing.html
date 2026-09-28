@@ -7420,6 +7420,126 @@ if(rows().length){try{window.renderFactKpi();window.renderFactCats();window.rend
 })();
 </script>
 <!-- RP-CS-V2 end -->
+<!-- RP-KW-V3 start · v1.50.0 · 2026-09-28 키워드·기회 = 「무엇을 팔 건가·어느 플랫폼이 비었나」 (묶음=의도 표 · 플랫폼별 빈 곳 · 검색어 목록 25행 넘김) + 채널소식·SNS운영·유튜브운영·편성·기준 5탭 연동 띠 (회사 시스템 방 · 대표 「승인」) -->
+<style id="kwv3-css">
+#t8:not(.showorig) > #kwv2{display:none!important}
+.v3{font-size:.84rem;color:#0f172a}.v3 h2{font-size:1.2rem;font-weight:700;margin:0 0 2px}.v3 .c-sub{color:#64748b;font-size:.8rem;margin-bottom:10px;line-height:1.5}
+.v3 .sec{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:13px 15px;margin-bottom:13px}.v3 .sec h3{font-size:.98rem;font-weight:700;margin:0 0 8px}.v3 .sec h3 span{font-weight:400;color:#94a3b8;font-size:.74rem;margin-left:6px}
+.v3 table{width:100%;border-collapse:collapse;font-size:.8rem}.v3 th{background:#f8fafc;text-align:left;padding:6px 7px;font-weight:700;color:#334155;border-bottom:1px solid #e2e8f0;white-space:nowrap;cursor:pointer}.v3 td{padding:6px 7px;border-bottom:1px solid #f1f5f9;vertical-align:middle;white-space:nowrap}
+.v3 .mut{color:#94a3b8;font-size:.74rem}.v3 .big{font-size:1.35rem;font-weight:800}
+.v3 .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}.v3 .kpi>div{border:1px solid #e2e8f0;border-radius:8px;padding:9px 11px;text-align:center}
+.v3 .bar{height:6px;border-radius:3px;background:#e2e8f0;margin-top:6px}.v3 .bar i{display:block;height:6px;border-radius:3px}
+.v3 .ok{color:#16a34a;font-weight:700;text-align:center}.v3 .no{color:#dc2626;font-weight:700;text-align:center}.v3 .na{color:#cbd5e1;text-align:center}
+.v3 .f{display:inline-block;padding:3px 10px;border-radius:14px;border:1px solid #e2e8f0;font-size:.74rem;margin:0 4px 4px 0;background:#fff;cursor:pointer}.v3 .f.on{background:#2563eb;color:#fff;border-color:#2563eb}
+.v3 .btn{border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:7px;padding:5px 11px;font-size:.78rem;cursor:pointer;margin-right:6px}
+.v3 .gap{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}.v3 .gap>div{border-radius:8px;padding:9px 12px;font-size:.82rem;line-height:1.6;border:1px solid}
+.v3 .b-blog{background:#eef7ff;border-color:#bcd9f5}.v3 .b-chan{background:#f0fbf1;border-color:#bfe6c3}.v3 .b-sns{background:#fff2f4;border-color:#f4c3cb}.v3 .b-yt{background:#fff7e8;border-color:#f3d9a2}
+.v3 .go{float:right;font-size:.7rem;color:#2563eb;border:1px solid #c7d2fe;border-radius:10px;padding:0 8px;background:#fff;cursor:pointer}
+.v3 .pill{display:inline-block;border-radius:4px;padding:1px 6px;font-size:.7rem;background:#eef2ff;color:#3b4ec7}
+.v3 .pg{display:flex;align-items:center;justify-content:center;gap:4px;margin:10px 0 2px;flex-wrap:wrap}.v3 .pg a{display:inline-block;min-width:26px;text-align:center;padding:4px 6px;border:1px solid #d5d8de;border-radius:5px;background:#fff;color:#333;cursor:pointer;font-size:.76rem}.v3 .pg a.on{background:#2563eb;color:#fff;border-color:#2563eb}.v3 .pg a.dim{color:#aaa;cursor:default}.v3 .pg .info{color:#777;font-size:.74rem;margin-left:10px}
+.v3 .srch{border:1px solid #cbd5e1;border-radius:6px;padding:3px 9px;font-size:.78rem;width:200px}
+.v3 tr.hi td{background:#fffbeb}
+.rp-band{border:1px solid #f3d9a2;background:#fff7e8;border-radius:8px;padding:7px 11px;font-size:.8rem;margin:0 0 10px;line-height:1.6}.rp-band b{font-weight:700}.rp-band .go{float:right;font-size:.7rem;color:#2563eb;border:1px solid #c7d2fe;border-radius:10px;padding:0 8px;background:#fff;cursor:pointer}
+@media(max-width:760px){.v3 table{font-size:.74rem}.v3 .gap{grid-template-columns:1fr}}
+</style>
+<script>
+/* RP-KW-V3 v1.50.0 — 원천: v_revenue_kw_groups(묶음=의도 · 플랫폼 4열 · 90일 문의) · v_revenue_kw_linkage v2(자 열) · v_revenue_kw_by_channel(검색어 칸 · range 페이징)
+   DB 쓰기 0. KW-V2 블록은 지우지 않고 숨긴다(#kwv2 · 「옛 화면 펼치기」로 둘 다 복귀). 롤백 = 이 블록만 걷어낸다 + title·VER v1.49.0 */
+(function(){
+'use strict';
+var BU={'국내여행':'국내여행','행사이벤트':'행사·이벤트','온라인마케팅':'온라인마케팅','마케팅교육':'마케팅교육'};
+var KCOLS=[['블A',/^블A/],['블B',/^블B/],['블C',/^블C/],['자료실',/^자료실/],['홈',/^홈/]];
+var S={g:[],link:[],rows:[],bu:'',gbu:'',flt:'',q:'',sort:'pri',page:1,per:25,gpage:1,gper:25,gsort:'pri'};
+function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function N(x){return (x==null?'—':Number(x).toLocaleString());}
+function pager(page,per,total,fn){var pages=Math.max(1,Math.ceil(total/per));page=Math.min(page,pages);var a=[],add=function(p,l,c){a.push('<a class="'+(c||'')+'" onclick="'+fn+'('+p+')">'+l+'</a>');};
+ add(1,'«',page===1?'dim':'');add(Math.max(1,page-1),'‹',page===1?'dim':'');var lo=Math.max(1,page-2),hi=Math.min(pages,page+2);if(lo>1){add(1,'1');if(lo>2)a.push('<a class="dim">…</a>');}
+ for(var p=lo;p<=hi;p++)add(p,String(p),p===page?'on':'');if(hi<pages){if(hi<pages-1)a.push('<a class="dim">…</a>');add(pages,String(pages));}
+ add(Math.min(pages,page+1),'›',page===pages?'dim':'');add(pages,'»',page===pages?'dim':'');
+ return '<div class="pg">'+a.join('')+'<span class="info">'+per+'행씩 · 총 '+N(total)+'건 · '+pages+'쪽</span></div>';}
+function ensure(){var p=document.getElementById('t8');if(!p)return null;var d=document.getElementById('kwv3');if(!d){d=document.createElement('div');d.id='kwv3';d.className='v3';var strip=null;for(var i=0;i<p.children.length;i++){if(p.children[i].classList&&p.children[i].classList.contains('mv2-strip'))strip=p.children[i];}if(strip)p.insertBefore(d,strip.nextSibling);else p.insertBefore(d,p.firstChild);}return d;}
+async function all(){var out=[],from=0;while(true){var r=await sb.from('v_revenue_kw_by_channel').select('id,키워드,사업부,매출단계,검색량,피크월,피크임박,우선순위점수,채널,커버여부,커버url,커버순위,묶음').order('id').order('채널').range(from,from+999);if(r.error)return r;out=out.concat(r.data||[]);if((r.data||[]).length<1000||out.length>6000)break;from+=1000;}return {data:out};}
+async function load(){
+ var box=ensure();if(!box)return;box.innerHTML='<h2>🔑 키워드·기회</h2><div class="c-sub">불러오는 중…</div>';
+ try{
+  var q=await Promise.all([sb.from('v_revenue_kw_groups').select('*'),sb.from('v_revenue_kw_linkage').select('*'),all()]);
+  var err=[];['묶음','연계율','검색어 칸'].forEach(function(n,i){if(q[i].error)err.push(n+': '+q[i].error.message);});
+  S.g=q[0].data||[];S.link=q[1].data||[];
+  var kw={};(q[2].data||[]).forEach(function(c){var k=kw[c.id]||(kw[c.id]={id:c.id,키워드:c.키워드,사업부:c.사업부,단계:c.매출단계,검색량:c.검색량,피크월:c.피크월||[],피크임박:c.피크임박,우선:c.우선순위점수,묶음:c.묶음,ch:{}});k.ch[c.채널]={cover:c.커버여부==='커버',url:c.커버url};});
+  S.rows=Object.keys(kw).map(function(i){return kw[i];});S.rows.forEach(function(k){k.col={};KCOLS.forEach(function(cd){var chs=Object.keys(k.ch).filter(function(c){return cd[1].test(c);});k.col[cd[0]]=chs.length?chs.some(function(c){return k.ch[c].cover;}):null;});k.miss=KCOLS.filter(function(cd){return k.col[cd[0]]===false;}).length;});
+  var g=S.g,peak=g.filter(function(x){return x.피크임박;}),cov=function(x){return x.블로그글>0||x.채널카드>0||x.sns세트>0||x.유튜브편>0;};
+  var kpi='<div class="kpi">'
+   +'<div><div class="mut">의도(묶음) 전체</div><div class="big">'+g.length+'</div><div class="mut">'+['국내여행','행사이벤트','온라인마케팅','마케팅교육'].map(function(b){return BU[b].replace('·','')+' '+g.filter(function(x){return x.사업부===b;}).length;}).join(' · ')+'</div></div>'
+   +'<div><div class="mut">이달·다음 달 피크 의도</div><div class="big" style="color:#f59e0b">'+peak.length+'</div><div class="mut">'+E(peak.slice(0,3).map(function(x){return x.묶음;}).join(' · '))+(peak.length>3?' …':'')+'</div></div>'
+   +'<div><div class="mut">피크 의도 커버(한 플랫폼이라도)</div><div class="big" style="color:'+(peak.filter(cov).length===peak.length?'#16a34a':'#dc2626')+'">'+peak.filter(cov).length+' / '+peak.length+'</div><div class="bar"><i style="width:'+(peak.length?Math.round(100*peak.filter(cov).length/peak.length):0)+'%;background:#dc2626"></i></div></div>'
+   +'<div><div class="mut">검색어 ↔ 의도 연결</div><div class="big" style="color:#16a34a">'+S.rows.filter(function(k){return k.묶음;}).length+' / '+S.rows.length+'</div><div class="mut">묶음 칸 기준(자동)</div></div>'
+   +'<div><div class="mut">지난 90일 문의가 붙은 의도</div><div class="big">'+g.filter(function(x){return x.문의90일>0;}).length+'</div><div class="mut">customers 사업부·요청사항 대조(B)</div></div></div>';
+  var gapBox=function(cls,title,ruler,go,tab,items,label){return '<div class="'+cls+'"><b>'+title+' <span class="go" onclick="window.__kwGo(\''+tab+'\')">→ '+go+'</span></b><br>'+(items.length?label+' <b>'+items.length+'</b> — '+E(items.slice(0,5).map(function(x){return x.묶음;}).join(' · '))+(items.length>5?' …':''):'🟢 빈 곳 없음')+'<br><span class="mut">자 = '+ruler+' (기준·알고리즘 ▸ 연계 자)</span></div>';};
+  var gap='<div class="gap">'
+   +gapBox('b-blog','📝 블로그·자료실·홈','검색어 커버(글이 있나)','편성','tsch',peak.filter(function(x){return !x.블로그글;}),'피크 의도 중 글 없음')
+   +gapBox('b-chan','📍 채널 소식','상품·지역 카드가 있나','채널 소식','tchan',peak.filter(function(x){return !x.채널카드;}),'피크 의도 중 카드 없음')
+   +gapBox('b-sns','📱 SNS 인스타·페북·쓰레드','의도에 붙은 세트가 있나','SNS 운영','tsns',peak.filter(function(x){return !x.sns세트;}),'피크 의도 중 세트 없음')
+   +gapBox('b-yt','▶ 유튜브 리얼플랜여행','주제축 ↔ 의도','유튜브 운영','t13',peak.filter(function(x){return x.유튜브배분&&!x.유튜브편;}),'배분 의도 중 편 없음')+'</div>';
+  var rate=function(자){return '<div class="kpi">'+S.link.filter(function(l){return (l.자||'검색어')===자;}).map(function(l){var v=+l.연계율,c=v>=70?'#16a34a':v>=40?'#f59e0b':'#dc2626';return '<div><div class="mut">'+E(l.레인)+'</div><div class="big" style="color:'+c+'">'+(isNaN(v)?'—':v+'%')+'</div><div class="mut">'+N(l.건수)+' 중 '+N(l.연결)+'</div><div class="bar"><i style="width:'+Math.max(2,v||0)+'%;background:'+c+'"></i></div></div>';}).join('')+'</div>';};
+  box.innerHTML='<h2>🔑 키워드·기회 <span class="mut" style="font-weight:400">'+(typeof VER!=='undefined'?VER:'')+'</span></h2>'
+   +'<div class="c-sub">이 화면이 답하는 질문은 하나 — <b>「무엇을 팔 건가 · 어느 플랫폼이 비었나」</b>. 매출 <b>의도(묶음)</b>는 전 플랫폼 공통이고, 표현은 플랫폼마다 다른 자로 잽니다(블로그·자료실·홈=검색어 / 채널 소식=상품·지역 / SNS·유튜브=의도 연결). 소재·성과·일정은 각 탭 고유 역할입니다.</div>'
+   +'<div style="margin-bottom:10px"><button class="btn" onclick="loadKeywordInsight(true)">🔄 새로고침</button><button class="btn" onclick="(function(){var p=document.getElementById(\'t8\');p.classList.toggle(\'showorig\');if(p.classList.contains(\'showorig\')&&window.__kwOrig)window.__kwOrig(true);})()">📂 옛 화면(v1.48 표·실검색어·창고) 펼치기/접기</button></div>'
+   +(err.length?'<div class="sec" style="color:#dc2626">조회 오류: '+E(err.join(' / '))+' — v_revenue_kw_groups가 없으면 DB 번들(kw_v3_db_bundle_20260928.sql)이 아직 안 돈 것</div>':'')
+   +'<div class="sec"><h3>① 매출 의도 뼈대 <span>전 플랫폼 공통 · mk_revenue_keywords.묶음 · 검색어 '+S.rows.length+'개가 이 표에 매달린다</span></h3>'+kpi+'<div id="kw3-gf" style="margin-top:10px"></div><div style="overflow:auto" id="kw3-gt"></div></div>'
+   +'<div class="sec"><h3>② 플랫폼별 빈 곳 <span>한 줄씩만 · 「→ 이동」을 누르면 그 탭이 열린다 · 어떻게 만들지는 그 탭이 정한다</span></h3>'+gap+'</div>'
+   +'<div class="sec"><h3>③ 연계율 <span>자가 다르므로 한 줄로 비교하지 않는다 · 매주 월 자동</span></h3><div class="mut" style="margin-bottom:6px"><b>검색어 기준</b> — 글자 일치 · 목표 70%</div>'+rate('검색어')+'<div class="mut" style="margin:10px 0 6px"><b>매출 의도 기준</b> — 묶음 지정 · 목표 60% · 기준선 = 착수일 · 판정 10/31</div>'+rate('의도')+'</div>'
+   +'<div class="sec"><h3>④ 검색어 목록 <span>블로그·자료실·홈 전용 자 · 25행 넘김 · 검색 · 머리글 정렬 · 칸 클릭 = 근거 URL</span></h3><div id="kw3-f"></div><div style="overflow:auto" id="kw3-t"></div></div>';
+  gRender();kRender();
+ }catch(e){box.innerHTML='<h2>🔑 키워드·기회</h2><div class="sec" style="color:#dc2626">오류: '+E(e.message||e)+'</div>';}
+}
+function gRender(){
+ var f=document.getElementById('kw3-gf'),t=document.getElementById('kw3-gt');if(!f||!t)return;
+ var bus=[['','전체'],['국내여행','국내여행'],['행사이벤트','행사·이벤트'],['온라인마케팅','온라인마케팅'],['마케팅교육','마케팅교육']];
+ f.innerHTML='<span class="mut">사업부 </span>'+bus.map(function(b){return '<span class="f'+(S.gbu===b[0]?' on':'')+'" onclick="window.__kw3(\'gbu\',\''+b[0]+'\')">'+b[1]+'</span>';}).join('')+' <span class="f'+(S.gsort==='peak'?' on':'')+'" onclick="window.__kw3(\'gsort\',\'peak\')">피크 먼저</span><span class="f'+(S.gsort==='inq'?' on':'')+'" onclick="window.__kw3(\'gsort\',\'inq\')">문의 많은 순</span>';
+ var rows=S.g.filter(function(x){return !S.gbu||x.사업부===S.gbu;});
+ rows.sort(function(a,b){if(S.gsort==='inq')return (b.문의90일||0)-(a.문의90일||0);if(S.gsort==='peak')return (b.피크임박?1:0)-(a.피크임박?1:0)||(b.우선||0)-(a.우선||0);return (b.피크임박?1:0)-(a.피크임박?1:0)||(b.검색량||0)-(a.검색량||0);});
+ var total=rows.length,pages=Math.max(1,Math.ceil(total/S.gper));S.gpage=Math.min(S.gpage,pages);var slice=rows.slice((S.gpage-1)*S.gper,S.gpage*S.gper);
+ var cell=function(n,na){return na?'<td class="na">배분 아님</td>':(n>0?'<td class="ok">✅ '+n+'</td>':'<td class="no">❌</td>');};
+ var body=slice.map(function(x,i){var bad=[];if(!x.블로그글)bad.push('블로그');if(!x.채널카드)bad.push('채널');if(!x.sns세트)bad.push('SNS');if(x.유튜브배분&&!x.유튜브편)bad.push('유튜브');
+  return '<tr'+(x.피크임박&&bad.length?' class="hi"':'')+'><td>'+((S.gpage-1)*S.gper+i+1)+'</td><td><span class="pill">'+E(BU[x.사업부]||x.사업부)+'</span> <b>'+E(x.묶음)+'</b></td><td>'+((x.피크월||[]).join('·')||'—')+(x.피크임박?' 🔥':'')+'</td><td>'+x.키워드수+'</td><td>'+N(x.검색량)+'</td><td>'+(x.문의90일||'')+'</td>'+cell(x.블로그글)+cell(x.채널카드)+cell(x.sns세트)+cell(x.유튜브편,!x.유튜브배분)+'<td style="color:'+(bad.length?'#dc2626':'#16a34a')+'">'+(bad.length?bad.join('·')+' 빔':'커버')+'</td></tr>';}).join('');
+ t.innerHTML='<table><tr><th>#</th><th>의도 (사업부 · 묶음)</th><th>피크월</th><th>검색어</th><th>검색량</th><th>90일 문의</th><th>블로그·자료실·홈</th><th>채널 소식</th><th>SNS</th><th>유튜브</th><th>판정</th></tr>'+body+'</table>'+pager(S.gpage,S.gper,total,'window.__kw3gp')+'<div class="mut">SNS·유튜브 ✅ 숫자 = 그 묶음을 지정한 세트·슬롯·편 수(사람이 확정 · 자동 추천은 트리거) · 채널 = 대기·발송 카드 · 블로그 = 검색어 커버 강</div>';
+}
+function kRender(){
+ var f=document.getElementById('kw3-f'),t=document.getElementById('kw3-t');if(!f||!t)return;
+ var bus=[['','전체'],['국내여행','국내여행'],['행사이벤트','행사·이벤트'],['온라인마케팅','온라인마케팅'],['마케팅교육','마케팅교육']];
+ var flts=[['','전부'],['peak','피크 임박'],['gap','글 없음'],['top','문의직전'],['nog','의도 미연결']];
+ f.innerHTML='<span class="mut">사업부 </span>'+bus.map(function(b){return '<span class="f'+(S.bu===b[0]?' on':'')+'" onclick="window.__kw3(\'bu\',\''+b[0]+'\')">'+b[1]+'</span>';}).join('')+' <span class="mut">추리기 </span>'+flts.map(function(b){return '<span class="f'+(S.flt===b[0]?' on':'')+'" onclick="window.__kw3(\'flt\',\''+b[0]+'\')">'+b[1]+'</span>';}).join('')
+  +' <input class="srch" placeholder="🔍 키워드 검색" value="'+E(S.q)+'" oninput="window.__kw3(\'q\',this.value,true)">';
+ var q=S.q.trim().toLowerCase();
+ var rows=S.rows.filter(function(k){if(S.bu&&k.사업부!==S.bu)return false;if(S.flt==='peak'&&!k.피크임박)return false;if(S.flt==='gap'&&!k.miss)return false;if(S.flt==='top'&&k.단계!=='문의직전')return false;if(S.flt==='nog'&&k.묶음)return false;if(q&&String(k.키워드).toLowerCase().indexOf(q)<0)return false;return true;});
+ rows.sort(function(a,b){if(S.sort==='vol')return (b.검색량||0)-(a.검색량||0);if(S.sort==='kw')return String(a.키워드).localeCompare(String(b.키워드));if(S.sort==='miss')return b.miss-a.miss;return (b.우선||0)-(a.우선||0);});
+ var total=rows.length,pages=Math.max(1,Math.ceil(total/S.per));S.page=Math.min(S.page,pages);var slice=rows.slice((S.page-1)*S.per,S.page*S.per);
+ var head='<tr><th>#</th><th onclick="window.__kw3(\'sort\',\'kw\')">키워드</th><th>연결 의도</th><th>단계</th><th onclick="window.__kw3(\'sort\',\'vol\')">검색량</th><th>피크</th>'+KCOLS.map(function(c){return '<th style="text-align:center">'+c[0]+'</th>';}).join('')+'<th onclick="window.__kw3(\'sort\',\'miss\')">빈칸</th><th onclick="window.__kw3(\'sort\',\'pri\')">우선</th></tr>';
+ var body=slice.map(function(k,i){var cells=KCOLS.map(function(cd){var v=k.col[cd[0]];if(v===null)return '<td class="na">·</td>';var chs=Object.keys(k.ch).filter(function(c){return cd[1].test(c)&&k.ch[c].cover;});var u=chs.length?k.ch[chs[0]].url:null;return v?'<td class="ok">'+(u&&/^https?:/.test(u)?'<a href="'+E(u)+'" target="_blank" style="color:#16a34a;text-decoration:none">✅</a>':'✅')+'</td>':'<td class="no">❌</td>';}).join('');
+  return '<tr'+(k.피크임박&&k.miss?' class="hi"':'')+'><td>'+((S.page-1)*S.per+i+1)+'</td><td><b>'+E(k.키워드)+'</b></td><td>'+(k.묶음?'<span class="pill">'+E(BU[k.사업부]||k.사업부)+'·'+E(k.묶음)+'</span>':'<span class="mut">미연결</span>')+'</td><td>'+E(k.단계)+'</td><td>'+N(k.검색량)+'</td><td>'+((k.피크월||[]).join('·')||'—')+(k.피크임박?' 🔥':'')+'</td>'+cells+'<td style="text-align:center">'+(k.miss||'')+'</td><td>'+(k.우선!=null?Math.round(k.우선):'')+'</td></tr>';}).join('');
+ t.innerHTML='<table>'+head+body+'</table>'+pager(S.page,S.per,total,'window.__kw3p')+'<div class="mut">채널 소식·SNS·유튜브 ✅❌ 칸은 이 표에서 뺐다(①묶음 표의 플랫폼 열로 올라감) · 블A·B·C = 네이버·티스토리 어느 쪽이든 글 있으면 ✅</div>';
+}
+window.__kw3=function(k,v,keep){S[k]=v;if(k==='gbu'||k==='gsort'){S.gpage=1;gRender();return;}if(!keep)S.page=1;else S.page=1;kRender();if(k==='q'){var el=document.querySelector('#kw3-f .srch');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}}};
+window.__kw3p=function(p){S.page=p;kRender();};window.__kw3gp=function(p){S.gpage=p;gRender();};
+window.__kwGo=function(tab){try{var nv=document.querySelector('.nav-item[onclick*="\''+tab+'\'"]');if(nv){nv.click();return;}if(typeof switchTab==='function')switchTab(tab,null);}catch(_){}};
+/* ── 연동 띠: 채널 소식(tchan) · SNS 운영(tsns) · 유튜브 운영(t13) · 편성(tsch) · 기준·알고리즘(t6) — 각 탭 고유 역할은 그대로, 맨 위에 한 줄만 ── */
+var BAND={tchan:{k:'채널카드',lab:'카드 없음',ttl:'📍 채널 소식'},tsns:{k:'sns세트',lab:'세트 없음',ttl:'📱 SNS'},t13:{k:'유튜브편',lab:'편 없음',ttl:'▶ 유튜브',yt:true},tsch:{k:null,ttl:'📆 편성'},t6:{k:null,ttl:'📐 기준'}};
+var RULER={'네이버블로그':'검색어 커버(글이 있나)','티스토리':'검색어 커버 · AI 인용','스마트플레이스':'상품·지역 카드','카카오톡채널':'상품·지역 카드','구글비즈니스':'상품·지역 카드','당근비즈프로필':'상품·지역 카드','인스타그램':'의도 연결 세트 · 저장·공유','페이스북':'의도 연결 세트','쓰레드':'의도 연결 세트','유튜브':'주제축 ↔ 의도 · CTR·지속','틱톡':'의도 연결 세트 · 완주율'};
+async function band(tab){var p=document.getElementById(tab);if(!p)return;var cfg=BAND[tab];if(!cfg)return;var el=document.getElementById('rpband-'+tab);if(!el){el=document.createElement('div');el.id='rpband-'+tab;el.className='rp-band';var strip=null;for(var i=0;i<p.children.length;i++){if(p.children[i].classList&&p.children[i].classList.contains('mv2-strip'))strip=p.children[i];}if(strip)p.insertBefore(el,strip.nextSibling);else p.insertBefore(el,p.firstChild);}
+ if(!S.g.length){var r=await sb.from('v_revenue_kw_groups').select('*');if(r.error){el.innerHTML='🧭 '+cfg.ttl+' — 의도 표 조회 오류: '+E(r.error.message);return;}S.g=r.data||[];}
+ var peak=S.g.filter(function(x){return x.피크임박;});
+ if(tab==='t6'){el.innerHTML='🧭 <b>플랫폼별 연계 자</b> — '+Object.keys(RULER).map(function(k){return '<b>'+k+'</b> '+RULER[k];}).join(' · ')+'<span class="go" onclick="window.__kwGo(\'t8\')">키워드·기회로</span>';return;}
+ if(tab==='tsch'){var c=peak.filter(function(x){return x.블로그글>0||x.채널카드>0||x.sns세트>0||x.유튜브편>0;}).length;el.innerHTML='🧭 이달·다음 달 피크 의도 <b>'+peak.length+'</b> 중 어느 플랫폼에라도 편성된 것 <b>'+c+'</b> · 빈 의도: '+E(peak.filter(function(x){return !(x.블로그글>0||x.채널카드>0||x.sns세트>0||x.유튜브편>0);}).map(function(x){return x.묶음;}).join(' · ')||'없음')+'<span class="go" onclick="window.__kwGo(\'t8\')">키워드·기회에서 옴</span>';return;}
+ var miss=peak.filter(function(x){return cfg.yt?(x.유튜브배분&&!x[cfg.k]):!x[cfg.k];});
+ var extra='';try{if(tab==='tsns'){var a=await sb.from('mk_sns_sets').select('id',{count:'exact',head:true}).is('묶음',null).neq('상태','폐기');if(!a.error)extra=' · 세트 중 의도 미지정 <b>'+a.count+'</b>';}if(tab==='t13'){var b=await sb.from('mk_youtube_slots').select('id',{count:'exact',head:true}).is('묶음',null).eq('채널','리얼플랜여행').neq('상태','보류');if(!b.error)extra=' · 편 중 의도 미지정 <b>'+b.count+'</b>';}if(tab==='tchan'){var d=await sb.from('mk_channel_cards').select('id',{count:'exact',head:true}).is('묶음',null).in('상태',['대기','발송']);if(!d.error)extra=' · 카드 중 의도 미지정 <b>'+d.count+'</b>';}}catch(_){}
+ el.innerHTML='🧭 이달·다음 달 피크 의도 중 '+cfg.lab+' <b>'+miss.length+'</b>'+(miss.length?' — '+E(miss.slice(0,5).map(function(x){return x.묶음;}).join(' · '))+(miss.length>5?' …':''):'')+extra+' <span class="mut">(의도 = mk_revenue_keywords.묶음 · 이 탭 규격은 그대로)</span><span class="go" onclick="window.__kwGo(\'t8\')">키워드·기회에서 옴</span>';}
+if(!window.__kwOrig&&typeof window.loadKeywordInsight==='function')window.__kwOrig=window.loadKeywordInsight;
+window.loadKeywordInsight=function(){load();};
+var _st=window.switchTab;if(typeof _st==='function'){window.switchTab=function(id,el){var r=_st.apply(this,arguments);try{if(id==='t8')setTimeout(load,60);if(BAND[id])setTimeout(function(){band(id);},400);}catch(_){}return r;};}
+try{var nv=document.querySelector('.nav-item.active');if(nv&&/t8/.test(nv.getAttribute('onclick')||''))load();}catch(_){}
+})();
+</script>
+<!-- RP-KW-V3 end -->
 
 
 

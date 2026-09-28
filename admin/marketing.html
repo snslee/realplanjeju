@@ -7302,6 +7302,124 @@ try{var a=document.querySelector('.nav-item.active');if(a){if(/키워드/.test(a
 })();
 </script>
 <!-- RP-KW-V2 end -->
+<!-- RP-CS-V2 start · v1.49.0 · 2026-09-28 고객소통 SNS 댓글 탭 삭제(지식인만) + 사실관계DB 가독성 개편 (회사 시스템 방 · 대표 「권장 번들 진행」) -->
+<script>
+/* RP-CS-V2 — 고객소통: SNS 댓글 탭·댓글 넣기 폼·옛 쓰레드 기록 숨김(코드 보존). 롤백 = 이 블록 제거 + 제목·VER v1.48.2 */
+(function(){
+'use strict';
+if(window.__rpCsV2)return; window.__rpCsV2='v1.49.0';
+function $(id){return document.getElementById(id);}
+function tidy(){
+  try{
+    var pane=$('cs-pane-thread'); if(pane){pane.style.display='none';}
+    var kin=$('cs-pane-kin'); if(kin){kin.style.display='';}
+    var tabs=$('cs-tabs'); if(tabs){tabs.style.display='none';}
+    var old=$('cs-old-threads'); if(old){old.style.display='none';}
+    var p=document.querySelector('#tcs p');
+    if(p&&!p.__rpDone){p.__rpDone=true;p.innerHTML='답을 기다리는 사람이 있는 일만 모읍니다. 지표는 건수가 아니라 <b>미응답 시간</b>입니다. <span style="color:#1d4ed8">지식인 답변만 봅니다 — SNS 댓글은 인스타·페북·쓰레드 앱에서 직접 답합니다(2026-09-28 탭 삭제).</span>';}
+    var h2=document.querySelector('#tcs h2'); if(h2&&h2.textContent.indexOf('지식인')<0){h2.textContent='📮 고객소통 — 지식인 답변';}
+  }catch(e){}
+}
+var _o=window.loadCS;
+if(typeof _o==='function'){window.loadCS=function(){var r=_o.apply(this,arguments);if(r&&r.then){r.then(tidy,tidy);}else{tidy();}setTimeout(tidy,800);return r;};}
+document.addEventListener('DOMContentLoaded',function(){setTimeout(tidy,300);});
+setTimeout(tidy,1500);
+})();
+</script>
+<script>
+/* RP-FACTS-V2 — 사실관계DB 가독성 개편: KPI 필터·사업부 탭·카테고리 드롭다운·내용 접기·URL 분리·정렬·50행 넘김.
+   원본 renderFactKpi/renderFactCats/renderFacts 를 덮어쓴다(전역 함수 = window 속성). 데이터·DB는 손대지 않는다. */
+(function(){
+'use strict';
+if(window.__rpFactsV2)return; window.__rpFactsV2='v1.49.0';
+var ST='all', CH='all', PAGE=1, PER=50, OPEN={};
+function E(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function $(id){return document.getElementById(id);}
+function rows(){try{return Array.isArray(allFacts)?allFacts:[];}catch(e){return [];}}
+function getCat(){try{return _factCat||'all';}catch(e){return 'all';}}
+function setCat(c){try{_factCat=c;}catch(e){}}
+function stKey(r){var s=String(r.점검상태||'');var d=r.만료예정일?String(r.만료예정일).slice(0,10):'';var today=new Date().toISOString().slice(0,10);
+  if(s.indexOf('만료')>=0||(d&&d<today))return 'exp';
+  if(s.indexOf('확인')>=0)return 'warn';
+  if(s.indexOf('최신')>=0)return 'ok';return 'etc';}
+function chKey(r){var a=Array.isArray(r.적용채널)?r.적용채널.join(','):String(r.적용채널||'');
+  if(/블A|블로그A|국내여행/.test(a))return 'A'; if(/블B|블로그B|행사/.test(a))return 'B'; if(/블C|블로그C|마케팅|교육/.test(a))return 'C';
+  if(/전체/.test(a)||!a)return 'all'; return 'x';}
+function oldLabel(r){var a=Array.isArray(r.적용채널)?r.적용채널.join(','):String(r.적용채널||'');return /블로그[ABC]|^티스토리$/.test(a);}
+function dday(r){if(!r.만료예정일)return '';var d=new Date(String(r.만료예정일).slice(0,10)),t=new Date();t.setHours(0,0,0,0);var n=Math.round((d-t)/86400000);return n<0?('D+'+(-n)):('D-'+n);}
+function domain(u){var m=String(u||'').match(/^https?:\/\/([^\/]+)/i);return m?m[1].replace(/^www\./,''):String(u||'');}
+function splitUrls(txt){var s=String(txt||'');var urls=[];s=s.replace(/\[출처\]\s*/g,'').replace(/https?:\/\/[^\s\]\)]+/g,function(u){urls.push(u);return '';}).replace(/\s{2,}/g,' ').trim();return {text:s,urls:urls};}
+function filtered(){var q=(($('fact-q')||{}).value||'').toLowerCase();var cat=getCat();
+  var list=rows().filter(function(r){
+    if(ST!=='all'&&stKey(r)!==ST)return false;
+    if(CH!=='all'){var k=chKey(r);if(!(k===CH||k==='all'))return false;}
+    if(cat!=='all'&&(r.카테고리||'미분류')!==cat)return false;
+    if(q&&JSON.stringify([r.항목명,r.고정값내용,r.세부유형,r.출처,r.카테고리]).toLowerCase().indexOf(q)<0)return false;
+    return true;});
+  var ord={exp:0,warn:1,ok:2,etc:3};
+  list.sort(function(a,b){var d=ord[stKey(a)]-ord[stKey(b)];if(d)return d;return String(b.최종업데이트||'').localeCompare(String(a.최종업데이트||''));});
+  return list;}
+window.renderFactKpi=function(){
+  var f=rows();var c={all:f.length,ok:0,warn:0,exp:0,none:0};
+  f.forEach(function(r){var k=stKey(r);if(c[k]!=null)c[k]++;if(!r.만료예정일)c.none++;});
+  var tiles=[['all','총 사실',c.all,'#334155'],['ok','✅ 최신',c.ok,'#16a34a'],['warn','⚠️ 확인필요',c.warn,'#ea580c'],['exp','❌ 만료',c.exp,'#dc2626']];
+  var el=$('fact-kpi');if(!el)return;
+  el.innerHTML=tiles.map(function(t){var on=ST===t[0];return '<div class="kpi-card" data-st="'+t[0]+'" style="cursor:pointer;border:2px solid '+(on?t[3]:'transparent')+'"><div class="kpi-label">'+t[1]+(on?' · 보는 중':'')+'</div><div class="kpi-value" style="color:'+t[3]+'">'+t[2]+'</div></div>';}).join('')
+    +'<div class="kpi-card" style="opacity:.85"><div class="kpi-label">만료일 없음</div><div class="kpi-value" style="color:#64748b">'+c.none+'</div><div style="font-size:.68rem;color:#94a3b8">초안에 계속 주입됨</div></div>';
+  el.querySelectorAll('[data-st]').forEach(function(d){d.onclick=function(){ST=(ST===d.getAttribute('data-st'))?'all':d.getAttribute('data-st');PAGE=1;window.renderFactKpi();window.renderFacts();};});
+};
+window.renderFactCats=function(){
+  var el=$('fact-cats');if(!el)return;var f=rows();
+  var chn={all:f.length,A:0,B:0,C:0};f.forEach(function(r){var k=chKey(r);if(k==='A'||k==='B'||k==='C')chn[k]++;});
+  var counts={};f.forEach(function(r){var c=r.카테고리||'미분류';counts[c]=(counts[c]||0)+1;});
+  var cats=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];});
+  var cat=getCat();
+  var h='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;width:100%;margin-bottom:6px">'
+   +[['all','전체'],['A','블A 국내여행'],['B','블B 행사'],['C','블C 마케팅·교육']].map(function(t){return '<button class="filter-btn '+(CH===t[0]?'active':'')+'" data-ch="'+t[0]+'">'+t[1]+' '+chn[t[0]]+'</button>';}).join('')
+   +'<span style="color:#94a3b8;font-size:.74rem;margin-left:6px">사업부 = 적용채널</span></div>'
+   +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;width:100%">'
+   +'<select id="fact-cat-sel" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:.8rem;max-width:280px"><option value="all">카테고리 전체 ('+cats.length+'개)</option>'
+   +cats.map(function(c){return '<option value="'+E(c)+'"'+(cat===c?' selected':'')+'>'+E(c)+' ('+counts[c]+')</option>';}).join('')+'</select>'
+   +cats.slice(0,10).map(function(c){return '<button class="filter-btn '+(cat===c?'active':'')+'" data-cat="'+E(c)+'">'+E(c)+' '+counts[c]+'</button>';}).join('')
+   +(cat!=='all'?'<button class="filter-btn" data-cat="all">✕ 카테고리 해제</button>':'')+'</div>';
+  el.innerHTML=h;
+  el.querySelectorAll('[data-ch]').forEach(function(b){b.onclick=function(){CH=b.getAttribute('data-ch');PAGE=1;window.renderFactCats();window.renderFacts();};});
+  el.querySelectorAll('[data-cat]').forEach(function(b){b.onclick=function(){setCat(b.getAttribute('data-cat'));PAGE=1;window.renderFactCats();window.renderFacts();};});
+  var sel=$('fact-cat-sel');if(sel)sel.onchange=function(){setCat(sel.value);PAGE=1;window.renderFactCats();window.renderFacts();};
+};
+window.factFilter=function(c){setCat(c);PAGE=1;window.renderFactCats();window.renderFacts();};
+window.renderFacts=function(){
+  var tb=$('fact-board');if(!tb)return;var list=filtered();
+  if(!list.length){tb.innerHTML='<div style="padding:30px;text-align:center;color:#94a3b8">조건에 맞는 사실이 없습니다</div>';return;}
+  var pages=Math.max(1,Math.ceil(list.length/PER));if(PAGE>pages)PAGE=pages;var page=list.slice((PAGE-1)*PER,PAGE*PER);
+  var stc={ok:['#16a34a','#dcfce7','최신'],warn:['#ea580c','#ffedd5','확인필요'],exp:['#dc2626','#fee2e2','만료'],etc:['#64748b','#f1f5f9','기타']};
+  var chName={A:'블A',B:'블B',C:'블C',all:'전체',x:'?'};
+  var h='<div style="padding:8px 12px;font-size:.76rem;color:#64748b;border-bottom:1px solid #e2e8f0">'+list.length+'건 · '+PAGE+'/'+pages+'쪽 · 만료→확인필요→최신 순</div>'
+   +'<table style="width:100%;border-collapse:collapse;font-size:.8rem;table-layout:fixed"><colgroup><col style="width:26%"><col style="width:42%"><col style="width:11%"><col style="width:8%"><col style="width:13%"></colgroup><thead><tr style="background:#f8fafc;text-align:left">'
+   +['항목 · 유형','내용','상태 · 만료','채널','출처'].map(function(x){return '<th style="padding:9px 10px;border-bottom:1px solid #e2e8f0">'+x+'</th>';}).join('')+'</tr></thead><tbody>';
+  h+=page.map(function(r,i){
+    var k=stKey(r),c=stc[k];var sp=splitUrls(r.고정값내용);var long=sp.text.length>120;var id=String(r.id||i);var open=!!OPEN[id];
+    var txt=open||!long?sp.text:sp.text.slice(0,120)+'…';
+    var links=sp.urls.map(function(u){return '<a href="'+E(u)+'" target="_blank" rel="noopener" style="color:#1d4ed8;text-decoration:none;font-size:.74rem;white-space:nowrap">🔗 '+E(domain(u))+'</a>';}).join(' ');
+    var ck=chKey(r);
+    return '<tr style="border-bottom:1px solid #f1f5f9;vertical-align:top'+(k==='exp'?';background:#fff7f7':'')+'">'
+     +'<td style="padding:8px 10px;word-break:break-word"><div style="font-weight:600">'+E(r.항목명||'-')+'</div><div style="margin-top:3px"><span style="background:#eff6ff;color:#1d4ed8;padding:1px 7px;border-radius:10px;font-size:.7rem">'+E(r.카테고리||'미분류')+'</span> <span style="color:#94a3b8;font-size:.7rem">'+E(r.세부유형||'')+'</span></div></td>'
+     +'<td style="padding:8px 10px;word-break:break-word;color:#334155">'+E(txt)+(long?' <a href="#" data-more="'+E(id)+'" style="color:#1d4ed8;font-size:.74rem;white-space:nowrap">'+(open?'접기':'더보기')+'</a>':'')+(links?'<div style="margin-top:4px">'+links+'</div>':'')+'</td>'
+     +'<td style="padding:8px 10px;white-space:nowrap"><span style="background:'+c[1]+';color:'+c[0]+';padding:2px 8px;border-radius:10px;font-size:.74rem;font-weight:700">'+c[2]+'</span><div style="font-size:.7rem;color:'+(k==='exp'?'#dc2626':'#94a3b8')+';margin-top:3px">'+(r.만료예정일?String(r.만료예정일).slice(0,10)+' '+dday(r):'만료일 없음')+'</div></td>'
+     +'<td style="padding:8px 10px;white-space:nowrap;color:#64748b">'+chName[ck]+(oldLabel(r)?' <span title="옛 라벨(블로그A 등)" style="color:#ea580c;font-size:.7rem">옛</span>':'')+'</td>'
+     +'<td style="padding:8px 10px;word-break:break-word;color:#94a3b8;font-size:.74rem">'+E(r.출처||'-')+'</td></tr>';
+  }).join('');
+  h+='</tbody></table>';
+  if(pages>1){h+='<div style="padding:10px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap">';for(var p=1;p<=pages;p++){if(pages>12&&Math.abs(p-PAGE)>5&&p!==1&&p!==pages)continue;h+='<button class="filter-btn '+(p===PAGE?'active':'')+'" data-pg="'+p+'">'+p+'</button>';}h+='</div>';}
+  tb.innerHTML=h;
+  tb.querySelectorAll('[data-more]').forEach(function(a){a.onclick=function(ev){ev.preventDefault();var id=a.getAttribute('data-more');OPEN[id]=!OPEN[id];window.renderFacts();};});
+  tb.querySelectorAll('[data-pg]').forEach(function(b){b.onclick=function(){PAGE=parseInt(b.getAttribute('data-pg'),10)||1;window.renderFacts();tb.scrollIntoView({block:'start'});};});
+};
+try{var p=document.querySelector('#t11 p');if(p)p.innerHTML='mk_blog_facts — 블로그 초안을 쓸 때 AI에게 넣어주는 근거 창고(rpc_blog_brief 자동 주입 · 만료·비활성은 제외). 매일 09:05 자동 조사로 채워지고 만료는 09:40에 자동 처리됩니다. <b>사람이 볼 것 = 만료·확인필요·옛 라벨.</b>';}catch(e){}
+if(rows().length){try{window.renderFactKpi();window.renderFactCats();window.renderFacts();}catch(e){}}
+})();
+</script>
+<!-- RP-CS-V2 end -->
 
 
 

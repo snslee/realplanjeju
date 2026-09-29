@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.53.0</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.54.0</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -4957,7 +4957,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.53.0';
+var VER='v1.54.0';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -7499,9 +7499,9 @@ async function all(){var out=[],from=0;while(true){var r=await sb.from('v_revenu
 async function load(){
  var box=ensure();if(!box)return;box.innerHTML='<h2>🔑 키워드·기회</h2><div class="c-sub">불러오는 중…</div>';
  try{
-  var q=await Promise.all([sb.from('v_revenue_kw_groups').select('*'),sb.from('v_revenue_kw_linkage').select('*'),all()]);
+  var q=await Promise.all([sb.from('v_revenue_kw_groups').select('*'),sb.from('v_revenue_kw_linkage').select('*'),all(),sb.from('v_revenue_kw_home').select('id,사업부,묶음,키워드,홈등급,검색량,구매신호,홈순위,홈목표url')]);
   var err=[];['묶음','연계율','검색어 칸'].forEach(function(n,i){if(q[i].error)err.push(n+': '+q[i].error.message);});
-  S.g=q[0].data||[];S.link=q[1].data||[];
+  S.g=q[0].data||[];S.link=q[1].data||[];S.hk=q[3].error?null:(q[3].data||[]);if(q[3].error)err.push('홈 키워드: '+q[3].error.message);hkIndex();
   var kw={};(q[2].data||[]).forEach(function(c){var k=kw[c.id]||(kw[c.id]={id:c.id,키워드:c.키워드,사업부:c.사업부,단계:c.매출단계,검색량:c.검색량,피크월:c.피크월||[],피크임박:c.피크임박,우선:c.우선순위점수,묶음:c.묶음,ch:{}});k.ch[c.채널]={cover:c.커버여부==='커버',url:c.커버url};});
   S.rows=Object.keys(kw).map(function(i){return kw[i];});S.rows.forEach(function(k){k.col={};KCOLS.forEach(function(cd){var chs=Object.keys(k.ch).filter(function(c){return cd[1].test(c);});k.col[cd[0]]=chs.length?chs.some(function(c){return k.ch[c].cover;}):null;});k.miss=KCOLS.filter(function(cd){return k.col[cd[0]]===false;}).length;});
   var g=S.g,peak=g.filter(function(x){return x.피크임박;}),cov=function(x){return x.블로그글>0||x.채널카드>0||x.sns세트>0||x.유튜브편>0;};
@@ -7533,13 +7533,13 @@ function gRender(){
  var f=document.getElementById('kw3-gf'),t=document.getElementById('kw3-gt');if(!f||!t)return;
  var bus=[['','전체'],['국내여행','국내여행'],['행사이벤트','행사·이벤트'],['온라인마케팅','온라인마케팅'],['마케팅교육','마케팅교육']];
  f.innerHTML='<span class="mut">사업부 </span>'+bus.map(function(b){return '<span class="f'+(S.gbu===b[0]?' on':'')+'" onclick="window.__kw3(\'gbu\',\''+b[0]+'\')">'+b[1]+'</span>';}).join('')+' <span class="f'+(S.gsort==='peak'?' on':'')+'" onclick="window.__kw3(\'gsort\',\'peak\')">피크 먼저</span><span class="f'+(S.gsort==='inq'?' on':'')+'" onclick="window.__kw3(\'gsort\',\'inq\')">문의 많은 순</span> <span class="f'+(S.ghome?' on':'')+'" onclick="window.__kw3gh()">홈 매출용만</span>';
- var rows=S.g.filter(function(x){return (!S.gbu||x.사업부===S.gbu)&&(!S.ghome||((+x.홈s||0)+(+x.홈a||0))>0);});
- rows.sort(function(a,b){if(S.gsort==='inq')return (b.문의90일||0)-(a.문의90일||0);if(S.gsort==='peak')return (b.피크임박?1:0)-(a.피크임박?1:0)||(b.우선||0)-(a.우선||0);return (b.피크임박?1:0)-(a.피크임박?1:0)||(b.검색량||0)-(a.검색량||0);});
+ var rows=S.g.filter(function(x){var h=hst(x);return (!S.gbu||x.사업부===S.gbu)&&(!S.ghome||(h.s+h.a)>0);});var vol=function(x){return S.ghome&&S.hm?hst(x).sav:(x.검색량||0);};var kwn=function(x){return S.ghome&&S.hm?hst(x).san:x.키워드수;};
+ rows.sort(function(a,b){if(S.gsort==='inq')return (b.문의90일||0)-(a.문의90일||0);if(S.gsort==='peak')return (b.피크임박?1:0)-(a.피크임박?1:0)||(b.우선||0)-(a.우선||0);return (b.피크임박?1:0)-(a.피크임박?1:0)||vol(b)-vol(a);});
  var total=rows.length,pages=Math.max(1,Math.ceil(total/S.gper));S.gpage=Math.min(S.gpage,pages);var slice=rows.slice((S.gpage-1)*S.gper,S.gpage*S.gper);
  var cell=function(n,na){return na?'<td class="na">배분 아님</td>':(n>0?'<td class="ok">✅ '+n+'</td>':'<td class="no">❌</td>');};
  var body=slice.map(function(x,i){var bad=[];if(!x.블로그글)bad.push('블로그');if(!x.채널카드)bad.push('채널');if(!x.sns세트)bad.push('SNS');if(x.유튜브배분&&!x.유튜브편)bad.push('유튜브');
-  var key=x.사업부+'|'+x.묶음;return '<tr'+(x.피크임박&&bad.length?' class="hi"':'')+' style="cursor:pointer" title="눌러서 키워드 펼치기" data-k="'+E(key)+'" onclick="window.__kw3d(this.getAttribute(\'data-k\'))"><td>'+((S.gpage-1)*S.gper+i+1)+'</td><td><span class="pill">'+E(BU[x.사업부]||x.사업부)+'</span> <b>'+E(x.묶음)+'</b></td><td>'+((x.피크월||[]).join('·')||'—')+(x.피크임박?' 🔥':'')+'</td><td>'+x.키워드수+'</td><td>'+N(x.검색량)+'</td><td>'+(x.문의90일||'')+'</td>'+cell(x.블로그글)+hcell(x)+cell(x.채널카드)+cell(x.sns세트)+cell(x.유튜브편,!x.유튜브배분)+'<td style="color:'+(bad.length?'#dc2626':'#16a34a')+'">'+(bad.length?bad.join('·')+' 빔':'커버')+(x.홈페이지없음>0?' · 홈 페이지 없음':'')+'</td></tr>'+(S.open===key?'<tr><td></td><td colspan="11" style="white-space:normal;background:#fafbfd"><div id="kw3-drill">불러오는 중…</div></td></tr>':'');}).join('');
- t.innerHTML='<table><tr><th>#</th><th>의도 (사업부 · 묶음)</th><th>피크월</th><th>검색어</th><th>검색량</th><th>90일 문의</th><th>블로그·자료실</th><th style="background:#fff7ec;color:#9a5b00;text-align:center">홈A·B 매출</th><th>채널 소식</th><th>SNS</th><th>유튜브</th><th>판정</th></tr>'+body+'</table>'+pager(S.gpage,S.gper,total,'window.__kw3gp')+'<div class="mut">홈A·B 매출 = 홈등급 S(상품 페이지 제목·첫 문단)·A(소제목·질문답변) 키워드 수 · 1~10위 = 네이버 웹문서(매주 월) · 행을 누르면 키워드가 펼쳐집니다 · 정보성 묶음은 「홈 대상 아님」(블로그에서만 씀)</div><div class="mut">SNS·유튜브 ✅ 숫자 = 그 묶음을 지정한 세트·슬롯·편 수(사람이 확정 · 자동 추천은 트리거) · 채널 = 대기·발송 카드 · 블로그 = 검색어 커버 강</div>';
+  var key=x.사업부+'|'+x.묶음;return '<tr'+(x.피크임박&&bad.length?' class="hi"':'')+' style="cursor:pointer" title="눌러서 키워드 펼치기" data-k="'+E(key)+'" onclick="window.__kw3d(this.getAttribute(\'data-k\'))"><td>'+((S.gpage-1)*S.gper+i+1)+'</td><td><span class="pill">'+E(BU[x.사업부]||x.사업부)+'</span> <b>'+E(x.묶음)+'</b> <span style="color:#9a5b00">'+(S.open===key?'▾':'▸')+'</span></td><td>'+((x.피크월||[]).join('·')||'—')+(x.피크임박?' 🔥':'')+'</td><td>'+kwn(x)+'</td><td>'+N(vol(x))+'</td><td>'+(x.문의90일||'')+'</td>'+cell(x.블로그글)+hcell(x)+cell(x.채널카드)+cell(x.sns세트)+cell(x.유튜브편,!x.유튜브배분)+'<td style="color:'+(bad.length?'#dc2626':'#16a34a')+'">'+(bad.length?bad.join('·')+' 빔':'커버')+(x.홈페이지없음>0?' · 홈 페이지 없음':'')+'</td></tr>'+(S.open===key?'<tr><td></td><td colspan="11" style="white-space:normal;background:#fafbfd"><div id="kw3-drill">불러오는 중…</div></td></tr>':'');}).join('');
+ t.innerHTML='<table><tr><th>#</th><th>의도 (사업부 · 묶음)</th><th>피크월</th><th>'+(S.ghome?'검색어(S·A)':'검색어')+'</th><th>'+(S.ghome?'검색량(S·A)':'검색량')+'</th><th>90일 문의</th><th>블로그·자료실</th><th style="background:#fff7ec;color:#9a5b00;text-align:center">홈A·B 매출</th><th>채널 소식</th><th>SNS</th><th>유튜브</th><th>판정</th></tr>'+body+'</table>'+pager(S.gpage,S.gper,total,'window.__kw3gp')+'<div class="mut">홈A·B 매출 = 홈등급 S(상품 페이지 제목·첫 문단)·A(소제목·질문답변) 키워드 수 · 1~10위 = 네이버 웹문서(매주 월) · 「월 ○회」 = 1~10위에 든 키워드들의 월 검색량 합(네이버 검색광고 · 10회 미만은 0으로 셈) · 「10회 미만」 = 월 검색 10회 미만인 S·A 수 · <b>▸ 행을 누르면 키워드가 펼쳐집니다</b> · 「홈 매출용만」 = S·A만 세고 펼침에서도 S·A만 · 정보성 묶음은 「홈 대상 아님」(블로그에서만 씀)</div><div class="mut">SNS·유튜브 ✅ 숫자 = 그 묶음을 지정한 세트·슬롯·편 수(사람이 확정 · 자동 추천은 트리거) · 채널 = 대기·발송 카드 · 블로그 = 검색어 커버 강</div>';if(S.open&&document.getElementById('kw3-drill'))kw3drill(S.open);
 }
 function kRender(){
  var f=document.getElementById('kw3-f'),t=document.getElementById('kw3-t');if(!f||!t)return;
@@ -7558,15 +7558,17 @@ function kRender(){
 }
 window.__kw3=function(k,v,keep){S[k]=v;if(k==='gbu'||k==='gsort'){S.gpage=1;gRender();return;}if(!keep)S.page=1;else S.page=1;kRender();if(k==='q'){var el=document.querySelector('#kw3-f .srch');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}}};
 /* RP-KW-V3 v1.53.0 (2026-09-29 대표 「승인」) — 홈A·B 매출 열 · 홈 매출용만 칩 · 행 펼침(v_revenue_kw_home) */
-function hcell(x){var s=+x.홈s||0,a=+x.홈a||0,c=+x.홈조건||0;if(s+a===0)return c?'<td style="text-align:center;background:#fff7ec;color:#9a5b00;font-size:.74rem">조건부 '+c+'</td>':'<td class="na" style="background:#fff7ec">홈 대상 아님</td>';return '<td style="text-align:center;background:#fff7ec"><b>S '+s+'</b>'+(a?' · A '+a:'')+'<div class="mut">1~10위 '+(x.홈top10||0)+(x.홈페이지없음>0?' · <span style="color:#dc2626;font-weight:700">페이지 없음 '+x.홈페이지없음+'</span>':'')+'</div></td>';}
+function hkIndex(){if(!S.hk){S.hm=null;return;}var m={};S.hk.forEach(function(k){var key=k.사업부+'|'+k.묶음,o=m[key]||(m[key]={s:0,a:0,c:0,t10:0,t10v:0,sav:0,u10:0,nopg:0,san:0,d:true}),g=k.홈등급;if(g==='S')o.s++;else if(g==='A')o.a++;else if(g==='조건부')o.c++;if(g==='S'||g==='A'){var v=+k.검색량||0;o.san++;o.sav+=v;if(!v)o.u10++;if(k.홈순위>=1&&k.홈순위<=10){o.t10++;o.t10v+=v;}if(!k.홈목표url)o.nopg++;}});S.hm=m;}
+function hst(x){var m=S.hm&&S.hm[x.사업부+'|'+x.묶음];return m||{s:+x.홈s||0,a:+x.홈a||0,c:+x.홈조건||0,t10:+x.홈top10||0,t10v:0,sav:0,u10:0,nopg:+x.홈페이지없음||0,san:0,d:false};}
+function hcell(x){var h=hst(x),s=h.s,a=h.a,c=h.c;if(s+a===0)return c?'<td style="text-align:center;background:#fff7ec;color:#9a5b00;font-size:.74rem">조건부 '+c+'</td>':'<td class="na" style="background:#fff7ec">홈 대상 아님</td>';var t='1~10위 '+h.t10+(h.t10&&h.d?(h.t10v>0?' · 월 '+N(h.t10v)+'회':' · 전부 10회 미만'):''),col=h.t10&&h.t10v>=50?'#16a34a':'#94a3b8';var sub=[];if(h.u10)sub.push('10회 미만 '+h.u10);if(h.nopg)sub.push('<span style="color:#dc2626;font-weight:700">페이지 없음 '+h.nopg+'</span>');return '<td style="text-align:center;background:#fff7ec"><b>S '+s+'</b>'+(a?' · A '+a:'')+'<div class="mut" style="color:'+col+'">'+t+'</div>'+(sub.length?'<div class="mut">'+sub.join(' · ')+'</div>':'')+'</td>';}
 window.__kw3gh=function(){S.ghome=!S.ghome;S.gpage=1;gRender();};
-window.__kw3d=function(k){S.open=(S.open===k?'':k);gRender();if(S.open)kw3drill(k);};
-async function kw3drill(k){var el=document.getElementById('kw3-drill');if(!el)return;var p=k.split('|');var r=await sb.from('v_revenue_kw_home').select('*').eq('사업부',p[0]).eq('묶음',p[1]);el=document.getElementById('kw3-drill');if(!el)return;if(r.error){el.innerHTML='조회 오류: '+E(r.error.message);return;}
- var ord={'S':0,'A':1,'조건부':2,'블로그용':3},o=function(g){return ord[g]!=null?ord[g]:4;};var rows=(r.data||[]).sort(function(a,b){return o(a.홈등급)-o(b.홈등급)||(b.검색량||0)-(a.검색량||0);});
+window.__kw3d=function(k){S.open=(S.open===k?'':k);gRender();};
+async function kw3drill(k){var el=document.getElementById('kw3-drill');if(!el)return;var p=k.split('|'),data;if(S.hk){data=S.hk.filter(function(x){return x.사업부===p[0]&&x.묶음===p[1];});}else{var r=await sb.from('v_revenue_kw_home').select('*').eq('사업부',p[0]).eq('묶음',p[1]);el=document.getElementById('kw3-drill');if(!el)return;if(r.error){el.innerHTML='조회 오류: '+E(r.error.message);return;}data=r.data||[];}var hid=0;if(S.ghome){var b0=data.length;data=data.filter(function(x){return x.홈등급==='S'||x.홈등급==='A';});hid=b0-data.length;}
+ var ord={'S':0,'A':1,'조건부':2,'블로그용':3},o=function(g){return ord[g]!=null?ord[g]:4;};var rows=data.slice().sort(function(a,b){return o(a.홈등급)-o(b.홈등급)||(b.검색량||0)-(a.검색량||0);});
  var st={'S':'background:#1e3a5f;color:#fff','A':'background:#e8f2fa;color:#1e3a5f','조건부':'background:#fff4e5;color:#9a5b00','블로그용':'background:#eef1f5;color:#64748b'};
  var badge=function(g){return '<span style="'+(st[g]||'background:#f1f5f9;color:#94a3b8')+';border-radius:5px;padding:1px 8px;font-weight:700;font-size:.72rem">'+E(g||'미판정')+'</span>';};
  var sig=function(j){if(!j)return '';var a=[];if(j.광고깊이!=null)a.push('광고 경쟁 '+j.광고깊이);if(j.업체비율10!=null)a.push('업체 '+j.업체비율10+'/10');if(j.자동완성)a.push('자동완성 「'+E(j.자동완성)+'」');return a.join(' · ');};
- el.innerHTML='<b>▾ '+E(p[1])+' — 키워드 '+rows.length+'개</b> <span class="mut">홈 등급 S·A = 홈A·B에 씀 · 블로그용 = 블로그에서만 씀 · 홈 순위 = 네이버 웹문서(매주 월)</span><table style="margin-top:6px;background:#fff"><tr><th>키워드</th><th>홈 등급</th><th style="text-align:right">네이버 월 검색</th><th>사는 사람 신호</th><th style="text-align:right">홈 순위</th><th>홈 목표 페이지</th></tr>'+rows.map(function(x){var bl=x.홈등급==='블로그용';return '<tr><td><b>'+E(x.키워드)+'</b></td><td>'+badge(x.홈등급)+'</td><td style="text-align:right">'+N(x.검색량)+'</td><td class="mut" style="white-space:normal">'+sig(x.구매신호)+'</td><td style="text-align:right">'+(bl?'<span class="mut">—</span>':(x.홈순위?(x.홈순위<=10?'<b style="color:#16a34a">'+x.홈순위+'위</b>':x.홈순위+'위'):'<span class="mut">100위 밖</span>'))+'</td><td>'+(bl?'<span class="mut">홈 대상 아님</span>':(x.홈목표url?E(x.홈목표url):'<span style="color:#dc2626;font-weight:700">페이지 없음</span>'))+'</td></tr>';}).join('')+'</table>';}
+ el.innerHTML='<b>▾ '+E(p[1])+' — 키워드 '+rows.length+'개</b>'+(hid?' <span class="mut">(블로그용·조건부 '+hid+'개 숨김 — 「홈 매출용만」 끄면 보임)</span>':'')+' <span class="mut">홈 등급 S·A = 홈A·B에 씀 · 블로그용 = 블로그에서만 씀 · 홈 순위 = 네이버 웹문서(매주 월) · 「10 미만」 = 네이버 검색광고 월 검색 10회 미만</span><table style="margin-top:6px;background:#fff"><tr><th>키워드</th><th>홈 등급</th><th style="text-align:right">네이버 월 검색</th><th>사는 사람 신호</th><th style="text-align:right">홈 순위</th><th>홈 목표 페이지</th></tr>'+rows.map(function(x){var bl=x.홈등급==='블로그용';return '<tr><td><b>'+E(x.키워드)+'</b></td><td>'+badge(x.홈등급)+'</td><td style="text-align:right">'+(+x.검색량>0?N(x.검색량):'<span class="mut">10 미만</span>')+'</td><td class="mut" style="white-space:normal">'+sig(x.구매신호)+'</td><td style="text-align:right">'+(bl?'<span class="mut">—</span>':(x.홈순위?(x.홈순위<=10?'<b style="color:#16a34a">'+x.홈순위+'위</b>':x.홈순위+'위'):'<span class="mut">100위 밖</span>'))+'</td><td>'+(bl?'<span class="mut">홈 대상 아님</span>':(x.홈목표url?E(x.홈목표url):'<span style="color:#dc2626;font-weight:700">페이지 없음</span>'))+'</td></tr>';}).join('')+'</table>';}
 window.__kw3p=function(p){S.page=p;kRender();};window.__kw3gp=function(p){S.gpage=p;gRender();};
 window.__kwGo=function(tab){try{var nv=document.querySelector('.nav-item[onclick*="\''+tab+'\'"]');if(nv){nv.click();return;}if(typeof switchTab==='function')switchTab(tab,null);}catch(_){}};
 /* ── 연동 띠: 채널 소식(tchan) · SNS 운영(tsns) · 유튜브 운영(t13) · 편성(tsch) · 기준·알고리즘(t6) — 각 탭 고유 역할은 그대로, 맨 위에 한 줄만 ── */

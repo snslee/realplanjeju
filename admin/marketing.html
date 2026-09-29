@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.55.1</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.55.2</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -4957,7 +4957,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.55.1';
+var VER='v1.55.2';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -7510,7 +7510,7 @@ async function load(){
    +'<div><div class="mut">이달·다음 달 피크 의도</div><div class="big" style="color:#f59e0b">'+peak.length+'</div><div class="mut">'+E(peak.slice(0,3).map(function(x){return x.묶음;}).join(' · '))+(peak.length>3?' …':'')+'</div></div>'
    +'<div><div class="mut">피크 의도 커버(한 플랫폼이라도)</div><div class="big" style="color:'+(peak.filter(cov).length===peak.length?'#16a34a':'#dc2626')+'">'+peak.filter(cov).length+' / '+peak.length+'</div><div class="bar"><i style="width:'+(peak.length?Math.round(100*peak.filter(cov).length/peak.length):0)+'%;background:#dc2626"></i></div></div>'
    +'<div><div class="mut">검색어 ↔ 의도 연결</div><div class="big" style="color:#16a34a">'+S.rows.filter(function(k){return k.묶음;}).length+' / '+S.rows.length+'</div><div class="mut">묶음 칸 기준(자동)</div></div>'
-   +'<div><div class="mut">지난 90일 문의가 붙은 의도</div><div class="big">'+g.filter(function(x){return x.문의90일>0;}).length+'</div><div class="mut">문의 '+((g[0]&&g[0].문의90일_전체)||0)+'건 중 묶음 연결 '+g.reduce(function(t,x){return t+(+x.문의90일||0);},0)+' · <b style="color:'+(((g[0]&&g[0].문의90일_미분류)||0)>0?'#dc2626':'#16a34a')+'">미분류 '+((g[0]&&g[0].문의90일_미분류)||0)+'건</b> (신청일 기준 · 요청사항·품목요약·회사명)</div></div></div>';
+   +'<div><div class="mut">지난 90일 문의가 붙은 의도</div><div class="big">'+g.filter(function(x){return x.문의90일>0;}).length+'</div><div class="mut">문의 '+((g[0]&&g[0].문의90일_전체)||0)+'건 중 묶음 연결 '+g.reduce(function(t,x){return t+(+x.문의90일||0);},0)+' · <b style="color:'+(((g[0]&&g[0].문의90일_미분류)||0)>0?'#dc2626':'#16a34a')+'">미분류 '+((g[0]&&g[0].문의90일_미분류)||0)+'건</b> (신청일 기준 · 요청사항·품목요약·회사명·견적서 제목 + 동의어 사전)</div></div></div>';
   var gapBox=function(cls,title,ruler,go,tab,items,label){return '<div class="'+cls+'"><b>'+title+' <span class="go" onclick="window.__kwGo(\''+tab+'\')">→ '+go+'</span></b><br>'+(items.length?label+' <b>'+items.length+'</b> — '+E(items.slice(0,5).map(function(x){return x.묶음;}).join(' · '))+(items.length>5?' …':''):'🟢 빈 곳 없음')+'<br><span class="mut">자 = '+ruler+' (기준·알고리즘 ▸ 연계 자)</span></div>';};
   var gap='<div class="gap">'
    +gapBox('b-blog','📝 블로그·자료실·홈','검색어 커버(글이 있나)','편성','tsch',peak.filter(function(x){return !x.블로그글;}),'피크 의도 중 글 없음')

@@ -53,7 +53,7 @@
   - 공공기관·학교 여행·행사 계약 방법(나라장터 국내여행업·행사대행업·학교장터 등록 · 금액별 수의계약·입찰 · 계약 5단계 · 제출서류): https://realplanjeju.com/insight/public-contract/
 - 진행 실적(기관명 공개 · 연도별): 기업·기관 행사 https://realplanjeju.com/insight/portfolio-corporate-event/ · 기념식 https://realplanjeju.com/insight/portfolio-ceremony/ · 수학여행 https://realplanjeju.com/insight/portfolio-school-trip/ · 워크숍 https://realplanjeju.com/insight/portfolio-workshop/ · 착공식·기공식 https://realplanjeju.com/insight/portfolio-groundbreaking/ · 체육대회 https://realplanjeju.com/insight/portfolio-sports-day/
 - 실적 게시판(직접 운영한 국내여행·행사 160건 · 사업부·유형·연도 필터 · 후기 연결): https://realplanjeju.com/works/
-  - 현장 후기(상세): 위례초 제주 수학여행 https://realplanjeju.com/story/wirye-school-trip-2026/ · 노무법인 10주년 체육대회 https://realplanjeju.com/story/thebosang-sports-day-2026/
+  - 현장 후기(상세): 위례초 제주 수학여행 https://realplanjeju.com/story/wirye-school-trip-2026/ · 노무법인 10주년 체육대회 https://realplanjeju.com/story/labor-firm-sports-day-2026/
 - 언론·공개기록(제3자 근거 · 원문 링크): https://realplanjeju.com/insight/press/
 - 단체여행 금액(성인 단체·기업 워크숍·학생 수학여행 일정별 1인 지상비 · 1인 20만원부터 · 항공 별도 실비 · 최소 10명 · 원가 8축 공개): https://realplanjeju.com/insight/tour-price/
 - 행사 대행 금액(참석 30명·150명 경계 3구간 · 체육대회 세트 150만원부터 · 기획·운영 대행료 200만원 이상 5~10퍼센트 누진 · 원가 8축 · 견적서 계산 순서): https://realplanjeju.com/insight/event-price/

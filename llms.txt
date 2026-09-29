@@ -61,7 +61,9 @@
   - 수학여행 2박 3일 1인 지상비 35만 원부터(150명 기준 · 3~4인1실 · 안전요원 50명당 1명) · 40명 이하 소규모 40만 원부터: https://realplanjeju.com/tour/school-trip/
   - 성인 단체·동호회 1박 2일 30만 원 · 2박 3일 45만 원 · 3박 4일 60만 원부터(30명 기준 · 2인1실 3~4성 · 1인 지상비): https://realplanjeju.com/tour/group-trip/
   - 행사 상품 목록·가격 한눈에: https://realplanjeju.com/event/
-  - 체육대회 기본 150만 원부터(100명 이하 · 진행자+음향+행사도구+전문스텝 · 운영비 포함) · 표준 250만 원부터(100~200명) · 300명 이상 상품 문의: https://realplanjeju.com/event/sports-day/
+  - 체육대회·학교 운동회·명랑운동회 세트 — 기본 150만 원부터(100명 이하 · 진행자+음향+행사도구+전문스텝 · 운영비 포함) · 표준 250만 원부터(100~200명) · 300명 이상 상품 문의: https://realplanjeju.com/event/sports-day/
+  - 행사 렌탈 — 음향 100명 이하 50만 원부터(기사 포함·1일) · 조명 50만 원부터 · 몽골텐트 5×5 15만 원부터(10동 이상) · 무대·LED·테이블·의자는 맞춤 견적 · 음향·조명은 따로도 렌탈: https://realplanjeju.com/event/rental/
+  - MC·공연 섭외 — 기념식·시상식 사회자 1명·1회 70만~100만 원 · 레크·체육대회 진행자 50만~80만 원 · 아나운서·가수·공연팀은 맞춤 견적: https://realplanjeju.com/event/casting/
 - sitemap: https://realplanjeju.com/sitemap.xml
 
 ## 언론·공개기록 (제3자가 남긴 근거 · 원문 링크)

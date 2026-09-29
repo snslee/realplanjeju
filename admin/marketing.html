@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.51.0</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.52.0</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -297,9 +297,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div><h2 style="font-size:1.2rem;font-weight:700">📊 통계 대시보드</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">최근 7일 / mk_metrics</p></div>
         <button onclick="loadStats()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
-      <div id="growth-signal" data-sec="🚦 신호등" style="margin:0 0 16px"></div>
       <div id="funnel-strip" data-sec="🎯 퍼널" style="margin:0 0 16px;padding:12px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:12px">
-        <div style="font-size:.78rem;color:#64748b;margin-bottom:8px">🎯 <b>목적</b> — 블ABC·4채널·쓰레드의 글과 사진을 지속 개선해 <b>홈페이지 유입 → 문의 → 계약</b>으로 잇는다 <span id="fs-time" style="color:#94a3b8"></span></div>
+        <div style="font-size:.78rem;color:#64748b;margin-bottom:8px">🎯 <b>목적</b> — 블ABC·4채널·쓰레드의 글과 사진을 지속 개선해 <b>홈페이지 유입 → 문의</b>로 잇는다 <span id="fs-time" style="color:#94a3b8"></span></div>
         <div id="fs-cells" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:.8rem">로딩 중...</div>
       </div>
       <!-- A-3 (2026-08-31 대표 승인 묶음A) 지식인 답변 현황 — 데이터는 rpc_kin_status 하나만 쓴다 -->
@@ -309,20 +308,20 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <div id="kin-wait" style="margin-top:10px"></div>
       </div>
       <div class="kpi-grid" data-sec="📌 KPI">
-        <div class="kpi-card"><div class="kpi-label">📈 티스토리 총노출</div><div class="kpi-value" id="kpi-노출">--</div><div class="kpi-sub" id="kpi-노출-sub">최근 8일 누적</div></div>
-        <div class="kpi-card"><div class="kpi-label">👆 티스토리 총클릭</div><div class="kpi-value" id="kpi-클릭">--</div><div class="kpi-sub" id="kpi-클릭-sub">최근 8일 누적</div></div>
+        <div class="kpi-card"><div class="kpi-label">📈 티스토리 총노출</div><div class="kpi-value" id="kpi-노출">--</div><div class="kpi-sub" id="kpi-노출-sub">8일 합계 · 구글 서치콘솔</div></div>
+        <div class="kpi-card"><div class="kpi-label">👆 티스토리 총클릭</div><div class="kpi-value" id="kpi-클릭">--</div><div class="kpi-sub" id="kpi-클릭-sub">8일 합계 · 구글 서치콘솔</div></div>
         <div class="kpi-card"><div class="kpi-label">🎯 평균 CTR</div><div class="kpi-value" id="kpi-ctr">--</div><div class="kpi-sub">클릭/노출</div></div>
         <div class="kpi-card"><div class="kpi-label">🏆 네이버 평균순위</div><div class="kpi-value" id="kpi-순위">--</div><div class="kpi-sub" id="kpi-순위-sub">mk_rank_tracker 정본</div></div>
         <!-- v1.8.7 — 「조회수보다 구독→체류→문의로 이어지는 힘」 대표 지시. 구독=네이버 이웃수 실측 -->
+        <div class="kpi-card"><div class="kpi-label">👣 네이버 블로그 방문자</div><div class="kpi-value" id="kpi-방문자">--</div><div class="kpi-sub" id="kpi-방문자-sub">어제 · 3채널 합계</div></div>
         <div class="kpi-card"><div class="kpi-label">👥 구독(네이버 이웃)</div><div class="kpi-value" id="kpi-구독">--</div><div class="kpi-sub" id="kpi-구독-sub">3채널 합계 · 매일 23:50 자동수집</div></div>
       </div>
       <!-- v1.8.7 — 라이브 실물 감사 · B2B 유입 경로 -->
-      <div id="live-audit-card" data-sec="🔎 라이브 감사" style="margin:0 0 16px"></div>
       <!-- [2026-08-11 삭제] B2B 유입 경로(G28) — b2b_cross 유입 0건·문의 0건·블A네이버 32/32 미실행으로 폐기 -->
       <!-- ▼ 상단 고정: 채널별 추세 2그래프 (노출=티스토리 / 순위=네이버) -->
       <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:10px">📐 <b>두 그래프는 측정 기준이 다릅니다.</b> 왼쪽=티스토리 <b>노출수</b>(높을수록 좋음·GSC 자동수집) / 오른쪽=네이버 <b>평균순위</b>(낮을수록 좋음·순위 자동수집). 같은 잣대로 비교하지 마세요.<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #bfdbfe;color:#b45309">⚠️ <b>오른쪽 순위 그래프 읽는 법.</b> 정본 <code>mk_rank_tracker</code>(발행글 핵심키워드 전량 실측)이며 <b>100위 내 미발견(미진입)은 평균에서 빠집니다</b> — 미진입 건수는 「잠자는 거인」 탭에서 확인하세요. <b>2026-07-27에 추적 키워드가 13→60개로 확대</b>되었으므로 그 이전 구간과는 직접 비교하지 마세요. 글 단위 순위 변화는 「상위노출 진입」 탭에서 봅니다.</div></div>
       <div data-sec="📈 추세 그래프" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin-bottom:16px">
-        <div class="card" style="margin:0"><div class="card-hdr"><h3>📈 티스토리 채널별 노출 (일별 수집) · 노출수↑ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">각 점=직전 8일 누적(GSC)·로그축</span> <span id="tis-days-note" style="font-weight:600;font-size:.72rem;color:#b45309"></span></h3></div>
+        <div class="card" style="margin:0"><div class="card-hdr"><h3>📈 티스토리 채널별 하루 노출 (측정일 기준 · 최근 14일) <span id="tis-days-note" style="font-weight:600;font-size:.72rem;color:#b45309"></span></h3></div>
           <div class="card-body" style="height:300px;position:relative"><canvas id="trendChart"></canvas><div id="chart-loading" class="loading">로딩 중...</div></div>
         </div>
         <div class="card" style="margin:0"><div class="card-hdr"><h3>🏆 네이버 채널별 평균순위 추세 (최근 14일) · 순위↓ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">mk_rank_tracker 정본 · 미진입 제외</span></h3></div>
@@ -367,7 +366,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
         <summary style="padding:13px 18px;font-weight:700;font-size:.92rem;cursor:pointer">🔎 네이버 유입 검색어 (naver_manual)</summary>
         <div id="nv-kw-body" style="padding:0 18px 16px;font-size:.82rem;color:#64748b">—</div>
       </details>
-      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden" data-sec="📋 어제 지표">
+      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden" class="rp-off">
         <summary style="padding:13px 18px;font-weight:700;font-size:.92rem;cursor:pointer">📋 채널별 어제 지표</summary>
         <div style="overflow-x:auto">
           <table class="tbl"><thead><tr><th>채널</th><th>소스</th><th>노출</th><th>클릭</th><th>CTR%</th><th>평균순위</th><th>측정일</th></tr></thead>
@@ -1882,10 +1881,13 @@ async function loadStats(){ loadFunnel();
   const _gd=function(r){return String(r.측정_일자||r.수집_시각||'').slice(0,10);};
   const _lastGsc=gscAll.reduce(function(m,r){var d=_gd(r);return d>m?d:m;},'');
   const gsc=gscAll.filter(function(r){return _gd(r)===_lastGsc;});
-  const imp=gsc.reduce((s,r)=>s+(r.노출_수||0),0),clk=gsc.reduce((s,r)=>s+(r.클릭_수||0),0);
+  /* v1.52.0 (2026-09-29 대표 승인) — GSC는 하루×페이지 행이다. 노출·클릭 = 최신 측정일로 끝나는 8일 합계(rpc_funnel_kpi 정본) */
+  let _fk=null;try{const _fr=await sb.rpc('rpc_funnel_kpi');_fk=_fr.data||null;}catch(e){_fk=null;}
+  const imp=_fk&&_fk['노출_최근8일']!=null?Number(_fk['노출_최근8일']):gsc.reduce((s,r)=>s+(r.노출_수||0),0),clk=_fk&&_fk['클릭_최근8일']!=null?Number(_fk['클릭_최근8일']):gsc.reduce((s,r)=>s+(r.클릭_수||0),0);
+  const _rng=(_fk&&_fk['노출_구간'])||(_lastGsc||'-');
   var _kn=document.getElementById('kpi-노출-sub'),_kc=document.getElementById('kpi-클릭-sub');
-  if(_kn)_kn.textContent='최근 8일 누적 · 기준일 '+(_lastGsc||'-');
-  if(_kc)_kc.textContent='최근 8일 누적 · 기준일 '+(_lastGsc||'-');
+  if(_kn)_kn.textContent='8일 합계 '+_rng+' · 구글 서치콘솔';
+  if(_kc)_kc.textContent='8일 합계 '+_rng+' · 구글 서치콘솔';
   document.getElementById('kpi-노출').textContent=imp.toLocaleString();
   document.getElementById('kpi-클릭').textContent=clk.toLocaleString();
   document.getElementById('kpi-ctr').textContent=imp>0?((clk/imp)*100).toFixed(2)+'%':'--';
@@ -1894,18 +1896,38 @@ async function loadStats(){ loadFunnel();
     const _s=await window._rtSummary();
     document.getElementById('kpi-순위').textContent=_s.overall.avg==null?'--':_s.overall.avg.toFixed(1)+'위';
     const _sub=document.getElementById('kpi-순위-sub');
-    if(_sub)_sub.innerHTML='진입 '+_s.overall.hit+'키 가중평균 · <b style="color:'+(_s.overall.miss>0?'#b45309':'#64748b')+'">미진입 '+_s.overall.miss+'키 제외</b> · 잠자는거인 탭과 동일 정본';
+    var _t10=0,_all=0;Object.values(_s.byCh||{}).forEach(function(a){_t10+=a.top10||0;_all+=a.kw||0;});
+    if(_sub)_sub.innerHTML='<b>1페이지 '+_t10+'/'+_all+' ('+(_all?Math.round(_t10/_all*100):0)+'%)</b> · 순위 안에 든 '+_s.overall.hit+'키 평균 · 미진입 '+_s.overall.miss+'키 제외';
+  }catch(e){ document.getElementById('kpi-순위').textContent='--'; }
+  /* v1.52.0 — 네이버 블로그 방문자(naver_visitor · 매일 00:35 자동수집) */
+  try{
+    const _vs=new Date(Date.now()-16*86400000).toISOString().slice(0,10);
+    const _vr=await sb.from('mk_metrics').select('채널,측정_일자,조회_수').eq('데이터_소스','naver_visitor').gte('측정_일자',_vs).limit(500);
+    const _vd=(_vr.data||[]).filter(function(r){return r.조회_수!=null;});
+    const _vdays=[...new Set(_vd.map(function(r){return String(r.측정_일자).slice(0,10);}))].sort();
+    const _last=_vdays[_vdays.length-1];
+    const _sum=function(ds){return _vd.filter(function(r){return ds.indexOf(String(r.측정_일자).slice(0,10))>=0;}).reduce(function(a,r){return a+Number(r.조회_수||0);},0);};
+    const _w1=_vdays.slice(-7),_w0=_vdays.slice(-14,-7);
+    const _y=_last?_sum([_last]):null,_s7=_sum(_w1),_p7=_sum(_w0);
+    document.getElementById('kpi-방문자').textContent=_y==null?'--':_y.toLocaleString();
+    const _byc=_vd.filter(function(r){return String(r.측정_일자).slice(0,10)===_last;}).sort(function(a,b){return String(a.채널).localeCompare(String(b.채널));}).map(function(r){return String(r.채널).replace('네이버','')+' '+Number(r.조회_수).toLocaleString();}).join(' / ');
+    const _chg=_p7>0&&_w0.length===7?((_s7-_p7)/_p7*100):null;
+    const _vsub=document.getElementById('kpi-방문자-sub');
+    if(_vsub)_vsub.textContent='어제('+(_last?_last.slice(5):'-')+') · 7일 '+_s7.toLocaleString()+(_chg==null?'':' (전주 대비 '+(_chg>=0?'+':'')+_chg.toFixed(1)+'%)')+' · '+_byc;
+  }catch(e){ var _kv=document.getElementById('kpi-방문자'); if(_kv)_kv.textContent='--'; }
+  try{
   }catch(e){ document.getElementById('kpi-순위').textContent='--'; }
   const yd=new Date(Date.now()-86400000).toISOString().slice(0,10);
   const ydData=data.filter(r=>r.수집_시각&&r.수집_시각.startsWith(yd));
   window._ydView=ydData.slice().sort(function(a,b){return (b.노출_수||0)-(a.노출_수||0)||((b.수집_시각||'')<(a.수집_시각||'')?-1:1);});_statPage=1;renderStatsPage();
   const gscD=data.filter(r=>r.데이터_소스==='gsc'&&r.노출_수),byd={};
-  gscD.forEach(r=>{const d=r.수집_시각?r.수집_시각.slice(5,10):'-';const k=r.채널+'|'+d;byd[k]=(byd[k]||0)+(r.노출_수||0);});
-  const chs=[...new Set(gscD.map(r=>r.채널))].sort(),days=[...new Set(gscD.map(r=>r.수집_시각?r.수집_시각.slice(5,10):''))].sort().slice(-14);
+  /* v1.52.0 — 측정일(GSC가 센 날) 기준 하루 노출. 수집일로 묶으면 한 번에 받은 여러 날이 한 점에 쌓인다 */
+  gscD.forEach(r=>{const d=String(r.측정_일자||'').slice(5,10);if(!d)return;const k=r.채널+'|'+d;byd[k]=(byd[k]||0)+(r.노출_수||0);});
+  const chs=[...new Set(gscD.map(r=>r.채널))].sort(),days=[...new Set(gscD.map(r=>String(r.측정_일자||'').slice(5,10)))].filter(Boolean).sort().slice(-14);
   const clrs=['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'];
-  document.getElementById('chart-loading').style.display='none';var _tn=document.getElementById('tis-days-note');if(_tn)_tn.textContent='수집 '+days.length+'일차'+(days.length<14?' — 14일 쌓이면 추세로 읽으세요':'');
+  document.getElementById('chart-loading').style.display='none';var _tn=document.getElementById('tis-days-note');if(_tn)_tn.textContent='';
   if(trendChart)trendChart.destroy();
-  trendChart=new Chart(document.getElementById('trendChart').getContext('2d'),{type:'line',data:{labels:days,datasets:chs.map((ch,i)=>({label:ch,data:days.map(d=>byd[ch+'|'+d]||null),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.4,fill:false,pointRadius:4,spanGaps:true}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{type:'logarithmic',grid:{color:'#f1f5f9'},title:{display:true,text:'노출수 (각 점 = 직전 8일 누적·로그축)'},ticks:{callback:function(v){return Number(v).toLocaleString();}}},x:{grid:{display:false}}}}});
+  trendChart=new Chart(document.getElementById('trendChart').getContext('2d'),{type:'line',data:{labels:days,datasets:chs.map((ch,i)=>({label:ch,data:days.map(d=>byd[ch+'|'+d]||null),borderColor:clrs[i%clrs.length],backgroundColor:clrs[i%clrs.length]+'20',tension:0.4,fill:false,pointRadius:4,spanGaps:true}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'},title:{display:true,text:'하루 노출수 (측정일 기준)'},ticks:{callback:function(v){return Number(v).toLocaleString();}}},x:{grid:{display:false}}}}});
   // 네이버 순위 차트
   document.getElementById('naver-chart-loading').style.display='none';
   // v1.8.3 — 정본 교체: mk_rank_tracker(핵심키워드 전량). 미진입(순위 NULL)은 평균에서 제외하되 존재는 표에서 본다.
@@ -3210,7 +3232,8 @@ function renderDraftPhotoPanel(){
 async function loadFunnel(){ loadKinStatus();
   try{
   const{data}=await sb.rpc('rpc_funnel_kpi');if(!data)return;
-  const seg=[['노출(최근집계)',data['노출_최근8일']],['클릭',data['클릭_최근8일']],['방문 28일',data['방문_28일']],['블로그유입 28일',data['블로그유입_28일']],['문의 30일',data['문의_30일']],['귀속',data['문의귀속_30일']],['견적 90일',data['견적_90일']],['계약',data['계약_90일']]];
+  /* v1.52.0 (2026-09-29 대표 승인) — 자동 수집 숫자만. 방문은 봇 제외 · 문의는 홈페이지 문의폼만 */
+  const seg=[['노출 8일',data['노출_최근8일']],['클릭 8일',data['클릭_최근8일']],['방문 28일(사람)',data['방문_28일']],['블로그유입 28일',data['블로그유입_28일']],['홈페이지 문의 30일',data['문의_홈페이지폼_30일']]];
   document.getElementById('fs-cells').innerHTML=seg.map((s,i)=>'<span style="background:#f1f5f9;border-radius:8px;padding:4px 10px"><b>'+((s[1]??0).toLocaleString())+'</b> '+s[0]+'</span>'+(i<seg.length-1?'<span style="color:#cbd5e1">→</span>':'')).join('');
   var t=document.getElementById('fs-time');if(t)t.textContent='· '+String(data['기준시각']||'').slice(0,16).replace('T',' ');
   var chm=data['채널유입_28일']||{};var chTxt=['place','kakao','gbp','karrot','threads'].map(function(k){var v=chm[k]||chm['naver_place']&&k==='place'||0;return k+' <b>'+(chm[k]||0)+'</b>';}).join(' · ');
@@ -4934,7 +4957,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.51.0';
+var VER='v1.52.0';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}

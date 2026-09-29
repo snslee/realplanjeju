@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.50.1</title>
+<title>리얼플랜제주 마케팅 운영 v1.51.0</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -289,7 +289,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       <div id="ctr-kpi" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px"></div>
       <div id="ctr-list"></div>
       <h3 style="font-size:1rem;font-weight:700;margin:26px 0 8px">🔎 색인 실측 현황</h3>
-      <p style="font-size:.75rem;color:#64748b;margin-bottom:10px">「판정 출처 = (미실측)」은 미색인이 아니라 <b>검사를 안 한 것</b>입니다. 실측은 GSC URL Inspection API(<code>gsc-url-inspect</code>)가 합니다.</p>
+      <p style="font-size:.75rem;color:#64748b;margin-bottom:10px">구글은 URL 검사(실측), 네이버는 순위·블로그 검색으로 확인합니다. 발행 3주 안 글은 「정상 대기」로 따로 봅니다.</p>
       <div id="ctr-index"></div>
     </div>
     <div class="tab-panel active" id="t1">
@@ -331,7 +331,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
 
       <!-- ▼ 네이버 월별 조회수 (C' / naver_manual 월별총계 · 제목 NULL) -->
-      <div class="card" data-sec="📊 월별 조회수" style="margin:0 0 16px"><div class="card-hdr"><h3>📊 네이버 채널별 월별 조회수 추세 (최근 12개월) · 조회수↑ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">로그축</span></h3></div>
+      <div class="card rp-off" style="margin:0 0 16px"><div class="card-hdr"><h3>📊 네이버 채널별 월별 조회수 추세 (최근 12개월) · 조회수↑ <span style="font-weight:500;font-size:.72rem;color:#94a3b8">로그축</span></h3></div>
         <div class="card-body" style="position:relative">
           <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.72rem;padding:7px 11px;border-radius:8px;margin-bottom:10px">ℹ️ 월별·수동 업로드 기준. 상단 자동수집(일별) 차트와 별개입니다.</div>
           <div style="height:280px;position:relative"><canvas id="naverMonthlyChart"></canvas><div id="naver-monthly-loading" class="loading">로딩 중...</div></div>
@@ -339,7 +339,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
       </div>
 
       <!-- ▼ 하단: 접기/펼치기 아코디언 (기본 접힘) -->
-      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden" data-sec="📥 Excel 업로드">
+      <details style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden" class="rp-off">
         <summary style="padding:13px 18px;font-weight:700;font-size:.92rem;cursor:pointer">📥 네이버 통계 Excel 업로드</summary>
         <div style="padding:0 18px 16px">
           <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:.74rem;padding:8px 11px;border-radius:8px;margin-bottom:10px">ℹ️ 업로드 데이터(naver_manual)는 아래 <b>게시물별 조회수 · 유입 검색어</b>에만 반영됩니다. 상단 KPI 카드·추세 그래프는 GSC(티스토리)·네이버 순위 <b>자동수집</b> 기준이라 반영되지 않습니다.</div>
@@ -1404,26 +1404,39 @@ async function loadCTR(){
   loadIndexNow(ibox);
 }
 async function loadIndexNow(ibox){
+  /* v1.51.0 (2026-09-29 대표 승인) — 「색인 안 된 글」을 손댈 것 / 정상 대기(발행 3주 안) / 노출 약함 셋으로 나눈다 */
   if(!ibox) return;
   ibox.innerHTML='<p style="color:#94a3b8;font-size:.85rem">불러오는 중…</p>';
   var r=await sb.from('v_index_status_now').select('*');
   if(r.error){ibox.innerHTML='<p style="color:#dc2626;font-size:.85rem">조회 실패: '+esc(r.error.message)+'</p>';return;}
-  var rows=r.data||[], grp={};
-  rows.forEach(function(x){var k=x.검색_엔진+'|'+x.색인_상태+'|'+x.판정_출처;grp[k]=(grp[k]||0)+1;});
-  var h='<table style="width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:14px"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">엔진</th><th style="padding:8px">상태</th><th style="padding:8px">판정 출처</th><th style="padding:8px">건수</th></tr></thead><tbody>';
-  Object.keys(grp).sort().forEach(function(k){var p=k.split('|');
-    h+='<tr style="border-top:1px solid #e2e8f0"><td style="padding:8px">'+esc(p[0])+'</td><td style="padding:8px;font-weight:700;color:'+(p[1]==='OK'?'#16a34a':'#b45309')+'">'+esc(p[1])+'</td><td style="padding:8px;color:'+(p[2]==='(미실측)'?'#dc2626':'#64748b')+'">'+esc(p[2])+'</td><td style="padding:8px">'+grp[k]+'</td></tr>';});
-  h+='</tbody></table>';
-  var bad=rows.filter(function(x){return x.색인_상태!=='OK';}).slice(0,40);
-  if(bad.length){
-    h+='<h4 style="font-size:.85rem;font-weight:700;margin:10px 0 6px">색인 안 된 글 '+rows.filter(function(x){return x.색인_상태!=='OK';}).length+'건</h4>';
-    h+='<table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:7px">제목</th><th style="padding:7px">엔진</th><th style="padding:7px">상태</th><th style="padding:7px">커버리지</th><th style="padding:7px">최근검사</th></tr></thead><tbody>';
-    bad.forEach(function(x){
-      h+='<tr style="border-top:1px solid #e2e8f0"><td style="padding:7px;max-width:300px"><a href="'+esc(x.외부_url)+'" target="_blank" rel="noopener" style="color:#2563eb">'+esc((x.제목||x.외부_url).slice(0,50))+'</a></td>'
-       +'<td style="padding:7px">'+esc(x.검색_엔진)+'</td><td style="padding:7px;font-weight:700;color:#b45309">'+esc(x.색인_상태)+'</td>'
-       +'<td style="padding:7px;color:#64748b">'+esc(x.커버리지||'-')+'</td><td style="padding:7px;white-space:nowrap">'+esc(String(x.최근검사||'-'))+'</td></tr>';});
-    h+='</tbody></table>';
-  } else { h+='<p style="color:#16a34a;font-size:.85rem">색인 안 된 글이 없습니다.</p>'; }
+  var rows=r.data||[];
+  var bad=rows.filter(function(x){return x.색인_상태!=='OK';});
+  var act=bad.filter(function(x){return /지연|장기|미상/.test(x.색인_판정||'');});
+  var wait=bad.filter(function(x){return /대기\(정상\)/.test(x.색인_판정||'');});
+  var weak=bad.filter(function(x){return /노출 약함/.test(x.색인_판정||'');});
+  var real=rows.filter(function(x){return x.색인_상태==='OK'&&x.판정_출처!=='(미실측)';}).length;
+  var guess=rows.filter(function(x){return x.색인_상태==='OK'&&x.판정_출처==='(미실측)';}).length;
+  function chip(t,c,bg){return '<span style="display:inline-block;padding:4px 10px;border-radius:999px;font-size:.78rem;font-weight:700;color:'+c+';background:'+bg+';margin:0 6px 4px 0">'+t+'</span>';}
+  function why(x){var c=x.커버리지||'';
+    if(/크롤링됨/.test(c))return '구글이 읽었지만 안 실음 — 내용 보강';
+    if(/발견됨/.test(c))return '구글이 아직 안 가져감 — 색인 요청·내부링크';
+    if(/알려지지/.test(c))return '구글이 주소를 모름 — 색인 요청';
+    if(x.색인_상태==='노출약함')return '색인됨 · 제목 검색 1면 밖';
+    return '검사 대기';}
+  function tbl(arr){
+    arr=arr.slice().sort(function(a,b){return (b.발행_경과일==null?999:b.발행_경과일)-(a.발행_경과일==null?999:a.발행_경과일);});
+    return '<table data-mv2="1" style="width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:14px"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:7px">제목</th><th style="padding:7px">엔진</th><th style="padding:7px">발행 후</th><th style="padding:7px">무엇을 하면 되나</th><th style="padding:7px">최근검사</th></tr></thead><tbody>'
+     +arr.map(function(x){return '<tr style="border-top:1px solid #e2e8f0"><td style="padding:7px;max-width:420px"><a href="'+esc(x.외부_url)+'" target="_blank" rel="noopener" style="color:#2563eb">'+esc((x.제목||x.외부_url).slice(0,50))+'</a></td>'
+       +'<td style="padding:7px">'+esc(x.검색_엔진)+'</td><td style="padding:7px;white-space:nowrap">'+(x.발행_경과일==null?'-':x.발행_경과일+'일')+'</td>'
+       +'<td style="padding:7px;color:#334155">'+why(x)+'</td><td style="padding:7px;white-space:nowrap;color:#64748b">'+esc(String(x.최근검사||'-'))+'</td></tr>';}).join('')
+     +'</tbody></table>';}
+  var h='<div data-mv2="1" style="border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px 6px;background:#fff;margin-bottom:12px">'
+   +chip('색인됨(실측) '+real,'#15803d','#dcfce7')+chip('색인됨(옛 판정) '+guess,'#475569','#f1f5f9')
+   +chip('손댈 것 '+act.length,'#b91c1c','#fee2e2')+chip('정상 대기(발행 3주 안) '+wait.length,'#b45309','#fef3c7')+chip('노출 약함 '+weak.length,'#1d4ed8','#dbeafe')+'</div>';
+  h+='<h4 style="font-size:.9rem;font-weight:700;margin:6px 0">🔴 손댈 것 '+act.length+'건 <span style="font-weight:500;color:#64748b;font-size:.75rem">발행 3주 넘게 색인 안 됨 · 홈 새 페이지</span></h4>';
+  h+=act.length?tbl(act):'<p style="color:#16a34a;font-size:.85rem;margin-bottom:12px">손댈 글이 없습니다.</p>';
+  if(wait.length)h+='<details><summary style="cursor:pointer;font-size:.85rem;font-weight:700;margin:6px 0">⏳ 정상 대기 '+wait.length+'건 — 발행 3주 안이라 기다리면 됩니다</summary>'+tbl(wait)+'</details>';
+  if(weak.length)h+='<details><summary style="cursor:pointer;font-size:.85rem;font-weight:700;margin:6px 0">🔎 색인됨·노출 약함 '+weak.length+'건 — 네이버 제목 검색 1면 밖</summary>'+tbl(weak)+'</details>';
   ibox.innerHTML=h;
 }
 async function loadCS(){
@@ -4921,7 +4934,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.50.1';
+var VER='v1.51.0';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -5108,7 +5121,7 @@ async function loadFresh(){
   function chip(label,v,lim){if(!v)return '<span class="mv2-chip mv2-bad">'+label+' 없음</span>';var d=daysAgo(v);var cls=d>lim?'mv2-bad':(d>Math.ceil(lim/2)?'mv2-wn':'mv2-ok');return '<span class="mv2-chip '+cls+'">'+label+' '+v.slice(5)+' <span class="mv2-mut">('+d+'일 전)</span></span>';}
   var man=L[3]?L[3].slice(0,7):null;var manOk=man&&man>=lm;
   el.innerHTML='<b style="margin-right:4px">데이터 기준일</b>'+chip('티스토리 GSC',L[0],6)+chip('네이버 순위',L[1],3)+chip('네이버 방문자',L[2],3)
-   +'<span class="mv2-chip '+(manOk?'mv2-ok':'mv2-bad')+'">네이버 수동 통계 '+(man||'없음')+(manOk?'':' · '+lm.slice(5)+'월 파일 미수령')+'</span>';
+   ;
 }
 var KINDS=[['조회수','월간 합계'],['조회수순위','조회수 순위'],['유입분석','유입분석'],['공감수','공감수 순위'],['댓글수','댓글수 순위'],['재방문율','재방문율'],['평균사용시간','평균사용시간']];
 var CHS=['블A네이버','블B네이버','블C네이버'];

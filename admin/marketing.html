@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.55.2</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.56.0</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -4957,7 +4957,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.55.2';
+var VER='v1.56.0';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -6555,7 +6555,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </script>
 <!-- RP-SNS-OPS end -->
 
-<!-- RP-SCH-V4 start · v1.43.0 · 2026-09-26 편성 달력(블로그·SNS·채널 소식·유튜브 리얼플랜여행 · 사업부별) -->
+<!-- RP-SCH-V4 start · v1.56.0 · 2026-09-29 편성 달력(블로그·홈 자료실·SNS·채널 소식·유튜브 리얼플랜여행 · 사업부별) -->
 <script>
 /* ══ RP-SCH-V4 — 편성 달력 v1.43.0 (2026-09-26 대표 승인 「권장 번들 진행」) ══════════
    대표 지시: 블로그는 초안 보관소 승인 = 완료이므로 승인대기·슬롯표 불필요 → 모든 채널을 달력 하나로.
@@ -6564,17 +6564,22 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
              · UX Patterns 달력(월=요약, 주=실무, 중요한 글은 자르지 않음).
    원칙: 원본 HTML·기존 함수(승인대기·슬롯표·달력·지니 편성표)는 지우지 않고 편성 화면에서만 숨긴다.
          DB 쓰기 0 — 읽기만(mk_blog_slots · mk_sns_slots · mk_sns_sets · mk_channel_cards · mk_youtube_slots · mk_season_calendar · customers).
+   v1.56.0(2026-09-29 대표 승인): 9/29 주간 규칙 반영 — 홈 자료실 칸(mk_content_week_plan) · 블로그 빈 날 = 규칙 요일(mk_content_week_rules 배분) ·
+     블로그 1쌍 단위 · 옛 쓰레드 단독 글 분리 · 사업부 탭 4개(온라인마케팅/마케팅교육 · 블C는 두 탭 공통).
    롤백 = 이 블록(<!-- RP-SCH-V4 start … end -->)만 걷어낸다. */
 (function(){
-var VER='v1.48.0';
+var VER='v1.56.0';
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 var DOWK=['일','월','화','수','목','금','토'];
 var HOLI={'2026-09-24':'추석 연휴','2026-09-25':'추석','2026-09-26':'추석 연휴','2026-10-03':'개천절','2026-10-05':'대체공휴일','2026-10-09':'한글날','2026-12-25':'성탄절','2027-01-01':'신정','2027-02-06':'설 연휴','2027-02-07':'설날','2027-02-08':'설 연휴','2027-02-09':'대체공휴일','2027-03-01':'삼일절'};
 var CHN={place:'플레이스',kakao:'카카오',gbp:'구글',karrot:'당근',threads:'쓰레드'};
 /* 채널 소식 자동 발송 요일(크론 233·234·235 · 채널 소식 탭 안내와 같음) */
 var CH_RULE={2:[['place','10:00'],['kakao','19:00']],3:[['gbp','10:00'],['karrot','10:00']],5:[['place','10:00'],['kakao','19:00']]};
-var LANES=[['blog','📝 블로그','편'],['sns','📣 SNS','세트'],['ch','📍 채널 소식','건'],['yt','▶️ 유튜브','편']];
-var BUS=[['','전체'],['여행','🧳 국내여행'],['행사','🎪 행사·이벤트'],['마케팅','📈 온라인마케팅·교육']];
+var LANES=[['blog','📝 블로그','쌍'],['home','🏠 홈 자료실','장'],['sns','📣 SNS','세트'],['ch','📍 채널 소식','건'],['yt','▶️ 유튜브','편']];
+var BUL={여행:'국내여행',행사:'행사·이벤트',마케팅:'온라인마케팅',교육:'마케팅교육'};
+var RULE={blog:{2:1,3:1},hnew:{1:1,2:1,3:1},hboost:{4:1},bb:{2:['여행','행사'],3:['여행','마케팅']},hb:{1:['여행'],2:['마케팅'],3:['행사','교육']}},PW={},PW0=null;
+var SNSD={1:'여행',2:'마케팅',3:'행사'}; /* SNS 상시 편성 고정 요일(목·금은 격주 교대라 사업부 탭에선 빈 날 판정 안 함) */
+var BUS=[['','전체'],['여행','🧳 국내여행'],['행사','🎪 행사·이벤트'],['마케팅','📈 온라인마케팅'],['교육','🎓 마케팅교육']];
 var STOP={'제주':1,'제주도':1,'단체':1,'단체여행':1,'여행':1,'행사':1,'대행':1,'마케팅':1,'코스':1,'준비':1,'업체':1,'가을':1,'기업':1,'담당자':1,'사장님':1,'확인할':1,'가지':1,'이유':1,'전에':1,'먼저':1,'실사례':1,'추천':1,'정리':1,'총정리':1,'블로그':1,'교육':1,'일정':1,'5가지':1,'3가지':1,'2026':1,'2027':1,'10월':1,'11월':1,'12월':1,'계약':1,'견적':1,'체크리스트':1,'순서':1,'방법':1,'비용':1,'후기':1,'운영':1,'SNS':1,'프로그램':1,'컨설팅':1,'홍보':1,'1박':1,'2박':1,'섭외':1,'AI':1,'제작':1,'출발':1,'성수기':1,'네이버':1,'티스토리':1,'인스타':1,'지원':1,'관리':1};
 
 function kstYmd(d){return new Date(d.getTime()+9*3600e3).toISOString().slice(0,10);}
@@ -6595,10 +6600,11 @@ function st4(raw){var s=String(raw||'');
 function merge(a){if(!a.length)return '예정';if(a.every(function(x){return x==='중단';}))return '중단';var b=a.filter(function(x){return x!=='중단';});
   if(b.every(function(x){return x==='완료';}))return '완료';if(b.some(function(x){return x!=='예정';}))return '작성중';return '예정';}
 function buBlog(L){return L==='A'?'여행':L==='B'?'행사':'마케팅';}
-function buNorm(v){v=String(v||'');if(/^블A|여행/.test(v))return '여행';if(/^블B|행사/.test(v))return '행사';if(/^블C|마케팅|교육|컨설팅/.test(v))return '마케팅';return v;}
+function buNorm(v){v=String(v||'');if(/^블A|여행/.test(v))return '여행';if(/^블B|행사/.test(v))return '행사';if(/교육|강의|강사/.test(v))return '교육';if(/^블C|마케팅|컨설팅/.test(v))return '마케팅';return v;}
+function gbu(b){return b==='교육'?'마케팅':b;}
 function toks(t){return String(t||'').replace(/[·,.\-—|｜()\[\]「」:!?~]/g,' ').split(/\s+/).map(function(w){return w.replace(/(은|는|이|가|을|를|의|에|로|와|과|도)$/,'');}).filter(function(w){return w.length>=2&&!STOP[w]&&!/^\d+$/.test(w);});}
 
-var S={view:'mo',wk:null,ym:null,bu:'',on:{blog:1,sns:1,ch:1,yt:1},sel:null,cache:{}};
+var S={view:'mo',wk:null,ym:null,bu:'',on:{blog:1,home:1,sns:1,ch:1,yt:1},sel:null,cache:{}};
 
 async function load(from,to){
   var key=from+'~'+to,c=S.cache[key];if(c&&Date.now()-c.t<300e3)return c.v;
@@ -6610,13 +6616,26 @@ async function load(from,to){
     sb.from('mk_channel_cards').select('id,채널,사업부,주제,제목,상태,발송_시각').gte('발송_시각',f0).lt('발송_시각',t1).limit(1000),
     sb.from('mk_youtube_slots').select('id,발행일,채널,영상형식,코너,상태,핵심키워드,최종제목').eq('채널','리얼플랜여행').gte('발행일',from).lte('발행일',to).limit(500),
     sb.from('customers').select('신청일시,created_at,사업부').is('deleted_at',null).gte('created_at',addD(from,-7)+'T00:00:00+09:00').lt('created_at',t1).limit(2000),
-    sb.from('mk_channel_slots').select('id,예정일,채널,사업부,카드_id,상태,보류_사유').gte('예정일',from).lte('예정일',to).limit(500) /* v1.46.0 채널 편성 칸(P5-B 9/26 신설) */
+    sb.from('mk_channel_slots').select('id,예정일,채널,사업부,카드_id,상태,보류_사유').gte('예정일',from).lte('예정일',to).limit(500), /* v1.46.0 채널 편성 칸(P5-B 9/26 신설) */
+    sb.from('mk_content_week_plan').select('주차_시작,예정일,트랙,슬롯키,사이트,사업부,주제,대상_url,상태').limit(2000), /* v1.56.0 주간 편성 원장(9/29 승인) */
+    sb.from('mk_content_week_rules').select('키,값').eq('키','배분')
   ]);
-  var err=[];['블로그','SNS','SNS 세트','채널 소식','유튜브','문의','채널 편성'].forEach(function(n,i){if(q[i].error)err.push(n+': '+q[i].error.message);});
+  var err=[];['블로그','SNS','SNS 세트','채널 소식','유튜브','문의','채널 편성','주간 편성','주간 규칙'].forEach(function(n,i){if(q[i].error)err.push(n+': '+q[i].error.message);});
   var it=[];
-  var bg={};(q[0].data||[]).forEach(function(r){var L=String(r.채널||'').charAt(1)||'C',k=r.발행일+'|'+L+'|'+(r.핵심키워드||'');
-    if(!bg[k])bg[k]={d:r.발행일,L:L,kw:r.핵심키워드||'',t:'',st:[],ch:[],type:r.슬롯유형||''};var g=bg[k];g.st.push(st4(r.상태));g.ch.push(/티스토리/.test(r.채널)?'티스토리':'네이버');if(!g.t&&r.최종제목)g.t=r.최종제목;});
-  Object.keys(bg).forEach(function(k){var g=bg[k];it.push({d:g.d,lane:'blog',bu:buBlog(g.L),tm:'',tag:buBlog(g.L)==='마케팅'?'마케팅·교육':buBlog(g.L),title:g.t||g.kw,kw:g.kw,st:merge(g.st),sub:g.ch.join('·')+(g.type?' · '+g.type:'')});});
+  /* v1.56.0 블로그 = 1쌍(같은 날·같은 블) 단위 · 네이버·티스토리 제목 둘 다 · pc = 중단 뺀 편수 */
+  var bg={};(q[0].data||[]).forEach(function(r){var L=String(r.채널||'').charAt(1)||'C',k=r.발행일+'|'+L;
+    if(!bg[k])bg[k]={d:r.발행일,L:L,rows:[],st:[],type:r.슬롯유형||''};var g=bg[k];g.st.push(st4(r.상태));g.rows.push({c:/티스토리/.test(r.채널)?'티스토리':'네이버',t:r.최종제목||r.핵심키워드||'',kw:r.핵심키워드||'',h:st4(r.상태)==='중단'});});
+  Object.keys(bg).forEach(function(k){var g=bg[k];g.rows.sort(function(a,b){return a.c<b.c?-1:1;});var live=g.rows.filter(function(x){return !x.h;}),use=live.length?live:g.rows;
+    var same=use.length>1&&use.every(function(x){return x.t===use[0].t;});
+    var ttl=same?use[0].t+' · '+use.map(function(x){return x.c;}).join('·'):use.map(function(x){return x.t+' · '+x.c;}).join(' / ');
+    it.push({d:g.d,lane:'blog',bu:buBlog(g.L),bc:g.L==='C'?1:0,pc:live.length,tm:'',tag:({여행:'국내여행',행사:'행사·이벤트',마케팅:'마케팅·교육'})[buBlog(g.L)],title:ttl,kw:use.map(function(x){return x.kw;}).join(' '),st:merge(g.st),sub:(g.type||'')});});
+  /* v1.56.0 홈 자료실 = 주간 편성 원장(홈신규·홈보강) */
+  var wp=(q[7]&&q[7].data)||[];PW={};PW0=null;wp.forEach(function(r){PW[r.주차_시작]=1;if(!PW0||r.주차_시작<PW0)PW0=r.주차_시작;});
+  var rl=(q[8]&&q[8].data&&q[8].data[0])?q[8].data[0].값:null;
+  if(rl){var mk=function(a){var o={};(a||[]).forEach(function(x){o[x.요일]=1;});return o;},mb=function(a,f){var o={};(a||[]).forEach(function(x){(o[x.요일]=o[x.요일]||[]).push(f(x));});return o;};
+    RULE={blog:mk(rl.블로그),hnew:mk(rl.홈신규),hboost:mk(rl.홈보강),bb:mb(rl.블로그,function(x){return buBlog(String(x.블||'').charAt(1));}),hb:mb(rl.홈신규,function(x){return buNorm(x.사업부);})};}
+  wp.forEach(function(r){if(r.트랙==='블로그'||!r.예정일||r.예정일<from||r.예정일>to)return;var nb=r.트랙==='홈신규';var st=({계획:'예정',승인:'예정',진행:'작성중',완료:'완료',취소:'중단'})[r.상태]||'예정';
+    it.push({d:r.예정일,lane:'home',bu:nb?buNorm(r.사업부):'',hb:nb?0:1,proj:0,tm:'',tag:nb?('홈'+(r.사이트||'')+' · '+(BUL[buNorm(r.사업부)]||r.사업부||'')+' · 새 글'):'홈 보강',title:(r.주제||'')+(nb?'':(r.대상_url?' · '+r.대상_url:'')),kw:nb?(r.주제||''):'',st:st,sub:r.상태});});
   var sets={};(q[2].data||[]).forEach(function(s){sets[s.id]=s;});var sg={};
   (q[1].data||[]).forEach(function(r){var d=kstYmd(new Date(r.예정일시)),k=r.세트_id||(d+'|'+r.사업부+'|'+r.핵심키워드);
     if(!sg[k])sg[k]={d:d,s:sets[r.세트_id]||null,bu:r.사업부,kw:r.핵심키워드||'',ty:String(r.유형||'').split('-')[0],pf:[],st:[]};sg[k].pf.push(r.플랫폼);sg[k].st.push(st4(r.상태));});
@@ -6624,7 +6643,8 @@ async function load(from,to){
   Object.keys(sg).forEach(function(k){var g=sg[k],s=g.s,bu=buNorm((s&&s.사업부)||g.bu),ac=(s&&s.계정)||(bu==='마케팅'?'대표':'회사');
     var kind=s&&s.종류?({poster:'포스터',case:'실사례',info:'정보성'}[s.종류]||s.종류):g.ty;
     var t=(s&&s.제목)||(/^(PLAN|SEASON):/.test(g.kw)?'':g.kw)||'(제목 미정)';
-    it.push({d:g.d,lane:'sns',old:!s&&g.pf.length===1,bu:bu,tm:'08:30',tag:ac+' 계정·'+(s&&s.사업부||g.bu||'')+(kind?'·'+kind:''),title:t,kw:t,st:merge(g.st),sub:g.pf.length?g.pf.join('·'):'인스타·페북·쓰레드'});});
+    var old=!s&&g.pf.length===1;
+    it.push({d:g.d,lane:'sns',old:old,bu:bu,tm:old?'':'08:30',tag:old?('쓰레드 단독 · '+(BUL[bu]||bu)+(/^블/.test(g.bu||'')?'(옛 '+g.bu+')':'')+(g.ty?' · '+g.ty:'')):(ac+' 계정·'+(s&&s.사업부||g.bu||'')+(kind?'·'+kind:'')),title:t,kw:t,st:merge(g.st),sub:g.pf.length?g.pf.join('·'):'인스타·페북·쓰레드'});});
   var sent={};(q[3].data||[]).forEach(function(r){var d=kstYmd(new Date(r.발송_시각));sent[d+'|'+r.채널]=1;
     it.push({d:d,lane:'ch',bu:buNorm(r.사업부),tm:new Date(new Date(r.발송_시각).getTime()+9*3600e3).toISOString().slice(11,16),tag:(CHN[r.채널]||r.채널)+' 소식',title:r.제목||r.주제||'',kw:r.제목||r.주제||'',st:st4(r.상태),sub:''});});
   var T=today();
@@ -6654,15 +6674,19 @@ async function loadCtx(ym){
     sb.from('mk_channel_cards').select('created_at').eq('상태','대기').limit(300)
   ]);
   var sea=(q[0].data||[]).filter(function(r){return r.월===m;})[0]||null;
-  var lead={};(q[1].data||[]).forEach(function(r){var b=buNorm(r.사업부);var a=Date.parse(r.시작일+'T00:00:00+09:00'),c=Date.parse(r.신청일시||r.created_at);var n=(a-c)/864e5;if(n>0&&n<400){lead[b]=lead[b]||[];lead[b].push(n);}});
+  var lead={};(q[1].data||[]).forEach(function(r){var b=gbu(buNorm(r.사업부));var a=Date.parse(r.시작일+'T00:00:00+09:00'),c=Date.parse(r.신청일시||r.created_at);var n=(a-c)/864e5;if(n>0&&n<400){lead[b]=lead[b]||[];lead[b].push(n);}});
   Object.keys(lead).forEach(function(b){var a=lead[b];lead[b]={avg:Math.round(a.reduce(function(s,x){return s+x;},0)/a.length),n:a.length};});
-  var pb={},seen={};(q[2].data||[]).forEach(function(r){var L=String(r.채널).charAt(1),k=r.발행일+'|'+L+'|'+r.핵심키워드;if(seen[k]||r.상태==='halted')return;seen[k]=1;var b=buBlog(L);pb[b]=(pb[b]||0)+1;});
+  var pb={},seen={};(q[2].data||[]).forEach(function(r){if(r.상태==='halted')return;var L=String(r.채널).charAt(1),k=r.발행일+'|'+L,b=buBlog(L);pb[b]=pb[b]||{p:0,n:0};pb[b].n++;if(!seen[k]){seen[k]=1;pb[b].p++;}});
   var w=q[3].data||[],old=w.reduce(function(mx,x){var d=Math.floor((Date.now()-Date.parse(x.created_at))/864e5);return d>mx?d:mx;},0);
   CTX={ym:ym,sea:sea,lead:lead,prevBlog:pb,prevYm:prev,wait:w.length,old:old};return CTX;
 }
-function vis(x){if(!S.on[x.lane])return false;if(S.bu&&x.bu&&x.bu!==S.bu)return false;if(S.bu&&!x.bu&&!x.proj)return false;return true;}
-function gapOf(lane,d,items){if(d<today()||HOLI[d])return false;var w=dow(d);
-  if((lane==='blog'||lane==='sns')&&w>=1&&w<=5&&!items.length)return true;
+function vis(x){if(!S.on[x.lane])return false;if(S.bu&&x.bu&&x.bu!==S.bu&&!(x.bc&&(S.bu==='마케팅'||S.bu==='교육')))return false;if(S.bu&&!x.bu&&!x.proj)return false;return true;}
+function cnt(a){return a.filter(function(x){return !x.old;});}
+/* v1.56.0 빈 날: true = 빨강(계획이 있는 주·이번 주에 규칙 요일이 빔) · 'wait' = 회색(그 뒤 주 — 금요일 16:40 편성안이 채울 칸) */
+function gapOf(lane,d,items){if(d<today()||HOLI[d])return false;var w=dow(d),wk=monOf(d);items=cnt(items);
+  if(lane==='blog'){if(!RULE.blog[w]||items.length)return false;if(S.bu){var bl=RULE.bb[w]||[];if(!(bl.indexOf(S.bu)>=0||(S.bu==='교육'&&bl.indexOf('마케팅')>=0)))return false;}return (PW[wk]||wk===monOf(today()))?true:'wait';}
+  if(lane==='home'){if(!PW0||wk<PW0||!(RULE.hnew[w]||RULE.hboost[w])||items.length)return false;if(S.bu&&(RULE.hb[w]||[]).indexOf(S.bu)<0)return false;return PW[wk]?true:'wait';}
+  if(lane==='sns'&&w>=1&&w<=5&&!items.length){if(S.bu&&SNSD[w]!==S.bu)return false;return true;}
   if(lane==='yt'&&w===5&&(!S.bu||S.bu==='여행')&&!items.some(function(x){return x.tm==='18:00';}))return true;return false;}
 
 var CSS='<style id="rp-sch4-css">'
@@ -6675,6 +6699,7 @@ var CSS='<style id="rp-sch4-css">'
 +'#tsch .p4-grid{display:grid;gap:10px;margin-bottom:10px}'
 +'#tsch .p4-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:.86rem;line-height:1.55}'
 +'#tsch .p4-card b.big{display:block;font-size:1.12rem}'
++'#tsch .p4-wait{background:#f1f5f9;color:#64748b;border-radius:4px;padding:1px 4px;margin-top:2px;font-size:.72rem}'
 +'#tsch .p4-warn{color:#b91c1c;font-weight:700}#tsch .p4-mut{color:#64748b;font-size:.8rem}'
 +'#tsch .p4-main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px}@media(max-width:1200px){#tsch .p4-main{grid-template-columns:1fr}}'
 +'#tsch table.p4-t{border-collapse:collapse;width:100%;background:#fff;table-layout:fixed}'
@@ -6699,9 +6724,9 @@ var CSS='<style id="rp-sch4-css">'
 +'</style>';
 
 function badge(s){return '<span class="p4-bd '+s+'">'+s+'</span>';}
-function lk(x){return x.link&&x.link.length?'<div class="p4-lk">🔗 같은 소재 「'+E(x.link[0].w)+'」 — '+({blog:'블로그',sns:'SNS',ch:'채널 소식',yt:'유튜브'}[x.link[0].lane])+' '+md(x.link[0].d)+'</div>':'';}
+function lk(x){return x.link&&x.link.length?'<div class="p4-lk">🔗 같은 소재 「'+E(x.link[0].w)+'」 — '+({blog:'블로그',home:'홈 자료실',sns:'SNS',ch:'채널 소식',yt:'유튜브'}[x.link[0].lane])+' '+md(x.link[0].d)+'</div>':'';}
 function groups(d,it){var out=[];LANES.forEach(function(L){var a=it.filter(function(x){return x.lane===L[0]&&x.d===d&&vis(x);});
-  if(a.length)out.push([L[1]+' '+a.length+L[2]+(L[0]==='sns'?' (인스타·페북·쓰레드)':''),a]);});return out;}
+  a=cnt(a);if(a.length)out.push([L[1]+' '+a.length+L[2]+(L[0]==='blog'?' ('+a.reduce(function(s,x){return s+(x.pc||0);},0)+'편)':'')+(L[0]==='sns'?' (인스타·페북·쓰레드)':''),a]);});return out;}
 
 function head(){
   var nav=S.view==='wk'
@@ -6715,32 +6740,36 @@ function head(){
 function seasonCards(v){
   if(!CTX)return '';var m=Number(S.ym.slice(5)),g=CTX.sea?JSON.stringify(CTX.sea.골든타임_사업부||[]):'';
   function gold(b){return b==='여행'?/블A/.test(g):b==='행사'?/블B/.test(g):/블C/.test(g);}
-  var cnt={};v.it.forEach(function(x){if(x.lane==='blog'&&x.st!=='중단'&&x.d.slice(0,7)===S.ym)cnt[x.bu]=(cnt[x.bu]||0)+1;});
-  var rows=[['여행','🧳 국내여행','출발'],['행사','🎪 행사·이벤트','행사'],['마케팅','📈 마케팅·교육','시작']].filter(function(r){return !S.bu||S.bu===r[0];});
+  var bc={};v.it.forEach(function(x){if(x.lane==='blog'&&x.st!=='중단'&&x.d.slice(0,7)===S.ym){bc[x.bu]=bc[x.bu]||{p:0,n:0};bc[x.bu].p++;bc[x.bu].n+=(x.pc||0);}});
+  var rows=[['여행','🧳 국내여행','출발'],['행사','🎪 행사·이벤트','행사'],['마케팅','📈 마케팅·교육','시작']].filter(function(r){return !S.bu||gbu(S.bu)===r[0];});
   return '<div class="p4-grid" style="grid-template-columns:repeat('+rows.length+',1fr)">'+rows.map(function(r){
-    var L=CTX.lead[r[0]],pb=CTX.prevBlog[r[0]]||0,n=cnt[r[0]]||0,low=pb&&n<pb*0.5;
+    var L=CTX.lead[r[0]],pbo=CTX.prevBlog[r[0]]||{p:0,n:0},pb=pbo.n,no=bc[r[0]]||{p:0,n:0},n=no.n,low=pb&&n<pb*0.5;
     var tgt=L?(function(){var a=new Date(S.ym+'-15T00:00:00Z');a.setUTCDate(a.getUTCDate()+L.avg);return (a.getUTCMonth()+1)+'월';})():null;
     return '<div class="p4-card" style="border-left:4px solid #0f172a"><b>'+r[1]+'</b>'+(gold(r[0])?' · <b style="color:#1d4ed8">'+m+'월 골든타임</b>':'')
       +'<br>'+(L?'문의는 '+r[2]+' 평균 <b>'+L.avg+'일 전</b><span class="p4-mut"> (문의 '+L.n+'건 기준'+(L.n<10?' · 표본 적음':'')+')</span> → '+m+'월 글은 <b>'+tgt+' 전후 '+r[2]+'</b> 대상':'<span class="p4-mut">문의 선행일 데이터 부족</span>')
-      +'<br>'+m+'월 블로그 <b>'+n+'편</b> <span class="p4-mut">('+Number(CTX.prevYm.slice(5))+'월 '+pb+'편)</span>'+(low?' <span class="p4-warn">· 지난달의 절반 미만</span>':'')+'</div>';}).join('')+'</div>'
+      +'<br>'+m+'월 블로그 <b>'+no.p+'쌍 · '+n+'편</b> <span class="p4-mut">('+Number(CTX.prevYm.slice(5))+'월 '+pbo.p+'쌍 · '+pb+'편)</span>'+(low?' <span class="p4-warn">· 지난달의 절반 미만</span>':'')+'</div>';}).join('')+'</div>'
    +(CTX.sea?'<div class="p4-mut" style="margin:-4px 0 10px">시즌 달력 '+m+'월 「'+E(CTX.sea.시즌명)+'」 — '+E(CTX.sea.비고||'')+'</div>':'');
 }
 function summary(v){
   var mon=v.it.filter(function(x){return x.d.slice(0,7)===S.ym&&vis(x)&&x.st!=='중단';}),T=today(),from=S.ym+'-01',to=monthEnd(S.ym);
-  function gaps(l){var g=[];for(var d=(T>from?T:from);d<=to;d=addD(d,1)){if(gapOf(l,d,mon.filter(function(x){return x.lane===l&&x.d===d;})))g.push(d);}return g;}
-  function gtxt(g){if(!g.length)return '<span style="color:#15803d;font-weight:700">빈 평일 없음</span>';var f=g.slice(0,3).map(md).join('·');return '<span class="p4-warn">빈 평일 '+g.length+'일 ('+f+(g.length>3?' 외':'')+')</span>';}
-  var nb=mon.filter(function(x){return x.lane==='blog';}).length,ns=mon.filter(function(x){return x.lane==='sns'&&!x.old;}).length,no=mon.filter(function(x){return x.lane==='sns'&&x.old;}).length;
+  function gaps(l,kind){var g=[];for(var d=(T>from?T:from);d<=to;d=addD(d,1)){var r=gapOf(l,d,mon.filter(function(x){return x.lane===l&&x.d===d;}));if(kind==='wait'?r==='wait':r===true)g.push(d);}return g;}
+  function gtxt(l,word,okw){var g=gaps(l),w=gaps(l,'wait');var h=g.length?'<span class="p4-warn">빈 '+word+' '+g.length+'일 ('+g.slice(0,3).map(md).join('·')+(g.length>3?' 외':'')+')</span>':'<span style="color:#15803d;font-weight:700">'+(okw||('빈 '+word+' 없음'))+'</span>';
+    if(w.length)h+='<br><span class="p4-mut">'+w.length+'일은 금요일 16:40 편성안에서 채움</span>';return h;}
+  var bl=cnt(mon.filter(function(x){return x.lane==='blog';})),np=bl.length,nn=bl.reduce(function(s,x){return s+(x.pc||0);},0);
+  var ns=mon.filter(function(x){return x.lane==='sns'&&!x.old;}).length,no=mon.filter(function(x){return x.lane==='sns'&&x.old;}).length;
+  var hm=mon.filter(function(x){return x.lane==='home';}),hn=hm.filter(function(x){return !x.hb;}).length,hb=hm.filter(function(x){return x.hb;}).length,hw=hm.filter(function(x){return x.sub==='계획';}).length;
   var yl=mon.filter(function(x){return x.lane==='yt'&&x.tm==='18:00';}).length,ys=mon.filter(function(x){return x.lane==='yt'&&x.tm!=='18:00';}).length;
   var c=[];
-  if(S.on.blog)c.push('<div class="p4-card">📝 블로그 <b class="big">'+nb+'편</b>'+gtxt(gaps('blog'))+'</div>');
-  if(S.on.sns)c.push('<div class="p4-card">📣 SNS <b class="big">'+ns+'세트'+(no?' <span class="p4-mut" style="font-weight:400">+ 옛 쓰레드 글 '+no+'건</span>':'')+'</b>'+gtxt(gaps('sns'))+'</div>');
+  if(S.on.blog)c.push('<div class="p4-card">📝 블로그 <b class="big">'+np+'쌍 · '+nn+'편</b>'+gtxt('blog','날','이번·다음 주 빈 날 없음')+'</div>');
+  if(S.on.home)c.push('<div class="p4-card">🏠 홈 자료실 <b class="big">새 글 '+hn+(S.bu?'':' · 보강 '+hb)+'</b>'+gtxt('home','날')+(hw?'<br><span class="p4-mut">승인 대기(계획) '+hw+'칸 · 금요일 편성안에서 「다음주 편성 승인」</span>':'')+'</div>');
+  if(S.on.sns)c.push('<div class="p4-card">📣 SNS <b class="big">'+ns+'세트</b>'+gtxt('sns','평일')+(no?'<br><span class="p4-mut">옛 쓰레드 단독 글 '+no+'건은 목록 맨 아래(9/17 폐지 전)</span>':'')+'</div>');
   if(S.on.ch){var chm=mon.filter(function(x){return x.lane==='ch';}),chg=chm.filter(function(x){return x.sub==='미배정';}).length,chd=chm.filter(function(x){return x.st==='중단';}).length;c.push('<div class="p4-card">📍 채널 소식 <b class="big">'+chm.length+'칸</b>'+(chg?' · <span class="p4-warn">미배정 '+chg+'</span>':'')+(chd?' · <span class="p4-warn">빠짐 '+chd+'</span>':'')+'<br><span class="p4-mut">대기 카드 '+(CTX?CTX.wait:'-')+'장 · 가장 오래된 것 <span class="'+(CTX&&CTX.old>14?'p4-warn':'')+'">'+(CTX?CTX.old:'-')+'일</span></span></div>');}
-  if(S.on.yt&&(!S.bu||S.bu==='여행'))c.push('<div class="p4-card">▶️ 유튜브 (리얼플랜여행) <b class="big">롱폼 '+yl+'편 · 쇼츠 '+ys+'편</b>'+gtxt(gaps('yt')).replace('빈 평일','빈 금요일')+'</div>');
+  if(S.on.yt&&(!S.bu||S.bu==='여행'))c.push('<div class="p4-card">▶️ 유튜브 (리얼플랜여행) <b class="big">롱폼 '+yl+'편 · 쇼츠 '+ys+'편</b>'+gtxt('yt','금요일')+'</div>');
   return '<div class="p4-grid" style="grid-template-columns:repeat('+c.length+',1fr)">'+c.join('')+'</div>'
    +(v.err.length?'<div class="p4-warn" style="font-size:.78rem;margin-bottom:8px">⚠️ 일부 표를 읽지 못했습니다: '+E(v.err.join(' · '))+'</div>':'');
 }
 function inqTxt(inq,from,to){var t={};for(var d=from;d<=to;d=addD(d,1)){var o=inq[d]||{};Object.keys(o).forEach(function(k){if(S.bu&&k!==S.bu)return;t[k]=(t[k]||0)+o[k];});}
-  var ks=Object.keys(t);return ks.length?ks.map(function(k){return ({여행:'여행',행사:'행사',마케팅:'마케팅·교육'}[k]||k)+' '+t[k];}).join(' · '):'0건';}
+  var ks=Object.keys(t);return ks.length?ks.map(function(k){return (BUL[k]||k)+' '+t[k];}).join(' · '):'0건';}
 function panel(d,v){
   var g=groups(d,v.it),h='<div class="p4-panel"><h3>'+mdK(d)+' ('+DOWK[dow(d)]+') 편성'+(HOLI[d]?' <span class="p4-hol">'+HOLI[d]+'</span>':'')+'</h3><div class="p4-mut">날짜를 누르면 그날 목록이 여기에 뜹니다 · 제목은 자르지 않습니다</div>';
   if(!g.length)h+='<p class="p4-mut" style="margin-top:12px">편성 없음</p>';
@@ -6754,13 +6783,13 @@ function month(v){
   for(var d=start;d<=to||dow(d)!==1;d=addD(d,1)){
     if(dow(d)===1)h+='<tr>';
     if(d<from||d>to)h+='<td class="out"><div class="p4-dn">'+Number(d.slice(8))+'</div></td>';
-    else{var ln='',gp=[];LANES.forEach(function(L){if(!S.on[L[0]])return;var a=v.it.filter(function(x){return x.lane===L[0]&&x.d===d&&vis(x)&&x.st!=='중단';});
-        if(a.length)ln+='<div class="p4-ln"><span>'+L[1]+'</span><span>'+a.length+L[2]+'</span></div>';if(gapOf(L[0],d,a))gp.push(L[1].split(' ').slice(1).join(' '));});
+    else{var ln='',gp=[],wt=[];LANES.forEach(function(L){if(!S.on[L[0]])return;var a=cnt(v.it.filter(function(x){return x.lane===L[0]&&x.d===d&&vis(x)&&x.st!=='중단';}));
+        if(a.length)ln+='<div class="p4-ln"'+(L[0]==='home'?' style="background:#fff7ed;border-radius:4px"':'')+'><span>'+L[1]+'</span><span>'+a.length+L[2]+'</span></div>';var gr=gapOf(L[0],d,a),nm=L[1].split(' ').slice(1).join(' ');if(gr===true)gp.push(nm);else if(gr==='wait')wt.push(nm);});
       var hasLk=v.it.some(function(x){return x.d===d&&vis(x)&&x.link&&x.link.length;});
-      h+='<td class="day'+(d===T?' today':'')+(d===S.sel?' sel':'')+'" onclick="rpP4.sel(\''+d+'\')"><div class="p4-dn" style="color:'+(dow(d)===0||HOLI[d]?'#b91c1c':'#0f172a')+'">'+Number(d.slice(8))+(HOLI[d]?' <span class="p4-hol">'+HOLI[d]+'</span>':'')+(hasLk?' <span class="p4-lk" title="같은 소재가 다른 채널에도 있음">🔗</span>':'')+'</div>'+ln+(gp.length?'<div class="p4-gap">빈 날: '+gp.join('·')+'</div>':'')+'</td>';}
+      h+='<td class="day'+(d===T?' today':'')+(d===S.sel?' sel':'')+'" onclick="rpP4.sel(\''+d+'\')"><div class="p4-dn" style="color:'+(dow(d)===0||HOLI[d]?'#b91c1c':'#0f172a')+'">'+Number(d.slice(8))+(HOLI[d]?' <span class="p4-hol">'+HOLI[d]+'</span>':'')+(hasLk?' <span class="p4-lk" title="같은 소재가 다른 채널에도 있음">🔗</span>':'')+'</div>'+ln+(gp.length?'<div class="p4-gap">빈 날: '+gp.join('·')+'</div>':'')+(wt.length?'<div class="p4-wait">편성안 대기: '+wt.join('·')+'</div>':'')+'</td>';}
     if(dow(d)===0){var ws=addD(d,-6);h+='<td class="p4-inq">'+(ws<=T?inqTxt(v.inq,ws,d):'<span class="p4-mut">—</span>')+'</td></tr>';}
   }
-  return h+'</table><div class="p4-mut" style="margin-top:6px">칸 숫자 = 그날 편수(중단 제외) · <b style="color:#b91c1c">빈 날</b> = 평일인데 블로그·SNS가 없거나 금요일 여행 롱폼이 없는 날(오늘 이후만) · 🔗 = 7일 안에 같은 소재가 다른 채널에도 있음 · 채널 소식은 편성 칸(배정·미배정·빠짐) 실물</div>';
+  return h+'</table><div class="p4-mut" style="margin-top:6px">칸 숫자 = 그날 건수(중단 제외 · 블로그는 쌍 = 네이버+티스토리) · <b style="color:#b91c1c">빈 날</b> = 9/29 승인 요일(블로그 화·수 · 홈 새 글 월~수 · 보강 목 · SNS 평일 · 롱폼 금)인데 비었을 때(계획이 있는 주·이번 주, 오늘 이후) · <span style="background:#f1f5f9;padding:0 4px">편성안 대기</span> = 그 뒤 주, 금요일 16:40 편성안이 채울 칸 · 🔗 = 7일 안에 같은 소재가 다른 채널에도 있음 · 채널 소식은 편성 칸(배정·미배정·빠짐) 실물</div>';
 }
 function week(v){
   var T=today(),days=[];for(var d=S.wk;d<=addD(S.wk,6);d=addD(d,1))days.push(d);
@@ -6768,16 +6797,19 @@ function week(v){
   days.forEach(function(d){var g=groups(d,v.it),c='';
     g.forEach(function(G){c+='<div style="margin-top:6px"><div style="font-weight:700;font-size:.84rem;border-bottom:1px solid #e2e8f0">'+G[0]+'</div>'+G[1].map(function(x){
       return '<div class="p4-wi">'+(x.tm?'<span class="p4-tm">'+x.tm+'</span> ':'')+'<span class="p4-tg">['+E(x.tag)+']</span> '+E(x.title)+lk(x)+'<br>'+badge(x.st)+'</div>';}).join('')+'</div>';});
-    var gp=[];LANES.forEach(function(L){if(S.on[L[0]]&&gapOf(L[0],d,v.it.filter(function(x){return x.lane===L[0]&&x.d===d&&vis(x);})))gp.push(L[1].split(' ').slice(1).join(' '));});
-    if(gp.length)c+='<div class="p4-gap" style="margin-top:6px">빈 날: '+gp.join('·')+'</div>';
+    var gp=[],wt=[];LANES.forEach(function(L){if(!S.on[L[0]])return;var gr=gapOf(L[0],d,v.it.filter(function(x){return x.lane===L[0]&&x.d===d&&vis(x);})),nm=L[1].split(' ').slice(1).join(' ');if(gr===true)gp.push(nm);else if(gr==='wait')wt.push(nm);});
+    if(gp.length)c+='<div class="p4-gap" style="margin-top:6px">빈 날: '+gp.join('·')+'</div>';if(wt.length)c+='<div class="p4-wait" style="margin-top:6px">편성안 대기: '+wt.join('·')+'</div>';
     h+='<td>'+(c||'<div class="p4-mut" style="margin-top:6px">편성 없음</div>')+'</td>';});
   return h+'</tr><tr><td colspan="7" class="p4-inq">이 주 들어온 문의: <b>'+(S.wk<=T?inqTxt(v.inq,S.wk,addD(S.wk,6)):'—')+'</b> <span class="p4-mut">(고객 DB 신청일 기준 · 편성과 문의를 같은 주로 대조)</span></td></tr></table>';
 }
 function list(v){
-  var a=v.it.filter(function(x){return x.d.slice(0,7)===S.ym&&vis(x);}).sort(function(p,q){return p.d<q.d?-1:p.d>q.d?1:(p.tm||'99')<(q.tm||'99')?-1:1;});
-  var ln={blog:'📝 블로그',sns:'📣 SNS',ch:'📍 채널 소식',yt:'▶️ 유튜브'};
-  return '<div class="p4-mut" style="margin-bottom:6px">'+a.length+'건</div><table class="p4-list"><tr><th>날짜</th><th>시각</th><th>채널</th><th>구분</th><th>제목</th><th>상태</th></tr>'
-   +a.map(function(x){return '<tr><td style="white-space:nowrap">'+md(x.d)+'('+DOWK[dow(x.d)]+')</td><td>'+(x.tm||'')+'</td><td style="white-space:nowrap">'+ln[x.lane]+'</td><td>'+E(x.tag)+'</td><td>'+E(x.title)+lk(x)+'</td><td>'+badge(x.st)+'</td></tr>';}).join('')+'</table>';
+  var all=v.it.filter(function(x){return x.d.slice(0,7)===S.ym&&vis(x);}).sort(function(p,q){return p.d<q.d?-1:p.d>q.d?1:(p.tm||'99')<(q.tm||'99')?-1:1;});
+  var a=cnt(all),od=all.filter(function(x){return x.old;});
+  var ln={blog:'📝 블로그',home:'🏠 홈 자료실',sns:'📣 SNS',ch:'📍 채널 소식',yt:'▶️ 유튜브'};
+  function row(x){return '<tr><td style="white-space:nowrap">'+md(x.d)+'('+DOWK[dow(x.d)]+')</td><td>'+(x.tm||'')+'</td><td style="white-space:nowrap">'+ln[x.lane]+(x.lane==='blog'?' 1쌍':'')+'</td><td style="white-space:nowrap">'+E(x.tag)+'</td><td>'+E(x.title).split(' / ').join('<br>')+lk(x)+'</td><td>'+badge(x.st)+'</td></tr>';}
+  var th='<tr><th>날짜</th><th>시각</th><th>채널</th><th>구분</th><th>제목</th><th>상태</th></tr>';
+  return '<div class="p4-mut" style="margin-bottom:6px">'+a.length+'건</div><table class="p4-list">'+th+a.map(row).join('')+'</table>'
+   +(od.length?'<details style="margin-top:10px;border:1px dashed #cbd5e1;border-radius:8px;padding:6px 10px"><summary style="cursor:pointer;color:#475569">옛 쓰레드 단독 글 (9/17 폐지 전) '+od.length+'건'+(od.filter(function(x){return x.st==='중단';}).length?' (폐기 '+od.filter(function(x){return x.st==='중단';}).length+' 포함)':'')+' — 숫자(세트)에서 뺌</summary><table class="p4-list" style="margin-top:6px">'+th+od.map(row).join('')+'</table></details>':'');
 }
 async function render(){
   var host=document.getElementById('p4-host');if(!host)return;
@@ -6807,7 +6839,7 @@ function setup(){
   var w=document.getElementById('tsch');if(!w)return false;if(w.__p4)return true;w.__p4=1;
   if(!document.getElementById('rp-sch4-css'))document.head.insertAdjacentHTML('beforeend',CSS);
   var pp=w.querySelector('h2')&&w.querySelector('h2').parentNode.querySelector('p');
-  if(pp)pp.innerHTML='블로그·SNS·채널 소식·유튜브(리얼플랜여행)를 달력 하나로 봅니다. 블로그는 초안 보관소에서 승인되면 「완료」로 바뀝니다. <span style="color:#94a3b8">'+VER+'</span>';
+  if(pp)pp.innerHTML='블로그·홈 자료실·SNS·채널 소식·유튜브(리얼플랜여행)를 달력 하나로 봅니다. 블로그는 초안 보관소에서 승인되면 「완료」로 바뀝니다. <span style="color:#94a3b8">'+VER+'</span>';
   ['sch-chips','sch-host','sch-act'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='none';});
   var h=document.createElement('div');h.id='p4-host';var hostOld=document.getElementById('sch-host');hostOld.parentNode.insertBefore(h,hostOld);
   return true;
@@ -7578,7 +7610,7 @@ async function band(tab){var p=document.getElementById(tab);if(!p)return;var cfg
  if(!S.g.length){var r=await sb.from('v_revenue_kw_groups').select('*');if(r.error){el.innerHTML='🧭 '+cfg.ttl+' — 의도 표 조회 오류: '+E(r.error.message);return;}S.g=r.data||[];}
  var peak=S.g.filter(function(x){return x.피크임박;});
  if(tab==='t6'){el.innerHTML='🧭 <b>플랫폼별 연계 자</b> — '+Object.keys(RULER).map(function(k){return '<b>'+k+'</b> '+RULER[k];}).join(' · ')+'<span class="go" onclick="window.__kwGo(\'t8\')">키워드·기회로</span>';return;}
- if(tab==='tsch'){var c=peak.filter(function(x){return x.블로그글>0||x.채널카드>0||x.sns세트>0||x.유튜브편>0;}).length;el.innerHTML='🧭 이달·다음 달 피크 의도 <b>'+peak.length+'</b> 중 어느 플랫폼에라도 편성된 것 <b>'+c+'</b> · 빈 의도: '+E(peak.filter(function(x){return !(x.블로그글>0||x.채널카드>0||x.sns세트>0||x.유튜브편>0);}).map(function(x){return x.묶음;}).join(' · ')||'없음')+'<span class="go" onclick="window.__kwGo(\'t8\')">키워드·기회에서 옴</span>';return;}
+ if(tab==='tsch'){var c=peak.filter(function(x){return x.블로그글>0||x.채널카드>0||x.sns세트>0||x.유튜브편>0;}).length;el.innerHTML='🧭 이달·다음 달 피크 의도 <b>'+peak.length+'</b> 중 어느 플랫폼에라도 편성된 것 <b>'+c+'</b> · 빈 의도: '+E(peak.filter(function(x){return !(x.블로그글>0||x.채널카드>0||x.sns세트>0||x.유튜브편>0);}).map(function(x,i,a){var dup=a.filter(function(y){return y.묶음===x.묶음;}).length>1;return (dup?({국내여행:'국내여행',행사이벤트:'행사',온라인마케팅:'마케팅',마케팅교육:'교육'}[x.사업부]||x.사업부||'')+' ':'')+x.묶음;}).join(' · ')||'없음')+'<span class="go" onclick="window.__kwGo(\'t8\')">키워드·기회에서 옴</span>';return;}
  var miss=peak.filter(function(x){return cfg.yt?(x.유튜브배분&&!x[cfg.k]):!x[cfg.k];});
  var extra='';try{if(tab==='tsns'){var a=await sb.from('mk_sns_sets').select('id',{count:'exact',head:true}).is('묶음',null).neq('상태','폐기');if(!a.error)extra=' · 세트 중 의도 미지정 <b>'+a.count+'</b>';}if(tab==='t13'){var b=await sb.from('mk_youtube_slots').select('id',{count:'exact',head:true}).is('묶음',null).eq('채널','리얼플랜여행').neq('상태','보류');if(!b.error)extra=' · 편 중 의도 미지정 <b>'+b.count+'</b>';}if(tab==='tchan'){var d=await sb.from('mk_channel_cards').select('id',{count:'exact',head:true}).is('묶음',null).in('상태',['대기','발송']);if(!d.error)extra=' · 카드 중 의도 미지정 <b>'+d.count+'</b>';}}catch(_){}
  el.innerHTML='🧭 이달·다음 달 피크 의도 중 '+cfg.lab+' <b>'+miss.length+'</b>'+(miss.length?' — '+E(miss.slice(0,5).map(function(x){return x.묶음;}).join(' · '))+(miss.length>5?' …':''):'')+extra+' <span class="mut">(의도 = mk_revenue_keywords.묶음 · 이 탭 규격은 그대로)</span><span class="go" onclick="window.__kwGo(\'t8\')">키워드·기회에서 옴</span>';}

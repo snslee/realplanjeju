@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.58.0</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.59.0</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -4957,7 +4957,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.58.0';
+var VER='v1.59.0';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -6030,7 +6030,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       var rg=ids.length?await sb.from('mk_youtube_segments').select('슬롯id,영상형식,순번,시작_초,끝_초,구간종류,장소,내용,주요순간,유지율_시작,유지율_끝').in('슬롯id',ids).order('순번',{ascending:true}).limit(3000):{data:[]};
       var rk=ids.length?await sb.from('mk_youtube_bench_picks').select('슬롯id,영상id,뽑은이유,가져온장점').in('슬롯id',ids).limit(1000):{data:[]};
       var rb=await sb.from('mk_youtube_benchmarks').select('채널id,채널명,핸들,층,구독자,상태,등재일,비고').eq('트랙',CH).order('구독자',{ascending:false}).limit(500);
-      var rsv=await sb.from('mk_youtube_bench_videos').select('영상id,채널id,제목,발행일,길이_초,조회수,좋아요율_pct,채널평소배수,주제표시,영상형식').eq('트랙',CH).eq('영상형식','쇼츠').limit(500);
+      var rsv=await sb.rpc('rpc_youtube_shorts_bench',{p_limit:500}); /* v1.59.0 쇼츠 원천 = mk_youtube_shorts_survey 잘됨후보(주제 선별판 요청 §5-4) · 이전 = bench_videos 영상형식=쇼츠 */
       M.met=res(rm);M.seg=res(rg);M.pick=res(rk);M.bench=res(rb);M.sbv=res(rsv);M.bv={};
       var vids=ok(M.pick)?M.pick.map(function(x){return x['영상id'];}):[];
       if(vids.length){var rv=await sb.from('mk_youtube_bench_videos').select('영상id,채널id,제목,조회수,좋아요율_pct,채널평소배수,주제표시,발행일,길이_초').in('영상id',vids);if(!rv.error)(rv.data||[]).forEach(function(x){M.bv[x['영상id']]=x;});}
@@ -6148,7 +6148,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         return '<tr><td style="font-weight:800">'+E(slotNo(p['슬롯id']))+'</td><td><a href="https://youtu.be/'+E(p['영상id'])+'" target="_blank" rel="noopener" style="color:#2563eb">'+E(String(v['제목']||p['영상id']).slice(0,56))+'</a></td><td style="text-align:right">'+(v['조회수']!=null?N(v['조회수']):'—')+'</td><td style="font-size:.72rem">'+why1(p['뽑은이유'])+'</td></tr>';}).join('')+'</tbody></table></div>';
     }else if(x==='short'){
       h+=rule('3-16');
-      if(!ok(M.sbv))h+=errBox('쇼츠 벤치(mk_youtube_bench_videos 영상형식=쇼츠)',M.sbv.err);
+      if(!ok(M.sbv))h+=errBox('쇼츠 벤치(mk_youtube_shorts_survey 잘됨후보)',M.sbv.err);
       else if(!M.sbv.length)h+=why('쇼츠 벤치 없음');
       else{var sv=M.sbv.slice().sort(function(a,b){return (+b['채널평소배수']||0)-(+a['채널평소배수']||0);});
         var okn=sv.filter(function(v){return (v['주제표시']||[]).indexOf('조건 충족')>=0;}).length;
@@ -7991,6 +7991,209 @@ try{var mo=new MutationObserver(function(){var t8=document.querySelector('.nav-i
 })();
 </script>
 <!-- RP-TREND-V1 end -->
+<!-- RP-YT-TOPIC-V1 start · v1.59.0 · 2026-10-01 유튜브 운영 › 리얼플랜여행 ⑦ 주제 선별판 + 상단 칩 + #yt-topic 바로가기 (동영상 방 요청서 주제선별판_20261001 · 회사 시스템 방 · 대표 승인 「권장 번들 진행」)
+     원천 v_youtube_topic_score(관리자 읽기) · 결정은 rpc_youtube_topic_decide / 추가는 rpc_youtube_topic_add 만 호출(표에 직접 쓰지 않음)
+     롤백 = 이 블록 제거 + 제목·VER v1.58.0 + ⑤ 쇼츠 조회 한 줄 원복 -->
+<style>
+#trv2-p7 .tp-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:0 0 10px}
+#trv2-p7 .tp-k{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:9px 11px}
+#trv2-p7 .tp-k b{display:block;font-size:1.15rem;margin-top:2px}
+#trv2-p7 .tp-k span{font-size:.72rem;color:#64748b}
+#trv2-p7 .tp-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 8px;font-size:.78rem}
+#trv2-p7 .tp-bar select,#trv2-p7 .tp-bar input[type=text]{border:1px solid #cbd5e1;border-radius:7px;padding:4px 8px;font-size:.78rem;background:#fff}
+#trv2-p7 .tp-tbl{width:100%;border-collapse:collapse;font-size:.76rem;background:#fff}
+#trv2-p7 .tp-tbl th{background:#f8fafc;text-align:left;padding:7px 6px;white-space:nowrap;font-weight:700;color:#334155}
+#trv2-p7 .tp-tbl td{padding:7px 6px;border-top:1px solid #e2e8f0;vertical-align:top}
+#trv2-p7 .tp-sc{display:inline-block;min-width:34px;text-align:center;font-weight:800;border-radius:7px;padding:2px 6px}
+#trv2-p7 .tp-g{background:#dcfce7;color:#166534}#trv2-p7 .tp-y{background:#fef9c3;color:#854d0e}#trv2-p7 .tp-n{background:#f1f5f9;color:#64748b}
+#trv2-p7 .tp-c{display:inline-block;padding:0 7px;border-radius:999px;font-size:.68rem;border:1px solid #e2e8f0;margin:1px 2px 1px 0;white-space:nowrap}
+#trv2-p7 .tp-btn{border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:3px 8px;font-size:.72rem;font-weight:700;cursor:pointer;margin:1px}
+#trv2-p7 .tp-btn.a{border-color:#16a34a;color:#166534}#trv2-p7 .tp-btn.h{border-color:#d97706;color:#92400e}#trv2-p7 .tp-btn.x{border-color:#dc2626;color:#b91c1c}
+#trv2-p7 .tp-exp{background:#f8fafc}
+#trv2-p7 .tp-exp td>.tp-grid{position:sticky;left:0;max-width:calc(100vw - 48px)}
+#trv2-p7 .tp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+#trv2-p7 .tp-cell{background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:9px;font-size:.74rem}
+#trv2-p7 .tp-cell h5{font-size:.76rem;margin:0 0 6px;color:#1e293b}
+#trv2-p7 .tp-bars{display:flex;align-items:flex-end;gap:3px;height:54px;margin:4px 0}
+#trv2-p7 .tp-bars i{flex:1;background:#cbd5e1;border-radius:2px 2px 0 0;min-height:2px}
+#trv2-p7 .tp-bars i.pk{background:#2563eb}
+#trv2-p7 .tp-msg{font-size:.72rem;margin-top:4px}
+#trv2-p7 .tp-note{font-size:.74rem;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;margin-top:10px}
+</style>
+<script>
+(function(){
+  if(window.__rpYtTopic)return;window.__rpYtTopic=1;
+  var T={rows:null,err:null,busy:false,open:{},sel:{},confirm:{},f:{st:'결정대기',ty:'',rg:'',mo:'',hi:true,so:'점수'},last:null,refresh:null};
+  function $(i){return document.getElementById(i);}
+  function E(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function N(n){return n==null?'—':Number(n).toLocaleString('ko-KR');}
+  function kd(){return new Date(Date.now()+9*3600e3).toISOString().slice(0,10);}
+  function wk(d){if(!d)return '상시';var m=+d.slice(5,7),dd=+d.slice(8,10);return m+'월 '+['첫째','둘째','셋째','넷째','다섯째'][Math.min(4,Math.floor((dd-1)/7))]+' 주';}
+  function scc(s){return s==null?'tp-n':s>=70?'tp-g':s>=50?'tp-y':'tp-n';}
+  function fit(r){var a=r['적합성'];if(!a||typeof a!=='object')return {t:'미판정',c:'#94a3b8'};var ks=['목적','고객','재료','금지선','정체성'],p=0,n=0;ks.forEach(function(k){if(a[k]){n++;if(a[k]==='통과')p++;}});if(!n)return {t:'미판정',c:'#94a3b8'};return p===5?{t:'5/5',c:'#166534'}:{t:p+'/5 !',c:'#dc2626'};}
+  function G(r,a,b){var x=r['근거']||{};return x[a]&&x[a][b]!=null?x[a][b]:null;}
+
+  function ensure(){
+    var tabs=$('trv2-tabs'),box=$('ytc-travel');if(!tabs||!box)return false;
+    if(!$('trv2-p7')){
+      var b=document.createElement('button');b.setAttribute('data-p','p7');b.textContent='⑦ 주제 선별판';
+      b.onclick=function(){if(window.trv2Tab)window.trv2Tab('p7');load();};tabs.appendChild(b);
+      var p=document.createElement('div');p.id='trv2-p7';p.className='trv2-sub';
+      p.innerHTML='<div style="margin:4px 0 8px"><h3 style="font-size:1rem;font-weight:700">⑦ 주제 선별판 <span style="font-size:.72rem;color:#94a3b8;font-weight:500">· mk_youtube_topic_pool · 매주 토 20:07 갱신 · 일 18:03 텔레그램 카드</span></h3></div><div id="tp-body" class="trv-box" style="padding:12px">불러오는 중…</div>';
+      var p6=$('trv2-p6');if(p6&&p6.parentNode===box)box.insertBefore(p,p6.nextSibling);else box.appendChild(p);
+    }
+    return true;
+  }
+  function chip(){
+    var band=$('trv-band');if(!band||!T.rows)return;
+    var n=T.rows.filter(function(r){return r['상태']==='결정대기'&&r['카드발송일'];}).length,w=T.rows.filter(function(r){return r['상태']==='결정대기';}).length;
+    var c=band.querySelector('.tp-chip');var html='주제 결정 대기 '+(n||w)+'건 · 일요일 카드';
+    if(!c){c=document.createElement('span');c.className='trv-chip tp-chip';c.style.cssText='background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;cursor:pointer;margin-left:4px';
+      c.onclick=function(e){e.preventDefault();e.stopPropagation();if(window.trv2Tab)window.trv2Tab('p7');load();};
+      var sm=band.querySelector('summary');(sm||band).appendChild(c);}
+    c.textContent=html;
+  }
+  async function load(force){
+    if(typeof sb==='undefined'||T.busy)return;if(T.rows&&!force){render();return;}
+    T.busy=true;
+    try{
+      var r=await sb.from('v_youtube_topic_score').select('*').eq('채널','리얼플랜여행').order('점수',{ascending:false,nullsFirst:false}).limit(1000);
+      if(r.error){T.err=r.error.message;T.rows=null;}else{T.err=null;T.rows=r.data||[];}
+      var a=await sb.from('mk_youtube_bench_videos').select('갱신일').eq('트랙','리얼플랜여행').order('갱신일',{ascending:false,nullsFirst:false}).limit(1);
+      T.last=a.error?null:((a.data||[])[0]||{})['갱신일']||null;
+      var s=await sb.from('mk_youtube_room_status').select('회기일시,지금상태').eq('채널','리얼플랜여행').eq('작성방','회사시스템(자동)').order('회기일시',{ascending:false}).limit(1);
+      T.refresh=s.error?null:(s.data||[])[0]||null;
+    }catch(e){T.err=String(e&&e.message||e);}
+    T.busy=false;render();chip();
+  }
+  function view(){
+    var f=T.f,R=(T.rows||[]).filter(function(r){
+      if(f.st&&f.st!=='전체'&&r['상태']!==f.st)return false;
+      if(f.ty&&r['유형']!==f.ty)return false;
+      if(f.rg&&r['지역']!==f.rg)return false;
+      if(f.mo){if(f.mo==='상시'){if(r['발행권장일'])return false;}else if(!r['발행권장일']||+String(r['발행권장일']).slice(5,7)!==+f.mo)return false;}
+      return true;});
+    var hi=R.filter(function(r){return (r['점수']||0)>=70;}),note='';
+    if(f.hi){if(hi.length)R=hi;else if(R.length)note='점수 70점 이상 후보가 아직 없어 전체를 보여 줍니다 (벤치 좋아요율이 토요일 수집으로 채워지는 중).';}
+    var so=f.so;R=R.slice().sort(function(a,b){if(so==='발행권장일')return String(a['발행권장일']||'9999').localeCompare(String(b['발행권장일']||'9999'));if(so==='최초등록일')return String(b['최초등록일']||'').localeCompare(String(a['최초등록일']||''));return (b['점수']||0)-(a['점수']||0);});
+    return {R:R,note:note};
+  }
+  function kpis(){
+    var A=T.rows||[],t=kd(),w=new Date(Date.parse(t)-7*864e5).toISOString().slice(0,10);
+    var c=function(s){return A.filter(function(r){return r['상태']===s;}).length;};
+    var nw=A.filter(function(r){return String(r['최초등록일']||'')>w;}).length;
+    var lastOk=T.last&&(Date.now()-Date.parse(T.last))<8*864e5;
+    var lt=T.last?new Date(Date.parse(T.last)+9*3600e3).toISOString():null;
+    function k(t,v,s,col){return '<div class="tp-k"><span>'+t+'</span><b'+(col?' style="color:'+col+'"':'')+'>'+v+'</b>'+(s?'<span>'+s+'</span>':'')+'</div>';}
+    return '<div class="tp-kpis">'+k('이번 주 새 후보',nw,'최근 7일 등록')+k('결정 대기',c('결정대기'),'','#c2410c')+k('채택 → 슬롯 연결',c('슬롯연결')+c('채택'),'R슬롯 초안 생성')+k('보류',c('보류'),'다음 토요일 다시')+k('제외',c('제외'),'결정 기록에 저장')
+      +k('마지막 수집',lt?(+lt.slice(5,7))+'/'+(+lt.slice(8,10))+' '+lt.slice(11,16):'—',lastOk?'정상':'지연·실패 — 점수가 지난 값',lastOk?'#166534':'#dc2626')+'</div>';
+  }
+  function opts(v,arr,lab){return arr.map(function(x){var val=Array.isArray(x)?x[0]:x,t=Array.isArray(x)?x[1]:x;return '<option value="'+E(val)+'"'+(String(v)===String(val)?' selected':'')+'>'+E(t)+'</option>';}).join('');}
+  function render(){
+    ensure();var el=$('tp-body');if(!el)return;
+    if(T.err){el.innerHTML='<div style="color:#b91c1c">⛔ 불러오기 실패 — '+E(T.err)+'</div>';return;}
+    if(!T.rows){el.innerHTML='불러오는 중…';return;}
+    var A=T.rows,f=T.f,v=view(),R=v.R;
+    var regs=[].concat.apply([],[A.map(function(r){return r['지역'];})]).filter(function(x,i,a){return x&&a.indexOf(x)===i;}).sort();
+    var h=kpis();
+    h+='<div class="tp-bar">상태 <select onchange="rpTp.f(\'st\',this.value)">'+opts(f.st,['결정대기','보류','슬롯연결','제외','전체'])+'</select>'
+      +'유형 <select onchange="rpTp.f(\'ty\',this.value)">'+opts(f.ty,[['','전체'],'컨셉','시즌','일정'])+'</select>'
+      +'지역 <select onchange="rpTp.f(\'rg\',this.value)">'+opts(f.rg,[['','전체']].concat(regs))+'</select>'
+      +'발행 월 <select onchange="rpTp.f(\'mo\',this.value)">'+opts(f.mo,[['','전체'],'상시'].concat([1,2,3,4,5,6,7,8,9,10,11,12].map(function(m){return [String(m),m+'월'];})))+'</select>'
+      +'<label style="white-space:nowrap"><input type="checkbox"'+(f.hi?' checked':'')+' onchange="rpTp.f(\'hi\',this.checked)"> 점수 70↑</label>'
+      +'정렬 <select onchange="rpTp.f(\'so\',this.value)">'+opts(f.so,['점수','발행권장일','최초등록일'])+'</select>'
+      +'<button class="tp-btn" onclick="rpTp.reload()">새로고침</button></div>';
+    if(v.note)h+='<div class="tp-msg" style="color:#92400e;margin-bottom:6px">'+E(v.note)+'</div>';
+    var ns=Object.keys(T.sel).filter(function(k){return T.sel[k];}).length;
+    h+='<div class="tp-bar" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:6px 8px">선택 <b>'+ns+'</b>건 한꺼번에 '
+      +'<button class="tp-btn a" onclick="rpTp.bulk(\'채택\')">채택</button><button class="tp-btn h" onclick="rpTp.bulk(\'보류\')">보류</button><button class="tp-btn x" onclick="rpTp.bulk(\'제외\')">제외</button>'
+      +'<span id="tp-bulkmsg" class="tp-msg"></span></div>';
+    if(!R.length){h+='<div style="padding:14px;color:#64748b">조건에 맞는 후보 없음 — 필터를 바꾸거나 아래에서 후보를 직접 추가하세요.</div>';}
+    else{
+      h+='<div style="overflow:auto;border:1px solid #e2e8f0;border-radius:10px"><table class="tp-tbl"><thead><tr><th></th><th>점수</th><th>주제</th><th>구분</th><th>발행 권장</th><th>검색 수요</th><th>벤치 3배</th><th>고객 질문</th><th>재료</th><th>적합성</th><th>결정</th><th></th></tr></thead><tbody>';
+      R.slice(0,200).forEach(function(r){
+        var id=r.id,ft=fit(r),q=G(r,'질문','건수'),bl=G(r,'벤치','롱폼_3배'),bs=G(r,'벤치','쇼츠_3배'),vol=G(r,'검색','네이버_월검색량'),gg=G(r,'검색','구글트렌드_방향');
+        var mat=(G(r,'재료','원본대장')||0)+(G(r,'재료','회사기록')||0);
+        var done=r['상태']==='슬롯연결';
+        h+='<tr id="tp-r-'+id+'"><td><input type="checkbox"'+(T.sel[id]?' checked':'')+(done?' disabled':'')+' onchange="rpTp.sel(\''+id+'\',this.checked)"></td>'
+          +'<td><span class="tp-sc '+scc(r['점수'])+'">'+(r['점수']==null?'—':r['점수'])+'</span></td>'
+          +'<td style="min-width:130px"><b>'+E(r['주제'])+'</b>'+((r['경고']||[]).length?'<div style="color:#b45309;font-size:.68rem">⚠ '+E(r['경고'][r['경고'].length-1])+'</div>':'')+'</td>'
+          +'<td>'+(r['유형']?'<span class="tp-c">'+E(r['유형'])+'</span>':'')+(r['분류']?'<span class="tp-c">'+E(r['분류'])+'</span>':'')+(r['지역']?'<span class="tp-c">'+E(r['지역'])+'</span>':'')
+            +'<span class="tp-c" style="'+(r['목적구분']==='문의형'?'background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe':'')+'">'+E(r['목적구분']||'조회형')+'</span></td>'
+          +'<td style="white-space:nowrap">'+E(wk(r['발행권장일']))+'</td>'
+          +'<td style="white-space:nowrap">'+(vol!=null?'월 '+N(vol):'—')+'<div style="color:#94a3b8;font-size:.68rem">구글 '+(gg&&gg!=='없음'?'있음':'없음')+'</div></td>'
+          +'<td style="white-space:nowrap">롱 '+(bl==null?'—':bl)+' · 쇼 '+(bs==null?'—':bs)+'</td>'
+          +'<td>'+(q==null?'—':q+'건')+'</td>'
+          +'<td>'+(mat?'○':'없음')+'</td>'
+          +'<td style="color:'+ft.c+';font-weight:700">'+ft.t+'</td>'
+          +'<td style="white-space:nowrap">'+(done?'<span style="color:#166534;font-weight:700">채택 → '+E(r['연결슬롯번호']||'슬롯')+(r['연결발행일']?' ('+E(String(r['연결발행일']).slice(5))+')':'')+'</span>'
+              :'<button class="tp-btn a" onclick="rpTp.go(\''+id+'\',\'채택\')">채택</button><button class="tp-btn h" onclick="rpTp.go(\''+id+'\',\'보류\')">보류</button><button class="tp-btn x" onclick="rpTp.go(\''+id+'\',\'제외\')">제외</button>')
+            +'<div id="tp-m-'+id+'" class="tp-msg"></div></td>'
+          +'<td><button class="tp-btn" onclick="rpTp.tog(\''+id+'\')">'+(T.open[id]?'▴':'▾')+'</button></td></tr>';
+        if(T.open[id])h+='<tr class="tp-exp"><td colspan="12">'+detail(r)+'</td></tr>';
+      });
+      h+='</tbody></table></div>';
+      if(R.length>200)h+='<div class="tp-msg" style="color:#64748b">앞 200건만 표시 · 필터로 좁혀 주세요 (전체 '+R.length+'건)</div>';
+    }
+    h+='<div class="tp-bar" style="margin-top:12px">후보 직접 추가 <input id="tp-add" type="text" placeholder="주제 한 줄 (예: 제주 동백 명소)" style="min-width:220px"><button class="tp-btn a" onclick="rpTp.add()">추가</button><span id="tp-addmsg" class="tp-msg"></span></div>';
+    h+='<div class="tp-note">채택하면 R슬롯 초안(롱폼 + 그 주 일요일 쇼츠 짝)이 생겨 ② 공정판에 「주제확정」으로 나타납니다 · 앞 금요일이 차 있어 시즌을 넘기면 ⚠ 표시가 붙습니다 · 슬롯 초안은 발행 확정이 아닙니다(월 편성안 승인 때 확정) · 보류는 다음 토요일에 다시 올라옵니다(3번 보류하면 카드에서 빠짐) · 제외는 결정 기록에 남습니다'
+      +(T.refresh?'<br>최근 자동 갱신: '+E(T.refresh['지금상태'])+' · '+E(new Date(Date.parse(T.refresh['회기일시'])+9*3600e3).toISOString().slice(5,16).replace('T',' ')):'')+'</div>';
+    el.innerHTML=h;
+  }
+  function detail(r){
+    var g=(r['근거']||{}),s=g['검색']||{},b=g['벤치']||{},q=g['질문']||{},m=g['재료']||{},a=r['적합성']||{},pk=r['피크월']||[];
+    var idx=Array.isArray(s['월별지수'])?s['월별지수']:null,mx=idx?Math.max.apply(null,idx.map(Number))||1:1;
+    var c1='<div class="tp-cell"><h5>① 검색 수요</h5>'+(idx?'<div class="tp-bars">'+idx.map(function(x,i){return '<i class="'+(pk.indexOf(i+1)>=0?'pk':'')+'" title="'+(i+1)+'월 '+x+'" style="height:'+Math.max(4,Math.round(Number(x)/mx*54))+'px"></i>';}).join('')+'</div><div style="display:flex;justify-content:space-between;color:#94a3b8;font-size:.62rem"><span>1월</span><span>6월</span><span>12월</span></div>':'<div style="color:#94a3b8">월별 지수 없음(시즌 캘린더 밖 주제)</div>')
+      +'<div>네이버 월 '+N(s['네이버_월검색량'])+(s['네이버_출처']?' · '+E(s['네이버_출처']):'')+' · 구글 '+E(s['구글트렌드_방향']||'없음')+' · 출처 '+(s['출처수']||0)+'곳</div><div style="color:#94a3b8">조회일 '+E(s['조회일']||'—')+(pk.length?' · 피크 '+pk.join('·')+'월':'')+'</div></div>';
+    var vs=b['대표영상']||[];
+    var c2='<div class="tp-cell"><h5>② 잘된 영상 (평소 3배↑)</h5>'+(vs.length?vs.map(function(x){var u=x['형식']==='쇼츠'?'https://youtube.com/shorts/'+x['영상id']:'https://youtu.be/'+x['영상id'];return '<div style="margin-bottom:4px"><a href="'+E(u)+'" target="_blank" rel="noopener" style="color:#2563eb">'+E(String(x['제목']||'').slice(0,44))+'</a><br><span style="color:#64748b">'+E(x['형식'])+' · '+E(x['배수'])+'배 · 좋아요율 '+(x['좋아요율']!=null?E(x['좋아요율'])+'%':'—')+'</span></div>';}).join(''):'<div style="color:#94a3b8">조건 충족 영상 없음 (롱폼 8분↑·12개월·3배·좋아요율 1% / 쇼츠 24개월·3배·0.3%)</div>')+'</div>';
+    var qs=q['원문']||[],by=q['출처별']||{};
+    var c3='<div class="tp-cell"><h5>③ 고객 질문 '+(q['건수']||0)+'건</h5><div style="color:#64748b;margin-bottom:4px">'+Object.keys(by).map(function(k){return E(k)+' '+by[k];}).join(' · ')+'</div>'+(qs.length?qs.map(function(x){return '<div style="margin-bottom:4px">「'+E(String(x['본문']||'').slice(0,90))+'」 <span style="color:#94a3b8">'+E(x['출처'])+'</span>'+(x['링크']?' <a href="'+E(x['링크'])+'" target="_blank" rel="noopener" style="color:#2563eb">원문</a>':'')+'</div>';}).join(''):'<div style="color:#94a3b8">매칭된 질문 없음</div>')+'</div>';
+    var ks=['목적','고객','재료','금지선','정체성'];
+    var c4='<div class="tp-cell"><h5>④ 적합성 · 재료 · 메모</h5>'+ks.map(function(k){var v=a[k];return '<span class="tp-c" style="'+(v==='통과'?'color:#166534':v==='걸림'?'color:#b91c1c':'color:#94a3b8')+'">'+(v==='통과'?'✔ ':v==='걸림'?'✖ ':'· ')+k+'</span>';}).join('')
+      +(a['사유']?'<div style="margin-top:4px">'+E(a['사유'])+'</div>':'<div style="color:#94a3b8;margin-top:4px">적합성은 동영상 방이 토요일 갱신 뒤 적습니다</div>')
+      +'<div style="margin-top:6px">재료: 원본 대장 '+(m['원본대장']||0)+' · 회사 기록 '+(m['회사기록']||0)+((m['원본예']||[]).length?'<br><span style="color:#64748b">'+E((m['원본예']||[]).join(' / ').slice(0,120))+'</span>':'')+'</div>'
+      +'<div style="margin-top:6px"><input id="tp-memo-'+r.id+'" type="text" placeholder="결정 메모 (제외 사유 등)" value="'+E(r['결정메모']||'')+'" style="width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:4px 6px;font-size:.74rem"></div>'
+      +'<div style="color:#94a3b8;margin-top:4px">점수 = 검색 '+(r['점수_검색']??'—')+'/25 · 시즌 '+(r['점수_시즌']??'—')+'/20 · 벤치 '+(r['점수_벤치']??'—')+'/20 · 단체 '+(r['점수_단체']??'—')+'/25 · 재료 '+(r['점수_재료']??'—')+'/10</div></div>';
+    return '<div class="tp-grid">'+c1+c2+c3+c4+'</div>';
+  }
+  async function decide(ids,kind,msgEl){
+    var memo=ids.length===1&&$('tp-memo-'+ids[0])?$('tp-memo-'+ids[0]).value.trim():'';
+    if(kind==='제외'&&!memo){var key=ids.join(',');if(!T.confirm[key]){T.confirm[key]=1;if(msgEl){msgEl.style.color='#b45309';msgEl.textContent='사유를 적어 주세요 (▾ 메모칸) — 그대로 제외하려면 한 번 더 누르세요';}return;}}
+    if(msgEl){msgEl.style.color='#64748b';msgEl.textContent='기록 중…';}
+    try{
+      var r=await sb.rpc('rpc_youtube_topic_decide',{p_ids:ids,p_결정:kind,p_메모:memo||null,p_경로:'보드',p_대표말:null});
+      if(r.error)throw r.error;
+      var out=(r.data&&r.data['결과'])||[];
+      var t=out.map(function(x){return x['슬롯']?(x['주제']+' → '+x['슬롯']+' 초안 생성 ('+String(x['발행일']).slice(5)+')'+(x['경고']?' ⚠ '+x['경고']:'')):(x['주제']+' '+(x['결정']||'')+(x['결과']?' '+x['결과']:''));}).join(' · ');
+      T.sel={};T.confirm={};await load(true);
+      var m2=ids.length===1?$('tp-m-'+ids[0]):$('tp-bulkmsg');if(m2){m2.style.color='#166534';m2.textContent=kind+' 완료 — '+t;}
+      else{var bm=$('tp-bulkmsg');if(bm){bm.style.color='#166534';bm.textContent=kind+' 완료 — '+t;}}
+    }catch(e){if(msgEl){msgEl.style.color='#b91c1c';msgEl.textContent='⛔ '+(e.message||e);}}
+  }
+  window.rpTp={
+    f:function(k,v){T.f[k]=v;render();},
+    reload:function(){load(true);},
+    sel:function(id,on){T.sel[id]=on;render();},
+    tog:function(id){T.open[id]=!T.open[id];render();},
+    go:function(id,kind){decide([id],kind,$('tp-m-'+id));},
+    bulk:function(kind){var ids=Object.keys(T.sel).filter(function(k){return T.sel[k];});var m=$('tp-bulkmsg');if(!ids.length){if(m){m.style.color='#b45309';m.textContent='먼저 줄을 체크하세요';}return;}decide(ids,kind,m);},
+    add:async function(){var i=$('tp-add'),m=$('tp-addmsg'),v=i?i.value.trim():'';if(v.length<2){m.textContent='주제를 한 줄로 적어 주세요';return;}
+      m.textContent='추가 중…';var r=await sb.rpc('rpc_youtube_topic_add',{p_주제:v});if(r.error){m.style.color='#b91c1c';m.textContent='⛔ '+r.error.message;return;}
+      T.f.st='결정대기';T.f.hi=false;await load(true);var m3=$('tp-addmsg');if(m3){m3.style.color='#166534';m3.textContent='추가됨 — 근거·점수는 다음 토요일 20:07 갱신 때 채워집니다';}},
+    open:function(){if(window.trv2Tab)window.trv2Tab('p7');load();}
+  };
+  /* 띠 칩: 운영 보드가 띠를 다시 그려도 붙인다 */
+  function watch(){var band=$('trv-band');if(!band||band.__tp)return;band.__tp=1;new MutationObserver(function(){if(!band.querySelector('.tp-chip'))chip();}).observe(band,{childList:true});}
+  var tries=0;(function boot(){if(ensure()){watch();if(typeof sb!=='undefined')load();}else if(++tries<40)setTimeout(boot,500);})();
+  /* #yt-topic 바로가기 (텔레그램 카드 링크) */
+  function hashGo(){if(location.hash!=='#yt-topic')return;var n=0;(function t(){var items=document.querySelectorAll('.nav-item'),yt=null;for(var i=0;i<items.length;i++){if((items[i].getAttribute('onclick')||'').indexOf("switchTab('t13'")>=0){yt=items[i];break;}}
+    if(yt&&ensure()){yt.click();setTimeout(function(){if(window.ytChan)window.ytChan('travel');setTimeout(function(){rpTp.open();var p=$('trv2-p7');if(p)p.scrollIntoView({block:'start'});},400);},400);return;}if(++n<30)setTimeout(t,500);})();}
+  window.addEventListener('hashchange',hashGo);setTimeout(hashGo,800);
+})();
+</script>
+<!-- RP-YT-TOPIC-V1 end -->
+
 
 
 

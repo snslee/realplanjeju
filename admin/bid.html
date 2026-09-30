@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex, nofollow">
 <title>입찰 조회 | 리얼플랜제주 관리자</title>
-<!-- bid.html v2.2 (2026-09-30 대표 승인) — 📋 사전규격 구역(bd_사전규격 · rpc_bid_prespec_list) · 공고 전 단계 · 의견 마감
+<!-- bid.html v2.3 (2026-09-30 대표 승인) — 🏫 학교 일정 예고 탭(bd_학교일정 · rpc_bid_school_list · NEIS 제주 초·중·고 · 매주 월 07:01 갱신)
+     v2.2 (2026-09-30 대표 승인) — 📋 사전규격 구역(bd_사전규격 · rpc_bid_prespec_list) · 공고 전 단계 · 의견 마감
      v2.1 (2026-09-23 대표 승인) — 추천 TOP3(fn_bid_reco_score) · 바로가기 고정 · 구역 5개 · 「발표 있음만」 삭제 · 사업부 행사→행사이벤트
      v2.0 (2026-09-23 대표 승인) — 진행 가능 여부 카드 · 제안서 기능 제거 · 마감 시각 한국시간 표시
      판정 정본 = realplan-bid 스킬 → bd_분석(참가판정·카드·근거인용). 변경 전 파일 = _삭제예정/bid_변경전_20260923.html -->
@@ -107,6 +108,7 @@ td{padding:8px 10px;border-bottom:1px solid #f0f3f8;vertical-align:top}
 .reco .rk{font-weight:800;color:#9a5b00}.reco .sc{font-weight:800;color:#1e293b;font-size:13px}.reco .why3{color:#6b5a2e}
 .sc2{font-size:11px;font-weight:800;color:#9a5b00;background:#fff8e6;border-radius:6px;padding:2px 7px}
 .b.more{margin:8px auto 0;display:block}
+.sch{min-width:780px}.sch td:nth-child(-n+4),.sch td:nth-child(6){white-space:nowrap}.sch td,.sch th{padding:7px 8px;border-bottom:1px solid #eef2f7;text-align:left;vertical-align:top}.sch th{background:#f4f7fb;font-size:12px;color:#64748b;font-weight:700}.sch .k3{color:#b91c1c;font-weight:700}.sch .k2{color:#b45309;font-weight:700}.sch .k1{color:#64748b}.sch .ok{color:#15803d;font-weight:700}.sch .dd{font-size:11px;padding:1px 7px;border-radius:999px;background:#f1f5f9;color:#475569;margin-left:4px}
 .hide{display:none!important}
 .empty{color:#98a3b8;padding:16px;background:#fff;border:1px dashed #dbe4f5;border-radius:10px;font-size:13px}
 </style>
@@ -122,6 +124,7 @@ td{padding:8px 10px;border-bottom:1px solid #f0f3f8;vertical-align:top}
     <button id="tJ" class="on" onclick="setTab('judge')">✅ 판정 목록</button>
     <button id="tP" onclick="setTab('prog')">⭐ 진행 중</button>
     <button id="tS" onclick="setTab('search')">🔎 직접 조회</button>
+    <button id="tH" onclick="setTab('school')">🏫 학교 일정 예고</button>
   </div>
   <div id="judgeBox" class="navw"><div id="navWrap"><nav class="nav" id="nav" aria-label="구역 바로가기"></nav></div></div>
   <div class="bar" id="bar"></div>
@@ -143,7 +146,7 @@ td{padding:8px 10px;border-bottom:1px solid #f0f3f8;vertical-align:top}
 const SUPABASE_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
 const SUPABASE_KEY='sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce'}});
-let SPEC=[];let TAB='judge',BU='전체',SORT='deadline',ALL=[],DROPFOR=null,MSG={},PASTN=30,PASTOPEN=false;
+let SPEC=[],SCH=[],SCHF='main';let TAB='judge',BU='전체',SORT='deadline',ALL=[],DROPFOR=null,MSG={},PASTN=30,PASTOPEN=false;
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KST=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false});
 function fdt(s){if(!s)return '마감미상';const d=new Date(s);if(isNaN(d))return String(s).slice(0,16);const p=Object.fromEntries(KST.formatToParts(d).map(x=>[x.type,x.value]));return p.month+'/'+p.day+'('+p.weekday+') '+p.hour+':'+p.minute;}
@@ -167,15 +170,35 @@ async function boot(){
   const t=new Date(),a=new Date(t.getTime()-7*86400000);document.getElementById('ed').value=t.toISOString().slice(0,10);document.getElementById('sd').value=a.toISOString().slice(0,10);
   load();
 }
-function setTab(x){TAB=x;['J','P','S'].forEach(k=>document.getElementById('t'+k).classList.toggle('on',{J:'judge',P:'prog',S:'search'}[k]===x));
+function setTab(x){TAB=x;['J','P','S','H'].forEach(k=>document.getElementById('t'+k).classList.toggle('on',{J:'judge',P:'prog',S:'search',H:'school'}[k]===x));
   document.getElementById('judgeBox').classList.toggle('hide',x!=='judge');document.getElementById('searchbar').classList.toggle('hide',x!=='search');
-  document.getElementById('bar').classList.toggle('hide',x==='search');
+  document.getElementById('bar').classList.toggle('hide',x==='search'||x==='school');
+  if(x==='school'){loadSchool();return;}
   if(x==='search'){ALL=[];document.getElementById('list').innerHTML='';document.getElementById('status').textContent='';}else load();}
 async function load(){const st=document.getElementById('status');st.textContent='불러오는 중…';
   try{const r=await sb.rpc('rpc_bid_list',TAB==='prog'?{'_상태':'관심','_정렬':'deadline'}:{'_정렬':'deadline'});if(r.error){st.textContent='오류: '+r.error.message;return;}
     const rows=r.data||[];ALL=rows.filter(x=>x['최신차수']!==false);
     try{const sp=await sb.rpc('rpc_bid_prespec_list',{'_일수':14});SPEC=sp.error?[]:(sp.data||[]);}catch(_){SPEC=[];}
     paint();}catch(e){st.textContent='불러오기 실패: '+e;}}
+async function loadSchool(){const st=document.getElementById('status'),li=document.getElementById('list');st.textContent='불러오는 중…';li.innerHTML='';
+  try{const r=await sb.rpc('rpc_bid_school_list',{'_일수':240});if(r.error){st.textContent='오류: '+r.error.message;return;}SCH=r.data||[];paintSchool();}catch(e){st.textContent='불러오기 실패: '+e;}}
+function setSchF(f){SCHF=f;paintSchool();}
+function paintSchool(){if(TAB!=='school')return;const st=document.getElementById('status'),li=document.getElementById('list');
+  const lk=x=>Array.isArray(x['연결'])&&x['연결'].length>0;
+  const F={main:x=>x['우선도']>=2,trip:x=>x['우선도']>=3,camp:x=>x['분류']==='수련·캠프',day:x=>x['분류']==='현장체험',link:lk,all:x=>true};
+  const cnt=k=>SCH.filter(F[k]).length;
+  const chips=[['main','주요(수학여행·도외·수련)'],['trip','수학여행·도외'],['camp','수련·캠프'],['day','현장체험(당일 위주)'],['link','공고 나옴'],['all','전체']]
+    .map(([k,l])=>'<button class="chip '+(SCHF===k?'on':'')+'" onclick="setSchF(\''+k+'\')">'+l+' '+cnt(k)+'</button>').join(' ');
+  const a=SCH.filter(F[SCHF]);
+  st.textContent='앞으로 8개월 · 제주 초·중·고 '+SCH.length+'건 · 공고 나옴 '+cnt('link')+'건';
+  const md=d=>{const p=String(d).split('-');return Number(p[1])+'/'+Number(p[2]);};
+  const row=x=>{const k='k'+(x['우선도']||1);const ln=lk(x)?x['연결'].map(c=>'<div class="ok">'+(c['종류']==='사전규격'?'📋 사전규격':'📑 공고 나옴')+'</div><div class="hint">'+esc(String(c['이름']||'').slice(0,34))+'</div>').join(''):'<span class="hint">공고 전</span>';
+    const dd=x['남은날']!=null?(x['남은날']<=0?'<span class="dd">진행 중</span>':'<span class="dd">D-'+x['남은날']+'</span>'):'';
+    return '<tr><td class="num">'+md(x['시작일'])+(x['종료일']!==x['시작일']?'~'+md(x['종료일']):'')+dd+'</td><td><b>'+esc(x['학교명'])+'</b></td><td>'+esc(x['시군']||'')+'</td><td>'+esc((x['학교급']||'').replace('등','')+(x['학년']?x['학년']:''))+'</td><td>'+esc(x['행사명'])+'</td><td class="'+k+'">'+esc(x['분류']||'')+(x['도외']?' ✈️':'')+'</td><td>'+ln+'</td></tr>';};
+  li.innerHTML='<div class="card"><div class="sech" style="margin-bottom:8px"><h2>🏫 학교 일정 예고</h2><span class="hint">나이스 학사일정 · 제주 초·중·고 195곳 · 매주 월 07:01 갱신 · 입찰 공고는 보통 행사 2~3개월 전에 나옵니다(9월 실측 57~83일)</span></div>'
+   +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'+chips+'</div>'
+   +(a.length?'<div style="overflow:auto"><table class="sch"><thead><tr><th>일정</th><th>학교</th><th>지역</th><th>학년</th><th>행사명</th><th>분류</th><th>입찰 연결</th></tr></thead><tbody>'+a.map(row).join('')+'</tbody></table></div>':EMPTY('조건에 맞는 학교 일정이 없습니다.'))
+   +'<div class="hint" style="margin-top:8px">학교가 학사일정에 적어 둔 경우만 보입니다 · 「공고 나옴」 = 학교명이 같은 수학여행·체험·수련 공고/사전규격이 있음 · ✈️ = 도외(제주 출발)</div></div>';}
 function setBU(b){BU=b;paint();}
 function setSort(s){SORT=s;paint();}
 function sortRows(a){a=a.slice();if(SORT==='recent')return a.sort((p,q)=>(ts(q['게시일시'])||0)-(ts(p['게시일시'])||0));

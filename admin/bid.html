@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex, nofollow">
 <title>입찰 조회 | 리얼플랜제주 관리자</title>
-<!-- bid.html v2.4 (2026-09-30 대표 승인) — 글자체·크기·색을 홈A·홈B와 통일(RP-TYPE-V1 · Noto Sans KR · 크기 계단 12~21 · 줄간 1.55) · 학교 일정 연결 공고명 전체 표시
+<!-- bid.html v2.5 (2026-09-30 대표 승인) — 📅 발주 계획 탭(bd_발주계획 · rpc_bid_plan_list · 나라장터 발주계획 제주 기관 · 작년 반복 예고)
+     v2.4 (2026-09-30 대표 승인) — 글자체·크기·색을 홈A·홈B와 통일(RP-TYPE-V1 · Noto Sans KR · 크기 계단 12~21 · 줄간 1.55) · 학교 일정 연결 공고명 전체 표시
      v2.3 (2026-09-30 대표 승인) — 🏫 학교 일정 예고 탭(bd_학교일정 · rpc_bid_school_list · NEIS 제주 초·중·고 · 매주 월 07:01 갱신)
      v2.2 (2026-09-30 대표 승인) — 📋 사전규격 구역(bd_사전규격 · rpc_bid_prespec_list) · 공고 전 단계 · 의견 마감
      v2.1 (2026-09-23 대표 승인) — 추천 TOP3(fn_bid_reco_score) · 바로가기 고정 · 구역 5개 · 「발표 있음만」 삭제 · 사업부 행사→행사이벤트
@@ -111,6 +112,7 @@ td{padding:8px 10px;border-bottom:1px solid #f0f3f8;vertical-align:top}
 .sc2{font-size:11px;font-weight:800;color:#9a5b00;background:#fff8e6;border-radius:6px;padding:2px 7px}
 .b.more{margin:8px auto 0;display:block}
 .sch{min-width:780px}.sch td:nth-child(-n+4),.sch td:nth-child(6){white-space:nowrap}.sch td,.sch th{padding:7px 8px;border-bottom:1px solid #eef2f7;text-align:left;vertical-align:top}.sch th{background:#f4f7fb;font-size:12px;color:#64748b;font-weight:700}.sch .k3{color:#b91c1c;font-weight:700}.sch .k2{color:#b45309;font-weight:700}.sch .k1{color:#64748b}.sch .ok{color:#15803d;font-weight:700}.sch .dd{font-size:11px;padding:1px 7px;border-radius:999px;background:#f1f5f9;color:#475569;margin-left:4px}
+.sch .plr{cursor:pointer}.sch .plr:hover td{background:#F5F8FD}.sch .pld td{background:#F5F8FD;font-size:13px;color:#222B3A;white-space:normal}.sch .pld a{color:#2B62C4}
 .hide{display:none!important}
 .empty{color:#98a3b8;padding:16px;background:#fff;border:1px dashed #dbe4f5;border-radius:10px;font-size:13px}
 /* RP-TYPE-V1 (2026-09-30) — 홈A·홈B와 같은 글자체·크기 계단·색(realplan-identity TYPE·COLOR) · Pretendard·맑은 고딕 제거 */
@@ -157,6 +159,7 @@ label{font-size:12px;color:#7C8698}select,input{font-size:14px}.btn{font-size:14
     <button id="tP" onclick="setTab('prog')">⭐ 진행 중</button>
     <button id="tS" onclick="setTab('search')">🔎 직접 조회</button>
     <button id="tH" onclick="setTab('school')">🏫 학교 일정 예고</button>
+    <button id="tG" onclick="setTab('plan')">📅 발주 계획</button>
   </div>
   <div id="judgeBox" class="navw"><div id="navWrap"><nav class="nav" id="nav" aria-label="구역 바로가기"></nav></div></div>
   <div class="bar" id="bar"></div>
@@ -178,7 +181,7 @@ label{font-size:12px;color:#7C8698}select,input{font-size:14px}.btn{font-size:14
 const SUPABASE_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
 const SUPABASE_KEY='sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce'}});
-let SPEC=[],SCH=[],SCHF='main';let TAB='judge',BU='전체',SORT='deadline',ALL=[],DROPFOR=null,MSG={},PASTN=30,PASTOPEN=false;
+let SPEC=[],SCH=[],SCHF='main',PLN=[],PLNF='all';let TAB='judge',BU='전체',SORT='deadline',ALL=[],DROPFOR=null,MSG={},PASTN=30,PASTOPEN=false;
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KST=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false});
 function fdt(s){if(!s)return '마감미상';const d=new Date(s);if(isNaN(d))return String(s).slice(0,16);const p=Object.fromEntries(KST.formatToParts(d).map(x=>[x.type,x.value]));return p.month+'/'+p.day+'('+p.weekday+') '+p.hour+':'+p.minute;}
@@ -202,16 +205,42 @@ async function boot(){
   const t=new Date(),a=new Date(t.getTime()-7*86400000);document.getElementById('ed').value=t.toISOString().slice(0,10);document.getElementById('sd').value=a.toISOString().slice(0,10);
   load();
 }
-function setTab(x){TAB=x;['J','P','S','H'].forEach(k=>document.getElementById('t'+k).classList.toggle('on',{J:'judge',P:'prog',S:'search',H:'school'}[k]===x));
+function setTab(x){TAB=x;['J','P','S','H','G'].forEach(k=>document.getElementById('t'+k).classList.toggle('on',{J:'judge',P:'prog',S:'search',H:'school',G:'plan'}[k]===x));
   document.getElementById('judgeBox').classList.toggle('hide',x!=='judge');document.getElementById('searchbar').classList.toggle('hide',x!=='search');
-  document.getElementById('bar').classList.toggle('hide',x==='search'||x==='school');
+  document.getElementById('bar').classList.toggle('hide',x==='search'||x==='school'||x==='plan');
   if(x==='school'){loadSchool();return;}
+  if(x==='plan'){loadPlan();return;}
   if(x==='search'){ALL=[];document.getElementById('list').innerHTML='';document.getElementById('status').textContent='';}else load();}
 async function load(){const st=document.getElementById('status');st.textContent='불러오는 중…';
   try{const r=await sb.rpc('rpc_bid_list',TAB==='prog'?{'_상태':'관심','_정렬':'deadline'}:{'_정렬':'deadline'});if(r.error){st.textContent='오류: '+r.error.message;return;}
     const rows=r.data||[];ALL=rows.filter(x=>x['최신차수']!==false);
     try{const sp=await sb.rpc('rpc_bid_prespec_list',{'_일수':14});SPEC=sp.error?[]:(sp.data||[]);}catch(_){SPEC=[];}
     paint();}catch(e){st.textContent='불러오기 실패: '+e;}}
+async function loadPlan(){const st=document.getElementById('status'),li=document.getElementById('list');st.textContent='불러오는 중…';li.innerHTML='';
+  try{const r=await sb.rpc('rpc_bid_plan_list',{'_개월':6});if(r.error){st.textContent='오류: '+r.error.message;return;}PLN=r.data||[];paintPlan();}catch(e){st.textContent='불러오기 실패: '+e;}}
+function setPlnF(f){PLNF=f;paintPlan();}
+function plOpen(i){const e=document.getElementById('pld'+i);if(e)e.classList.toggle('hide');}
+function paintPlan(){if(TAB!=='plan')return;const st=document.getElementById('status'),li=document.getElementById('list');
+  const up=PLN.filter(x=>x['구분']==='예정'),ly=PLN.filter(x=>x['구분']==='작년');
+  const has=(x,k)=>String(x['사업부']||'').includes(k);
+  const F={all:x=>true,ev:x=>has(x,'행사'),mk:x=>has(x,'온라인'),ed:x=>has(x,'교육'),tr:x=>has(x,'여행'),su:x=>x['계약방법']==='수의계약'};
+  const cnt=k=>up.filter(F[k]).length;
+  const chips=[['all','전체'],['ev','행사이벤트'],['mk','온라인마케팅'],['ed','교육·컨설팅'],['tr','국내여행'],['su','수의계약']].map(([k,l])=>'<button class="chip '+(PLNF===k?'on':'')+'" onclick="setPlnF(\''+k+'\')">'+l+' '+cnt(k)+'</button>').join(' ');
+  const ym=d=>{const p=String(d).split('-');return p[0].slice(2)+'.'+p[1];};
+  const won=n=>{if(!n)return '미정';const m=Math.round(n/10000);return m>=10000?(Math.floor(m/10000)+'억'+(m%10000?(m%10000).toLocaleString()+'만':'')):m.toLocaleString()+'만';};
+  const md=d=>{if(!d)return '';const x=new Date(d);return (x.getMonth()+1)+'/'+x.getDate();};
+  let n=0;const det=x=>{n++;return '<tr id="pld'+n+'" class="hide pld"><td></td><td colspan="7">담당 '+esc(x['부서']||'부서 미기재')+(x['전화']?' · ☎ '+esc(x['전화']):'')+(x['상세url']?' · <a href="'+esc(x['상세url'])+'" target="_blank" rel="noopener">나라장터 발주계획 원문</a>':'')+'</td></tr>';};
+  const a=up.filter(F[PLNF]);
+  const row=x=>{const i=n+1;return '<tr class="plr" onclick="plOpen('+i+')"><td class="num">'+ym(x['발주연월'])+'</td><td><span class="tag">'+esc(x['사업부']||'')+'</span></td><td><b>'+esc(x['사업명'])+'</b></td><td>'+esc(x['발주기관']||'')+'</td><td class="num">'+won(x['예산'])+'</td><td>'+esc(x['계약방법']||'')+'</td><td>'+(x['공고여부']?'<span class="ok">📑 공고 나옴</span>':'<span class="hint">공고 전</span>')+'</td><td class="hint">'+md(x['계획게시일'])+' 게시</td></tr>'+det(x);};
+  const row2=x=>{const t=x['올해계획'];const i=n+1;return '<tr class="plr" onclick="plOpen('+i+')"><td class="num">'+ym(x['발주연월'])+'</td><td><span class="tag">'+esc(x['사업부']||'')+'</span></td><td><b>'+esc(x['사업명'])+'</b></td><td>'+esc(x['발주기관']||'')+'</td><td class="num">'+won(x['예산'])+'</td><td colspan="3">'+(t?'<span class="ok">올해 계획 있음 · '+ym(t['발주연월'])+(t['공고여부']?' · 공고 나옴':'')+'</span>':'<span class="k2">올해 '+ym(String(Number(String(x['발주연월']).slice(0,4))+1)+String(x['발주연월']).slice(4))+' 무렵 예상</span>')+'</td></tr>'+det(x);};
+  const lyF=ly.filter(F[PLNF]);
+  st.textContent='앞으로 6개월 · 제주 기관 발주계획 '+up.length+'건 · 작년 같은 기간 '+ly.length+'건';
+  li.innerHTML='<div class="card"><div class="sech" style="margin-bottom:8px"><h2>📅 발주 계획</h2><span class="hint">나라장터 발주계획 · 제주 소재 기관 · 우리 입찰 키워드 · 매주 월 07:09 갱신 · 행을 누르면 담당 부서·전화</span></div>'
+   +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'+chips+'</div>'
+   +(a.length?'<div style="overflow:auto"><table class="sch"><thead><tr><th>발주 예정</th><th>사업부</th><th>사업명</th><th>발주 기관</th><th>예산</th><th>계약 방법</th><th>입찰 연결</th><th>계획 게시</th></tr></thead><tbody>'+a.map(row).join('')+'</tbody></table></div>':EMPTY('조건에 맞는 발주계획이 없습니다.'))
+   +'<div class="sech" style="margin:18px 0 8px"><h2>🔁 작년 이맘때 발주 — 올해 반복 예고</h2><span class="hint">작년 같은 기간 발주 '+lyF.length+'건 · 매년 하는 행사·사업은 미리 준비</span></div>'
+   +(lyF.length?'<div style="overflow:auto"><table class="sch"><thead><tr><th>작년 발주</th><th>사업부</th><th>사업명</th><th>기관</th><th>예산</th><th colspan="3">올해</th></tr></thead><tbody>'+lyF.map(row2).join('')+'</tbody></table></div>':EMPTY('작년 같은 기간 발주가 없습니다.'))
+   +'<div class="hint" style="margin-top:8px">수의계약 건은 공고 없이 계약될 수 있어 담당 부서에 먼저 제안하는 게 유리합니다 · 「올해 계획 있음」 = 같은 기관·같은 사업명(연도·회차 제외)의 올해 계획이 올라옴</div></div>';}
 async function loadSchool(){const st=document.getElementById('status'),li=document.getElementById('list');st.textContent='불러오는 중…';li.innerHTML='';
   try{const r=await sb.rpc('rpc_bid_school_list',{'_일수':240});if(r.error){st.textContent='오류: '+r.error.message;return;}SCH=r.data||[];paintSchool();}catch(e){st.textContent='불러오기 실패: '+e;}}
 function setSchF(f){SCHF=f;paintSchool();}

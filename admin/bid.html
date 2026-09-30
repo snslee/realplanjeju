@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex, nofollow">
 <title>입찰 조회 | 리얼플랜제주 관리자</title>
-<!-- bid.html v2.1 (2026-09-23 대표 승인) — 추천 TOP3(fn_bid_reco_score) · 바로가기 고정 · 구역 5개 · 「발표 있음만」 삭제 · 사업부 행사→행사이벤트
+<!-- bid.html v2.2 (2026-09-30 대표 승인) — 📋 사전규격 구역(bd_사전규격 · rpc_bid_prespec_list) · 공고 전 단계 · 의견 마감
+     v2.1 (2026-09-23 대표 승인) — 추천 TOP3(fn_bid_reco_score) · 바로가기 고정 · 구역 5개 · 「발표 있음만」 삭제 · 사업부 행사→행사이벤트
      v2.0 (2026-09-23 대표 승인) — 진행 가능 여부 카드 · 제안서 기능 제거 · 마감 시각 한국시간 표시
      판정 정본 = realplan-bid 스킬 → bd_분석(참가판정·카드·근거인용). 변경 전 파일 = _삭제예정/bid_변경전_20260923.html -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -50,6 +51,7 @@ a.nm:hover{text-decoration:underline}
 .pill{font-size:11.5px;font-weight:800;border-radius:6px;padding:2px 8px;white-space:nowrap}
 .p-가능{background:#dcf5e8;color:#0f7a4f}.p-확인{background:#fff1d6;color:#9a5b00}.p-불가{background:#fde6ea;color:#a3263a}.p-전{background:#eef2f7;color:#64748b}
 .dd{font-size:11px;font-weight:800;border-radius:5px;padding:1px 6px}
+.spec{border-left-color:#6366f1!important}.spec .sp-h{display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:#eef2ff;border-radius:7px;padding:5px 9px;font-size:12.5px;color:#3730a3}.spec .sp-t{font-weight:800;font-size:14.5px;color:#0f172a}.spec .sp-m{font-size:12.5px;color:#64748b}.spec .sp-f a{font-size:12.5px;margin-right:8px}
 .dd-r{background:#fde6ea;color:#a3263a}.dd-y{background:#fff1d6;color:#9a5b00}.dd-g{background:#eef2f7;color:#64748b}
 .tag{display:inline-block;background:#eff6ff;color:#1d4ed8;border-radius:20px;padding:1px 8px;font-size:11px}
 .facts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
@@ -141,7 +143,7 @@ td{padding:8px 10px;border-bottom:1px solid #f0f3f8;vertical-align:top}
 const SUPABASE_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
 const SUPABASE_KEY='sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce'}});
-let TAB='judge',BU='전체',SORT='deadline',ALL=[],DROPFOR=null,MSG={},PASTN=30,PASTOPEN=false;
+let SPEC=[];let TAB='judge',BU='전체',SORT='deadline',ALL=[],DROPFOR=null,MSG={},PASTN=30,PASTOPEN=false;
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KST=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false});
 function fdt(s){if(!s)return '마감미상';const d=new Date(s);if(isNaN(d))return String(s).slice(0,16);const p=Object.fromEntries(KST.formatToParts(d).map(x=>[x.type,x.value]));return p.month+'/'+p.day+'('+p.weekday+') '+p.hour+':'+p.minute;}
@@ -154,7 +156,7 @@ function dday(x){const t=ts(x['마감일시']);if(t===null)return '<span class="
 function verdict(x){const v=x['참가판정'];if(v==='가능')return '가능';if(v==='확인 필요')return '확인';if(v==='불가')return '불가';return '전';}
 const VLABEL={'가능':'진행 가능','확인':'확인 필요','불가':'불가','전':'판독 전'};
 const DECIDED=['참여','관망','포기','투찰','낙찰','유찰','제외'];
-const SECS=[['sReco','⭐ 추천'],['sLive','⏰ 마감 전 판정'],['sPre','🔍 판독 전'],['sNo','⛔ 불가'],['sPast','📁 마감 지남']];
+const SECS=[['sReco','⭐ 추천'],['sSpec','📋 사전규격'],['sLive','⏰ 마감 전 판정'],['sPre','🔍 판독 전'],['sNo','⛔ 불가'],['sPast','📁 마감 지남']];
 
 async function boot(){
   const {data:{session}}=await sb.auth.getSession();
@@ -171,7 +173,9 @@ function setTab(x){TAB=x;['J','P','S'].forEach(k=>document.getElementById('t'+k)
   if(x==='search'){ALL=[];document.getElementById('list').innerHTML='';document.getElementById('status').textContent='';}else load();}
 async function load(){const st=document.getElementById('status');st.textContent='불러오는 중…';
   try{const r=await sb.rpc('rpc_bid_list',TAB==='prog'?{'_상태':'관심','_정렬':'deadline'}:{'_정렬':'deadline'});if(r.error){st.textContent='오류: '+r.error.message;return;}
-    const rows=r.data||[];ALL=rows.filter(x=>x['최신차수']!==false);paint();}catch(e){st.textContent='불러오기 실패: '+e;}}
+    const rows=r.data||[];ALL=rows.filter(x=>x['최신차수']!==false);
+    try{const sp=await sb.rpc('rpc_bid_prespec_list',{'_일수':14});SPEC=sp.error?[]:(sp.data||[]);}catch(_){SPEC=[];}
+    paint();}catch(e){st.textContent='불러오기 실패: '+e;}}
 function setBU(b){BU=b;paint();}
 function setSort(s){SORT=s;paint();}
 function sortRows(a){a=a.slice();if(SORT==='recent')return a.sort((p,q)=>(ts(q['게시일시'])||0)-(ts(p['게시일시'])||0));
@@ -187,8 +191,9 @@ function groups(){const a=buRows();const live=a.filter(x=>!past(x));
     no:sortRows(live.filter(x=>verdict(x)==='불가')),
     past:a.filter(past).sort((p,q)=>(ts(q['마감일시'])||0)-(ts(p['마감일시'])||0))};}
 function drawNav(g){const wait=g.live.filter(x=>!DECIDED.includes(x['관심상태'])).length;
-  const n={sReco:g.reco.length,sLive:g.live.length,sPre:g.pre.length,sNo:g.no.length,sPast:g.past.length};
-  document.getElementById('nav').innerHTML=SECS.map(([id,l])=>'<a href="#'+id+'" data-s="'+id+'" onclick="return jump(\''+id+'\')">'+l+' <b>'+n[id]+'</b>'+(id==='sLive'&&wait?'<small> · 결정 대기 '+wait+'</small>':'')+'</a>').join('');}
+  const sp=specRows(),spSoon=sp.filter(x=>{const t=ts(x['의견마감']);return t!==null&&t>=Date.now()&&t-Date.now()<=2*86400000;}).length;
+  const n={sReco:g.reco.length,sSpec:sp.length,sLive:g.live.length,sPre:g.pre.length,sNo:g.no.length,sPast:g.past.length};
+  document.getElementById('nav').innerHTML=SECS.map(([id,l])=>'<a href="#'+id+'" data-s="'+id+'" onclick="return jump(\''+id+'\')">'+l+' <b>'+n[id]+'</b>'+(id==='sLive'&&wait?'<small> · 결정 대기 '+wait+'</small>':'')+(id==='sSpec'&&spSoon?'<small> · 의견 마감 임박 '+spSoon+'</small>':'')+'</a>').join('');}
 function jump(id){if(id==='sPast'){PASTOPEN=true;const d=document.getElementById('pastBox');if(d)d.open=true;}
   const el=document.getElementById(id);if(el){const y=el.getBoundingClientRect().top+window.scrollY-document.getElementById('navWrap').offsetHeight-8;window.scrollTo({top:y,behavior:'smooth'});}return false;}
 function sec(id,title,sub,body){return '<section class="sec" id="'+id+'"><div class="sech"><h2>'+title+'</h2>'+(sub||'')+'</div>'+body+'</section>';}
@@ -202,6 +207,7 @@ function paint(){const st=document.getElementById('status'),li=document.getEleme
   const sortSw='<span class="sw"><button class="chip '+(SORT==='deadline'?'on':'')+'" onclick="setSort(\'deadline\')">⏰ 마감 임박순</button><button class="chip '+(SORT==='recent'?'on':'')+'" onclick="setSort(\'recent\')">🆕 최신 등록순</button></span>';
   let h=sec('sReco','⭐ 우리 회사 추천 TOP '+g.reco.length,'<span class="hint">참가 판정·적합도·제주·금액·마감 여유로 매긴 100점 점수</span>',
       g.reco.length?g.reco.map((x,i)=>cardRow(x,i+1)).join(''):EMPTY('지금 추천할 마감 전 공고가 없습니다.'));
+  {const sp=specRows();h+=sec('sSpec','📋 사전규격 — 공고 전 단계','<span class="hint">나라장터에 규격이 먼저 공개된 건 · 공고가 나오면 번호로 연결 · 의견 마감 전 규격서 확인</span>',sp.length?sp.map(specRow).join(''):EMPTY('최근 14일 우리 조건(제주 기관·제주 도착 · 입찰 키워드)에 맞는 사전규격이 없습니다.'));}
   h+=sec('sLive','⏰ 마감 전 판정 공고',sortSw,g.live.length?g.live.map(x=>cardRow(x)).join(''):EMPTY('판정이 끝난 마감 전 공고가 없습니다.'));
   h+=sec('sPre','🔍 판독 전','<span class="hint">코워크에 「입찰 판독」을 요청하면 판정이 채워집니다</span>',g.pre.length?g.pre.map(preRow).join(''):EMPTY('판독을 기다리는 공고가 없습니다.'));
   h+=sec('sNo','⛔ 불가',' <span class="hint">참가 자격이 안 되는 공고 · 사유 한 줄</span>',g.no.length?'<div class="nol">'+g.no.map(noRow).join('')+'</div>':EMPTY('마감 전 불가 공고가 없습니다.'));
@@ -218,6 +224,15 @@ function eye(x){const sn=!!x['확인일시'];return '<button class="eye'+(sn?' o
 function metaLine(x){const bu=[x['사업부'],x['보조사업부']!==x['사업부']?x['보조사업부']:null].filter(Boolean).join(' + ');
   return '<span>'+esc(x['수요기관']||x['공고기관']||'')+'</span><span class="num">추정 '+won(x['추정가격'])+'</span><span class="num">마감 '+fdt(x['마감일시'])+'</span>'+dday(x)+(bu?'<span class="tag">'+esc(bu)+'</span>':'')+(x['배지']&&/제주도착|이해충돌/.test(x['배지'])?'<span class="tag" style="background:#fff3d6;color:#b45309">'+esc(x['배지'].split(',').filter(b=>/제주도착|이해충돌/.test(b)).join(' '))+'</span>':'');}
 function recoLine(x,rank){return '<div class="reco"><span class="rk">추천 '+rank+'</span><span class="sc num">'+Math.round(Number(x['추천점수']))+'점</span><span class="why3">'+esc(x['추천사유']||'')+'</span></div>';}
+function specRows(){const a=BU==='전체'?SPEC:SPEC.filter(x=>x['사업부']===BU);return a;}
+function specRow(x){const t=ts(x['의견마감']);const kd=s=>new Date(new Date(s).toLocaleString('en-US',{timeZone:'Asia/Seoul'})).setHours(0,0,0,0);
+  const dd=t===null?'<span class="dd dd-g">마감미상</span>':(t<Date.now()?'<span class="dd dd-g">의견 마감</span>':(()=>{const d=Math.round((kd(t)-kd(Date.now()))/86400000);return '<span class="dd '+(d<=2?'dd-r':d<=7?'dd-y':'dd-g')+'">의견 '+(d===0?'오늘':'D-'+d)+'</span>';})());
+  const cl=x['의견마감']?new Date(x['의견마감']).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'미상';
+  const files=(x['규격서url']||[]).map((u,i)=>'<a href="'+esc(u)+'" target="_blank" rel="noopener">규격서 '+(i+1)+'</a>').join('');
+  return '<article class="bid spec"><div class="sp-h"><b>📋 사전규격</b> · 의견 등록 마감 '+esc(cl)+' '+dd+(x['연결공고번호']?' · <b style="color:#15803d">공고 나옴 '+esc(x['연결공고번호'])+'</b>':' · 공고 전')+'</div>'
+   +'<div class="sp-t">'+esc(x['사업명']||'')+'</div>'
+   +'<div class="sp-m">'+esc(x['발주기관']||'')+(x['수요기관']&&x['수요기관']!==x['발주기관']?' · '+esc(x['수요기관']):'')+(x['배정예산']?' · 배정예산 '+Math.round(x['배정예산']/10000).toLocaleString()+'만원':'')+(x['사업부']?' · <span class="chip" style="padding:1px 8px">'+esc(x['사업부'])+'</span>':'')+(x['지역']==='제주도착'?' · 🛬제주도착':'')+' · 매칭 「'+esc(x['매칭키워드']||'')+'」</div>'
+   +(files?'<div class="sp-f">'+files+'</div>':'')+'<div class="sp-m"><b>할 일</b> — 규격서 확인 후 불리한 조건이 있으면 의견 제출 · 공고가 나오면 판정 목록으로 넘어옵니다</div></article>';}
 function cardRow(x,rank){const v=verdict(x),no=esc(x['공고번호']);const k=x['카드']||{};const order=['자격','방식','발표','제출','서류','돈'];
   const facts=order.filter(t=>k[t]).map(t=>'<div class="f '+esc(k[t].lv||'')+'"><span class="t">'+t+'</span><span class="v">'+esc(k[t].v)+'</span></div>').join('');
   const cur=x['관심상태'];const pst=past(x);

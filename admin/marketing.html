@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.56.0</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.57.0</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -4957,7 +4957,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.56.0';
+var VER='v1.57.0';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -7621,6 +7621,197 @@ try{var nv=document.querySelector('.nav-item.active');if(nv&&/t8/.test(nv.getAtt
 })();
 </script>
 <!-- RP-KW-V3 end -->
+<!-- RP-TREND-V1 start · v1.57.0 · 2026-09-30 트렌드·소재 탭(기회 찾기) + 키워드·기회 상단 카드 (회사 시스템 방 · 대표 「승인」) -->
+<style id="trv1-css">
+#ttr .trv{font-size:.84rem;color:#0f172a}
+#ttr .trv h2{font-size:1.2rem;font-weight:700;margin:0 0 2px}
+#ttr .c-sub{color:#64748b;font-size:.8rem;margin-bottom:10px;line-height:1.5}
+#ttr .sec{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:13px 15px;margin-bottom:13px}
+#ttr .sec h3{font-size:.98rem;font-weight:700;margin:0 0 8px}
+#ttr .sec h3 span{font-weight:400;color:#94a3b8;font-size:.74rem;margin-left:6px}
+#ttr .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+#ttr .kpi>div{border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px}
+#ttr .kpi b.n{font-size:1.45rem;font-weight:800;color:#2563eb}
+#ttr .mut{color:#94a3b8;font-size:.74rem}
+#ttr .f{display:inline-block;padding:3px 10px;border-radius:14px;border:1px solid #e2e8f0;font-size:.74rem;margin:0 4px 4px 0;background:#fff;cursor:pointer}
+#ttr .f.on{background:#2563eb;color:#fff;border-color:#2563eb}
+#ttr table{width:100%;border-collapse:collapse;font-size:.8rem}
+#ttr th{background:#f8fafc;text-align:left;padding:6px 7px;font-weight:700;color:#334155;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+#ttr td{padding:7px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+#ttr .chip{display:inline-block;font-size:.7rem;padding:1px 7px;border-radius:10px;font-weight:700;margin-right:3px;white-space:nowrap}
+#ttr .gA{background:#dcfce7;color:#166534}#ttr .gAs{background:#d1fae5;color:#065f46}#ttr .gC{background:#fef9c3;color:#854d0e}#ttr .gD{background:#f1f5f9;color:#64748b}
+#ttr .s0{background:#ffedd5;color:#9a3412}#ttr .s1{background:#fee2e2;color:#991b1b}#ttr .s2{background:#e0e7ff;color:#3730a3}#ttr .s3{background:#f1f5f9;color:#475569}
+#ttr .btn{border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:7px;padding:3px 9px;font-size:.74rem;cursor:pointer;margin:0 3px 3px 0}
+#ttr .btn.g{border-color:#e2e8f0;background:#fff;color:#475569}
+#ttr .ttl{font-weight:700;color:#0f172a;text-decoration:none}
+#ttr .ttl:hover{text-decoration:underline}
+#ttr .iss{cursor:pointer;color:#64748b;font-size:.74rem}
+#ttr .dec{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 10px;margin-top:6px}
+#ttr .dec label{margin-right:10px;font-size:.78rem;white-space:nowrap}
+#ttr .dec input[type=text]{width:100%;max-width:520px;border:1px solid #cbd5e1;border-radius:6px;padding:5px 8px;font-size:.8rem;margin:6px 0}
+#ttr .pg{display:flex;gap:4px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+#ttr .pg a{min-width:26px;text-align:center;padding:4px 6px;border:1px solid #d5d8de;border-radius:5px;background:#fff;cursor:pointer;font-size:.76rem}
+#ttr .pg a.on{background:#2563eb;color:#fff;border-color:#2563eb}
+#ttr .msg{font-size:.76rem;color:#16a34a;margin-left:6px}
+#ttr details summary{cursor:pointer;font-weight:700}
+#kw3-trend{background:#fff7ed;border:1px solid #fed7aa;border-left:4px solid #f97316;border-radius:10px;padding:10px 14px;margin-bottom:13px;font-size:.84rem;line-height:1.6}
+#kw3-trend .go{float:right;font-size:.72rem;color:#9a3412;border:1px solid #fdba74;border-radius:10px;padding:1px 9px;background:#fff;cursor:pointer}
+#t8:not(.showorig) > div#kwv3.v3 #kw3-trend{display:block}
+@media(max-width:760px){#ttr table{font-size:.72rem}#ttr .hide-m{display:none}}
+</style>
+<script>
+/* ══ RP-TREND-V1 — 트렌드·소재 (2026-09-30 대표 「승인」) ══════════
+   원천: mk_trend_signals(정본) · v_trend_summary · v_trend_sources · 쓰기 = rpc_trend_decide 한 곳(상태·넘길곳·메모 · 채택+SNS면 mk_sns_seed_pool 1줄)
+   수집: policy-radar v9(mode policy·news·yt · 매일 07:19·07:29·07:39) · 점수 = 등급3+교차2+묶음2+수요2+신선도1
+   롤백 = 이 블록(<!-- RP-TREND-V1 start … end -->)만 걷어낸다 · 기존 탭·함수는 한 글자도 안 바꿨다 */
+(function(){
+'use strict';
+if(window.__rpTrendV1)return;window.__rpTrendV1='v1.57.0';
+function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function N(x){return (x==null?'—':Number(x).toLocaleString());}
+var S={bu:'',src:'',grade:'AA',st:'신규',sort:'score',page:1,per:25,rows:[],srcRows:[],sum:null};
+var BU={'국내여행':'국내여행','행사이벤트':'행사','온라인마케팅':'마케팅','마케팅교육':'교육'};
+var GC={'A':'gA','A*':'gAs','C':'gC','D':'gD'};
+var SC={'보도자료':'s2','지원사업':'s3','뉴스':'s0','유튜브':'s1'};
+var TO=[['SNS','SNS 뉴스형(소재 창고 자동 1줄)'],['블로그','블로그 슬롯 후보'],['자료실','자료실 후보'],['유튜브','유튜브 소재']];
+function kst(ts){if(!ts)return '';var d=new Date(new Date(ts).getTime()+9*3600e3).toISOString();return d.slice(5,10).replace('-','/')+' '+d.slice(11,16);}
+function md(d){return d?String(d).slice(5,10).replace('-','/'):'';}
+
+/* ── 패널·메뉴 ── */
+function ensurePanel(){
+  var main=document.querySelector('main.main');if(!main)return null;
+  var p=document.getElementById('ttr');
+  if(!p){p=document.createElement('div');p.className='tab-panel';p.id='ttr';p.innerHTML='<div class="trv" id="trv1"><h2>📰 트렌드·소재</h2><div class="c-sub">불러오는 중…</div></div>';main.appendChild(p);}
+  return p;
+}
+function navItem(){
+  var n=document.getElementById('nav-ttr');
+  if(!n){n=document.createElement('div');n.className='nav-item';n.id='nav-ttr';n.title='트렌드·소재(뉴스·보도자료·유튜브 → 매출 의도 · 대표 채택)';
+    n.setAttribute('onclick',"switchTab('ttr',this)");
+    n.innerHTML='<span>📰</span>트렌드·소재 <b id="tr-badge" style="margin-left:auto;font-size:.7rem;color:#fff;background:#f97316;border-radius:9px;padding:0 6px;display:none"></b>';}
+  return n;
+}
+function placeNav(){
+  var t8=document.querySelector('.nav-item[onclick*="switchTab(\'t8\'"]');if(!t8)return;
+  var n=navItem();if(t8.nextElementSibling!==n)t8.parentNode.insertBefore(n,t8.nextSibling);
+}
+async function badge(){
+  try{var r=await sb.from('v_trend_summary').select('*').limit(1);if(r.error)return;S.sum=(r.data||[])[0]||null;
+    var b=document.getElementById('tr-badge');if(b&&S.sum){var n=+S.sum.채택대기||0;b.textContent=n;b.style.display=n?'inline-block':'none';}
+    kwCard();}catch(_){}
+}
+
+/* ── 키워드·기회 상단 카드 ── */
+async function kwCard(){
+  var box=document.getElementById('kwv3');if(!box)return;
+  var c=document.getElementById('kw3-trend');
+  if(!c){c=document.createElement('div');c.id='kw3-trend';var anchor=box.querySelector('.sec');if(anchor)box.insertBefore(c,anchor);else box.appendChild(c);}
+  var s=S.sum;if(!s){c.innerHTML='📰 트렌드 채택 대기 — 불러오는 중…';return;}
+  var top='';try{var r=await sb.from('mk_trend_signals').select('제목,점수,등급').eq('상태','신규').in('등급',['A','A*']).gte('점수',6).order('점수',{ascending:false}).order('발행일',{ascending:false}).limit(1);if(!r.error&&r.data&&r.data[0])top=r.data[0];}catch(_){}
+  c.innerHTML='<span class="go" onclick="window.__trGo()">트렌드·소재로 →</span>📰 <b>트렌드 채택 대기 '+N(s.채택대기)+'건</b> · 이번 주 신규 '+N(s.신규7)+(top?' · 최고점: <b>'+E(String(top.제목).slice(0,40))+'</b> ('+top.점수+'점 · '+E(top.등급)+')':'')+'<br><span style="color:#9a3412;font-size:.76rem">뉴스는 「신호」입니다 — 고객 수요 근거로 세지 않고, 인용 전 원문을 다시 확인합니다.</span>';
+}
+window.__trGo=function(){var n=document.getElementById('nav-ttr');if(typeof switchTab==='function')switchTab('ttr',n);};
+
+/* ── 탭 본문 ── */
+async function load(){
+  ensurePanel();var box=document.getElementById('trv1');if(!box)return;
+  try{
+    var q=sb.from('mk_trend_signals').select('id,원천,발행일,수집일,매체,n등급,등급,제목,링크,요약,사업부,묶음,이슈키,교차수,수요_질문90,조회수,점수,점수_내역,상태,넘길곳,대표메모,결정일')
+      .gte('수집일',new Date(Date.now()-30*864e5).toISOString());
+    if(S.bu)q=q.eq('사업부',S.bu);
+    if(S.src)q=q.eq('원천',S.src);
+    if(S.grade==='AA')q=q.in('등급',['A','A*']);
+    if(S.st)q=q.eq('상태',S.st);
+    q=S.sort==='new'?q.order('수집일',{ascending:false}):q.order('점수',{ascending:false}).order('발행일',{ascending:false,nullsFirst:false});
+    var res=await Promise.all([q.limit(500),sb.from('v_trend_summary').select('*').limit(1),sb.from('v_trend_sources').select('*')]);
+    if(res[0].error)throw res[0].error;
+    S.rows=res[0].data||[];S.sum=(res[1].data||[])[0]||S.sum;S.srcRows=res[2].data||[];
+    render(S.srcRows);badge();
+  }catch(e){box.innerHTML='<h2>📰 트렌드·소재</h2><div class="sec" style="color:#dc2626">오류: '+E(e.message||e)+'</div>';}
+}
+function chips(key,list){return list.map(function(b){return '<span class="f'+(S[key]===b[0]?' on':'')+'" onclick="window.__tr(\''+key+'\',\''+b[0]+'\')">'+b[1]+'</span>';}).join('');}
+function render(src){
+  var box=document.getElementById('trv1');var s=S.sum||{};
+  var h='<h2>📰 트렌드·소재 <span class="mut" style="font-weight:400">v1.57.0</span></h2>'
+   +'<div class="c-sub">뉴스·보도자료·지원사업·방송 유튜브에서 <b>우리 매출 의도(묶음)에 붙는 소재</b>만 모읍니다. 대표님이 <b>채택</b>하면 넘길 곳(SNS·블로그·자료실·유튜브)으로 가고, 클로드는 기획 첫 단계에서 이 표(rpc_trend_brief)를 읽습니다. <b>뉴스는 신호</b>입니다 — 고객 수요 근거로 세지 않고, 인용 전 원문을 다시 확인하며, 기사 문장·사진은 쓰지 않습니다.</div>'
+   +'<div style="margin-bottom:10px"><button class="btn" onclick="window.__trLoad()">🔄 새로고침</button></div>'
+   +'<div class="sec"><h3>① 이번 주 요약</h3><div class="kpi">'
+   +'<div><div>이번 주 신규</div><b class="n">'+N(s.신규7)+'</b>건<div class="mut">보도자료 '+N(s.보도자료7)+' · 지원사업 '+N(s.지원사업7)+' · 뉴스 '+N(s.뉴스7)+' · 유튜브 '+N(s.유튜브7)+'</div></div>'
+   +'<div style="border-color:#fed7aa"><div>교차 확인 필요</div><b class="n" style="color:#d97706">'+N(s.교차확인)+'</b>건<div class="mut">C등급 6점↑ · 한 곳 보도 → 신호로만</div></div>'
+   +'<div style="border-color:#bfdbfe"><div>채택 대기</div><b class="n">'+N(s.채택대기)+'</b>건<div class="mut">A·A* 6점↑ · 30일 · 대표님 결정</div></div>'
+   +'<div style="border-color:#a7f3d0"><div>이달 콘텐츠로 간 것</div><b class="n" style="color:#16a34a">'+N(s.이달채택)+'</b>건<div class="mut">SNS '+N(s.이달_sns)+' · 블로그 '+N(s.이달_블로그)+' · 자료실 '+N(s.이달_자료실)+' · 유튜브 '+N(s.이달_유튜브)+'</div></div>'
+   +'</div></div>';
+  h+='<div class="sec"><h3>② 신호 목록 <span>점수순 · 30일 · 「같은 이슈」를 누르면 묶인 기사가 펼쳐집니다</span></h3><div>'
+   +'<span class="mut">사업부 </span>'+chips('bu',[['','전체'],['국내여행','국내여행'],['행사이벤트','행사'],['온라인마케팅','마케팅'],['마케팅교육','교육']])
+   +' <span class="mut">원천 </span>'+chips('src',[['','전체'],['보도자료','보도자료'],['지원사업','지원사업'],['뉴스','뉴스'],['유튜브','유튜브']])
+   +' <span class="mut">등급 </span>'+chips('grade',[['AA','A·A*만'],['','전체']])
+   +' <span class="mut">상태 </span>'+chips('st',[['신규','신규'],['채택','채택'],['보류','보류'],['제외','제외'],['','전체']])
+   +' <span class="mut">정렬 </span>'+chips('sort',[['score','점수순'],['new','최신순']])+'</div>';
+  var rows=S.rows,total=rows.length,pages=Math.max(1,Math.ceil(total/S.per));if(S.page>pages)S.page=pages;
+  var view=rows.slice((S.page-1)*S.per,S.page*S.per);
+  if(!total)h+='<div class="mut" style="padding:14px 0">조건에 맞는 신호 0건 — 자 = mk_trend_signals · 최근 30일 · 위 필터(등급 「전체」·상태 「전체」로 넓혀 보세요)</div>';
+  else{
+    h+='<div style="overflow-x:auto"><table><tr><th>날짜</th><th>사업부</th><th class="hide-m">묶음(의도)</th><th>제목 (원문 ↗)</th><th>원천·등급</th><th>교차</th><th class="hide-m">수요근거</th><th>점수</th><th>결정</th></tr>';
+    view.forEach(function(r){
+      var sc=r.점수_내역||{};var tip='등급 '+(sc.등급||0)+' + 교차 '+(sc.교차||0)+' + 묶음 '+(sc.묶음||0)+' + 수요 '+(sc.수요||0)+' + 신선도 '+(sc.신선도||0);
+      var dec;
+      if(r.상태==='신규')dec='<button class="btn" onclick="window.__trDec('+r.id+')">채택 ▾</button><button class="btn g" onclick="window.__trSet('+r.id+',\'보류\')">보류</button><button class="btn g" onclick="window.__trSet('+r.id+',\'제외\')">제외</button>';
+      else dec='<span class="chip '+(r.상태==='채택'?'gA':'gD')+'">'+E(r.상태)+'</span>'+((r.넘길곳||[]).length?'<span class="mut">→ '+E((r.넘길곳||[]).join('·'))+'</span>':'')+'<br><button class="btn g" onclick="window.__trSet('+r.id+',\'신규\')">되돌리기</button>';
+      if(r.대표메모)dec+='<div class="mut" style="color:#475569">메모: '+E(r.대표메모)+'</div>';
+      h+='<tr'+(r.점수>=7&&r.상태==='신규'?' style="background:#fffbeb"':'')+'><td class="mut" style="white-space:nowrap">'+md(r.발행일||r.수집일)+'</td><td style="white-space:nowrap">'+E(BU[r.사업부]||r.사업부||'—')+'</td><td class="hide-m">'+E(r.묶음||'—')+'</td>'
+        +'<td><a class="ttl" href="'+E(r.링크||'#')+'" target="_blank" rel="noopener noreferrer">'+E(r.제목)+' ↗</a>'+(r.요약?'<div class="mut" style="white-space:normal">'+E(String(r.요약).slice(0,110))+'</div>':'')
+        +(r.교차수>1||(r.이슈키&&r.이슈키!==r.id)?'<div class="iss" onclick="window.__trIss('+r.id+','+(r.이슈키||r.id)+')">▸ 같은 이슈 펼치기</div><div id="tri-'+r.id+'"></div>':'')
+        +(r.조회수?'<div class="mut">조회 '+N(r.조회수)+'</div>':'')+'</td>'
+        +'<td style="white-space:nowrap"><span class="chip '+(SC[r.원천]||'s3')+'">'+E(r.원천)+'</span><span class="chip '+(GC[r.등급]||'gD')+'">'+E(r.등급||'D')+'</span><div class="mut">'+E(r.매체||'')+(r.n등급?' · '+E(r.n등급):'')+'</div></td>'
+        +'<td style="text-align:center">'+(r.교차수||0)+'</td><td class="hide-m mut" style="white-space:normal">'+(r.수요_질문90?'지식인 '+N(r.수요_질문90)+'(90일 · 같은 묶음)':'없음')+'</td>'
+        +'<td title="'+E(tip)+'"><b>'+N(r.점수)+'</b></td><td style="white-space:normal;min-width:150px">'+dec+'<span class="msg" id="trm-'+r.id+'"></span><div id="trd-'+r.id+'"></div></td></tr>';
+    });
+    h+='</table></div>';
+    if(pages>1){h+='<div class="pg">';for(var i=1;i<=pages;i++)h+='<a class="'+(i===S.page?'on':'')+'" onclick="window.__trPg('+i+')">'+i+'</a>';h+='</div>';}
+    h+='<div class="mut" style="margin-top:6px">점수(10) = 등급(A 3 · A* 2 · C 1 · D 0) + 교차(공적 명단 매체 2곳 1 · 3곳↑ 2) + 묶음(매출 의도 일치 2) + 수요(같은 묶음 지식인 90일 3건↑ 1 · 10건↑ 2) + 신선도(14일 안 1) · 점수에 마우스를 올리면 내역 · A = 정부·공공 원문(N0) · A* = 방송·신문 교차 보도 · C = 한 곳 보도 · D = 공적 명단 밖 매체</div>';
+  }
+  h+='</div>';
+  h+='<div class="sec"><details><summary>▸ 수집 상태</summary><table style="margin-top:8px"><tr><th>원천</th><th>주기(KST)</th><th>마지막 수집</th><th>24시간</th><th>7일</th><th>A·A* 7일</th></tr>';
+  var sched={'보도자료':'매일 07:19 (정책브리핑 API 미신청 — 공공데이터포털 활용신청 필요)','지원사업':'매일 07:19 · 기업마당·K-Startup','뉴스':'매일 07:29 · 네이버 뉴스 · 질의 39개','유튜브':'매일 07:39 · 방송 뉴스 채널 7곳'};
+  ['보도자료','지원사업','뉴스','유튜브'].forEach(function(k){var x=src.filter(function(y){return y.원천===k;})[0]||{};
+    h+='<tr><td>'+k+'</td><td class="mut" style="white-space:normal">'+sched[k]+'</td><td>'+(x.마지막수집?kst(x.마지막수집):'<span class="mut">없음</span>')+'</td><td>'+N(x.건24h||0)+'</td><td>'+N(x.건7일||0)+'</td><td>'+N(x.공신력7일||0)+'</td></tr>';});
+  h+='</table><div class="mut" style="margin-top:6px">질의어·뉴스 채널 = mk_trend_queries · 매체 등급표 = mk_trend_outlets(realplan-news N0~N4) · 수요 캐시 = mk_trend_demand(매일 07:13) · 주간 요약 = 월 08:37 텔레그램(P2)</div></details></div>';
+  h+='<div class="sec"><details><summary>▸ 규칙 (realplan-news)</summary><div style="margin-top:8px;line-height:1.7">① 뉴스는 신호 — 수요 근거로 세지 않는다(수요 칸은 지식인·문의로만) ② 인용 전 원문 재확인 · 「추진·검토·정부안」은 확정으로 쓰지 않는다 ③ 기사 문장·제목·사진 복제 금지 — 사실만 우리 말로, 사진은 자사 실사진 ④ 정치·선거·사건 소재는 수집 단계에서 뺀다 ⑤ 출처 한 줄: 「출처: ○○ 보도자료(날짜)」 ⑥ 120일 지난 신규·제외 신호는 주간 요약 때 정리된다(채택·보류는 보존)</div></details></div>';
+  box.innerHTML=h;
+}
+window.__trLoad=function(){load();};
+window.__tr=function(k,v){S[k]=v;S.page=1;load();};
+window.__trPg=function(i){S.page=i;render(S.srcRows);};
+window.__trIss=async function(id,key){var el=document.getElementById('tri-'+id);if(!el)return;if(el.innerHTML){el.innerHTML='';return;}
+  var r=await sb.from('mk_trend_signals').select('id,매체,n등급,제목,링크,발행일').eq('이슈키',key).neq('id',id).order('발행일',{ascending:false}).limit(20);
+  if(r.error){el.innerHTML='<span class="mut">조회 오류: '+E(r.error.message)+'</span>';return;}
+  el.innerHTML=(r.data||[]).map(function(x){return '<div class="mut">· <a href="'+E(x.링크||'#')+'" target="_blank" rel="noopener noreferrer">'+E(x.매체||'')+(x.n등급?'('+E(x.n등급)+')':'')+' — '+E(String(x.제목).slice(0,70))+'</a> '+md(x.발행일)+'</div>';}).join('')||'<span class="mut">같은 이슈 다른 기사 없음</span>';};
+window.__trDec=function(id){var el=document.getElementById('trd-'+id);if(!el)return;if(el.innerHTML){el.innerHTML='';return;}
+  el.innerHTML='<div class="dec"><b>넘길 곳</b><br>'+TO.map(function(t,i){return '<label><input type="checkbox" value="'+t[0]+'"'+(i===0?' checked':'')+'> '+t[1]+'</label>';}).join('')
+   +'<input type="text" placeholder="메모 1줄 — 우리 식 해석(예: 짧고 알찬 1박2일 워크숍 각도)" id="trmemo-'+id+'"><br><button class="btn" onclick="window.__trSave('+id+')">채택 저장</button><button class="btn g" onclick="window.__trDec('+id+')">닫기</button></div>';};
+window.__trSave=async function(id){var el=document.getElementById('trd-'+id);var to=[].slice.call(el.querySelectorAll('input[type=checkbox]:checked')).map(function(x){return x.value;});
+  var memo=(document.getElementById('trmemo-'+id)||{}).value||'';await save(id,'채택',to,memo);};
+window.__trSet=async function(id,st){await save(id,st,[],null);};
+async function save(id,st,to,memo){var m=document.getElementById('trm-'+id);if(m)m.textContent='저장 중…';
+  try{var r=await sb.rpc('rpc_trend_decide',{p_id:id,p_state:st,p_to:to,p_memo:memo});if(r.error)throw r.error;
+    if(m)m.textContent='✓ '+st+(r.data&&r.data.seed_id?' · SNS 소재 창고 등록':'');setTimeout(load,700);}
+  catch(e){if(m){m.style.color='#dc2626';m.textContent='저장 실패: '+(e.message||e);}}}
+
+/* ── 연결 ── */
+function init(){
+  if(typeof sb==='undefined'||!document.querySelector('main.main'))return false;
+  ensurePanel();placeNav();badge();return true;
+}
+var _st=window.switchTab;
+if(typeof _st==='function'){window.switchTab=function(id,el){var r=_st.apply(this,arguments);try{if(id==='ttr'){ensurePanel();var n=document.getElementById('nav-ttr');if(n)n.classList.add('active');load();}if(id==='t8'){var k=0,t=setInterval(function(){k++;var b=document.getElementById('kwv3');if(b&&b.querySelector('.sec')&&!document.getElementById('kw3-trend'))kwCard();if(k>24)clearInterval(t);},500);}}catch(_){}return r;};}
+var tries=0,inited=false,iv=setInterval(function(){tries++;try{if(!inited)inited=init();placeNav();if(inited&&!S.sum&&tries%4===0)badge();if(inited&&tries%6===0)kwCard();}catch(_){}if(tries>40)clearInterval(iv);},500);
+try{sb.auth.onAuthStateChange(function(ev){if(ev==='SIGNED_IN'||ev==='TOKEN_REFRESHED'||ev==='INITIAL_SESSION')setTimeout(function(){placeNav();badge();},800);});}catch(_){}
+try{var mo=new MutationObserver(function(){var t8=document.querySelector('.nav-item[onclick*="switchTab(\'t8\'"]');var n=document.getElementById('nav-ttr');if(t8&&(!n||t8.nextElementSibling!==n))placeNav();
+  var k=document.getElementById('kwv3');if(k&&!document.getElementById('kw3-trend')&&S.sum)kwCard();});
+  mo.observe(document.body,{childList:true,subtree:true});setTimeout(function(){mo.disconnect();},60000);}catch(_){}
+})();
+</script>
+<!-- RP-TREND-V1 end -->
 
 
 

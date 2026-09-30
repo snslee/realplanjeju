@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.57.3</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.58.0</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -4957,7 +4957,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.57.3';
+var VER='v1.58.0';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -6554,6 +6554,180 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 <!-- RP-SNS-OPS end -->
+<!-- RP-SNS-OPS2 start · v2.0 · 2026-10-01 SNS 운영 통합 — 일요일 「①성과 확인 → ②소재 채택 → ③편성안 승인」 · 회사 월~금/대표 화·목 · 실사례 고정·채택 소재 추가 편성 · SNS 전용 텔레그램 방 (회사 시스템 방 · P5-B 인수인계 W10 · 대표 「권장 번들 진행」) -->
+<script>
+/* 원천 = rpc_sns_ops_board(읽기) · 쓰기 = rpc_trend_decide(채택·보류·제외) · rpc_sns_plan_draft(편성안) · rpc_sns_plan_approve(승인·되돌리기) · rpc_sns_shoot_task(촬영 과제)
+   롤백 = 이 블록(RP-SNS-OPS2 start~end) 제거 + 제목·VER v1.57.3 — 옛 RP-SNS-OPS·RP-SNS-SET 블록은 손대지 않았다. */
+(function(){
+'use strict';
+if(window.__rpSnsOps2)return; window.__rpSnsOps2='v2.0';
+var RULES=[
+ ['계정·요일','회사 @realplan_travel = 월~금(월 여행 · 화 트렌드 여행 · 수 행사 · 목 쇼츠 재게시 · 금 여행/행사 격주) · 대표 @snslee = 화 마케팅 · 목 교육/마케팅 격주 · 발송 08:30'],
+ ['일요일 흐름','09:13 SNS 방에 지난주 48시간 성과·촬영 후보 → 이 화면 ① 확인 → ② 소재 채택 → 「채택 끝 → 편성안 만들기」 → ③ 승인 → 월~금 제작·발송'],
+ ['편성안','🔒 실사례·쇼츠 재게시·월요일 선제작·제작 이상 칸은 그대로 · 채택 소재는 화요일 칸부터 추가 · 기존 정보형 주제는 지우지 않고 다음 빈칸으로 미룸'],
+ ['링크','프로필 링크 + 스토리 링크 스티커 · 첫 댓글 링크는 2026-09-21 폐지 · 댓글 유도 금지'],
+ ['캐러셀 마지막 장','이달의 상품 · 단 공공·제공 사진 세트는 마지막 장 없음(저장용 요약 장) · 공공·제공 세트는 회사 월 게시의 1/3 이하'],
+ ['공공·제공 사진','공공누리 1유형만 · 장마다 출처(사진: 한국관광공사 포토코리아 · 촬영자 · 공공누리 1유형) · 워터마크 유지 · 제공 사진은 서면 허락 캡처 보관'],
+ ['연예인','사진·방송 캡처 금지 · 이름은 본인 공식 SNS·공식 발표·N1 보도로 확인된 방문 사실만(확인 링크 필수) · 「○○ 추천·픽·단골」 금지 · 요청 시 24시간 안 삭제'],
+ ['실사례','회사 계정 주 1건 이상 목표 · 반응 좋은 주제는 현장 촬영 → 실사례 칸'],
+ ['표기','전화번호·금액·이모지 금지 · AI 이미지는 「AI 연출」 표기 · 해시태그 인스타 5 · 페북 3 · 쓰레드 1']
+];
+var DOW=['일','월','화','수','목','금','토'];
+var KIND={info:'정보',case:'실사례',poster:'포스터',reel:'릴스'};
+var ST={'편성안':'#7c3aed','편성':'#2563eb','제작':'#b45309','레이아웃확인':'#b45309','문안확인':'#b45309','발송':'#16a34a','게시':'#16a34a','측정완료':'#64748b'};
+var CHIPS=['전체','축제','여행 이슈','연예·방송','축제 라인업','벤치마크'];
+var S={tab:1,chip:'전체',data:null,busy:false};
+function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function $(id){return document.getElementById(id);}
+function md(s){if(!s)return '';var d=new Date(s+'T00:00:00Z');return (d.getUTCMonth()+1)+'/'+d.getUTCDate()+'('+DOW[d.getUTCDay()]+')';}
+function n(v){return v==null?'<span style="color:#cbd5e1">-</span>':E(v);}
+function safeUrl(u){u=String(u||'');return /^https?:\/\//i.test(u)?u:'';}
+var btn='padding:4px 10px;border:1px solid #cbd5e1;background:#fff;border-radius:6px;font-size:.74rem;cursor:pointer';
+var btnP='padding:6px 14px;border:1px solid #2563eb;background:#2563eb;color:#fff;border-radius:6px;font-size:.8rem;cursor:pointer;font-weight:700';
+function tile(t,v,sub,c){return '<div style="flex:1 1 150px;min-width:0;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px"><div style="font-size:.72rem;color:#64748b">'+t+'</div><div style="font-size:1.2rem;font-weight:700;color:'+(c||'#0f172a')+';margin-top:2px">'+v+'</div>'+(sub?'<div style="font-size:.68rem;color:#94a3b8">'+sub+'</div>':'')+'</div>';}
+function msg(t,c){var m=$('sns2-msg');if(m){m.textContent=t||'';m.style.color=c||'#64748b';}}
+
+function shell(){
+  var p=$('tsns');if(!p)return null;
+  if($('sns2'))return $('sns2');
+  var h2=p.querySelector('h2');
+  if(h2&&h2.nextElementSibling)h2.nextElementSibling.innerHTML='회사 @realplan_travel(여행·행사 · 월~금) · 대표 @snslee(마케팅·교육 · 화·목) — <b>일요일에 여기서</b> 지난주 성과 확인 → 소재 채택 → 다음 주 편성안 승인. 알림은 텔레그램 <b>「리얼플랜 SNS」</b> 방으로 옵니다.';
+  var det=p.querySelector('details');
+  if(det){det.querySelector('summary').textContent='⑤ 운영 규칙 (현행 · 2026-10-01)';
+    var tb=det.querySelector('table');if(tb)tb.innerHTML=RULES.map(function(r){return '<tr><td style="padding:6px 10px;font-weight:700;white-space:nowrap;vertical-align:top;color:#334155">'+E(r[0])+'</td><td style="padding:6px 10px;color:#334155">'+E(r[1])+'</td></tr>';}).join('');}
+  var hs=p.querySelectorAll('h3'),h3=null;
+  for(var i=0;i<hs.length;i++){if(/편성 · 발송 세트/.test(hs[i].textContent)){h3=hs[i];break;}}
+  var box=document.createElement('div');box.id='sns2';box.style.marginBottom='18px';
+  if(h3){h3.innerHTML='④ 편성·발송 세트 <span style="color:#94a3b8;font-weight:400;font-size:.78rem">텔레그램 발송 기록 · 조회 전용</span>';h3.parentNode.insertBefore(box,h3);}
+  else p.appendChild(box);
+  if(det&&h3&&det.parentNode)det.parentNode.appendChild(det);
+  return box;
+}
+function frame(){
+  var d=S.data||{},k=d.kpi||{};
+  var flow='<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 12px;font-size:.8rem;color:#1e3a8a;margin-bottom:10px"><b>일요일</b> ① 성과 확인 → ② 소재 채택 → ③ 「채택 끝」 → ④ 편성안 승인 → <b>월~금</b> 제작·08:30 발송</div>';
+  var last=k['마지막_수집']?new Date(k['마지막_수집']).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'없음';
+  var cw=+k['회사_이번주']||0,ew=+k['대표_이번주']||0,fail=+k['발송실패_7일']||0;
+  var kpi='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">'
+    +tile('이번 주 게시',cw+' / 5 · '+ew+' / 2','회사 월~금 · 대표 화·목',(cw>=5&&ew>=2)?'#16a34a':'#b45309')
+    +tile('회사 인스타 평균 도달',n(k['회사_인스타_평균도달']),'최근 30일 · 48시간 값')
+    +tile('저장+공유 평균',n(k['회사_저장공유_평균']),'회사 · 최근 30일')
+    +tile('성과 수집',E(last),'오늘 '+(k['오늘_수집칸']||0)+'칸 · 매일 07:55',(k['오늘_수집칸']||0)>0?'#16a34a':'#dc2626')
+    +tile('발송 실패',fail+'건','최근 7일 · SNS 알림',fail?'#dc2626':'#16a34a')+'</div>';
+  var tabs='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">'+[[1,'① 성과·촬영 후보'],[2,'② 소재 신호'+(d['seed_대기']?' · 채택 '+d['seed_대기']:'')],[3,'③ 다음 주 편성안']].map(function(t){
+      var on=S.tab===t[0];return '<button data-sns2-tab="'+t[0]+'" style="padding:7px 14px;border-radius:8px;font-size:.82rem;cursor:pointer;font-weight:700;border:1px solid '+(on?'#2563eb':'#cbd5e1')+';background:'+(on?'#2563eb':'#fff')+';color:'+(on?'#fff':'#334155')+'">'+E(t[1])+'</button>';}).join('')
+    +'<span id="sns2-msg" style="font-size:.76rem;align-self:center;margin-left:6px"></span></div>';
+  return flow+kpi+tabs+'<div id="sns2-body"></div>';
+}
+function tab1(){
+  var d=S.data||{},rows=d.perf||[],cand=d.cand||[];
+  var h='<div style="font-size:.78rem;color:#64748b;margin-bottom:6px">지난주 '+md(d['지난주'])+' ~ 금 · 게시 48시간 값(없으면 가장 가까운 측정일 ≈) · 도달 순</div>';
+  h+=rows.length?'<div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:7px">계정</th><th style="padding:7px">날짜</th><th style="padding:7px">종류</th><th style="padding:7px">제목</th><th style="padding:7px">인스타 도달</th><th style="padding:7px">저장+공유</th><th style="padding:7px">프로필</th><th style="padding:7px">쓰레드</th><th style="padding:7px">페북</th><th style="padding:7px">틱톡</th><th style="padding:7px"></th></tr></thead><tbody>'
+    +rows.map(function(r){return '<tr style="border-top:1px solid #e2e8f0"><td style="padding:7px;white-space:nowrap">'+E(r['계정'])+'</td><td style="padding:7px;white-space:nowrap">'+md(r['게시일'])+'</td><td style="padding:7px">'+E(KIND[r['종류']]||r['종류'])+'</td><td style="padding:7px;min-width:180px">'+E(r['제목']||'')+(r['정확_48h']===false?' <span style="color:#94a3b8;font-size:.68rem">≈'+E(String(r['사용한_측정일']||'').slice(5))+'</span>':'')+'</td><td style="padding:7px;font-weight:700">'+n(r['인스타_도달'])+'</td><td style="padding:7px">'+n(r['인스타_저장공유'])+'</td><td style="padding:7px">'+n(r['인스타_프로필방문'])+'</td><td style="padding:7px">'+n(r['쓰레드_조회'])+'</td><td style="padding:7px">'+n(r['페북_조회'])+'</td><td style="padding:7px">'+(r['틱톡_조회']==null?'<span style="color:#94a3b8;font-size:.68rem">캡처</span>':E(r['틱톡_조회']))+'</td><td style="padding:7px"><button data-sns2-shoot="'+E(r['세트_id'])+'" style="'+btn+'">🎥 촬영 과제</button></td></tr>';}).join('')+'</tbody></table></div>'
+    :'<p style="color:#94a3b8;font-size:.82rem">지난주 게시 세트가 없습니다.</p>';
+  h+='<h4 style="font-size:.88rem;font-weight:700;margin:14px 0 6px">🎥 촬영 후보 <span style="color:#94a3b8;font-weight:400;font-size:.74rem">최근 30일 계정별 도달 상위 20% · 표본 10건 이상이면 평균의 1.5배 이상</span></h4>';
+  h+=cand.length?cand.map(function(c){return '<div style="display:flex;gap:8px;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;margin-bottom:5px;font-size:.8rem"><b>'+E(c['계정'])+'</b><span>'+md(c['게시일'])+'</span><span style="flex:1">'+E(c['제목']||'')+'</span><span style="color:#16a34a;font-weight:700">도달 '+E(c['도달'])+(c['n']>=10&&c['배수']?' · '+E(c['배수'])+'배':'')+'</span><button data-sns2-shoot="'+E(c['세트_id'])+'" style="'+btn+'">촬영 과제로</button></div>';}).join('')
+    :'<p style="color:#94a3b8;font-size:.82rem">후보 없음</p>';
+  return h;
+}
+function tab2(){
+  var d=S.data||{},sig=(d.signals||[]).filter(function(s){return S.chip==='전체'||s['칩']===S.chip;});
+  var h='<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">'+CHIPS.map(function(c){var on=S.chip===c;var cnt=c==='전체'?(d.signals||[]).length:(d.signals||[]).filter(function(s){return s['칩']===c;}).length;
+    return '<button data-sns2-chip="'+E(c)+'" style="padding:4px 10px;border-radius:999px;font-size:.74rem;cursor:pointer;border:1px solid '+(on?'#0f172a':'#cbd5e1')+';background:'+(on?'#0f172a':'#fff')+';color:'+(on?'#fff':'#334155')+'">'+E(c)+' '+cnt+'</button>';}).join('')+'</div>';
+  h+='<div style="font-size:.74rem;color:#64748b;margin-bottom:6px">국내여행·행사이벤트 · 최근 21일 · 같은 이슈는 1줄 · 연예·방송은 <b>확인 링크</b>(본인 공식 SNS·공식 발표·N1 보도)가 있어야 채택됩니다. 트렌드·소재 탭과 같은 표를 씁니다.</div>';
+  h+=sig.length?'<div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><tbody>'
+    +sig.map(function(s){var u=safeUrl(s['링크']);var hold=s['상태']==='보류';
+      return '<tr style="border-top:1px solid #e2e8f0'+(hold?';background:#fafafa':'')+'"><td style="padding:7px;white-space:nowrap"><span style="font-size:.7rem;padding:1px 7px;border-radius:999px;background:#f1f5f9;color:#334155">'+E(s['칩'])+'</span></td>'
+      +'<td style="padding:7px;min-width:240px">'+(u?'<a href="'+E(u)+'" target="_blank" rel="noopener" style="color:#0f172a;text-decoration:none">'+E(s['제목'])+'</a>':E(s['제목']))+(s['추천메모']?'<div style="font-size:.7rem;color:#64748b;margin-top:2px">'+E(s['추천메모'])+'</div>':'')+(s['확인_링크']?'<div style="font-size:.68rem;color:#16a34a">확인 링크 있음</div>':'')+'</td>'
+      +'<td style="padding:7px;white-space:nowrap;font-size:.72rem;color:#64748b">'+E(s['등급']||'D')+' · '+E(s['점수']==null?'-':s['점수'])+'점'+(hold?' · 보류':'')+'</td>'
+      +'<td style="padding:7px;white-space:nowrap"><button data-sns2-dec="채택" data-id="'+E(s.id)+'" data-chip="'+E(s['칩'])+'" style="'+btn+';border-color:#16a34a;color:#16a34a">채택</button> <button data-sns2-dec="보류" data-id="'+E(s.id)+'" style="'+btn+'">보류</button> <button data-sns2-dec="제외" data-id="'+E(s.id)+'" style="'+btn+';color:#94a3b8">제외</button></td></tr>';}).join('')+'</tbody></table></div>'
+    :'<p style="color:#94a3b8;font-size:.82rem">이 분류에 새 신호가 없습니다.</p>';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px"><span style="font-size:.82rem">채택된 소재 <b>'+(d['seed_대기']||0)+'</b>건 대기</span><button data-sns2-draft="1" style="'+btnP+'">채택 끝 → 다음 주 편성안 만들기</button><span style="font-size:.72rem;color:#64748b">'+md(d['주시작'])+' 주 · 실사례·쇼츠 재게시·월요일 칸은 그대로</span></div>';
+  return h;
+}
+function tab3(){
+  var d=S.data||{},g=d.grid||[],cap=d.cap||{},lim=Math.floor((cap['전체']||0)/3),hasDraft=g.some(function(x){return x['번호'];});
+  var h='<div style="font-size:.78rem;color:#64748b;margin-bottom:6px">'+md(d['주시작'])+' 주 · 🔒 고정(실사례·쇼츠 재게시·월요일 선제작·제작 이상) · ➕ 채택 소재 편성안 · 공공·제공 사진 이번 달 <b style="color:'+((cap['공공']||0)>lim?'#dc2626':'#0f172a')+'">'+(cap['공공']||0)+' / '+(cap['전체']||0)+'</b> (상한 '+lim+')</div>';
+  h+=g.length?'<div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px"><table style="width:100%;border-collapse:collapse;font-size:.8rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:7px">계정</th><th style="padding:7px">날짜</th><th style="padding:7px">사업부</th><th style="padding:7px">종류</th><th style="padding:7px">주제</th><th style="padding:7px">사진</th><th style="padding:7px">상태</th><th style="padding:7px">편성안</th></tr></thead><tbody>'
+    +g.map(function(x){var no=x['번호'];var photo=/공공사진/.test(x['형식']||'')?'공공 1유형':/제공사진/.test(x['형식']||'')?'제공':'자사';
+      return '<tr style="border-top:1px solid #e2e8f0'+(no?';background:#f5f3ff':'')+'"><td style="padding:7px;white-space:nowrap">'+E(x['계정'])+'</td><td style="padding:7px;white-space:nowrap">'+md(x['게시일'])+'</td><td style="padding:7px">'+E(x['사업부'])+'</td><td style="padding:7px">'+E(KIND[x['종류']]||x['종류'])+(x['묶음']==='쇼츠재게시'?' · 쇼츠':'')+'</td>'
+      +'<td style="padding:7px;min-width:200px">'+(no?'➕ ':'')+E(x['제목']||'(주제 미정)')+(x['원래_제목']?'<div style="font-size:.7rem;color:#64748b">↳ 원래 「'+E(x['원래_제목'])+'」 → 승인 시 다음 빈칸으로</div>':'')+'</td>'
+      +'<td style="padding:7px;white-space:nowrap;font-size:.74rem">'+photo+'</td>'
+      +'<td style="padding:7px;white-space:nowrap"><span style="font-weight:700;color:'+(ST[x['상태']]||'#334155')+'">'+E(x['상태'])+'</span></td>'
+      +'<td style="padding:7px;white-space:nowrap">'+(no?'<label style="font-size:.76rem"><input type="checkbox" data-sns2-keep="'+no+'" checked> #'+no+'</label>':(x['잠금']?'🔒':''))+'</td></tr>';}).join('')+'</tbody></table></div>'
+    :'<p style="color:#94a3b8;font-size:.82rem">이 주에 편성된 칸이 없습니다(매일 09:05 자동 편성).</p>';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">'
+    +(hasDraft?'<button data-sns2-approve="1" style="'+btnP+'">편성안 승인 → 제작 시작</button><button data-sns2-reset="1" style="'+btn+'">편성안 모두 되돌리기</button>':'')
+    +'<button data-sns2-draft="1" style="'+btn+'">'+(hasDraft?'편성안 다시 만들기':'채택 소재로 편성안 만들기')+'</button>'
+    +'<span style="font-size:.72rem;color:#64748b;align-self:center">체크를 풀면 그 번호는 원래 주제로 돌아갑니다</span></div>';
+  return h;
+}
+function render(){
+  var box=shell();if(!box)return;
+  box.innerHTML=frame();
+  var b=$('sns2-body');if(b)b.innerHTML=S.tab===1?tab1():S.tab===2?tab2():tab3();
+}
+async function load(){
+  var box=shell();if(!box)return;
+  if(typeof sb==='undefined'){box.innerHTML='<p style="color:#dc2626;font-size:.85rem">로그인 연결을 찾지 못했습니다.</p>';return;}
+  if(!S.data)box.innerHTML='<p style="color:#94a3b8;font-size:.85rem">SNS 운영 불러오는 중…</p>';
+  var r=await sb.rpc('rpc_sns_ops_board',{});
+  if(r.error){box.innerHTML='<p style="color:#dc2626;font-size:.85rem">SNS 운영 조회 실패: '+E(r.error.message)+'</p>';return;}
+  S.data=r.data||{};render();
+}
+async function call(name,args,ok){
+  if(S.busy)return;S.busy=true;msg('처리 중…');
+  try{var r=await sb.rpc(name,args);
+    if(r.error){msg('실패: '+r.error.message,'#dc2626');return;}
+    await load();msg(ok||'완료','#16a34a');
+  }catch(e){msg('실패: '+(e&&e.message||e),'#dc2626');}finally{S.busy=false;}
+}
+document.addEventListener('click',function(ev){
+  var t=ev.target.closest&&ev.target.closest('[data-sns2-tab],[data-sns2-chip],[data-sns2-dec],[data-sns2-draft],[data-sns2-approve],[data-sns2-reset],[data-sns2-shoot]');
+  if(!t||!$('sns2')||!$('sns2').contains(t))return;
+  if(t.hasAttribute('data-sns2-tab')){S.tab=+t.getAttribute('data-sns2-tab');render();return;}
+  if(t.hasAttribute('data-sns2-chip')){S.chip=t.getAttribute('data-sns2-chip');render();return;}
+  var wk=(S.data||{})['주시작'];
+  if(t.hasAttribute('data-sns2-dec')){
+    var st=t.getAttribute('data-sns2-dec'),id=+t.getAttribute('data-id'),memo=null,link=null;
+    if(st==='채택'){
+      memo=window.prompt('SNS에서 어떻게 쓸지 한 줄(비우면 추천 문장 그대로)','');if(memo===null)return;
+      if(t.getAttribute('data-chip')==='연예·방송'){link=window.prompt('확인 링크 — 본인 공식 SNS 게시물 · 방송사/소속사 공식 발표 · N1 방송사 보도 주소','');if(!link)return;}
+    }
+    call('rpc_trend_decide',{p_id:id,p_state:st,p_to:st==='채택'?['SNS']:[],p_memo:memo,p_link:link},st+' 처리했습니다');return;
+  }
+  if(t.hasAttribute('data-sns2-draft')){if(!window.confirm(md(wk)+' 주 편성안을 만들까요? 실사례·쇼츠 재게시·월요일 칸은 그대로 둡니다.'))return;S.tab=3;call('rpc_sns_plan_draft',{p_week_start:wk},'편성안을 만들었습니다 — SNS 방에도 보냈습니다');return;}
+  if(t.hasAttribute('data-sns2-approve')){
+    var ex=[].map.call(document.querySelectorAll('#sns2 [data-sns2-keep]'),function(c){return c.checked?null:+c.getAttribute('data-sns2-keep');}).filter(function(v){return v!=null;});
+    if(!window.confirm('편성안을 승인할까요?'+(ex.length?' 뺄 번호: '+ex.join(', '):'')))return;
+    call('rpc_sns_plan_approve',{p_week_start:wk,p_exclude:ex},'승인했습니다 — 상태가 「편성」으로 바뀌었습니다');return;
+  }
+  if(t.hasAttribute('data-sns2-reset')){
+    var all=[].map.call(document.querySelectorAll('#sns2 [data-sns2-keep]'),function(c){return +c.getAttribute('data-sns2-keep');});
+    if(!window.confirm('편성안을 모두 원래대로 되돌릴까요?'))return;
+    call('rpc_sns_plan_approve',{p_week_start:wk,p_exclude:all},'되돌렸습니다');return;
+  }
+  if(t.hasAttribute('data-sns2-shoot')){var m=window.prompt('촬영 과제 메모(장소·가게·주변 등 · 비우면 원래 주제로)','');if(m===null)return;
+    call('rpc_sns_shoot_task',{p_set_id:t.getAttribute('data-sns2-shoot'),p_memo:m},'촬영 과제로 넣었습니다 — ② 채택 대기에 잡힙니다');return;}
+});
+/* 옛 세트 표 정리 — 폐지된 첫 댓글 링크 줄·옛 목표(주3회) 칸 숨김 */
+function tidy(){
+  var box=document.querySelector('#tsns #cs-sns-sets');if(!box)return;
+  [].forEach.call(box.querySelectorAll('div'),function(x){if(/^첫 댓글 링크:/.test(x.textContent||''))x.style.display='none';});
+  [].forEach.call(box.querySelectorAll('p'),function(x){if(/첫 댓글/.test(x.textContent||'')&&!x.__t){x.__t=1;x.innerHTML='텔레그램으로 나간 이달의 상품 세트 기록입니다 — <b>조회 전용</b>. 링크는 프로필 + 스토리 링크 스티커. 성과는 위 ①에서 봅니다.';}});
+  [].forEach.call(box.querySelectorAll('div'),function(x){if(x.children.length>=3&&/이번 주 세트/.test(x.textContent||'')&&/목표 주3회/.test(x.textContent||''))x.style.display='none';});
+  [].forEach.call(box.querySelectorAll('td'),function(x){if(/P5-B 대장 연결 후/.test(x.textContent||''))x.innerHTML='① 성과 표';});
+}
+function watch(){var box=document.querySelector('#tsns #cs-sns-sets');if(!box||box.__sns2)return;box.__sns2=1;new MutationObserver(tidy).observe(box,{childList:true,subtree:true});tidy();}
+var _open=window.rpSnsOpsOpen;
+window.rpSnsOpsOpen=function(){var r;try{if(typeof _open==='function')r=_open.apply(this,arguments);}finally{try{shell();watch();load();}catch(e){}}return r;};
+function hashOpen(){if(location.hash!=='#sns')return;var n=0;(function t(){var nv=$('nav-tsns');if(nv){nv.click();return;}if(++n<20)setTimeout(t,500);})();}
+function init(){var n=0;(function t(){if($('tsns')){shell();watch();if($('tsns').classList.contains('active'))load();hashOpen();return;}if(++n<30)setTimeout(t,500);})();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<!-- RP-SNS-OPS2 end -->
+
 
 <!-- RP-SCH-V4 start · v1.56.0 · 2026-09-29 편성 달력(블로그·홈 자료실·SNS·채널 소식·유튜브 리얼플랜여행 · 사업부별) -->
 <script>

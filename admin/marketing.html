@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.57.2</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.57.3</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -4957,7 +4957,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.57.2';
+var VER='v1.57.3';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -6628,7 +6628,7 @@ async function load(from,to){
   Object.keys(bg).forEach(function(k){var g=bg[k];g.rows.sort(function(a,b){return a.c<b.c?-1:1;});var live=g.rows.filter(function(x){return !x.h;}),use=live.length?live:g.rows;
     var same=use.length>1&&use.every(function(x){return x.t===use[0].t;});
     var ttl=same?use[0].t+' · '+use.map(function(x){return x.c;}).join('·'):use.map(function(x){return x.t+' · '+x.c;}).join(' / ');
-    it.push({d:g.d,lane:'blog',bu:buBlog(g.L),bc:g.L==='C'?1:0,pc:live.length,tm:'',tag:({여행:'국내여행',행사:'행사·이벤트',마케팅:'마케팅·교육'})[buBlog(g.L)],title:ttl,kw:use.map(function(x){return x.kw;}).join(' '),st:merge(g.st),sub:(g.type||'')});});
+    it.push({d:g.d,lane:'blog',bu:buBlog(g.L),bc:g.L==='C'?1:0,pc:live.length,tm:'',tag:({여행:'국내여행',행사:'행사·이벤트',마케팅:'마케팅·교육'})[buBlog(g.L)],title:ttl,kw:use.map(function(x){return x.kw;}).join(' '),st:merge(g.st),sub:(g.type||''),off:(dow(g.d)<1||dow(g.d)>3)&&g.d>='2026-09-29'&&merge(g.st)!=='중단'});}); /* v1.57.3 요일 밖(블로그 발행 월~수 · 2026-09-30 대표 승인) */
   /* v1.56.0 홈 자료실 = 주간 편성 원장(홈신규·홈보강) */
   var wp=(q[7]&&q[7].data)||[];PW={};PW0=null;wp.forEach(function(r){PW[r.주차_시작]=1;if(!PW0||r.주차_시작<PW0)PW0=r.주차_시작;});
   var rl=(q[8]&&q[8].data&&q[8].data[0])?q[8].data[0].값:null;
@@ -6705,6 +6705,7 @@ var CSS='<style id="rp-sch4-css">'
 +'#tsch table.p4-t{border-collapse:collapse;width:100%;background:#fff;table-layout:fixed}'
 +'#tsch .p4-t th{background:#f1f5f9;font-size:.86rem;padding:6px;border:1px solid #e2e8f0}'
 +'#tsch .p4-t td{border:1px solid #e2e8f0;vertical-align:top;padding:6px 8px;font-size:.84rem}'
++'#tsch .p4-off{color:#b91c1c;font-weight:700;font-size:.78rem;white-space:nowrap}'
 +'#tsch .p4-t td.day{height:112px;cursor:pointer}#tsch .p4-t td.day:hover{background:#f8fafc}'
 +'#tsch .p4-t td.out{background:#f8fafc;color:#cbd5e1}#tsch .p4-t td.today{box-shadow:inset 0 0 0 2px #1d4ed8}#tsch .p4-t td.sel{background:#eff6ff}'
 +'#tsch .p4-dn{font-weight:700;font-size:.92rem}#tsch .p4-hol{color:#b91c1c;font-size:.72rem;font-weight:400}'
@@ -6723,7 +6724,7 @@ var CSS='<style id="rp-sch4-css">'
 +'#tsch .p4-list{border-collapse:collapse;width:100%;background:#fff;font-size:.84rem}#tsch .p4-list th,#tsch .p4-list td{border-bottom:1px solid #eef2f7;padding:6px 8px;text-align:left;vertical-align:top}#tsch .p4-list th{background:#f8fafc;white-space:nowrap}'
 +'</style>';
 
-function badge(s){return '<span class="p4-bd '+s+'">'+s+'</span>';}
+function badge(s,x){return '<span class="p4-bd '+s+'">'+s+'</span>'+(x&&x.off?' <span class="p4-off">🔴 요일 밖(발행은 월~수)</span>':'');}
 function lk(x){return x.link&&x.link.length?'<div class="p4-lk">🔗 같은 소재 「'+E(x.link[0].w)+'」 — '+({blog:'블로그',home:'홈 자료실',sns:'SNS',ch:'채널 소식',yt:'유튜브'}[x.link[0].lane])+' '+md(x.link[0].d)+'</div>':'';}
 function groups(d,it){var out=[];LANES.forEach(function(L){var a=it.filter(function(x){return x.lane===L[0]&&x.d===d&&vis(x);});
   a=cnt(a);if(a.length)out.push([L[1]+' '+a.length+L[2]+(L[0]==='blog'?' ('+a.reduce(function(s,x){return s+(x.pc||0);},0)+'편)':'')+(L[0]==='sns'?' (인스타·페북·쓰레드)':''),a]);});return out;}
@@ -6774,7 +6775,7 @@ function panel(d,v){
   var g=groups(d,v.it),h='<div class="p4-panel"><h3>'+mdK(d)+' ('+DOWK[dow(d)]+') 편성'+(HOLI[d]?' <span class="p4-hol">'+HOLI[d]+'</span>':'')+'</h3><div class="p4-mut">날짜를 누르면 그날 목록이 여기에 뜹니다 · 제목은 자르지 않습니다</div>';
   if(!g.length)h+='<p class="p4-mut" style="margin-top:12px">편성 없음</p>';
   g.forEach(function(G){h+='<div class="p4-grp"><h4>'+G[0]+'</h4>'+G[1].sort(function(a,b){return (a.tm||'99')<(b.tm||'99')?-1:1;}).map(function(x){
-    return '<div class="p4-it"><span class="p4-tm">'+(x.tm||'—')+'</span><span><span class="p4-tg">['+E(x.tag)+']</span> '+E(x.title)+(x.sub?' <span class="p4-tg">· '+E(x.sub)+'</span>':'')+lk(x)+'</span>'+badge(x.st)+'</div>';}).join('')+'</div>';});
+    return '<div class="p4-it"><span class="p4-tm">'+(x.tm||'—')+'</span><span><span class="p4-tg">['+E(x.tag)+']</span> '+E(x.title)+(x.sub?' <span class="p4-tg">· '+E(x.sub)+'</span>':'')+lk(x)+'</span>'+badge(x.st,x)+'</div>';}).join('')+'</div>';});
   return h+'</div>';
 }
 function month(v){
@@ -6785,18 +6786,18 @@ function month(v){
     if(d<from||d>to)h+='<td class="out"><div class="p4-dn">'+Number(d.slice(8))+'</div></td>';
     else{var ln='',gp=[],wt=[];LANES.forEach(function(L){if(!S.on[L[0]])return;var a=cnt(v.it.filter(function(x){return x.lane===L[0]&&x.d===d&&vis(x)&&x.st!=='중단';}));
         if(a.length)ln+='<div class="p4-ln"'+(L[0]==='home'?' style="background:#fff7ed;border-radius:4px"':'')+'><span>'+L[1]+'</span><span>'+a.length+L[2]+'</span></div>';var gr=gapOf(L[0],d,a),nm=L[1].split(' ').slice(1).join(' ');if(gr===true)gp.push(nm);else if(gr==='wait')wt.push(nm);});
-      var hasLk=v.it.some(function(x){return x.d===d&&vis(x)&&x.link&&x.link.length;});
-      h+='<td class="day'+(d===T?' today':'')+(d===S.sel?' sel':'')+'" onclick="rpP4.sel(\''+d+'\')"><div class="p4-dn" style="color:'+(dow(d)===0||HOLI[d]?'#b91c1c':'#0f172a')+'">'+Number(d.slice(8))+(HOLI[d]?' <span class="p4-hol">'+HOLI[d]+'</span>':'')+(hasLk?' <span class="p4-lk" title="같은 소재가 다른 채널에도 있음">🔗</span>':'')+'</div>'+ln+(gp.length?'<div class="p4-gap">빈 날: '+gp.join('·')+'</div>':'')+(wt.length?'<div class="p4-wait">편성안 대기: '+wt.join('·')+'</div>':'')+'</td>';}
+      var hasLk=v.it.some(function(x){return x.d===d&&vis(x)&&x.link&&x.link.length;});var hasOff=v.it.some(function(x){return x.d===d&&vis(x)&&x.off;});
+      h+='<td class="day'+(d===T?' today':'')+(d===S.sel?' sel':'')+'" onclick="rpP4.sel(\''+d+'\')"><div class="p4-dn" style="color:'+(dow(d)===0||HOLI[d]?'#b91c1c':'#0f172a')+'">'+Number(d.slice(8))+(HOLI[d]?' <span class="p4-hol">'+HOLI[d]+'</span>':'')+(hasLk?' <span class="p4-lk" title="같은 소재가 다른 채널에도 있음">🔗</span>':'')+'</div>'+ln+(hasOff?'<div class="p4-gap">🔴 요일 밖</div>':'')+(gp.length?'<div class="p4-gap">빈 날: '+gp.join('·')+'</div>':'')+(wt.length?'<div class="p4-wait">편성안 대기: '+wt.join('·')+'</div>':'')+'</td>';}
     if(dow(d)===0){var ws=addD(d,-6);h+='<td class="p4-inq">'+(ws<=T?inqTxt(v.inq,ws,d):'<span class="p4-mut">—</span>')+'</td></tr>';}
   }
-  return h+'</table><div class="p4-mut" style="margin-top:6px">칸 숫자 = 그날 건수(중단 제외 · 블로그는 쌍 = 네이버+티스토리) · <b style="color:#b91c1c">빈 날</b> = 9/29 승인 요일(블로그 화·수 · 홈 새 글 월~수 · 보강 목 · SNS 평일 · 롱폼 금)인데 비었을 때(계획이 있는 주·이번 주, 오늘 이후) · <span style="background:#f1f5f9;padding:0 4px">편성안 대기</span> = 그 뒤 주, 금요일 16:40 편성안이 채울 칸 · 🔗 = 7일 안에 같은 소재가 다른 채널에도 있음 · 채널 소식은 편성 칸(배정·미배정·빠짐) 실물</div>';
+  return h+'</table><div class="p4-mut" style="margin-top:6px">칸 숫자 = 그날 건수(중단 제외 · 블로그는 쌍 = 네이버+티스토리) · <b style="color:#b91c1c">빈 날</b> = 9/29 승인 요일(블로그 화·수 · 홈 새 글 월~수 · 보강 목 · SNS 평일 · 롱폼 금)인데 비었을 때(계획이 있는 주·이번 주, 오늘 이후) · <span style="background:#f1f5f9;padding:0 4px">편성안 대기</span> = 그 뒤 주, 금요일 16:40 편성안이 채울 칸 · 🔗 = 7일 안에 같은 소재가 다른 채널에도 있음 · 채널 소식은 편성 칸(배정·미배정·빠짐) 실물 · <b style="color:#b91c1c">🔴 요일 밖</b> = 블로그 발행일(월~수)이 아닌 칸 — 삭제 또는 월~수로 이동</div>';
 }
 function week(v){
   var T=today(),days=[];for(var d=S.wk;d<=addD(S.wk,6);d=addD(d,1))days.push(d);
   var h='<table class="p4-t p4-wk"><tr>'+days.map(function(d){return '<th style="'+(d===T?'background:#dbeafe':'')+'">'+DOWK[dow(d)]+' '+md(d)+(HOLI[d]?' <span class="p4-hol">'+HOLI[d]+'</span>':'')+'</th>';}).join('')+'</tr><tr>';
   days.forEach(function(d){var g=groups(d,v.it),c='';
     g.forEach(function(G){c+='<div style="margin-top:6px"><div style="font-weight:700;font-size:.84rem;border-bottom:1px solid #e2e8f0">'+G[0]+'</div>'+G[1].map(function(x){
-      return '<div class="p4-wi">'+(x.tm?'<span class="p4-tm">'+x.tm+'</span> ':'')+'<span class="p4-tg">['+E(x.tag)+']</span> '+E(x.title)+lk(x)+'<br>'+badge(x.st)+'</div>';}).join('')+'</div>';});
+      return '<div class="p4-wi">'+(x.tm?'<span class="p4-tm">'+x.tm+'</span> ':'')+'<span class="p4-tg">['+E(x.tag)+']</span> '+E(x.title)+lk(x)+'<br>'+badge(x.st,x)+'</div>';}).join('')+'</div>';});
     var gp=[],wt=[];LANES.forEach(function(L){if(!S.on[L[0]])return;var gr=gapOf(L[0],d,v.it.filter(function(x){return x.lane===L[0]&&x.d===d&&vis(x);})),nm=L[1].split(' ').slice(1).join(' ');if(gr===true)gp.push(nm);else if(gr==='wait')wt.push(nm);});
     if(gp.length)c+='<div class="p4-gap" style="margin-top:6px">빈 날: '+gp.join('·')+'</div>';if(wt.length)c+='<div class="p4-wait" style="margin-top:6px">편성안 대기: '+wt.join('·')+'</div>';
     h+='<td>'+(c||'<div class="p4-mut" style="margin-top:6px">편성 없음</div>')+'</td>';});
@@ -6806,7 +6807,7 @@ function list(v){
   var all=v.it.filter(function(x){return x.d.slice(0,7)===S.ym&&vis(x);}).sort(function(p,q){return p.d<q.d?-1:p.d>q.d?1:(p.tm||'99')<(q.tm||'99')?-1:1;});
   var a=cnt(all),od=all.filter(function(x){return x.old;});
   var ln={blog:'📝 블로그',home:'🏠 홈 자료실',sns:'📣 SNS',ch:'📍 채널 소식',yt:'▶️ 유튜브'};
-  function row(x){return '<tr><td style="white-space:nowrap">'+md(x.d)+'('+DOWK[dow(x.d)]+')</td><td>'+(x.tm||'')+'</td><td style="white-space:nowrap">'+ln[x.lane]+(x.lane==='blog'?' 1쌍':'')+'</td><td style="white-space:nowrap">'+E(x.tag)+'</td><td>'+E(x.title).split(' / ').join('<br>')+lk(x)+'</td><td>'+badge(x.st)+'</td></tr>';}
+  function row(x){return '<tr><td style="white-space:nowrap">'+md(x.d)+'('+DOWK[dow(x.d)]+')</td><td>'+(x.tm||'')+'</td><td style="white-space:nowrap">'+ln[x.lane]+(x.lane==='blog'?' 1쌍':'')+'</td><td style="white-space:nowrap">'+E(x.tag)+'</td><td>'+E(x.title).split(' / ').join('<br>')+lk(x)+'</td><td>'+badge(x.st,x)+'</td></tr>';}
   var th='<tr><th>날짜</th><th>시각</th><th>채널</th><th>구분</th><th>제목</th><th>상태</th></tr>';
   return '<div class="p4-mut" style="margin-bottom:6px">'+a.length+'건</div><table class="p4-list">'+th+a.map(row).join('')+'</table>'
    +(od.length?'<details style="margin-top:10px;border:1px dashed #cbd5e1;border-radius:8px;padding:6px 10px"><summary style="cursor:pointer;color:#475569">옛 쓰레드 단독 글 (9/17 폐지 전) '+od.length+'건'+(od.filter(function(x){return x.st==='중단';}).length?' (폐기 '+od.filter(function(x){return x.st==='중단';}).length+' 포함)':'')+' — 숫자(세트)에서 뺌</summary><table class="p4-list" style="margin-top:6px">'+th+od.map(row).join('')+'</table></details>':'');

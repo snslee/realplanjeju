@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.57.0</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.57.1</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -4957,7 +4957,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.57.0';
+var VER='v1.57.1';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -7654,6 +7654,10 @@ try{var nv=document.querySelector('.nav-item.active');if(nv&&/t8/.test(nv.getAtt
 #ttr .pg a.on{background:#2563eb;color:#fff;border-color:#2563eb}
 #ttr .msg{font-size:.76rem;color:#16a34a;margin-left:6px}
 #ttr details summary{cursor:pointer;font-weight:700}
+#ttr .mn{display:inline-block;font-size:.68rem;padding:0 6px;border-radius:9px;margin:2px 4px 0 0;background:#f5f3ff;color:#5b21b6;border:1px solid #ddd6fe}
+#ttr .rec{margin-top:4px;padding:4px 8px;background:#f0fdf4;border-left:3px solid #22c55e;border-radius:4px;font-size:.76rem;color:#14532d;white-space:normal}
+#ttr .dec textarea{width:100%;max-width:520px;border:1px solid #cbd5e1;border-radius:6px;padding:5px 8px;font-size:.8rem;margin:6px 0;font-family:inherit;resize:vertical;box-sizing:border-box}
+#ttr .rec.wait{background:#f8fafc;border-left-color:#cbd5e1;color:#94a3b8}
 #kw3-trend{background:#fff7ed;border:1px solid #fed7aa;border-left:4px solid #f97316;border-radius:10px;padding:10px 14px;margin-bottom:13px;font-size:.84rem;line-height:1.6}
 #kw3-trend .go{float:right;font-size:.72rem;color:#9a3412;border:1px solid #fdba74;border-radius:10px;padding:1px 9px;background:#fff;cursor:pointer}
 #t8:not(.showorig) > div#kwv3.v3 #kw3-trend{display:block}
@@ -7666,7 +7670,7 @@ try{var nv=document.querySelector('.nav-item.active');if(nv&&/t8/.test(nv.getAtt
    롤백 = 이 블록(<!-- RP-TREND-V1 start … end -->)만 걷어낸다 · 기존 탭·함수는 한 글자도 안 바꿨다 */
 (function(){
 'use strict';
-if(window.__rpTrendV1)return;window.__rpTrendV1='v1.57.0';
+if(window.__rpTrendV1)return;window.__rpTrendV1='v1.57.1';
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function N(x){return (x==null?'—':Number(x).toLocaleString());}
 var S={bu:'',src:'',grade:'AA',st:'신규',sort:'score',page:1,per:25,rows:[],srcRows:[],sum:null};
@@ -7716,7 +7720,7 @@ window.__trGo=function(){var n=document.getElementById('nav-ttr');if(typeof swit
 async function load(){
   ensurePanel();var box=document.getElementById('trv1');if(!box)return;
   try{
-    var q=sb.from('mk_trend_signals').select('id,원천,발행일,수집일,매체,n등급,등급,제목,링크,요약,사업부,묶음,이슈키,교차수,수요_질문90,조회수,점수,점수_내역,상태,넘길곳,대표메모,결정일')
+    var q=sb.from('mk_trend_signals').select('id,원천,발행일,수집일,매체,n등급,등급,제목,링크,요약,사업부,묶음,이슈키,교차수,수요_질문90,조회수,점수,점수_내역,상태,넘길곳,대표메모,결정일,의미유형,추천메모')
       .gte('수집일',new Date(Date.now()-30*864e5).toISOString());
     if(S.bu)q=q.eq('사업부',S.bu);
     if(S.src)q=q.eq('원천',S.src);
@@ -7732,7 +7736,7 @@ async function load(){
 function chips(key,list){return list.map(function(b){return '<span class="f'+(S[key]===b[0]?' on':'')+'" onclick="window.__tr(\''+key+'\',\''+b[0]+'\')">'+b[1]+'</span>';}).join('');}
 function render(src){
   var box=document.getElementById('trv1');var s=S.sum||{};
-  var h='<h2>📰 트렌드·소재 <span class="mut" style="font-weight:400">v1.57.0</span></h2>'
+  var h='<h2>📰 트렌드·소재 <span class="mut" style="font-weight:400">v1.57.1</span></h2>'
    +'<div class="c-sub">뉴스·보도자료·지원사업·방송 유튜브에서 <b>우리 매출 의도(묶음)에 붙는 소재</b>만 모읍니다. 대표님이 <b>채택</b>하면 넘길 곳(SNS·블로그·자료실·유튜브)으로 가고, 클로드는 기획 첫 단계에서 이 표(rpc_trend_brief)를 읽습니다. <b>뉴스는 신호</b>입니다 — 고객 수요 근거로 세지 않고, 인용 전 원문을 다시 확인하며, 기사 문장·사진은 쓰지 않습니다.</div>'
    +'<div style="margin-bottom:10px"><button class="btn" onclick="window.__trLoad()">🔄 새로고침</button></div>'
    +'<div class="sec"><h3>① 이번 주 요약</h3><div class="kpi">'
@@ -7759,7 +7763,7 @@ function render(src){
       else dec='<span class="chip '+(r.상태==='채택'?'gA':'gD')+'">'+E(r.상태)+'</span>'+((r.넘길곳||[]).length?'<span class="mut">→ '+E((r.넘길곳||[]).join('·'))+'</span>':'')+'<br><button class="btn g" onclick="window.__trSet('+r.id+',\'신규\')">되돌리기</button>';
       if(r.대표메모)dec+='<div class="mut" style="color:#475569">메모: '+E(r.대표메모)+'</div>';
       h+='<tr'+(r.점수>=7&&r.상태==='신규'?' style="background:#fffbeb"':'')+'><td class="mut" style="white-space:nowrap">'+md(r.발행일||r.수집일)+'</td><td style="white-space:nowrap">'+E(BU[r.사업부]||r.사업부||'—')+'</td><td class="hide-m">'+E(r.묶음||'—')+'</td>'
-        +'<td><a class="ttl" href="'+E(r.링크||'#')+'" target="_blank" rel="noopener noreferrer">'+E(r.제목)+' ↗</a>'+(r.요약?'<div class="mut" style="white-space:normal">'+E(String(r.요약).slice(0,110))+'</div>':'')
+        +'<td><a class="ttl" href="'+E(r.링크||'#')+'" target="_blank" rel="noopener noreferrer">'+E(r.제목)+' ↗</a>'+(r.의미유형?'<div><span class="mn">'+E(r.의미유형)+'</span></div>':'')+(r.요약?'<div class="mut" style="white-space:normal">'+E(String(r.요약).slice(0,110))+'</div>':'')+(r.상태==='신규'?(r.추천메모?'<div class="rec">💡 추천: '+E(r.추천메모)+'</div>':'<div class="rec wait">💡 추천 준비 중 — 매일 07:47 생성</div>'):'')
         +(r.교차수>1||(r.이슈키&&r.이슈키!==r.id)?'<div class="iss" onclick="window.__trIss('+r.id+','+(r.이슈키||r.id)+')">▸ 같은 이슈 펼치기</div><div id="tri-'+r.id+'"></div>':'')
         +(r.조회수?'<div class="mut">조회 '+N(r.조회수)+'</div>':'')+'</td>'
         +'<td style="white-space:nowrap"><span class="chip '+(SC[r.원천]||'s3')+'">'+E(r.원천)+'</span><span class="chip '+(GC[r.등급]||'gD')+'">'+E(r.등급||'D')+'</span><div class="mut">'+E(r.매체||'')+(r.n등급?' · '+E(r.n등급):'')+'</div></td>'
@@ -7788,7 +7792,7 @@ window.__trIss=async function(id,key){var el=document.getElementById('tri-'+id);
   el.innerHTML=(r.data||[]).map(function(x){return '<div class="mut">· <a href="'+E(x.링크||'#')+'" target="_blank" rel="noopener noreferrer">'+E(x.매체||'')+(x.n등급?'('+E(x.n등급)+')':'')+' — '+E(String(x.제목).slice(0,70))+'</a> '+md(x.발행일)+'</div>';}).join('')||'<span class="mut">같은 이슈 다른 기사 없음</span>';};
 window.__trDec=function(id){var el=document.getElementById('trd-'+id);if(!el)return;if(el.innerHTML){el.innerHTML='';return;}
   el.innerHTML='<div class="dec"><b>넘길 곳</b><br>'+TO.map(function(t,i){return '<label><input type="checkbox" value="'+t[0]+'"'+(i===0?' checked':'')+'> '+t[1]+'</label>';}).join('')
-   +'<input type="text" placeholder="메모 1줄 — 우리 식 해석(예: 짧고 알찬 1박2일 워크숍 각도)" id="trmemo-'+id+'"><br><button class="btn" onclick="window.__trSave('+id+')">채택 저장</button><button class="btn g" onclick="window.__trDec('+id+')">닫기</button></div>';};
+   +'<div style="margin-top:6px"><b>활용 메모</b> <span class="mut">클로드 추천이 들어 있습니다 · 그대로 저장하거나 고쳐 쓰세요</span></div><textarea rows="2" placeholder="추천이 아직 없습니다 — 비워 두면 기사 제목이 소재로 저장됩니다" id="trmemo-'+id+'">'+E(((S.rows||[]).filter(function(x){return x.id===id;})[0]||{}).추천메모||'')+'</textarea><br><button class="btn" onclick="window.__trSave('+id+')">채택 저장</button><button class="btn g" onclick="window.__trDec('+id+')">닫기</button></div>';};
 window.__trSave=async function(id){var el=document.getElementById('trd-'+id);var to=[].slice.call(el.querySelectorAll('input[type=checkbox]:checked')).map(function(x){return x.value;});
   var memo=(document.getElementById('trmemo-'+id)||{}).value||'';await save(id,'채택',to,memo);};
 window.__trSet=async function(id,st){await save(id,st,[],null);};

@@ -198,4 +198,31 @@ document.addEventListener('DOMContentLoaded',function(){try{
  }catch(_){}},true);
 }catch(e){}})();
 </script>
+<!-- RP-HDR-V1 start (모바일 헤더 통일 · 2026-09-30) -->
+<style id="rp-hdr-v1">
+#rp-burger{display:none}
+@media(max-width:780px){
+ header:is(.top,.site) .hwrap{flex-wrap:nowrap!important;height:56px!important;min-height:56px;padding:0 20px!important;position:relative}
+ header:is(.top,.site) .logo{font-size:21px!important;line-height:1.1}
+ header:is(.top,.site) .logo small{display:none!important}
+ #rp-burger{display:inline-flex;flex:0 0 auto;white-space:nowrap;align-items:center;justify-content:center;gap:6px;min-width:44px;height:44px;margin-left:auto;margin-right:-8px;padding:0 4px;border:0;background:none;font-size:15px;font-weight:700;color:#222B3A;cursor:pointer}
+ #rp-burger .bars{display:inline-block;width:20px;height:2px;background:#222B3A;position:relative}
+ #rp-burger .bars:before,#rp-burger .bars:after{content:"";position:absolute;left:0;width:20px;height:2px;background:#222B3A}
+ #rp-burger .bars:before{top:-6px}#rp-burger .bars:after{top:6px}
+ header:is(.top,.site) .menu{display:none!important}
+ header:is(.top,.site).open .menu{display:flex!important;position:absolute;left:0;right:0;top:56px;flex-direction:column;align-items:stretch;background:#fff;border-bottom:1px solid #E6ECF5;box-shadow:0 8px 16px rgba(16,28,51,.1);padding:4px 20px 10px;gap:0!important;font-size:16px!important;z-index:1001}
+ header:is(.top,.site).open .menu a{display:block;padding:13px 4px;border-bottom:1px solid #F0F3F8;font-weight:700;white-space:nowrap}
+ header:is(.top,.site).open .menu a:last-child{border-bottom:0}
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',function(){try{
+ var h=document.querySelector('header.top,header.site'),w=h&&h.querySelector('.hwrap');
+ if(!w||document.getElementById('rp-burger'))return;
+ var b=document.createElement('button');b.id='rp-burger';b.type='button';b.setAttribute('aria-label','메뉴 열기');b.setAttribute('aria-expanded','false');b.innerHTML='메뉴 <span class="bars"></span>';w.appendChild(b);
+ b.addEventListener('click',function(e){e.stopPropagation();var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false')});
+ var m=w.querySelector('.menu');if(m)m.addEventListener('click',function(e){if(e.target.closest('a'))h.classList.remove('open')});
+}catch(e){}});
+</script>
+<!-- RP-HDR-V1 end -->
 </body></html>

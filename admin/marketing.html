@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.57.1</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.57.2</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -4957,7 +4957,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.57.1';
+var VER='v1.57.2';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -7640,7 +7640,7 @@ try{var nv=document.querySelector('.nav-item.active');if(nv&&/t8/.test(nv.getAtt
 #ttr td{padding:7px;border-bottom:1px solid #f1f5f9;vertical-align:top}
 #ttr .chip{display:inline-block;font-size:.7rem;padding:1px 7px;border-radius:10px;font-weight:700;margin-right:3px;white-space:nowrap}
 #ttr .gA{background:#dcfce7;color:#166534}#ttr .gAs{background:#d1fae5;color:#065f46}#ttr .gC{background:#fef9c3;color:#854d0e}#ttr .gD{background:#f1f5f9;color:#64748b}
-#ttr .s0{background:#ffedd5;color:#9a3412}#ttr .s1{background:#fee2e2;color:#991b1b}#ttr .s2{background:#e0e7ff;color:#3730a3}#ttr .s3{background:#f1f5f9;color:#475569}
+#ttr .s0{background:#ffedd5;color:#9a3412}#ttr .s1{background:#fee2e2;color:#991b1b}#ttr .s2{background:#e0e7ff;color:#3730a3}#ttr .s3{background:#f1f5f9;color:#475569}#ttr .s4{background:#fce7f3;color:#9d174d}
 #ttr .btn{border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:7px;padding:3px 9px;font-size:.74rem;cursor:pointer;margin:0 3px 3px 0}
 #ttr .btn.g{border-color:#e2e8f0;background:#fff;color:#475569}
 #ttr .ttl{font-weight:700;color:#0f172a;text-decoration:none}
@@ -7670,13 +7670,13 @@ try{var nv=document.querySelector('.nav-item.active');if(nv&&/t8/.test(nv.getAtt
    롤백 = 이 블록(<!-- RP-TREND-V1 start … end -->)만 걷어낸다 · 기존 탭·함수는 한 글자도 안 바꿨다 */
 (function(){
 'use strict';
-if(window.__rpTrendV1)return;window.__rpTrendV1='v1.57.1';
+if(window.__rpTrendV1)return;window.__rpTrendV1='v1.57.2';
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function N(x){return (x==null?'—':Number(x).toLocaleString());}
 var S={bu:'',src:'',grade:'AA',st:'신규',sort:'score',page:1,per:25,rows:[],srcRows:[],sum:null};
 var BU={'국내여행':'국내여행','행사이벤트':'행사','온라인마케팅':'마케팅','마케팅교육':'교육'};
 var GC={'A':'gA','A*':'gAs','C':'gC','D':'gD'};
-var SC={'보도자료':'s2','지원사업':'s3','뉴스':'s0','유튜브':'s1'};
+var SC={'보도자료':'s2','지원사업':'s3','뉴스':'s0','유튜브':'s1','축제':'s4'};
 var TO=[['SNS','SNS 뉴스형(소재 창고 자동 1줄)'],['블로그','블로그 슬롯 후보'],['자료실','자료실 후보'],['유튜브','유튜브 소재']];
 function kst(ts){if(!ts)return '';var d=new Date(new Date(ts).getTime()+9*3600e3).toISOString();return d.slice(5,10).replace('-','/')+' '+d.slice(11,16);}
 function md(d){return d?String(d).slice(5,10).replace('-','/'):'';}
@@ -7736,7 +7736,7 @@ async function load(){
 function chips(key,list){return list.map(function(b){return '<span class="f'+(S[key]===b[0]?' on':'')+'" onclick="window.__tr(\''+key+'\',\''+b[0]+'\')">'+b[1]+'</span>';}).join('');}
 function render(src){
   var box=document.getElementById('trv1');var s=S.sum||{};
-  var h='<h2>📰 트렌드·소재 <span class="mut" style="font-weight:400">v1.57.1</span></h2>'
+  var h='<h2>📰 트렌드·소재 <span class="mut" style="font-weight:400">v1.57.2</span></h2>'
    +'<div class="c-sub">뉴스·보도자료·지원사업·방송 유튜브에서 <b>우리 매출 의도(묶음)에 붙는 소재</b>만 모읍니다. 대표님이 <b>채택</b>하면 넘길 곳(SNS·블로그·자료실·유튜브)으로 가고, 클로드는 기획 첫 단계에서 이 표(rpc_trend_brief)를 읽습니다. <b>뉴스는 신호</b>입니다 — 고객 수요 근거로 세지 않고, 인용 전 원문을 다시 확인하며, 기사 문장·사진은 쓰지 않습니다.</div>'
    +'<div style="margin-bottom:10px"><button class="btn" onclick="window.__trLoad()">🔄 새로고침</button></div>'
    +'<div class="sec"><h3>① 이번 주 요약</h3><div class="kpi">'
@@ -7747,7 +7747,7 @@ function render(src){
    +'</div></div>';
   h+='<div class="sec"><h3>② 신호 목록 <span>점수순 · 30일 · 「같은 이슈」를 누르면 묶인 기사가 펼쳐집니다</span></h3><div>'
    +'<span class="mut">사업부 </span>'+chips('bu',[['','전체'],['국내여행','국내여행'],['행사이벤트','행사'],['온라인마케팅','마케팅'],['마케팅교육','교육']])
-   +' <span class="mut">원천 </span>'+chips('src',[['','전체'],['보도자료','보도자료'],['지원사업','지원사업'],['뉴스','뉴스'],['유튜브','유튜브']])
+   +' <span class="mut">원천 </span>'+chips('src',[['','전체'],['보도자료','보도자료'],['지원사업','지원사업'],['뉴스','뉴스'],['유튜브','유튜브'],['축제','축제']])
    +' <span class="mut">등급 </span>'+chips('grade',[['AA','A·A*만'],['','전체']])
    +' <span class="mut">상태 </span>'+chips('st',[['신규','신규'],['채택','채택'],['보류','보류'],['제외','제외'],['','전체']])
    +' <span class="mut">정렬 </span>'+chips('sort',[['score','점수순'],['new','최신순']])+'</div>';
@@ -7776,8 +7776,8 @@ function render(src){
   }
   h+='</div>';
   h+='<div class="sec"><details><summary>▸ 수집 상태</summary><table style="margin-top:8px"><tr><th>원천</th><th>주기(KST)</th><th>마지막 수집</th><th>24시간</th><th>7일</th><th>A·A* 7일</th></tr>';
-  var sched={'보도자료':'매일 07:19 (정책브리핑 API 미신청 — 공공데이터포털 활용신청 필요)','지원사업':'매일 07:19 · 기업마당·K-Startup','뉴스':'매일 07:29 · 네이버 뉴스 · 질의 39개','유튜브':'매일 07:39 · 방송 뉴스 채널 7곳'};
-  ['보도자료','지원사업','뉴스','유튜브'].forEach(function(k){var x=src.filter(function(y){return y.원천===k;})[0]||{};
+  var sched={'축제':'매일 07:19 · 한국관광공사 행사정보 · 60일 안에 시작 · 제주 6점 / 전국 3점(목록만)','보도자료':'매일 07:19 · 정책브리핑 정책뉴스·중기부 보도자료','지원사업':'매일 07:19 · 기업마당·K-Startup','뉴스':'매일 07:29 · 네이버 뉴스 · 질의 39개','유튜브':'매일 07:39 · 방송 뉴스 채널 7곳'};
+  ['보도자료','지원사업','뉴스','유튜브','축제'].forEach(function(k){var x=src.filter(function(y){return y.원천===k;})[0]||{};
     h+='<tr><td>'+k+'</td><td class="mut" style="white-space:normal">'+sched[k]+'</td><td>'+(x.마지막수집?kst(x.마지막수집):'<span class="mut">없음</span>')+'</td><td>'+N(x.건24h||0)+'</td><td>'+N(x.건7일||0)+'</td><td>'+N(x.공신력7일||0)+'</td></tr>';});
   h+='</table><div class="mut" style="margin-top:6px">질의어·뉴스 채널 = mk_trend_queries · 매체 등급표 = mk_trend_outlets(realplan-news N0~N4) · 수요 캐시 = mk_trend_demand(매일 07:13) · 주간 요약 = 월 08:37 텔레그램(P2)</div></details></div>';
   h+='<div class="sec"><details><summary>▸ 규칙 (realplan-news)</summary><div style="margin-top:8px;line-height:1.7">① 뉴스는 신호 — 수요 근거로 세지 않는다(수요 칸은 지식인·문의로만) ② 인용 전 원문 재확인 · 「추진·검토·정부안」은 확정으로 쓰지 않는다 ③ 기사 문장·제목·사진 복제 금지 — 사실만 우리 말로, 사진은 자사 실사진 ④ 정치·선거·사건 소재는 수집 단계에서 뺀다 ⑤ 출처 한 줄: 「출처: ○○ 보도자료(날짜)」 ⑥ 120일 지난 신규·제외 신호는 주간 요약 때 정리된다(채택·보류는 보존)</div></details></div>';

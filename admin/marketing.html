@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.60.0</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.61.0</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -476,7 +476,7 @@ html #t14 details.mv-old>summary{font-size:14px}
     <div class="nav-item" title="키워드·인사이트" onclick="switchTab('t8',this)"><span>🔑</span>키워드·인사이트</div>
     <div class="nav-item" title="채널 소식" onclick="switchTab('tchan',this);loadChannelAll()"><span>📡</span>채널 소식</div>
     <div class="nav-section">채널 운영</div>
-    <div class="nav-item" title="유튜브 운영(리얼플랜여행·사장님 마케팅 지니)" onclick="switchTab('t13',this);snsInit()"><span>▶️</span>유튜브 운영</div>
+    <div class="nav-item" title="유튜브 운영(리얼플랜여행)" onclick="switchTab('t13',this);snsInit()"><span>▶️</span>유튜브 운영</div>
   </nav>
   <!-- mobile-nav 제거: 사이드바 아이콘 축소형으로 통일(A안 v1.8.1) — 전 탭 모바일 접근 -->
   <main class="main">
@@ -1221,7 +1221,7 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
     </div>
     <div class="tab-panel" id="t13">
       <div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div><h2 style="font-size:1.2rem;font-weight:700">▶️ 유튜브 운영</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">🧞 <b>사장님 마케팅 지니</b> <a href="https://www.youtube.com/@%EC%82%AC%EC%9E%A5%EB%8B%98%EB%A7%88%EC%BC%80%ED%8C%85%EC%A7%80%EB%8B%88" target="_blank" style="color:#2563eb">@사장님마케팅지니</a> · <b id="genie-hd-ct">0편 · 구독 0</b><br><span style="color:#1e40af">✈️ <b>리얼플랜여행</b> = 여행 채널 · 매주 금 18:00 · 목적지 <b>홈A</b> &nbsp;/&nbsp; 🧞 <b>지니</b> = 매주 화 · 목적지 <b>홈B</b></span><br><span style="color:#94a3b8;font-size:.74rem">지니 편성표는 「편성 → ▶️ 유튜브」 탭 · 두 채널은 목록·합계를 섞지 않습니다</span></p></div>
+        <div><h2 style="font-size:1.2rem;font-weight:700">▶️ 유튜브 운영</h2><p style="font-size:.82rem;color:#64748b;margin-top:2px">✈️ <b>리얼플랜여행</b> · 여행 채널 · 롱폼 매주 금 18:00 + 쇼츠 1 세트 · 목적지 <b>홈A</b><br><span style="color:#94a3b8;font-size:.74rem">쇼츠는 다음 목요일 회사 계정 SNS에 재게시 · 일정은 「편성」 달력 한 곳에서 봅니다</span></p></div>
         <button onclick="snsRefresh()" class="filter-btn active" style="border-radius:8px">🔄 새로고침</button>
       </div>
       <div id="sns-youtube" class="sns-panel">
@@ -1231,11 +1231,11 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
                 <!-- ★2026-09-11 — 한 화면에 두 채널이 섞여 있었다.
              621편·구독 2,860 은 리얼플랜여행이고, 편성 13건은 사장님 마케팅 지니다.
              DB 에 채널 컬럼을 넣고(대표 승인) 화면도 채널 단위로 갈랐다. -->
-        <div id="yt-chan-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+        <div id="yt-chan-tabs" style="display:none">
           <button id="ytc-btn-genie" onclick="ytChan('genie')" style="padding:8px 15px;border:1px solid #2563eb;border-radius:9px;background:#e8effe;color:#1d4ed8;font-size:.85rem;font-weight:700;cursor:pointer">🧞 사장님 마케팅 지니 <span style="font-weight:500;color:#64748b">신규</span></button>
           <button id="ytc-btn-travel" onclick="ytChan('travel')" style="padding:8px 15px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#334155;font-size:.85rem;font-weight:700;cursor:pointer">✈️ 리얼플랜여행 <span id="ytc-travel-n" style="font-weight:500;color:#64748b">621편</span></button>
         </div>
-        <div id="ytc-genie">
+        <div id="ytc-genie" style="display:none">
         <div id="genie-note" style="background:#f0f7ff;border:1px solid #cfe0fb;color:#1e40af;font-size:.76rem;padding:9px 12px;border-radius:8px;margin-bottom:14px">🧞 <b>목표는 수익창출이 아니라 문의</b>입니다. 주제는 <b>3원천 교차</b>(①지식인 ②AI 모델별 리서치 ③유튜브 전수조사)로만 정하고 <b>블로그에서 끌어오지 않습니다</b>. 정본 = 스킬 <code>realplan-genie v1.6</code> · <b>문의 목적지 = 홈B(marketing.realplanjeju.com)</b>.</div>
         <div id="genie-rules" style="margin:-4px 0 14px"></div>
 
@@ -1256,7 +1256,7 @@ function loadChannelAll(){try{loadChannelRules()}catch(e){};loadChannelAlgo();lo
         <div id="genie-setup" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:16px"></div>
 
         </div>
-        <div id="ytc-travel" style="display:none">
+        <div id="ytc-travel">
         <div id="trv-band" style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-size:.78rem;padding:9px 12px;border-radius:8px;margin-bottom:8px">지금 상태 불러오는 중…</div>
 <div id="trv2-ver" style="font-size:.74rem;color:#64748b;margin:0 0 10px"></div>
 <div id="yt-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px"></div>
@@ -4814,8 +4814,8 @@ window.ytInit=async function(force){
   try{
     var r1=await sb.from('mk_youtube_assets').select('영상id,제목,발행일,조회수,좋아요,댓글수,길이_초,형식,주제분류,지역,대상,b2b_전환가치,재생목록,촬영시즌,시점고지,예약발행월,현장실측').eq('채널','리얼플랜여행').order('조회수',{ascending:false}).limit(1000);
     var r2=await sb.from('mk_video_sources').select('분류,편수,길이_초,해상도,지역,사업부,롱폼_활용등급,얼굴포함,저작권,사용여부').order('롱폼_활용등급');
-    var r3=await sb.from('mk_youtube_slots').select('*').eq('채널','사장님 마케팅 지니').order('발행일',{ascending:true}).limit(200);
-    var r4=await sb.from('mk_youtube_metrics').select('*').eq('채널','사장님 마케팅 지니').order('수집_시각',{ascending:false}).limit(400);
+    var r3={data:[]}; /* v1.61.0 지니 폐쇄(2026-09-28) — 조회 중단 */
+    var r4={data:[]};
     if(r1.error)throw r1.error;
     _yt.assets=r1.data||[]; _yt.src=r2.data||[]; _yt.slots=r3.data||[]; _yt.metrics=r4.data||[];
     if(!_yt.assets.length&&warn){warn.style.display='';warn.style.cssText+=';background:#fef2f2;border:1px solid #fecaca;color:#b91c1c';warn.innerHTML='⛔ 재고 0건으로 조회됨 — RLS SELECT 정책을 확인하세요(mk_youtube_assets).';}
@@ -5198,7 +5198,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.60.0';
+var VER='v1.61.0';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -5617,7 +5617,7 @@ var ST={
   tchan:async function(){var a=await one(sb.from('mk_channel_algorithm').select('마지막_점검일').order('마지막_점검일',{ascending:true}).limit(1));var q=await sb.from('v_channel_card_queue').select('created_at').limit(200);var rows=(q&&q.data)||[];var old=rows.reduce(function(m,x){var d=daysAgo(x.created_at);return d>m?d:m;},0);
     var da=a?daysAgo(a.마지막_점검일):null;return [chipLv(da==null||da>35?'bad':da>28?'wn':'ok','채널 알고리즘 점검 '+(a?String(a.마지막_점검일).slice(5):'없음')),chipLv(old>7?'wn':'ok','발송 대기 카드 '+rows.length+'장'+(rows.length?' · 최장 '+old+'일':''))];},
   t13:async function(){var a=await one(sb.from('mk_youtube_assets').select('갱신일').order('갱신일',{ascending:false}).limit(1));var m=await cnt(sb.from('mk_youtube_metrics').select('*',{count:'exact',head:true}));var l=await cnt(sb.from('mk_short_links').select('*',{count:'exact',head:true}).eq('자산종류','유튜브'));
-    var da=a?daysAgo(a.갱신일):null;return [chipLv(da==null||da>8?'bad':'ok','리얼플랜여행 영상 수집 '+(a?String(a.갱신일).slice(5,10):'없음')+(da!=null?' ('+da+'일 전 · 매주 월 13:00 자동)':'')),chipLv(m?'ok':'bad','지니 성과 지표 '+(m||0)+'행'+(m?'':' — Analytics 연동 전')),chipLv('ok','유튜브 단축링크 '+(l||0)+'개')];}
+    var da=a?daysAgo(a.갱신일):null;return [chipLv(da==null||da>8?'bad':'ok','리얼플랜여행 영상 수집 '+(a?String(a.갱신일).slice(5,10):'없음')+(da!=null?' ('+da+'일 전 · 매주 월 13:00 자동)':'')),chipLv('ok','유튜브 단축링크 '+(l||0)+'개')];}
 };
 async function loadStrip(pid){
   var f=ST[pid];if(!f||typeof sb==='undefined')return;
@@ -7028,7 +7028,7 @@ async function load(from,to){
   var q=await Promise.all([
     sb.from('mk_blog_slots').select('id,발행일,채널,슬롯유형,핵심키워드,최종제목,상태').gte('발행일',from).lte('발행일',to).limit(3000),
     sb.from('mk_sns_slots').select('id,플랫폼,사업부,유형,핵심키워드,예정일시,상태,세트_id').gte('예정일시',f0).lt('예정일시',t1).limit(3000),
-    sb.from('mk_sns_sets').select('id,게시일,계정,사업부,종류,제목,상태').gte('게시일',from).lte('게시일',to).limit(1000),
+    sb.from('mk_sns_sets').select('id,게시일,계정,사업부,종류,제목,상태,형식,묶음,세트키,발송_예정').gte('게시일',from).lte('게시일',to).limit(1000),
     sb.from('mk_channel_cards').select('id,채널,사업부,주제,제목,상태,발송_시각').gte('발송_시각',f0).lt('발송_시각',t1).limit(1000),
     sb.from('mk_youtube_slots').select('id,발행일,채널,영상형식,코너,상태,핵심키워드,최종제목').eq('채널','리얼플랜여행').gte('발행일',from).lte('발행일',to).limit(500),
     sb.from('customers').select('신청일시,created_at,사업부').is('deleted_at',null).gte('created_at',addD(from,-7)+'T00:00:00+09:00').lt('created_at',t1).limit(2000),
@@ -7057,10 +7057,10 @@ async function load(from,to){
     if(!sg[k])sg[k]={d:d,s:sets[r.세트_id]||null,bu:r.사업부,kw:r.핵심키워드||'',ty:String(r.유형||'').split('-')[0],pf:[],st:[]};sg[k].pf.push(r.플랫폼);sg[k].st.push(st4(r.상태));});
   (q[2].data||[]).forEach(function(s){if(!Object.keys(sg).some(function(k){return sg[k].s&&sg[k].s.id===s.id;}))sg['s'+s.id]={d:s.게시일,s:s,bu:s.사업부,kw:'',ty:'',pf:[],st:[st4(s.상태)]};});
   Object.keys(sg).forEach(function(k){var g=sg[k],s=g.s,bu=buNorm((s&&s.사업부)||g.bu),ac=(s&&s.계정)||(bu==='마케팅'?'대표':'회사');
-    var kind=s&&s.종류?({poster:'포스터',case:'실사례',info:'정보성'}[s.종류]||s.종류):g.ty;
+    var kind=s&&s.묶음==='쇼츠재게시'?('쇼츠 재게시 🔗 유튜브 '+(String(s.세트키||'').split(':')[3]||'')):s&&s.종류?({poster:'포스터',case:'실사례',info:'정보성',reel:'릴스'}[s.종류]||s.종류):g.ty;
     var t=(s&&s.제목)||(/^(PLAN|SEASON):/.test(g.kw)?'':g.kw)||'(제목 미정)';
     var old=!s&&g.pf.length===1;
-    it.push({d:g.d,lane:'sns',old:old,bu:bu,tm:old?'':'08:30',tag:old?('쓰레드 단독 · '+(BUL[bu]||bu)+(/^블/.test(g.bu||'')?'(옛 '+g.bu+')':'')+(g.ty?' · '+g.ty:'')):(ac+' 계정·'+(s&&s.사업부||g.bu||'')+(kind?'·'+kind:'')),title:t,kw:t,st:merge(g.st),sub:g.pf.length?g.pf.join('·'):'인스타·페북·쓰레드'});});
+    it.push({d:g.d,lane:'sns',old:old,bu:bu,tm:old?'':(s&&s.발송_예정?new Date(new Date(s.발송_예정).getTime()+9*3600e3).toISOString().slice(11,16):(s&&/오후/.test(s.형식||'')?'12:30':(s&&s.종류==='reel'&&s.묶음!=='쇼츠재게시'?'10:00':'08:30'))),tag:old?('쓰레드 단독 · '+(BUL[bu]||bu)+(/^블/.test(g.bu||'')?'(옛 '+g.bu+')':'')+(g.ty?' · '+g.ty:'')):(ac+' 계정·'+(s&&s.사업부||g.bu||'')+(kind?'·'+kind:'')),title:t,kw:t,st:merge(g.st),sub:g.pf.length?g.pf.join('·'):'인스타·페북·쓰레드'});});
   var sent={};(q[3].data||[]).forEach(function(r){var d=kstYmd(new Date(r.발송_시각));sent[d+'|'+r.채널]=1;
     it.push({d:d,lane:'ch',bu:buNorm(r.사업부),tm:new Date(new Date(r.발송_시각).getTime()+9*3600e3).toISOString().slice(11,16),tag:(CHN[r.채널]||r.채널)+' 소식',title:r.제목||r.주제||'',kw:r.제목||r.주제||'',st:st4(r.상태),sub:''});});
   var T=today();

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.59.1</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.60.0</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -192,6 +192,247 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f1f5f9;color:#1e293b}
 .rwfx .done-bar{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
   padding:var(--s3);margin-top:var(--s2);text-align:center}
 </style>
+<!-- RP-TYPE v1 marketing v1.60.0 : 홈A·B 글자 정본(Noto Sans KR · 계단 12·13·14·15·16·17·21·27px · 22px 이상 예외) 2026-10-01 -->
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style id="rp-type">body{font-family:'Noto Sans KR','Apple SD Gothic Neo',-apple-system,BlinkMacSystemFont,sans-serif}
+button,input,select,textarea{font-family:inherit}
+:where(button,input,select,textarea){font-size:13px}
+html .login-card h1{font-size:1.4rem}
+html .login-card .sub{font-size:14px}
+html .btn-google{font-size:15px}
+html .login-note{font-size:12px}
+html #login-err{font-size:13px}
+html .hdr-logo{font-size:16px}
+html .hdr-badge{font-size:12px}
+html .hdr-user{font-size:13px}
+html .btn-logout{font-size:13px}
+html .nav-item{font-size:14px}
+html .nav-section{font-size:12px}
+html .kpi-label{font-size:12px}
+html .kpi-value{font-size:1.6rem}
+html .kpi-sub{font-size:12px}
+html .card-hdr h3{font-size:15px}
+html .tbl{font-size:13px}
+html .badge{font-size:12px}
+html .filter-btn{font-size:13px}
+html .btn-sm{font-size:12px}
+html .placeholder-card .ico{font-size:3rem}
+html .placeholder-card h3{font-size:16px}
+html .loading{font-size:14px}
+html .modal-close{font-size:1.4rem}
+html .reject-input{font-size:14px}
+html .toast{font-size:14px}
+html .mob-item{font-size:12px}
+@media (max-width:768px){html .sidebar .nav-item{font-size:0}html .sidebar .nav-item span{font-size:17px}}
+html .sec-chip{font-size:12px}
+html .rwfx{--f-h2:16px;--f-h3:15px;--f-b:14px;--f-s:12px;--f-xs:12px;font-size:var(--f-b)}
+html .rwfx .pill{font-size:var(--f-xs)}
+html .rwfx .fbtn{font-size:var(--f-xs)}
+html .rwfx .fbtn.big{font-size:var(--f-s)}
+html .rwfx .chain-h{font-size:var(--f-h3)}
+html .rwfx .node-k{font-size:var(--f-xs)}
+html .rwfx .node-v{font-size:17px}
+html .rwfx .node-s{font-size:var(--f-xs)}
+html .rwfx .rankin{font-size:17px}
+html .rwfx .verdict{font-size:var(--f-s)}
+html .rwfx .warnline{font-size:var(--f-xs)}
+html .rwfx .plan-h{font-size:var(--f-h3)}
+html .rwfx .step{font-size:var(--f-s)}
+html .rwfx .arrow{font-size:var(--f-s)}
+html .rwfx .hint{font-size:var(--f-xs)}
+html .rwfx .keep{font-size:var(--f-s)}
+html .rwfx .seg-k{font-size:var(--f-s)}
+html .rwfx .seg-t{font-size:var(--f-h3)}
+html .rwfx .seg-m{font-size:var(--f-s)}
+html .rwfx .seg-p{font-size:15px}
+html .rwfx .seg-p h2{font-size:var(--f-h2)}
+html .rwfx .seg-p table{font-size:var(--f-s)}
+html .rwfx .legend{font-size:var(--f-xs)}
+html .rwfx .ph-t{font-size:var(--f-xs)}
+html .rwfx .ph-n{font-size:var(--f-s)}
+html .rwfx .ph-l{font-size:var(--f-xs)}
+html .rwfx .ph-img-x{font-size:var(--f-xs)}
+html .rwfx .ph-f{font-size:var(--f-s)}
+html .rwfx .ph-p{font-size:var(--f-xs)}
+html #t13 .trv-tbl{font-size:12px}
+html #t13 .trv-chip{font-size:12px}
+html #t13 .trv-empty{font-size:12px}
+html #t13 .trv-row{font-size:12px}
+html #t13 .trv2-tabs button{font-size:13px}
+html #t13 .trv2-stg>summary{font-size:13px}
+html #t13 .trv2-prev summary{font-size:12px}
+html #t13 .trv2-prev div{font-size:12px}
+html #t13 .trv2-cell{font-size:12px}
+html #t13 .trv2-h{font-size:13px}
+html #t13 .trv2-q{font-size:12px}
+html #t13 .trv2-q b{font-size:12px}
+html #chv2{font-size:13px}
+html #chv2 h2{font-size:21px}
+html #chv2 .c-sub{font-size:13px}
+html #chv2 .chip{font-size:12px}
+html #chv2 .sec h3{font-size:16px}
+html #chv2 .sec h3 span{font-size:12px}
+html #chv2 .todo>div{font-size:13px}
+html #chv2 table{font-size:13px}
+html #chv2 .mut{font-size:12px}
+html #chv2 .big{font-size:21px}
+html #chv2 summary{font-size:13px}
+html #chv2 .fold{font-size:13px}
+html #chv2 .tag{font-size:12px}
+html #chv2 .card .noimg{font-size:12px}
+html #chv2 pre{font-size:12px}
+html #chv2 .btn{font-size:12px}
+@media (max-width:760px){html #chv2 table{font-size:12px}}
+html .v2{font-size:13px}
+html .v2 h2{font-size:21px}
+html .v2 .c-sub{font-size:13px}
+html .v2 .chip{font-size:12px}
+html .v2 .sec h3{font-size:16px}
+html .v2 .sec h3 span{font-size:12px}
+html .v2 .todo>div{font-size:13px}
+html .v2 table{font-size:13px}
+html .v2 .mut{font-size:12px}
+html .v2 .big{font-size:21px}
+html .v2 .f{font-size:12px}
+html .v2 summary{font-size:13px}
+html .v2 .fold{font-size:13px}
+html .v2 .btn{font-size:12px}
+html .v2 .btn.s{font-size:12px}
+html .v2 .card{font-size:13px}
+html .v2 .card .m{font-size:12px}
+@media (max-width:760px){html .v2 table{font-size:12px}}
+html .v3{font-size:13px}
+html .v3 h2{font-size:21px}
+html .v3 .c-sub{font-size:13px}
+html .v3 .sec h3{font-size:16px}
+html .v3 .sec h3 span{font-size:12px}
+html .v3 table{font-size:13px}
+html .v3 .mut{font-size:12px}
+html .v3 .big{font-size:21px}
+html .v3 .f{font-size:12px}
+html .v3 .btn{font-size:12px}
+html .v3 .gap>div{font-size:13px}
+html .v3 .go{font-size:12px}
+html .v3 .pill{font-size:12px}
+html .v3 .pg a{font-size:12px}
+html .v3 .pg .info{font-size:12px}
+html .v3 .srch{font-size:12px}
+html .rp-band{font-size:13px}
+html .rp-band .go{font-size:12px}
+@media (max-width:760px){html .v3 table{font-size:12px}}
+html #ttr .trv{font-size:13px}
+html #ttr .trv h2{font-size:21px}
+html #ttr .c-sub{font-size:13px}
+html #ttr .sec h3{font-size:16px}
+html #ttr .sec h3 span{font-size:12px}
+html #ttr .kpi b.n{font-size:1.45rem}
+html #ttr .mut{font-size:12px}
+html #ttr .f{font-size:12px}
+html #ttr table{font-size:13px}
+html #ttr .chip{font-size:12px}
+html #ttr .btn{font-size:12px}
+html #ttr .iss{font-size:12px}
+html #ttr .dec label{font-size:12px}
+html #ttr .dec input[type=text]{font-size:13px}
+html #ttr .pg a{font-size:12px}
+html #ttr .msg{font-size:12px}
+html #ttr .mn{font-size:12px}
+html #ttr .rec{font-size:12px}
+html #ttr .dec textarea{font-size:13px}
+html #kw3-trend{font-size:13px}
+html #kw3-trend .go{font-size:12px}
+@media (max-width:760px){html #ttr table{font-size:12px}}
+html #trv2-p7 .tp-k b{font-size:17px}
+html #trv2-p7 .tp-k span{font-size:12px}
+html #trv2-p7 .tp-bar{font-size:12px}
+html #trv2-p7 .tp-bar select,html #trv2-p7 .tp-bar input[type=text]{font-size:12px}
+html #trv2-p7 .tp-tbl{font-size:12px}
+html #trv2-p7 .tp-c{font-size:12px}
+html #trv2-p7 .tp-btn{font-size:12px}
+html #trv2-p7 .tp-cell{font-size:12px}
+html #trv2-p7 .tp-cell h5{font-size:12px}
+html #trv2-p7 .tp-msg{font-size:12px}
+html #trv2-p7 .tp-note{font-size:12px}
+html .mv2-strip{font-size:12px}
+html .mv2-grid{font-size:12px}
+html .mv2-note{font-size:12px}
+html #tsch .p4-btn{font-size:14px}
+html #tsch .p4-chk{font-size:14px}
+html #tsch .p4-card{font-size:14px}
+html #tsch .p4-card b.big{font-size:17px}
+html #tsch .p4-wait{font-size:12px}
+html #tsch .p4-mut{font-size:13px}
+html #tsch .p4-t th{font-size:14px}
+html #tsch .p4-t td{font-size:13px}
+html #tsch .p4-off{font-size:12px}
+html #tsch .p4-dn{font-size:15px}
+html #tsch .p4-hol{font-size:12px}
+html #tsch .p4-gap{font-size:12px}
+html #tsch .p4-inq{font-size:12px}
+html #tsch .p4-panel h3{font-size:17px}
+html #tsch .p4-grp h4{font-size:15px}
+html #tsch .p4-it{font-size:14px}
+html #tsch .p4-tg{font-size:12px}
+html #tsch .p4-bd{font-size:12px}
+html #tsch .p4-lk{font-size:12px}
+html #tsch .p4-wi{font-size:13px}
+html #tsch .p4-list{font-size:13px}
+html #t14 .mv-tab{font-size:13px}
+html #t14 .mv-w{font-size:13px}
+html #t14 .mv-w b{font-size:17px}
+html #t14 table.mv{font-size:14px}
+html #t14 table.mv th{font-size:12px}
+html #t14 table.mv td.big{font-size:17px}
+html #t14 .mv-cap{font-size:15px}
+html #t14 .mv-cap span{font-size:12px}
+html #t14 .mv-tag{font-size:12px}
+html #t14 .mv-note{font-size:13px}
+html #t14 details.mv-old>summary{font-size:14px}
+[style*="font-size:.6rem"],[style*="font-size: .6rem"],[style*="font-size:0.6rem"],[style*="font-size: 0.6rem"]{font-size:12px!important}
+[style*="font-size:.61rem"],[style*="font-size: .61rem"],[style*="font-size:0.61rem"],[style*="font-size: 0.61rem"]{font-size:12px!important}
+[style*="font-size:.62rem"],[style*="font-size: .62rem"],[style*="font-size:0.62rem"],[style*="font-size: 0.62rem"]{font-size:12px!important}
+[style*="font-size:.63rem"],[style*="font-size: .63rem"],[style*="font-size:0.63rem"],[style*="font-size: 0.63rem"]{font-size:12px!important}
+[style*="font-size:.64rem"],[style*="font-size: .64rem"],[style*="font-size:0.64rem"],[style*="font-size: 0.64rem"]{font-size:12px!important}
+[style*="font-size:.65rem"],[style*="font-size: .65rem"],[style*="font-size:0.65rem"],[style*="font-size: 0.65rem"]{font-size:12px!important}
+[style*="font-size:.66rem"],[style*="font-size: .66rem"],[style*="font-size:0.66rem"],[style*="font-size: 0.66rem"]{font-size:12px!important}
+[style*="font-size:.67rem"],[style*="font-size: .67rem"],[style*="font-size:0.67rem"],[style*="font-size: 0.67rem"]{font-size:12px!important}
+[style*="font-size:.68rem"],[style*="font-size: .68rem"],[style*="font-size:0.68rem"],[style*="font-size: 0.68rem"]{font-size:12px!important}
+[style*="font-size:.69rem"],[style*="font-size: .69rem"],[style*="font-size:0.69rem"],[style*="font-size: 0.69rem"]{font-size:12px!important}
+[style*="font-size:.7rem"],[style*="font-size: .7rem"],[style*="font-size:0.7rem"],[style*="font-size: 0.7rem"]{font-size:12px!important}
+[style*="font-size:.71rem"],[style*="font-size: .71rem"],[style*="font-size:0.71rem"],[style*="font-size: 0.71rem"]{font-size:12px!important}
+[style*="font-size:.72rem"],[style*="font-size: .72rem"],[style*="font-size:0.72rem"],[style*="font-size: 0.72rem"]{font-size:12px!important}
+[style*="font-size:.73rem"],[style*="font-size: .73rem"],[style*="font-size:0.73rem"],[style*="font-size: 0.73rem"]{font-size:12px!important}
+[style*="font-size:.74rem"],[style*="font-size: .74rem"],[style*="font-size:0.74rem"],[style*="font-size: 0.74rem"]{font-size:12px!important}
+[style*="font-size:12px"],[style*="font-size: 12px"]{font-size:12px!important}
+[style*="font-size:.75rem"],[style*="font-size: .75rem"],[style*="font-size:0.75rem"],[style*="font-size: 0.75rem"]{font-size:12px!important}
+[style*="font-size:.76rem"],[style*="font-size: .76rem"],[style*="font-size:0.76rem"],[style*="font-size: 0.76rem"]{font-size:12px!important}
+[style*="font-size:.77rem"],[style*="font-size: .77rem"],[style*="font-size:0.77rem"],[style*="font-size: 0.77rem"]{font-size:12px!important}
+[style*="font-size:.78rem"],[style*="font-size: .78rem"],[style*="font-size:0.78rem"],[style*="font-size: 0.78rem"]{font-size:12px!important}
+[style*="font-size:.79rem"],[style*="font-size: .79rem"],[style*="font-size:0.79rem"],[style*="font-size: 0.79rem"]{font-size:13px!important}
+[style*="font-size:.8rem"],[style*="font-size: .8rem"],[style*="font-size:0.8rem"],[style*="font-size: 0.8rem"]{font-size:13px!important}
+[style*="font-size:.82rem"],[style*="font-size: .82rem"],[style*="font-size:0.82rem"],[style*="font-size: 0.82rem"]{font-size:13px!important}
+[style*="font-size:.83rem"],[style*="font-size: .83rem"],[style*="font-size:0.83rem"],[style*="font-size: 0.83rem"]{font-size:13px!important}
+[style*="font-size:.84rem"],[style*="font-size: .84rem"],[style*="font-size:0.84rem"],[style*="font-size: 0.84rem"]{font-size:13px!important}
+[style*="font-size:.85rem"],[style*="font-size: .85rem"],[style*="font-size:0.85rem"],[style*="font-size: 0.85rem"]{font-size:14px!important}
+[style*="font-size:.86rem"],[style*="font-size: .86rem"],[style*="font-size:0.86rem"],[style*="font-size: 0.86rem"]{font-size:14px!important}
+[style*="font-size:.87rem"],[style*="font-size: .87rem"],[style*="font-size:0.87rem"],[style*="font-size: 0.87rem"]{font-size:14px!important}
+[style*="font-size:.88rem"],[style*="font-size: .88rem"],[style*="font-size:0.88rem"],[style*="font-size: 0.88rem"]{font-size:14px!important}
+[style*="font-size:.9rem"],[style*="font-size: .9rem"],[style*="font-size:0.9rem"],[style*="font-size: 0.9rem"]{font-size:14px!important}
+[style*="font-size:.92rem"],[style*="font-size: .92rem"],[style*="font-size:0.92rem"],[style*="font-size: 0.92rem"]{font-size:15px!important}
+[style*="font-size:15px"],[style*="font-size: 15px"]{font-size:15px!important}
+[style*="font-size:.94rem"],[style*="font-size: .94rem"],[style*="font-size:0.94rem"],[style*="font-size: 0.94rem"]{font-size:15px!important}
+[style*="font-size:.95rem"],[style*="font-size: .95rem"],[style*="font-size:0.95rem"],[style*="font-size: 0.95rem"]{font-size:15px!important}
+[style*="font-size:.98rem"],[style*="font-size: .98rem"],[style*="font-size:0.98rem"],[style*="font-size: 0.98rem"]{font-size:16px!important}
+[style*="font-size:1rem"],[style*="font-size: 1rem"]{font-size:16px!important}
+[style*="font-size:1.02rem"],[style*="font-size: 1.02rem"]{font-size:16px!important}
+[style*="font-size:1.05rem"],[style*="font-size: 1.05rem"]{font-size:17px!important}
+[style*="font-size:1.1rem"],[style*="font-size: 1.1rem"]{font-size:17px!important}
+[style*="font-size:1.12rem"],[style*="font-size: 1.12rem"]{font-size:17px!important}
+[style*="font-size:1.15rem"],[style*="font-size: 1.15rem"]{font-size:17px!important}
+[style*="font-size:1.16rem"],[style*="font-size: 1.16rem"]{font-size:17px!important}
+[style*="font-size:1.2rem"],[style*="font-size: 1.2rem"]{font-size:21px!important}
+[style*="font-size:1.3rem"],[style*="font-size: 1.3rem"]{font-size:21px!important}
+[style*="font-size:1.35rem"],[style*="font-size: 1.35rem"]{font-size:21px!important}</style>
 </head>
 <body>
 <div id="login-screen">
@@ -4957,7 +5198,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.59.1';
+var VER='v1.60.0';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}

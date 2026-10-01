@@ -7270,6 +7270,233 @@ S.ym=today().slice(0,7);S.wk=monOf(today());
 })();
 </script>
 <!-- RP-SCH-V4 end -->
+<!-- RP-SNS-LEDGER start · v1.0 · 2026-10-01 SNS 운영 ④ 게시 대장 — 오늘·예약 맨 위 · 발송분 최신순 · 주 단위 묶음 · 제목·계정·진행·48시간 도달 · ① 이번 주 보기 (회사 시스템 방 · 대표 「권장 번들 진행」) -->
+<script>
+/* 원천 = rpc_sns_set_ledger(읽기 전용 · mk_sns_sets + SEASON_POST 큐 + v_sns_perf_48h). DB 쓰기 0.
+   window.snsSetLoad 를 덮어쓴다 — 옛 RP-SNS-SET 블록은 손대지 않음.
+   롤백 = 이 블록(RP-SNS-LEDGER start~end) 제거 + VER/제목 v1.60.0. */
+(function(){
+'use strict';
+if(window.__rpSnsLedger)return; window.__rpSnsLedger='v1.0';
+var DOW=['일','월','화','수','목','금','토'];
+var BU={'여행':'국내여행','행사':'행사·이벤트','마케팅':'온라인마케팅','교육':'마케팅교육'};
+var KIND={info:'정보',case:'실사례',poster:'포스터',reel:'릴스'};
+var S={acct:'전체',bu:'전체',per:'기본',open:{},data:null,busy:false,w1:'last'};
+function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function $(id){return document.getElementById(id);}
+function dd(s){return new Date(s+'T00:00:00Z');}
+function md(s){if(!s)return '';var d=dd(s);return (d.getUTCMonth()+1)+'/'+d.getUTCDate()+'('+DOW[d.getUTCDay()]+')';}
+function hm(ts){if(!ts)return '';return new Date(ts).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});}
+function ymd(d){return d.toISOString().slice(0,10);}
+function addD(s,n){var d=dd(s);d.setUTCDate(d.getUTCDate()+n);return ymd(d);}
+function monOf(s){var d=dd(s),w=(d.getUTCDay()+6)%7;return addD(s,-w);}
+function num(v){return v==null?'<span style="color:#cbd5e1">-</span>':Number(v).toLocaleString('ko-KR');}
+function doc(h){try{return new DOMParser().parseFromString(String(h||''),'text/html');}catch(_){return null;}}
+function plain(h){var d=doc(h);return d&&d.body?(d.body.textContent||''):String(h||'');}
+function preOf(h){var d=doc(h);var p=d&&d.querySelector('pre');return p?p.textContent:'';}
+function safeUrl(u){u=String(u||'');return /^https?:\/\//i.test(u)?u:'';}
+var chip='padding:4px 11px;border-radius:999px;font-size:.74rem;cursor:pointer;border:1px solid ';
+function cbtn(on,attr,label){return '<button '+attr+' style="'+chip+(on?'#0f172a;background:#0f172a;color:#fff':'#cbd5e1;background:#fff;color:#334155')+'">'+E(label)+'</button>';}
+
+function box(){return document.querySelector('#tsns #cs-sns-sets')||$('cs-sns-sets');}
+function heading(){
+  var p=$('tsns');if(!p)return;
+  [].forEach.call(p.querySelectorAll('h3'),function(h){if(/편성\s*·\s*발송 세트/.test(h.textContent)&&!h.__lg){h.__lg=1;h.innerHTML='④ SNS 게시 대장 <span style="color:#94a3b8;font-weight:400;font-size:.78rem">오늘·예약 → 발송 최신순 · 조회 전용</span>';}});
+}
+function acctBadge(a){var ceo=a==='대표';return '<span class="rp-acct" style="font-size:.7rem;font-weight:700;padding:1px 6px;border-radius:6px;white-space:nowrap;'+(ceo?'background:#fef3c7;color:#92400e">대표 @snslee':'background:#dbeafe;color:#1e40af">회사 @realplan_travel')+'</span>';}
+function stage(r,today){
+  if(r.q_err>0)return '<span style="color:#dc2626;font-weight:700">⚠ 발송 실패 '+r.q_err+'</span><div style="font-size:.66rem;color:#dc2626">'+E(r.q_err_msg||'')+'</div>';
+  var sent=r.q_n>0?r.q_sent===r.q_n:!!r.발송_시각;
+  if(r.게시_확인일)return '<span style="color:#16a34a;font-weight:700">✅ 게시</span> <span style="font-size:.68rem;color:#64748b">'+E(hm(r.게시_확인일).replace(/ \d\d:\d\d$/,''))+'</span>';
+  if(r.q_n>0&&r.q_sent>0&&r.q_sent<r.q_n)return '<span style="color:#b45309;font-weight:700">일부 발송 '+r.q_sent+'/'+r.q_n+'</span>';
+  if(sent)return '<span style="color:#b45309;font-weight:700">📨 발송 · 게시 대기</span><div style="font-size:.66rem;color:#94a3b8">'+E(hm(r.발송_시각))+'</div>';
+  var t=r.발송_예정?hm(r.발송_예정):'';
+  return '<span style="color:#2563eb;font-weight:700">⏰ 예약</span>'+(t?' <span style="font-size:.68rem;color:#64748b">'+E(t)+'</span>':'')+(r.상태?'<div style="font-size:.66rem;color:#94a3b8">'+E(r.상태)+'</div>':'');
+}
+function perf(r){
+  if(r.인스타_도달==null&&r.쓰레드_조회==null&&r.페북_조회==null)return '<span style="color:#cbd5e1;font-size:.72rem">-</span>';
+  var ap=r.정확_48h===false?' <span title="수집 시작(9/30) 전 글 · 가장 가까운 측정일 값" style="color:#94a3b8">≈</span>':'';
+  return '<b>'+num(r.인스타_도달)+'</b>'+ap+'<div style="font-size:.66rem;color:#64748b;white-space:nowrap">저장+공유 '+num(r.인스타_저장공유)+' · 쓰 '+num(r.쓰레드_조회)+' · 페 '+num(r.페북_조회)+'</div>';
+}
+function texts(r){
+  var tx={ig:'',fb:'',th:''};
+  (r.문안||[]).forEach(function(m){var t=plain(m);if(/인스타그램 문안/.test(t))tx.ig=preOf(m)||t;else if(/페이스북 문안/.test(t))tx.fb=preOf(m)||t;else if(/쓰레드 문안/.test(t))tx.th=preOf(m)||t;});
+  if(!(tx.ig||tx.fb||tx.th))return '<span style="color:#cbd5e1;font-size:.72rem">-</span>';
+  var pre=function(l,v){return v?'<div style="font-size:.72rem;font-weight:700;margin:8px 0 3px">'+l+'</div><pre style="white-space:pre-wrap;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px;font-size:.74rem;margin:0">'+E(v)+'</pre>':'';};
+  return '<details><summary style="cursor:pointer;color:#2563eb;font-size:.74rem;white-space:nowrap">문안 3종</summary><div style="min-width:260px">'+pre('인스타그램',tx.ig)+pre('페이스북',tx.fb)+pre('쓰레드',tx.th)+'</div></details>';
+}
+function row(r,today){
+  var img=safeUrl(r.이미지_url),isT=r.게시일===today;
+  return '<tr style="border-top:1px solid #e2e8f0'+(isT?';background:#eff6ff':'')+'">'
+    +'<td style="padding:7px;white-space:nowrap;font-weight:700">'+md(r.게시일)+(isT?' <span style="color:#2563eb">오늘</span>':'')+'</td>'
+    +'<td style="padding:7px">'+acctBadge(r.계정)+'</td>'
+    +'<td style="padding:7px;white-space:nowrap;font-size:.76rem">'+E(BU[r.사업부]||r.사업부)+'<div style="color:#64748b">'+E(KIND[r.종류]||r.종류)+(r.형식&&/쇼츠/.test(r.형식)?' · 쇼츠 재게시':'')+'</div></td>'
+    +'<td style="padding:7px;min-width:200px">'+E(r.제목||'(제목 없음)')+'</td>'
+    +'<td style="padding:7px;min-width:120px">'+stage(r,today)+'</td>'
+    +'<td style="padding:7px;min-width:110px">'+perf(r)+'</td>'
+    +'<td style="padding:7px">'+(img?'<a href="'+E(img)+'" target="_blank" rel="noopener" title="크게 보기"><img src="'+E(img)+'" alt="" loading="lazy" style="width:36px;height:48px;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0"></a>'+(r.교체본?'<div style="font-size:.6rem;color:#b45309">교체본</div>':''):'<span style="color:#cbd5e1">-</span>')+'</td>'
+    +'<td style="padding:7px">'+texts(r)+'</td></tr>';
+}
+var HEAD='<thead><tr style="background:#f8fafc;text-align:left;font-size:.74rem;color:#475569"><th style="padding:7px">날짜</th><th style="padding:7px">계정</th><th style="padding:7px">사업부·종류</th><th style="padding:7px">제목</th><th style="padding:7px">진행</th><th style="padding:7px">48시간 도달</th><th style="padding:7px">카드</th><th style="padding:7px">문안</th></tr></thead>';
+function group(key,title,sub,rows,today,open){
+  var on=S.open[key]!=null?S.open[key]:open;
+  return '<div style="margin-bottom:10px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">'
+    +'<div data-lg-grp="'+E(key)+'" style="cursor:pointer;padding:9px 12px;background:#f8fafc;display:flex;gap:8px;align-items:center;font-size:.84rem"><b>'+(on?'▼':'▶')+' '+E(title)+'</b><span style="color:#64748b;font-size:.76rem">'+sub+'</span></div>'
+    +(on?'<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:.8rem">'+HEAD+'<tbody>'+rows.map(function(r){return row(r,today);}).join('')+'</tbody></table></div>':'')+'</div>';
+}
+function avg(rows,acct){var v=rows.filter(function(r){return r.계정===acct&&r.인스타_도달!=null;}).map(function(r){return +r.인스타_도달;});return v.length?Math.round(v.reduce(function(a,b){return a+b;},0)/v.length):null;}
+function render(){
+  var b=box();if(!b)return;heading();
+  var d=S.data||{},today=d.오늘,thisMon=d.주시작;
+  var all=(d.rows||[]).filter(function(r){return (S.acct==='전체'||r.계정===S.acct)&&(S.bu==='전체'||r.사업부===S.bu);});
+  var lo=null,hi=null;
+  if(S.per==='이번 주'){lo=thisMon;hi=addD(thisMon,6);}else if(S.per==='지난주'){lo=addD(thisMon,-7);hi=addD(thisMon,-1);}else if(S.per==='30일'){lo=addD(today,-30);hi=addD(today,30);}
+  if(lo)all=all.filter(function(r){return r.게시일>=lo&&r.게시일<=hi;});
+  var sentDone=function(r){return r.q_n>0?r.q_sent===r.q_n:!!r.발송_시각;};
+  var up=all.filter(function(r){return r.게시일>today||(r.게시일===today&&!sentDone(r));}).sort(function(a,b){return a.게시일<b.게시일?-1:a.게시일>b.게시일?1:String(a.발송_예정||'')<String(b.발송_예정||'')?-1:1;});
+  var near=up.filter(function(r){return r.게시일<=addD(today,7);}),far=up.filter(function(r){return r.게시일>addD(today,7);});
+  var past=all.filter(function(r){return up.indexOf(r)<0;});
+  var weeks={},wk=[];past.forEach(function(r){var m=monOf(r.게시일);if(!weeks[m]){weeks[m]=[];wk.push(m);}weeks[m].push(r);});
+  wk.sort().reverse();
+  var fail=all.filter(function(r){return r.q_err>0;}).length,wait=past.filter(function(r){return sentDone(r)&&!r.게시_확인일;}).length;
+  var h='<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px">'
+    +['전체','회사','대표'].map(function(a){return cbtn(S.acct===a,'data-lg-acct="'+a+'"',a==='전체'?'계정 전체':a);}).join('')
+    +'<span style="width:8px"></span>'+['전체','여행','행사','마케팅','교육'].map(function(x){return cbtn(S.bu===x,'data-lg-bu="'+x+'"',x==='전체'?'사업부 전체':(BU[x]||x));}).join('')
+    +'<span style="width:8px"></span>'+['기본','이번 주','지난주','30일'].map(function(x){return cbtn(S.per===x,'data-lg-per="'+x+'"',x==='기본'?'60일':x);}).join('')
+    +'<span id="lg-msg" style="font-size:.72rem;color:#64748b;margin-left:4px"></span></div>';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:12px;font-size:.76rem;color:#475569;margin-bottom:8px">'
+    +'<span>⏰ 7일 안 예약 <b>'+near.length+'</b></span><span>📨 게시 대기 <b style="color:'+(wait?'#b45309':'#16a34a')+'">'+wait+'</b></span><span>⚠ 발송 실패 <b style="color:'+(fail?'#dc2626':'#16a34a')+'">'+fail+'</b></span>'
+    +'<span style="color:#94a3b8">≈ = 성과 수집 시작(9/30) 전 글이라 가장 가까운 측정일 값</span></div>';
+  if(near.length)h+=group('up','오늘 · 예약 (7일)',near.length+'건 · 가까운 순',near,today,true);
+  wk.forEach(function(m,i){var rs=weeks[m].slice().sort(function(a,b){return a.게시일<b.게시일?1:a.게시일>b.게시일?-1:String(a.발송_시각||'')<String(b.발송_시각||'')?1:-1;});
+    var t=m===thisMon?'이번 주 ':m===addD(thisMon,-7)?'지난주 ':'';var ac=avg(rs,'회사'),ae=avg(rs,'대표');
+    h+=group('w'+m,t+md(m)+' ~',rs.length+'건'+(ac!=null?' · 회사 평균 도달 '+ac.toLocaleString('ko-KR'):'')+(ae!=null?' · 대표 '+ae.toLocaleString('ko-KR'):''),rs,today,i===0);});
+  if(far.length)h+=group('far','다가오는 편성 (8일 이후)',far.length+'건',far,today,false);
+  if(!near.length&&!wk.length&&!far.length)h+='<p style="color:#94a3b8;font-size:.84rem">조건에 맞는 세트가 없습니다.</p>';
+  b.innerHTML=h;
+}
+async function fetchData(){
+  if(typeof sb==='undefined')return null;
+  var r=await sb.rpc('rpc_sns_set_ledger',{});
+  if(r.error)throw r.error;
+  S.data=r.data||{};return S.data;
+}
+window.snsSetLoad=async function(){
+  var b=box();if(!b||S.busy)return;S.busy=true;
+  if(!S.data)b.innerHTML='<p style="color:#94a3b8;font-size:.85rem">SNS 게시 대장 불러오는 중…</p>';
+  try{await fetchData();render();w1();}
+  catch(e){b.innerHTML='<p style="color:#dc2626;font-size:.85rem">SNS 게시 대장 조회 실패: '+E((e&&e.message)||e)+'</p>';}
+  finally{S.busy=false;}
+};
+document.addEventListener('click',function(ev){
+  var t=ev.target.closest&&ev.target.closest('[data-lg-acct],[data-lg-bu],[data-lg-per],[data-lg-grp],[data-lg-w1]');if(!t)return;
+  if(t.hasAttribute('data-lg-w1')){S.w1=t.getAttribute('data-lg-w1');w1(true);return;}
+  var b=box();if(!b||!b.contains(t))return;
+  if(t.hasAttribute('data-lg-acct'))S.acct=t.getAttribute('data-lg-acct');
+  else if(t.hasAttribute('data-lg-bu'))S.bu=t.getAttribute('data-lg-bu');
+  else if(t.hasAttribute('data-lg-per'))S.per=t.getAttribute('data-lg-per');
+  else if(t.hasAttribute('data-lg-grp')){var k=t.getAttribute('data-lg-grp'),cur=t.textContent.trim().charAt(0)==='▼';S.open[k]=!cur;}
+  render();
+});
+/* ① 성과 — 지난주 / 이번 주 전환 */
+function w1(force){
+  var body=$('sns2-body');if(!body)return;
+  var cap=body.firstElementChild;if(cap&&cap.id==='lg-w1bar')cap=cap.nextElementSibling;
+  if(!cap||!/도달 순/.test(cap.textContent||''))return;
+  var bar=$('lg-w1bar');
+  if(!bar){bar=document.createElement('div');bar.id='lg-w1bar';bar.style.cssText='display:flex;gap:6px;align-items:center;margin-bottom:6px';body.insertBefore(bar,cap);}
+  else if(!force&&bar.__s===S.w1)return;
+  bar.__s=S.w1;
+  bar.innerHTML=cbtn(S.w1==='last','data-lg-w1="last"','지난주 (일요일 판정)')+cbtn(S.w1==='this','data-lg-w1="this"','이번 주 (진행 중)')+'<span style="font-size:.7rem;color:#94a3b8;margin-left:4px">≈ = 성과 수집 시작(9/30) 전 글 · 가장 가까운 측정일 값</span>';
+  var orig=bar.nextElementSibling,tbl=orig&&orig.nextElementSibling;
+  if(tbl&&tbl.id==='lg-w1this')tbl=null;
+  var mine=$('lg-w1this');
+  if(S.w1==='last'){if(mine)mine.remove();if(orig)orig.style.display='';if(tbl)tbl.style.display='';return;}
+  if(orig)orig.style.display='none';if(tbl)tbl.style.display='none';
+  var d=S.data;if(!d){fetchData().then(function(){w1(true);}).catch(function(){});return;}
+  var mon=d.주시작,rs=(d.rows||[]).filter(function(r){return r.게시일>=mon&&r.게시일<=d.오늘;}).sort(function(a,b){return (b.인스타_도달||-1)-(a.인스타_도달||-1);});
+  if(!mine){mine=document.createElement('div');mine.id='lg-w1this';var after=tbl||orig;after.parentNode.insertBefore(mine,after.nextSibling);}
+  mine.innerHTML='<div style="font-size:.78rem;color:#64748b;margin-bottom:6px">이번 주 '+md(mon)+' ~ 오늘 · 게시 48시간 값(아직 48시간 전이면 빈칸) · 도달 순</div>'
+    +(rs.length?'<div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:7px">계정</th><th style="padding:7px">날짜</th><th style="padding:7px">종류</th><th style="padding:7px">제목</th><th style="padding:7px">인스타 도달</th><th style="padding:7px">저장+공유</th><th style="padding:7px">쓰레드</th><th style="padding:7px">페북</th></tr></thead><tbody>'
+      +rs.map(function(r){return '<tr style="border-top:1px solid #e2e8f0"><td style="padding:7px">'+E(r.계정)+'</td><td style="padding:7px;white-space:nowrap">'+md(r.게시일)+'</td><td style="padding:7px">'+E(KIND[r.종류]||r.종류)+'</td><td style="padding:7px;min-width:180px">'+E(r.제목||'')+'</td><td style="padding:7px"><b>'+num(r.인스타_도달)+'</b>'+(r.정확_48h===false?' ≈':'')+'</td><td style="padding:7px">'+num(r.인스타_저장공유)+'</td><td style="padding:7px">'+num(r.쓰레드_조회)+'</td><td style="padding:7px">'+num(r.페북_조회)+'</td></tr>';}).join('')+'</tbody></table></div>'
+      :'<p style="color:#94a3b8;font-size:.82rem">이번 주 게시 세트가 아직 없습니다.</p>');
+}
+function hook(){
+  var s=$('sns2');if(!s||s.__lg)return;s.__lg=1;
+  new MutationObserver(function(){if(!$('lg-w1bar'))w1(true);}).observe(s,{childList:true,subtree:true});
+  w1(true);
+}
+function init(){var n=0;(function t(){heading();hook();if($('sns2')&&box()){if($('tsns').classList.contains('active'))window.snsSetLoad();return;}if(++n<40)setTimeout(t,500);})();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<!-- RP-SNS-LEDGER end -->
+<!-- RP-LINK-BAR start · v1.0 · 2026-10-01 편성 ↔ 채널 소식 ↔ SNS 운영 ↔ 유튜브 운영 연결 — 각 화면 맨 위 「이번 주 편성」 줄 + 편성 화면 「연결 점검」 띠 (회사 시스템 방 · 대표 「진행해」) -->
+<script>
+/* 원천 = rpc_content_link_check(14) 읽기 전용 · DB 쓰기 0. 롤백 = 이 블록 제거. */
+(function(){
+'use strict';
+if(window.__rpLinkBar)return; window.__rpLinkBar='v1.0';
+var C={t:0,v:null,p:null};
+var LANES=[['블로그','블로그'],['SNS','SNS'],['채널','채널 소식'],['유튜브','유튜브']];
+var HERE={tsch:null,tchan:'채널',tsns:'SNS',t13:'유튜브'};
+function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function md(s){if(!s)return '';var d=new Date(s+'T00:00:00Z');return (d.getUTCMonth()+1)+'/'+d.getUTCDate();}
+async function get(force){
+  if(!force&&C.v&&Date.now()-C.t<180e3)return C.v;
+  if(C.p)return C.p;
+  if(typeof sb==='undefined')return null;
+  C.p=sb.rpc('rpc_content_link_check',{p_days:14}).then(function(r){C.p=null;if(r.error)throw r.error;C.v=r.data||{};C.t=Date.now();return C.v;},function(e){C.p=null;throw e;});
+  return C.p;
+}
+function weekLine(d,pid){
+  var w=d['이번주']||{},warn=+d['경고']||0;
+  var parts=LANES.map(function(L){var x=w[L[0]]||{};var me=HERE[pid]===L[0];
+    return '<span style="white-space:nowrap;'+(me?'font-weight:700;color:#1d4ed8':'')+'">'+E(L[1])+' <b>'+(x['완료']||0)+'/'+(x['예정']||0)+'</b>'+(x['지연']?' <span style="color:#dc2626">지연 '+x['지연']+'</span>':'')+'</span>';}).join('<span style="color:#cbd5e1">·</span>');
+  return '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.8rem;color:#334155">'
+    +'<b>📅 이번 주 편성</b><span style="color:#64748b">'+md(d['주시작'])+'~ · 완료/예정</span>'+parts
+    +'<span style="margin-left:4px;font-weight:700;color:'+(warn?'#dc2626':'#16a34a')+'">'+(warn?'⚠ 연결 경고 '+warn:'🔗 연결 정상')+'</span>'
+    +(pid!=='tsch'?'<button data-lb-go="1" style="margin-left:auto;padding:4px 10px;border:1px solid #2563eb;background:#fff;color:#2563eb;border-radius:6px;font-size:.74rem;cursor:pointer">편성에서 보기</button>':'')
+    +'</div>';
+}
+function issues(d,pid){
+  var all=(d.issues||[]).filter(function(i){return !HERE[pid]||i['채널']===HERE[pid]||(HERE[pid]==='SNS'&&i['코드']==='reel_slot')||(HERE[pid]==='유튜브'&&(i['코드']==='yt_src'||i['코드']==='reel_slot'));});
+  if(!all.length)return '';
+  var warn=all.filter(function(i){return i['등급']==='warn';}),info=all.filter(function(i){return i['등급']!=='warn';});
+  var li=function(i){return '<li style="margin:2px 0;color:'+(i['등급']==='warn'?'#b91c1c':'#64748b')+'">'+(i['등급']==='warn'?'⚠ ':'· ')+'<b>'+E(i['채널'])+'</b> '+E(i['내용'])+'</li>';};
+  return '<details'+(warn.length?' open':'')+' style="margin-top:6px;font-size:.76rem"><summary style="cursor:pointer;color:#475569">연결 점검 · 앞으로 14일 — 경고 '+warn.length+' · 참고 '+info.length+'</summary><ul style="margin:4px 0 0 16px;padding:0">'+warn.concat(info).map(li).join('')+'</ul></details>';
+}
+function place(pid){
+  var p=document.getElementById(pid);if(!p)return null;
+  var b=document.getElementById('lb-'+pid);
+  if(!b){b=document.createElement('div');b.id='lb-'+pid;
+    b.style.cssText='background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px 12px;margin:0 0 12px';
+    var host=pid==='tsch'?document.getElementById('p4-host'):null;
+    if(host&&host.parentNode)host.parentNode.insertBefore(b,host);
+    else{var f=p.firstElementChild;if(f&&f.nextSibling)p.insertBefore(b,f.nextSibling);else p.appendChild(b);}
+  }
+  return b;
+}
+async function paint(pid,force){
+  var b=place(pid);if(!b)return;
+  if(!C.v)b.innerHTML='<span style="font-size:.78rem;color:#94a3b8">📅 이번 주 편성 불러오는 중…</span>';
+  try{var d=await get(force);if(!d)return;b.innerHTML=weekLine(d,pid)+issues(d,pid);}
+  catch(e){b.innerHTML='<span style="font-size:.76rem;color:#dc2626">편성 연결 점검 조회 실패: '+E((e&&e.message)||e)+'</span>';}
+}
+document.addEventListener('click',function(ev){
+  var t=ev.target.closest&&ev.target.closest('[data-lb-go]');if(!t)return;
+  var items=document.querySelectorAll('.nav-item');
+  for(var i=0;i<items.length;i++){if((items[i].getAttribute('onclick')||'').indexOf("switchTab('tsch'")>=0){items[i].click();return;}}
+});
+var _sw=window.switchTab;
+if(typeof _sw==='function'){
+  window.switchTab=function(id){var r=_sw.apply(this,arguments);if(id in HERE){setTimeout(function(){paint(id);},id==='tsch'?700:300);}return r;};
+}
+function init(){var n=0;(function t(){var a=document.querySelector('.tab-panel.active');if(a&&(a.id in HERE))paint(a.id);else if(++n<20)setTimeout(t,600);})();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<!-- RP-LINK-BAR end -->
 
 <!-- RP-MEDIA-V2 start · v1.45.0 · 2026-09-27 미디어 관리 화면 개편 1차(① 재고 요약)+2차(②③④⑥ 목록) -->
 <script>

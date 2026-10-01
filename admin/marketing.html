@@ -7497,6 +7497,105 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 <!-- RP-LINK-BAR end -->
+<!-- RP-GROWTH start · v1.0 · 2026-10-01 북극성(홈A·B 하루 1,000명) · 성장 로드맵(유튜브·SNS 10만 상징 목표) · 매체 순위 ①유튜브 ②SNS ③블로그 ④4채널 (회사 시스템 방 · 대표 「승인」→「배포해」) -->
+<script>
+/* 원천 = rpc_growth_board(읽기) · 수기 입력 = rpc_channel_stats_manual · 채널 소식 = mk_channel_slots·v_channel_card_queue(읽기). 롤백 = 이 블록 제거. */
+(function(){
+'use strict';
+if(window.__rpGrowth)return; window.__rpGrowth='v1.0';
+var C={t:0,v:null,p:null};
+var STG=['정체성 고정','첫 떡상 찾기','떡상 형식 연재','캐릭터·대화','확장'];
+var NEXT={
+ yt:['「계절·지역 TOP5」 쇼츠 연재 실험 — 채널 조회 상위 5편이 모두 이 형식(6.1만~17.5만)','롱폼 썸네일·제목 시험 — 클릭률 2.5%(스튜디오 28일)부터 올리기','설명란 첫 줄·고정 댓글 → 홈A 자료실 해당 페이지'],
+ sns:['페북 원본 릴스(직접 촬영)로 잠든 6만 팔로워 깨우기 — 메타 원본 우대(2026.3)','일요일 카드에 플랫폼별 「도달÷팔로워」 확인','프로필·스토리 링크 → 홈 저장용 페이지(코스 지도 등)']};
+function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function $(id){return document.getElementById(id);}
+function N(v){return v==null?'-':Number(v).toLocaleString('ko-KR');}
+function pct(a,b){return b?Math.round(a*1000/b)/10:0;}
+async function get(force){
+  if(!force&&C.v&&Date.now()-C.t<180e3)return C.v;if(C.p)return C.p;if(typeof sb==='undefined')return null;
+  C.p=sb.rpc('rpc_growth_board',{}).then(function(r){C.p=null;if(r.error)throw r.error;C.v=r.data||{};C.t=Date.now();return C.v;},function(e){C.p=null;throw e;});return C.p;
+}
+var box='background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;margin:0 0 12px';
+function bar(p,c){return '<div style="height:9px;background:#e2e8f0;border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:'+Math.max(0.8,Math.min(100,p))+'%;background:'+(c||'#2563eb')+'"></i></div>';}
+function steps(n){return '<div style="display:flex;gap:4px;margin:8px 0">'+STG.map(function(s,i){var on=i+1===n,dn=i+1<n;return '<span style="flex:1;text-align:center;font-size:.72rem;padding:5px 2px;border-radius:6px;'+(on?'background:#2563eb;color:#fff;font-weight:700':dn?'background:#bfdbfe;color:#1e3a8a':'background:#f1f5f9;color:#64748b')+'">'+(i+1)+' '+s+'</span>';}).join('')+'</div>';}
+function nextBox(k){return '<div style="background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;padding:7px 10px;font-size:.76rem;color:#475569;margin-top:8px"><b>다음에 고칠 것</b> '+NEXT[k].map(function(t,i){return '①②③'.charAt(i)+' '+E(t);}).join(' &nbsp;')+'</div>';}
+function north(d){
+  var n=d['북극성']||{},g=d['기여']||{},T=d['목표']||{},goal=(T.home_daily||{}).목표||1000;
+  var A=[['① 유튜브','유튜브','alloc_youtube'],['② SNS','SNS','alloc_sns'],['③ 블로그·검색·AI','블로그·검색·AI','alloc_search'],['④ 직접·4채널·기타','직접·4채널·기타','alloc_etc']];
+  return '<div style="'+box+';background:#eff6ff;border-color:#bfdbfe">'
+   +'<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><div><div style="font-size:.74rem;color:#475569">🎯 북극성 · 홈A·B 하루 외부 방문 (최근 7일 평균)</div><div style="font-size:1.6rem;font-weight:700;color:#1d4ed8">'+N(n['일평균_7일'])+' <span style="font-size:.9rem;color:#64748b">/ '+N(goal)+'명</span></div><div style="font-size:.72rem;color:#64748b">A '+N(n.A_7일)+' · B '+N(n.B_7일)+' · 30일 평균 '+N(n['일평균_30일'])+' · 홈 문의 30일 '+N(n['문의_30일'])+'건</div></div>'
+   +'<div style="flex:1;min-width:200px">'+bar(pct(+n['일평균_7일']||0,goal))+'<div style="font-size:.72rem;color:#64748b;margin-top:4px">'+pct(+n['일평균_7일']||0,goal)+'% · 매체 순위 ① 유튜브 → ② SNS → ③ 블로그 → ④ 4채널</div></div></div>'
+   +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:10px">'+A.map(function(a){var v=+g[a[1]]||0,t=(T[a[2]]||{}).목표||0;return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:.78rem">'+a[0]+' → 홈 <b style="font-size:.95rem">'+N(v)+'</b> / '+N(t)+'<div style="font-size:.7rem;color:#64748b">'+pct(v,t)+'%</div></div>';}).join('')+'</div></div>';
+}
+function plat(d,p,a){return (d['플랫폼']||[]).filter(function(x){return x.플랫폼===p&&x.계정===(a||'회사');})[0]||{};}
+function ytCard(d){
+  var y=plat(d,'유튜브'),Y=d['유튜브']||{},ct=Y['클릭률_최근']||{},nc=(Y['새콘텐츠']||[]);
+  var rows=[['채널 하루 조회 (7일)','<b style="color:'+((+Y['일조회_최근7']||0)<(+Y['일조회_9월초']||0)/2?'#dc2626':'#0f172a')+'">'+N(Y['일조회_최근7'])+'</b> <span style="color:#64748b">(9/1~21 평균 '+N(Y['일조회_9월초'])+')</span>','새 영상으로 회복'],
+    ['노출 클릭률 (롱폼 28일)',ct.클릭률!=null?'<b>'+ct.클릭률+'%</b> <span style="color:#64748b">노출 '+N(ct.노출)+' · '+E(ct.날짜||'')+'</span>':'<span style="color:#b45309">입력 대기</span>','스튜디오 주 1회 확인']]
+    .concat(nc.slice(0,3).map(function(c){return [E(c.슬롯)+' '+E(c.형식)+' ('+E(String(c.공개).slice(5))+')',N(c.조회)+'회'+(c.첫30초!=null?' · 첫 30초 '+c.첫30초+'%':'')+(c.지속률?' · 지속 '+Math.round(c.지속률)+'%':'')+' · 구독 '+N(c.구독),'28일 1만 회 1편 → ②단계'];}));
+  return '<div id="gr-yt" style="'+box+'"><div style="display:flex;flex-wrap:wrap;gap:10px;align-items:baseline"><b style="font-size:.98rem">🎯 성장 로드맵 · 리얼플랜여행</b><span style="font-size:.86rem">구독 <b>'+N(y.팔로워)+'</b> / 100,000</span><span style="font-size:.74rem;color:#64748b">'+pct(+y.팔로워||0,100000)+'%'+(y.증감_7일!=null?' · 7일 '+(y.증감_7일>0?'+':'')+y.증감_7일:'')+' · 콘텐츠 평균 조회 10만 = 상징 목표</span></div>'
+   +steps(y.단계||1)+'<table style="width:100%;border-collapse:collapse;font-size:.78rem"><tr style="background:#f8fafc;text-align:left"><th style="padding:6px">선행 지표</th><th style="padding:6px">지금</th><th style="padding:6px">다음 단계 신호</th></tr>'
+   +rows.map(function(r){return '<tr style="border-top:1px solid #e2e8f0"><td style="padding:6px">'+r[0]+'</td><td style="padding:6px">'+r[1]+'</td><td style="padding:6px;color:#475569">'+r[2]+'</td></tr>';}).join('')+'</table>'
+   +nextBox('yt')
+   +'<div style="display:flex;gap:6px;align-items:center;margin-top:8px;font-size:.74rem;color:#475569">스튜디오 값 입력(롱폼 28일): 노출 <input id="gr-yt-imp" type="number" style="width:90px;border:1px solid #cbd5e1;border-radius:6px;padding:3px 6px"> 클릭률% <input id="gr-yt-ctr" type="number" step="0.1" style="width:60px;border:1px solid #cbd5e1;border-radius:6px;padding:3px 6px"> <button data-gr-save="yt" style="padding:4px 10px;border:1px solid #2563eb;background:#fff;color:#2563eb;border-radius:6px;cursor:pointer">저장</button><span id="gr-msg-yt"></span></div></div>';
+}
+function snsCard(d){
+  var R=d['SNS_반응']||{};
+  var L=[['페북','회사','회사_페북_평균조회_30일','★우선'],['인스타','회사','회사_인스타_평균도달_30일',''],['인스타','대표','대표_인스타_평균도달_30일',''],['틱톡','회사',null,''],['쓰레드','회사','회사_쓰레드_평균조회_30일','']];
+  var tr=L.map(function(l){var p=plat(d,l[0],l[1]),r=l[2]?R[l[2]]:null,ratio=r!=null&&p.팔로워?pct(+r,+p.팔로워):null;
+    var col=ratio==null?'#94a3b8':ratio<1?'#dc2626':ratio<5?'#b45309':'#16a34a';
+    return '<tr style="border-top:1px solid #e2e8f0"><td style="padding:6px"><b>'+l[0]+'</b> '+l[1]+(l[3]?' <span style="color:#1d4ed8">'+l[3]+'</span>':'')+'</td><td style="padding:6px">'+N(p.팔로워)+(p.증감_7일!=null?' <span style="color:#64748b;font-size:.7rem">7일 '+(p.증감_7일>0?'+':'')+p.증감_7일+'</span>':'')+'</td><td style="padding:6px">'+pct(+p.팔로워||0,100000)+'%</td><td style="padding:6px">'+(p.단계?'①②③④⑤'.charAt(p.단계-1)+' '+STG[p.단계-1]:'-')+'</td><td style="padding:6px;color:'+col+';font-weight:700">'+(ratio==null?'—':ratio+'% (평균 '+N(r)+')')+'</td></tr>';}).join('');
+  return '<div id="gr-sns" style="'+box+'"><b style="font-size:.98rem">🎯 성장 로드맵 · SNS 10만</b> <span style="font-size:.74rem;color:#64748b">규모 단계 = 팔로워 · 반응 = 최근 30일 평균 도달(조회) ÷ 팔로워 · 기간 없는 상징 목표</span>'
+   +'<table style="width:100%;border-collapse:collapse;font-size:.78rem;margin-top:8px"><tr style="background:#f8fafc;text-align:left"><th style="padding:6px">플랫폼</th><th style="padding:6px">팔로워</th><th style="padding:6px">10만까지</th><th style="padding:6px">규모 단계</th><th style="padding:6px">반응</th></tr>'+tr+'</table>'
+   +nextBox('sns')
+   +'<div style="display:flex;gap:6px;align-items:center;margin-top:8px;font-size:.74rem;color:#475569">수기 팔로워(주 1회): <select id="gr-sns-pf" style="border:1px solid #cbd5e1;border-radius:6px;padding:3px 6px"><option>틱톡</option><option>쓰레드</option></select> <input id="gr-sns-n" type="number" style="width:90px;border:1px solid #cbd5e1;border-radius:6px;padding:3px 6px"> <button data-gr-save="sns" style="padding:4px 10px;border:1px solid #2563eb;background:#fff;color:#2563eb;border-radius:6px;cursor:pointer">저장</button><span id="gr-msg-sns"></span></div></div>';
+}
+async function chLine(){
+  if(typeof sb==='undefined')return '';
+  var t=new Date(Date.now()+9*3600e3).toISOString().slice(0,10),f=new Date(Date.now()+9*3600e3-14*864e5).toISOString().slice(0,10);
+  var a=await sb.from('mk_channel_slots').select('상태,예정일').gte('예정일',f).lt('예정일',t).limit(200);
+  var q=await sb.from('v_channel_card_queue').select('created_at').limit(300);
+  var rs=(a&&a.data)||[],sent=rs.filter(function(r){return r.상태==='발송';}).length,miss=rs.length-sent,cards=(q&&q.data)||[];
+  var old=cards.reduce(function(m,x){var dd=Math.floor((Date.now()-Date.parse(x.created_at))/864e5);return dd>m?dd:m;},0);
+  var ok=!miss;
+  return '<div id="gr-ch" style="'+box+';display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:'+(ok?'#f0fdf4':'#fff7ed')+';border-color:'+(ok?'#bbf7d0':'#fed7aa')+'">'
+   +'<b style="color:'+(ok?'#16a34a':'#b45309')+'">'+(ok?'✅ 발송 정상':'⚠ 빠진 칸 '+miss)+'</b><span>지난 14일 '+sent+'/'+rs.length+'칸 발송</span><span>재고 대기 '+cards.length+'장</span>'
+   +'<span style="color:'+(old>14?'#b45309':'#64748b')+'">가장 오래된 카드 '+old+'일'+(old>14?' → 정리':'')+'</span><span style="font-size:.72rem;color:#64748b">역할 = 꾸준한 소식 전달 · 성장 목표 없음(④순위)</span></div>';
+}
+function place(pid,id,html){
+  var p=$(pid);if(!p)return;var old=$(id);if(old){old.outerHTML=html;return;}
+  var lb=$('lb-'+pid),ref=lb&&lb.parentNode?lb:(pid==='tsch'?$('p4-host'):null);
+  var w=document.createElement('div');w.innerHTML=html;var el=w.firstElementChild;
+  if(ref&&ref.parentNode){ if(ref===lb)ref.parentNode.insertBefore(el,lb.nextSibling); else ref.parentNode.insertBefore(el,ref);}
+  else{var f=p.firstElementChild;if(f&&f.nextSibling)p.insertBefore(el,f.nextSibling);else p.appendChild(el);}
+}
+async function paint(pid,force){
+  try{
+    if(pid==='tchan'){var h=await chLine();if(h)place('tchan','gr-ch',h);return;}
+    var d=await get(force);if(!d)return;
+    if(pid==='tsch'||pid==='t1')place(pid,'gr-ns-'+pid,north(d).replace('<div style="','<div id="gr-ns-'+pid+'" style="'));
+    if(pid==='t13')place('t13','gr-yt',ytCard(d));
+    if(pid==='tsns')place('tsns','gr-sns',snsCard(d));
+  }catch(e){console.warn('RP-GROWTH',e);}
+}
+document.addEventListener('click',async function(ev){
+  var t=ev.target.closest&&ev.target.closest('[data-gr-save]');if(!t)return;
+  var k=t.getAttribute('data-gr-save'),m=$('gr-msg-'+k),args;
+  if(k==='yt'){var imp=+($('gr-yt-imp').value||0),ctr=parseFloat($('gr-yt-ctr').value);if(!(ctr>=0)){m.textContent=' 클릭률을 넣어 주세요';return;}args={p_플랫폼:'유튜브',p_계정:'회사',p_노출수:imp||null,p_클릭률:ctr};}
+  else{var n=+($('gr-sns-n').value||0);if(!n){m.textContent=' 팔로워 수를 넣어 주세요';return;}args={p_플랫폼:$('gr-sns-pf').value,p_계정:'회사',p_팔로워:n};}
+  t.disabled=true;m.textContent=' 저장 중…';
+  try{var r=await sb.rpc('rpc_channel_stats_manual',args);if(r.error)throw r.error;m.textContent=' 저장했습니다';m.style.color='#16a34a';C.v=null;setTimeout(function(){paint(k==='yt'?'t13':'tsns',true);},600);}
+  catch(e){m.textContent=' 실패: '+((e&&e.message)||e);m.style.color='#dc2626';}finally{t.disabled=false;}
+});
+var HERE={tsch:1,t1:1,t13:1,tsns:1,tchan:1};
+var _sw=window.switchTab;
+if(typeof _sw==='function'){window.switchTab=function(id){var r=_sw.apply(this,arguments);if(HERE[id])setTimeout(function(){paint(id);},id==='tsch'?1100:800);return r;};}
+function init(){var n=0;(function t(){var a=document.querySelector('.tab-panel.active');if(a&&HERE[a.id])paint(a.id);else if(++n<20)setTimeout(t,700);})();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<!-- RP-GROWTH end -->
 
 <!-- RP-MEDIA-V2 start · v1.45.0 · 2026-09-27 미디어 관리 화면 개편 1차(① 재고 요약)+2차(②③④⑥ 목록) -->
 <script>

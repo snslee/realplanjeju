@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.61.0</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.62.0</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -5198,7 +5198,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.61.0';
+var VER='v1.62.0';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -6991,7 +6991,7 @@ var HOLI={'2026-09-24':'추석 연휴','2026-09-25':'추석','2026-09-26':'추�
 var CHN={place:'플레이스',kakao:'카카오',gbp:'구글',karrot:'당근',threads:'쓰레드'};
 /* 채널 소식 자동 발송 요일(크론 233·234·235 · 채널 소식 탭 안내와 같음) */
 var CH_RULE={2:[['place','10:00'],['kakao','19:00']],3:[['gbp','10:00'],['karrot','10:00']],5:[['place','10:00'],['kakao','19:00']]};
-var LANES=[['blog','📝 블로그','쌍'],['home','🏠 홈 자료실','장'],['sns','📣 SNS','세트'],['ch','📍 채널 소식','건'],['yt','▶️ 유튜브','편']];
+var LANES=[['yt','▶️ 유튜브','편'],['sns','📣 SNS','세트'],['blog','📝 블로그','쌍'],['home','🏠 홈 자료실','장'],['ch','📍 채널 소식','건']]; /* v1.62.0 매체 순위 ①유튜브 ②SNS ③블로그·홈 ④채널(대표 10/1) */
 var BUL={여행:'국내여행',행사:'행사·이벤트',마케팅:'온라인마케팅',교육:'마케팅교육'};
 var RULE={blog:{2:1,3:1},hnew:{1:1,2:1,3:1},hboost:{4:1},bb:{2:['여행','행사'],3:['여행','마케팅']},hb:{1:['여행'],2:['마케팅'],3:['행사','교육']}},PW={},PW0=null;
 var SNSD={1:'여행',2:'마케팅',3:'행사'}; /* SNS 상시 편성 고정 요일(목·금은 격주 교대라 사업부 탭에선 빈 날 판정 안 함) */
@@ -7102,7 +7102,7 @@ function cnt(a){return a.filter(function(x){return !x.old;});}
 function gapOf(lane,d,items){if(d<today()||HOLI[d])return false;var w=dow(d),wk=monOf(d);items=cnt(items);
   if(lane==='blog'){if(!RULE.blog[w]||items.length)return false;if(S.bu){var bl=RULE.bb[w]||[];if(!(bl.indexOf(S.bu)>=0||(S.bu==='교육'&&bl.indexOf('마케팅')>=0)))return false;}return (PW[wk]||wk===monOf(today()))?true:'wait';}
   if(lane==='home'){if(!PW0||wk<PW0||!(RULE.hnew[w]||RULE.hboost[w])||items.length)return false;if(S.bu&&(RULE.hb[w]||[]).indexOf(S.bu)<0)return false;return PW[wk]?true:'wait';}
-  if(lane==='sns'&&w>=1&&w<=5&&!items.length){if(S.bu&&SNSD[w]!==S.bu)return false;return true;}
+  if(lane==='sns'&&w>=1&&w<=5&&!items.length){if(S.bu&&SNSD[w]!==S.bu)return false;return d>addD(today(),14)?'wait':true;}
   if(lane==='yt'&&w===5&&(!S.bu||S.bu==='여행')&&!items.some(function(x){return x.tm==='18:00';}))return true;return false;}
 
 var CSS='<style id="rp-sch4-css">'

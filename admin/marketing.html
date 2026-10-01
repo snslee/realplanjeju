@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.59.0</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.59.1</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -4957,7 +4957,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.59.0';
+var VER='v1.59.1';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -6562,13 +6562,14 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 'use strict';
 if(window.__rpSnsOps2)return; window.__rpSnsOps2='v2.0';
 var RULES=[
- ['계정·요일','회사 @realplan_travel = 월~금(월 여행 · 화 트렌드 여행 · 수 행사 · 목 쇼츠 재게시 · 금 여행/행사 격주) · 대표 @snslee = 화 마케팅 · 목 교육/마케팅 격주 · 발송 08:30'],
+ ['계정·요일','회사 @realplan_travel = 월~금(월 여행 · 화 전국 여행 코너 · 수 행사 · 목 쇼츠 재게시 · 금 여행/행사 격주) · 대표 @snslee = 화 마케팅 · 목 교육/마케팅 격주 · 발송 08:30'],
  ['일요일 흐름','09:13 SNS 방에 지난주 48시간 성과·촬영 후보 → 이 화면 ① 확인 → ② 소재 채택 → 「채택 끝 → 편성안 만들기」 → ③ 승인 → 월~금 제작·발송'],
  ['편성안','🔒 실사례·쇼츠 재게시·월요일 선제작·제작 이상 칸은 그대로 · 채택 소재는 화요일 칸부터 추가 · 기존 정보형 주제는 지우지 않고 다음 빈칸으로 미룸'],
  ['링크','프로필 링크 + 스토리 링크 스티커 · 첫 댓글 링크는 2026-09-21 폐지 · 댓글 유도 금지'],
  ['캐러셀 마지막 장','이달의 상품 · 단 공공·제공 사진 세트는 마지막 장 없음(저장용 요약 장) · 공공·제공 세트는 회사 월 게시의 1/3 이하'],
  ['공공·제공 사진','공공누리 1유형만 · 장마다 출처(사진: 한국관광공사 포토코리아 · 촬영자 · 공공누리 1유형) · 워터마크 유지 · 제공 사진은 서면 허락 캡처 보관'],
  ['연예인','사진·방송 캡처 금지 · 이름은 본인 공식 SNS·공식 발표·N1 보도로 확인된 방문 사실만(확인 링크 필수) · 「○○ 추천·픽·단골」 금지 · 요청 시 24시간 안 삭제'],
+ ['전국 여행 코너','화요일 「제주에서 떠나는 전국 시즌 여행」 — 지역 주간 교대 · 관광공사 축제(A)+벤치마크+트렌드 소재 · 단체 기준(인원·버스·동선·식당) · 「제주 출발」 또는 「○○에서 제주로」 필수 · 공공누리 1유형·자사 실사진만(AI 이미지 금지) · 마지막 장 = 저장용 코스 지도'],
  ['실사례','회사 계정 주 1건 이상 목표 · 반응 좋은 주제는 현장 촬영 → 실사례 칸'],
  ['표기','전화번호·금액·이모지 금지 · AI 이미지는 「AI 연출」 표기 · 해시태그 인스타 5 · 페북 3 · 쓰레드 1']
 ];

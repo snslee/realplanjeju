@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex, nofollow">
 <title>입찰 조회 | 리얼플랜제주 관리자</title>
-<!-- bid.html v2.5 (2026-09-30 대표 승인) — 📅 발주 계획 탭(bd_발주계획 · rpc_bid_plan_list · 나라장터 발주계획 제주 기관 · 작년 반복 예고)
+<!-- bid.html v3.0 (2026-10-02 대표 승인 「입찰 제안 준비 설계도 시안 v1」) — 판정 = bd_공고.최종판정(정본 · rpc_bid_list_v3) · 정정 차수 표시 · 불가는 「포기로 정리」
+     · 📋 사전규격 탭(판정·준비/패스/의견 냈음 = rpc_bid_prespec_decide) · 「참여 → 제안 자료 모으기」(bd_관심 참여 → bid-proposal 수집)
+     · ⭐ 진행 중 = 수집 단계·진행률 · 📚 제안 자료집(9개 장 · 출처·등급·권리) · 📝 제안서 준비(공고 목차 · 플로우 프롬프트 복사 · 과업↔가격표) — rpc_bid_proposal_pack/request
+     v2.5 (2026-09-30 대표 승인) — 📅 발주 계획 탭(bd_발주계획 · rpc_bid_plan_list · 나라장터 발주계획 제주 기관 · 작년 반복 예고)
      v2.4 (2026-09-30 대표 승인) — 글자체·크기·색을 홈A·홈B와 통일(RP-TYPE-V1 · Noto Sans KR · 크기 계단 12~21 · 줄간 1.55) · 학교 일정 연결 공고명 전체 표시
      v2.3 (2026-09-30 대표 승인) — 🏫 학교 일정 예고 탭(bd_학교일정 · rpc_bid_school_list · NEIS 제주 초·중·고 · 매주 월 07:01 갱신)
      v2.2 (2026-09-30 대표 승인) — 📋 사전규격 구역(bd_사전규격 · rpc_bid_prespec_list) · 공고 전 단계 · 의견 마감
@@ -145,17 +148,41 @@ table{font-size:13px}th{color:#7C8698;border-bottom-color:#E6ECF5}
 .sch th{font-size:12px;background:#F5F8FD;color:#7C8698}.sch td{font-size:13px}.sch .k2{color:#B45309}.sch .k1{color:#7C8698}.sch .ok{color:#1E7A46}
 .empty{font-size:13px;color:#7C8698}
 label{font-size:12px;color:#7C8698}select,input{font-size:14px}.btn{font-size:14px;background:#2B62C4}
+/* v3.0 (2026-10-02) 최종판정·제안 준비 */
+.p-해당{background:#F5F8FD;color:#7C8698}
+.jd{display:flex;gap:6px 10px;align-items:baseline;flex-wrap:wrap;font-size:13px;background:#F5F8FD;border-radius:8px;padding:6px 10px}
+.jd .src{color:#7C8698;font-size:12px}.jd.v-불가{background:#FDECEF}.jd.v-확인{background:#FFF3E4}.jd.v-가능{background:#EAF7EF}
+.ord{font-size:12px;font-weight:700;border-radius:6px;padding:1px 7px;background:#E8F1FF;color:#2B62C4;margin-left:6px;vertical-align:middle}
+.prog{display:flex;flex-direction:column;gap:6px;border-top:1px solid #eef2f7;padding-top:8px}
+.pbar{height:8px;background:#E6ECF5;border-radius:99px;overflow:hidden}.pbar i{display:block;height:100%;background:#2B62C4}
+.steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 12px;font-size:13px}
+.steps .ok{color:#1E7A46}.steps .run{color:#2B62C4;font-weight:700}.steps .wait{color:#7C8698}.steps .skip{color:#B45309}
+.steps small{color:#7C8698;display:block;font-size:12px;margin-left:20px}
+.pk-h{display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.pk-h h2{font-size:17px}
+.chs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:6px 12px;font-size:14px;margin:8px 0}
+.kv dt{color:#7C8698;font-size:13px}.kv dd{margin:0}
+.rt{font-size:12px;font-weight:700;border-radius:6px;padding:1px 7px;white-space:nowrap}
+.rt-인용{background:#EAF7EF;color:#1E7A46}.rt-구조{background:#FFF3E4;color:#B45309}.rt-금지{background:#FDECEF;color:#a3263a}.rt-내부{background:#F5F8FD;color:#7C8698}
+.gd{font-size:12px;color:#2B62C4;font-weight:700;white-space:nowrap}
+.pk td{font-size:13px}.pk td.s{color:#7C8698;font-size:12px}
+.img{border:1px solid #E6ECF5;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:#fff}
+.img .pr{background:#F5F8FD;border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.6}
+.imgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.note{font-size:12px;color:#7C8698;margin-top:8px}
 </style>
 </head>
 <body>
 <div class="top"><b>📑 리얼플랜제주 · 입찰 조회</b><span class="sp"></span><span id="who" style="font-size:12px;color:#cfe0ff"></span><a href="../admin.html">← 관리자 홈</a></div>
 <div class="wrap">
 <div class="title">📑 입찰 공고 — 진행 가능 여부</div>
-<details class="sub"><summary>수집·판정 기준</summary> 나라장터·제주 기관 게시판 공고를 매일 자동수집합니다. 판정은 공고 첨부(공고문·제안요청서·과업서)를 모두 읽은 결과입니다(realplan-bid 스킬 · 관문 8개). 맨 위 추천 TOP 3는 참가 판정·AI 적합도·제주 기관·금액·마감 여유로 매긴 100점 점수 순입니다. 판정 전 공고는 「판독 전」에 모이며, 코워크에 「입찰 판독」을 요청하면 반영됩니다. 마감 시각은 한국시간이고, 같은 공고의 재공고는 최신 차수 한 건만 보입니다.</details>
+<details class="sub"><summary>수집·판정 기준</summary> 나라장터·제주 기관 게시판 공고를 매일 자동수집합니다. 판정은 공고 첨부(공고문·제안요청서·과업서)를 모두 읽은 결과 한 가지로 정리됩니다(수동 판독 → 자동 판독 → 앞 차수·사전규격 승계 → 지역제한 순 · 정정공고는 앞 차수 판정을 이어받음). 「참여」를 누른 공고만 제안 자료를 모읍니다(⭐ 진행 중). 맨 위 추천 TOP 3는 참가 판정·AI 적합도·제주 기관·금액·마감 여유로 매긴 100점 점수 순입니다. 판정 전 공고는 「판독 전」에 모이며, 코워크에 「입찰 판독」을 요청하면 반영됩니다. 마감 시각은 한국시간이고, 같은 공고의 재공고는 최신 차수 한 건만 보입니다.</details>
 <div id="gate" class="card hide" style="color:#b45309">로그인 또는 입찰 권한이 필요합니다. <a href="../admin.html">관리자 홈에서 로그인</a> 후 다시 열어주세요.</div>
 <div id="app" class="hide">
   <div class="tabs">
     <button id="tJ" class="on" onclick="setTab('judge')">✅ 판정 목록</button>
+    <button id="tR" onclick="setTab('spec')">📋 사전규격</button>
     <button id="tP" onclick="setTab('prog')">⭐ 진행 중</button>
     <button id="tS" onclick="setTab('search')">🔎 직접 조회</button>
     <button id="tH" onclick="setTab('school')">🏫 학교 일정 예고</button>
@@ -181,7 +208,7 @@ label{font-size:12px;color:#7C8698}select,input{font-size:14px}.btn{font-size:14
 const SUPABASE_URL='https://iodfqlkeiwxyuojwcozv.supabase.co';
 const SUPABASE_KEY='sb_publishable_vtCzH1F4Kk2-qj0YuH7qHQ_9EFmyext';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce'}});
-let SPEC=[],SCH=[],SCHF='main',PLN=[],PLNF='all';let TAB='judge',BU='전체',SORT='deadline',ALL=[],DROPFOR=null,MSG={},PASTN=30,PASTOPEN=false;
+let SPEC=[],SCH=[],SCHF='main',PLN=[],PLNF='all',SPF='open',PACK=null,PKNO=null,PKCH='방식',PKMODE='book',SPMSG={};let TAB='judge',BU='전체',SORT='deadline',ALL=[],DROPFOR=null,MSG={},PASTN=30,PASTOPEN=false;
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KST=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false});
 function fdt(s){if(!s)return '마감미상';const d=new Date(s);if(isNaN(d))return String(s).slice(0,16);const p=Object.fromEntries(KST.formatToParts(d).map(x=>[x.type,x.value]));return p.month+'/'+p.day+'('+p.weekday+') '+p.hour+':'+p.minute;}
@@ -191,10 +218,13 @@ function past(x){const t=ts(x['마감일시']);if(t!==null)return t<Date.now();c
 function dday(x){const t=ts(x['마감일시']);if(t===null)return '<span class="dd dd-g">마감미상</span>';if(t<Date.now())return '<span class="dd dd-g">마감</span>';
   const kd=s=>new Date(new Date(s).toLocaleString('en-US',{timeZone:'Asia/Seoul'})).setHours(0,0,0,0);const d=Math.round((kd(t)-kd(Date.now()))/86400000);
   return '<span class="dd '+(d<=2?'dd-r':d<=7?'dd-y':'dd-g')+'">'+(d===0?'오늘':'D-'+d)+'</span>';}
-function verdict(x){const v=x['참가판정'];if(v==='가능')return '가능';if(v==='확인 필요')return '확인';if(v==='불가')return '불가';return '전';}
-const VLABEL={'가능':'진행 가능','확인':'확인 필요','불가':'불가','전':'판독 전'};
+// v3.0: 판정 정본 = bd_공고.최종판정(수동 판독 > 자동 판독 > 승계 > 지역제한 > 판독 대기)
+function verdict(x){const v=x['최종판정']||x['참가판정'];if(v==='가능')return '가능';if(v==='확인 필요')return '확인';if(v==='불가')return '불가';if(v==='해당없음')return '해당';return '전';}
+const VLABEL={'가능':'🟢 진행 가능','확인':'🟡 확인 필요','불가':'⛔ 참가 불가','전':'⏳ 판독 대기','해당':'평가위원 공고'};
 const DECIDED=['참여','관망','포기','투찰','낙찰','유찰','제외'];
-const SECS=[['sReco','⭐ 추천'],['sSpec','📋 사전규격'],['sLive','⏰ 마감 전 판정'],['sPre','🔍 판독 전'],['sNo','⛔ 불가'],['sPast','📁 마감 지남']];
+const SECS=[['sReco','⭐ 추천'],['sLive','⏰ 마감 전 판정'],['sPre','🔍 판독 대기'],['sNo','⛔ 불가'],['sPast','📁 마감 지남']];
+const STEPS=[['S1','이 공고 첨부 — 방식·배점·과업·실적 기준'],['S2','나라장터 낙찰 — 같은 유형·같은 발주처'],['S3','공개 자료 — 발주처·정책 통계·유사 사례'],['S4','우리 실적·사진·참고 제안서'],['S5','견적 대응 — 과업 품목 ↔ 가격표'],['S6','서류 대조 — 보유 서류 대장'],['S7','이미지 자리·플로우 프롬프트']];
+const CHS=[['방식','① 제안 방식'],['근거','② 과업 이해 근거'],['사례','③ 유사 사례'],['경쟁','④ 경쟁·가격'],['실적','⑤ 우리 실적'],['사진','⑥ 사진 후보'],['과업','⑦ 과업 대응'],['견적','⑧ 견적 대응'],['이미지','⑨ 이미지 프롬프트']];
 
 async function boot(){
   const {data:{session}}=await sb.auth.getSession();
@@ -205,16 +235,16 @@ async function boot(){
   const t=new Date(),a=new Date(t.getTime()-7*86400000);document.getElementById('ed').value=t.toISOString().slice(0,10);document.getElementById('sd').value=a.toISOString().slice(0,10);
   load();
 }
-function setTab(x){TAB=x;['J','P','S','H','G'].forEach(k=>document.getElementById('t'+k).classList.toggle('on',{J:'judge',P:'prog',S:'search',H:'school',G:'plan'}[k]===x));
+function setTab(x){TAB=x;PACK=null;PKNO=null;['J','R','P','S','H','G'].forEach(k=>document.getElementById('t'+k).classList.toggle('on',{J:'judge',R:'spec',P:'prog',S:'search',H:'school',G:'plan'}[k]===x));
   document.getElementById('judgeBox').classList.toggle('hide',x!=='judge');document.getElementById('searchbar').classList.toggle('hide',x!=='search');
   document.getElementById('bar').classList.toggle('hide',x==='search'||x==='school'||x==='plan');
   if(x==='school'){loadSchool();return;}
   if(x==='plan'){loadPlan();return;}
   if(x==='search'){ALL=[];document.getElementById('list').innerHTML='';document.getElementById('status').textContent='';}else load();}
 async function load(){const st=document.getElementById('status');st.textContent='불러오는 중…';
-  try{const r=await sb.rpc('rpc_bid_list',TAB==='prog'?{'_상태':'관심','_정렬':'deadline'}:{'_정렬':'deadline'});if(r.error){st.textContent='오류: '+r.error.message;return;}
+  try{const r=await sb.rpc('rpc_bid_list_v3',TAB==='prog'?{'_상태':'관심','_정렬':'deadline'}:{'_정렬':'deadline'});if(r.error){st.textContent='오류: '+r.error.message;return;}
     const rows=r.data||[];ALL=rows.filter(x=>x['최신차수']!==false);
-    try{const sp=await sb.rpc('rpc_bid_prespec_list',{'_일수':14});SPEC=sp.error?[]:(sp.data||[]);}catch(_){SPEC=[];}
+    try{const sp=await sb.rpc('rpc_bid_prespec_list',{'_일수':30});SPEC=sp.error?[]:(sp.data||[]);}catch(_){SPEC=[];}
     paint();}catch(e){st.textContent='불러오기 실패: '+e;}}
 async function loadPlan(){const st=document.getElementById('status'),li=document.getElementById('list');st.textContent='불러오는 중…';li.innerHTML='';
   try{const r=await sb.rpc('rpc_bid_plan_list',{'_개월':6});if(r.error){st.textContent='오류: '+r.error.message;return;}PLN=r.data||[];paintPlan();}catch(e){st.textContent='불러오기 실패: '+e;}}
@@ -271,29 +301,31 @@ function drawBar(){const bus=['전체',...new Set(ALL.map(x=>x['사업부']).fil
 function groups(){const a=buRows();const live=a.filter(x=>!past(x));
   return {reco:live.filter(x=>x['추천점수']!=null).sort((p,q)=>Number(q['추천점수'])-Number(p['추천점수'])).slice(0,3),
     live:sortRows(live.filter(x=>['가능','확인'].includes(verdict(x)))),
-    pre:sortRows(live.filter(x=>verdict(x)==='전')),
+    pre:sortRows(live.filter(x=>['전','해당'].includes(verdict(x)))),
     no:sortRows(live.filter(x=>verdict(x)==='불가')),
     past:a.filter(past).sort((p,q)=>(ts(q['마감일시'])||0)-(ts(p['마감일시'])||0))};}
 function drawNav(g){const wait=g.live.filter(x=>!DECIDED.includes(x['관심상태'])).length;
-  const sp=specRows(),spSoon=sp.filter(x=>{const t=ts(x['의견마감']);return t!==null&&t>=Date.now()&&t-Date.now()<=2*86400000;}).length;
-  const n={sReco:g.reco.length,sSpec:sp.length,sLive:g.live.length,sPre:g.pre.length,sNo:g.no.length,sPast:g.past.length};
-  document.getElementById('nav').innerHTML=SECS.map(([id,l])=>'<a href="#'+id+'" data-s="'+id+'" onclick="return jump(\''+id+'\')">'+l+' <b>'+n[id]+'</b>'+(id==='sLive'&&wait?'<small> · 결정 대기 '+wait+'</small>':'')+(id==='sSpec'&&spSoon?'<small> · 의견 마감 임박 '+spSoon+'</small>':'')+'</a>').join('');}
+  const n={sReco:g.reco.length,sLive:g.live.length,sPre:g.pre.length,sNo:g.no.length,sPast:g.past.length};
+  document.getElementById('nav').innerHTML=SECS.map(([id,l])=>'<a href="#'+id+'" data-s="'+id+'" onclick="return jump(\''+id+'\')">'+l+' <b>'+n[id]+'</b>'+(id==='sLive'&&wait?'<small> · 결정 대기 '+wait+'</small>':'')+'</a>').join('');
+  const sp=SPEC.filter(x=>{const t=ts(x['의견마감']);return t!==null&&t>=Date.now()&&!['패스'].includes(x['진행상태']);}).length;
+  document.getElementById('tR').textContent='📋 사전규격'+(sp?' '+sp:'');}
 function jump(id){if(id==='sPast'){PASTOPEN=true;const d=document.getElementById('pastBox');if(d)d.open=true;}
   const el=document.getElementById(id);if(el){const y=el.getBoundingClientRect().top+window.scrollY-document.getElementById('navWrap').offsetHeight-8;window.scrollTo({top:y,behavior:'smooth'});}return false;}
 function sec(id,title,sub,body){return '<section class="sec" id="'+id+'"><div class="sech"><h2>'+title+'</h2>'+(sub||'')+'</div>'+body+'</section>';}
 const EMPTY=t=>'<div class="empty">'+t+'</div>';
 function paint(){const st=document.getElementById('status'),li=document.getElementById('list');drawBar();
   const n=ALL.filter(x=>!x['확인일시']).length;
-  if(TAB==='prog'){const a=sortRows(buRows());st.textContent='진행 중 '+a.length+'건 · 미확인 '+n+'건';
-    li.innerHTML=a.length?a.map(x=>verdict(x)==='전'?preRow(x):cardRow(x)).join(''):EMPTY('참여·관망으로 기록한 공고가 없습니다.');return;}
+  if(PACK&&PKNO){paintPack();return;}
+  if(TAB==='spec'){paintSpec();return;}
+  if(TAB==='prog'){const a=sortRows(buRows());const cn=a.filter(x=>x['제안']).length;st.textContent='진행 중 '+a.length+'건 · 제안 자료 수집 '+cn+'건 · 미확인 '+n+'건';
+    li.innerHTML=a.length?a.map(x=>verdict(x)==='전'&&!x['제안']?preRow(x):cardRow(x)).join(''):EMPTY('참여·관망으로 기록한 공고가 없습니다.');return;}
   const g=groups();drawNav(g);
   st.textContent='마감 전 '+buRows().filter(x=>!past(x)).length+'건 · 전체 '+ALL.length+'건 · 미확인 '+n+'건';
   const sortSw='<span class="sw"><button class="chip '+(SORT==='deadline'?'on':'')+'" onclick="setSort(\'deadline\')">⏰ 마감 임박순</button><button class="chip '+(SORT==='recent'?'on':'')+'" onclick="setSort(\'recent\')">🆕 최신 등록순</button></span>';
   let h=sec('sReco','⭐ 우리 회사 추천 TOP '+g.reco.length,'<span class="hint">참가 판정·적합도·제주·금액·마감 여유로 매긴 100점 점수</span>',
       g.reco.length?g.reco.map((x,i)=>cardRow(x,i+1)).join(''):EMPTY('지금 추천할 마감 전 공고가 없습니다.'));
-  {const sp=specRows();h+=sec('sSpec','📋 사전규격 — 공고 전 단계','<span class="hint">나라장터에 규격이 먼저 공개된 건 · 공고가 나오면 번호로 연결 · 의견 마감 전 규격서 확인</span>',sp.length?sp.map(specRow).join(''):EMPTY('최근 14일 우리 조건(제주 기관·제주 도착 · 입찰 키워드)에 맞는 사전규격이 없습니다.'));}
   h+=sec('sLive','⏰ 마감 전 판정 공고',sortSw,g.live.length?g.live.map(x=>cardRow(x)).join(''):EMPTY('판정이 끝난 마감 전 공고가 없습니다.'));
-  h+=sec('sPre','🔍 판독 전','<span class="hint">코워크에 「입찰 판독」을 요청하면 판정이 채워집니다</span>',g.pre.length?g.pre.map(preRow).join(''):EMPTY('판독을 기다리는 공고가 없습니다.'));
+  h+=sec('sPre','🔍 판독 대기','<span class="hint">첨부 자동 판독(하루 여러 번)이 끝나면 판정이 채워집니다 · 평가위원 공고도 여기 모입니다</span>',g.pre.length?g.pre.map(preRow).join(''):EMPTY('판독을 기다리는 공고가 없습니다.'));
   h+=sec('sNo','⛔ 불가',' <span class="hint">참가 자격이 안 되는 공고 · 사유 한 줄</span>',g.no.length?'<div class="nol">'+g.no.map(noRow).join('')+'</div>':EMPTY('마감 전 불가 공고가 없습니다.'));
   const pv=g.past.slice(0,PASTN);
   h+='<section class="sec" id="sPast"><details id="pastBox" ontoggle="PASTOPEN=this.open"'+(PASTOPEN?' open':'')+'><summary><h2>📁 마감 지난 공고 '+g.past.length+'건</h2><span class="hint">눌러서 펼치기</span></summary>'
@@ -303,30 +335,44 @@ let OBS=null;
 function watch(){if(OBS)OBS.disconnect();if(!('IntersectionObserver' in window))return;
   OBS=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.s===e.target.id));}});},{rootMargin:'-90px 0px -65% 0px'});
   SECS.forEach(([id])=>{const el=document.getElementById(id);if(el)OBS.observe(el);});}
-function nmLink(x){const no=esc(x['공고번호']);return x['공고url']?'<a class="nm" href="'+esc(x['공고url'])+'" target="_blank" rel="noopener" onclick="seen(\''+no+'\')">'+esc(x['공고명'])+'</a>':'<span class="nm">'+esc(x['공고명'])+'</span>';}
+function nmLink(x){const no=esc(x['공고번호']);const od=(x['원천']==='G2B'&&x['차수']&&x['차수']!=='000')?'<span class="ord">정정 -'+esc(x['차수'])+'</span>':'';return (x['공고url']?'<a class="nm" href="'+esc(x['공고url'])+'" target="_blank" rel="noopener" onclick="seen(\''+no+'\')">'+esc(x['공고명'])+'</a>':'<span class="nm">'+esc(x['공고명'])+'</span>')+od;}
 function eye(x){const sn=!!x['확인일시'];return '<button class="eye'+(sn?' on':'')+'" onclick="seen(\''+esc(x['공고번호'])+'\')" title="'+(sn?'확인함':'클릭하면 확인 처리')+'">'+(sn?'👁 확인':'○ 미확인')+'</button>';}
 function metaLine(x){const bu=[x['사업부'],x['보조사업부']!==x['사업부']?x['보조사업부']:null].filter(Boolean).join(' + ');
   return '<span>'+esc(x['수요기관']||x['공고기관']||'')+'</span><span class="num">추정 '+won(x['추정가격'])+'</span><span class="num">마감 '+fdt(x['마감일시'])+'</span>'+dday(x)+(bu?'<span class="tag">'+esc(bu)+'</span>':'')+(x['배지']&&/제주도착|이해충돌/.test(x['배지'])?'<span class="tag" style="background:#fff3d6;color:#b45309">'+esc(x['배지'].split(',').filter(b=>/제주도착|이해충돌/.test(b)).join(' '))+'</span>':'');}
 function recoLine(x,rank){return '<div class="reco"><span class="rk">추천 '+rank+'</span><span class="sc num">'+Math.round(Number(x['추천점수']))+'점</span><span class="why3">'+esc(x['추천사유']||'')+'</span></div>';}
 function specRows(){const a=BU==='전체'?SPEC:SPEC.filter(x=>x['사업부']===BU);return a;}
-function specRow(x){const t=ts(x['의견마감']);const kd=s=>new Date(new Date(s).toLocaleString('en-US',{timeZone:'Asia/Seoul'})).setHours(0,0,0,0);
+function specRow(x){const t=ts(x['의견마감']);const kd=s=>new Date(new Date(s).toLocaleString('en-US',{timeZone:'Asia/Seoul'})).setHours(0,0,0,0);const no=esc(x['등록번호']);
   const dd=t===null?'<span class="dd dd-g">마감미상</span>':(t<Date.now()?'<span class="dd dd-g">의견 마감</span>':(()=>{const d=Math.round((kd(t)-kd(Date.now()))/86400000);return '<span class="dd '+(d<=2?'dd-r':d<=7?'dd-y':'dd-g')+'">의견 '+(d===0?'오늘':'D-'+d)+'</span>';})());
   const cl=x['의견마감']?new Date(x['의견마감']).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'미상';
   const files=(x['규격서url']||[]).map((u,i)=>'<a href="'+esc(u)+'" target="_blank" rel="noopener">규격서 '+(i+1)+'</a>').join('');
-  return '<article class="bid spec"><div class="sp-h"><b>📋 사전규격</b> · 의견 등록 마감 '+esc(cl)+' '+dd+(x['연결공고번호']?' · <b style="color:#15803d">공고 나옴 '+esc(x['연결공고번호'])+'</b>':' · 공고 전')+'</div>'
-   +'<div class="sp-t">'+esc(x['사업명']||'')+'</div>'
-   +'<div class="sp-m">'+esc(x['발주기관']||'')+(x['수요기관']&&x['수요기관']!==x['발주기관']?' · '+esc(x['수요기관']):'')+(x['배정예산']?' · 배정예산 '+Math.round(x['배정예산']/10000).toLocaleString()+'만원':'')+(x['사업부']?' · <span class="chip" style="padding:1px 8px">'+esc(x['사업부'])+'</span>':'')+(x['지역']==='제주도착'?' · 🛬제주도착':'')+' · 매칭 「'+esc(x['매칭키워드']||'')+'」</div>'
-   +(files?'<div class="sp-f">'+files+'</div>':'')+'<div class="sp-m"><b>할 일</b> — 규격서 확인 후 불리한 조건이 있으면 의견 제출 · 공고가 나오면 판정 목록으로 넘어옵니다</div></article>';}
+  const pj=x['판정'];const v=pj==='가능'?'가능':pj==='확인 필요'?'확인':pj==='불가'?'불가':'전';
+  const k=x['카드']||{};const facts=['자격','방식','발표','제출','서류'].filter(q=>k[q]).map(q=>'<div class="f '+esc(k[q].lv||'')+'"><span class="t">'+q+'</span><span class="v">'+esc(k[q].v)+'</span></div>').join('');
+  const why=String(x['판정사유']||'').replace('직접생산확인증명 보유 확인','직접생산확인증명 요구 — 우리 미보유(발급 필요)');
+  const cur=x['진행상태']||'신규';const b=(s,l,p)=>'<button class="b '+(cur===s||(s==='준비'&&cur==='공고됨')?'sel':(p&&cur==='신규'?'pri':''))+'" onclick="spDecide(\''+no+'\',\''+s+'\')">'+l+'</button>';
+  const ev=x['근거인용']||[];
+  return '<article class="bid spec v-'+v+'"><div class="sp-h"><b>📋 P'+esc(x['참조번호']||'')+' 사전규격</b> · 의견 등록 마감 '+esc(cl)+' '+dd+(x['연결공고번호']?' · <b style="color:#15803d">공고 나옴 '+esc(x['연결공고번호'])+'</b>':' · 공고 전')+'</div>'
+   +'<div class="hd"><div class="l"><span class="sp-t">'+esc(x['사업명']||'')+'</span><span class="sp-m">'+esc(x['발주기관']||'')+(x['수요기관']&&x['수요기관']!==x['발주기관']?' · '+esc(x['수요기관']):'')+(x['배정예산']?' · 배정예산 '+Math.round(x['배정예산']/10000).toLocaleString()+'만원':'')+(x['사업부']?' · <span class="tag">'+esc(x['사업부'])+'</span>':'')+(x['지역']==='제주도착'?' · 🛬제주도착':'')+' · 매칭 「'+esc(x['매칭키워드']||'')+'」</span></div><span class="pill p-'+v+'">'+VLABEL[v]+'</span></div>'
+   +(pj?'<div class="jd v-'+v+'"><b>'+VLABEL[v]+'</b>'+(why?'<span>'+esc(why)+'</span>':'')+'<span class="src">규격서 '+esc(x['판정출처']||'자동')+' 판독'+(x['판정일시']?' · '+fdt(x['판정일시']).replace(/ \d\d:\d\d$/,''):'')+'</span></div>':'<div class="jd"><b>⏳ 판독 대기</b><span class="src">규격서 자동 판독(하루 여러 번)이 끝나면 판정이 채워집니다</span></div>')
+   +(facts?'<div class="facts">'+facts+'</div>':'')
+   +(files?'<div class="sp-f">'+files+'</div>':'')
+   +'<div class="dec"><span class="q">'+(cur==='신규'?'준비할지 정해 주세요 — 공고가 나오면 판정 목록으로 넘어옵니다':'지금 상태: '+esc(cur))+'</span><span class="btns">'+b('준비','🟢 준비',v!=='불가')+b('패스','패스',v==='불가')+b('의견제출','의견 냈음')+'</span></div>'
+   +(SPMSG[x['등록번호']]?'<div class="msg">'+esc(SPMSG[x['등록번호']])+'</div>':'')
+   +(ev.length?'<details class="why"><summary>판정 근거 '+ev.length+'건 — 규격서 원문</summary><ul>'+ev.map(e=>'<li>「'+esc(e['인용'])+'」 — <b>'+esc(e['파일'])+'</b></li>').join('')+'</ul></details>':'')+'</article>';}
 function cardRow(x,rank){const v=verdict(x),no=esc(x['공고번호']);const k=x['카드']||{};const order=['자격','방식','발표','제출','서류','돈'];
   const facts=order.filter(t=>k[t]).map(t=>'<div class="f '+esc(k[t].lv||'')+'"><span class="t">'+t+'</span><span class="v">'+esc(k[t].v)+'</span></div>').join('');
   const cur=x['관심상태'];const pst=past(x);
-  const q=x['결정사항']||(pst?'마감 — 결과만 기록':(v==='전'?'판독 필요 — 코워크에 「입찰 판독」 요청':(v==='확인'?'확인 후 결정':'참여 여부 결정')));
+  const q=(v==='불가'&&!pst)?'참가 자격이 안 됩니다 — 포기로 정리하면 목록이 가벼워집니다':(x['결정사항']||(pst?'마감 — 결과만 기록':(v==='전'?'판독 대기 — 자동 판독이 끝나면 판정이 채워집니다':(v==='확인'?'확인 후 결정':'참여 여부 결정'))));
   const b=(d,l,p)=>'<button class="b '+(cur===d?'sel':(p&&!cur?'pri':''))+'" onclick="decide(\''+no+'\',\''+d+'\')">'+l+'</button>';
   const drop=DROPFOR===x['공고번호']?'<span class="drop"><input id="dr_'+no+'" type="text" placeholder="포기 사유 한 줄 (예: 원가 역마진)"><button class="b pri" onclick="sendDrop(\''+no+'\')">포기 기록</button><button class="b" onclick="DROPFOR=null;paint()">취소</button></span>':'';
   const ev=(x['근거인용']||[]);
+  const why=x['최종사유']||x['판정사유'];
+  const jd=v==='해당'?'<div class="jd"><b>평가위원 모집</b><span>대표 개인 신청 건 — 응찰·제안 자료 수집 대상이 아닙니다</span></div>':(v!=='전'||x['판정출처'])?'<div class="jd v-'+v+'"><b>'+VLABEL[v]+'</b>'+(why?'<span>'+esc(why)+'</span>':'')+'<span class="src">'+esc(x['판정출처']||'')+(x['판정일시2']?' · '+fdt(x['판정일시2']).replace(/ \d\d:\d\d$/,''):'')+'</span></div>':'';
+  const btns=drop||(v==='불가'&&!pst?(cur==='포기'?'<span class="b sel">포기 기록됨</span>':'<button class="b pri" onclick="dropBad(\''+no+'\')">포기로 정리</button>')
+    :(b('참여',(cur==='참여'||v==='해당')?'참여':'참여 → 제안 자료 모으기',v!=='전'&&v!=='해당')+b('관망','관망')+b('포기','포기 · 사유')));
   return '<article class="bid v-'+v+(rank?' rec':'')+(pst?' past':'')+(x['확인일시']?' seen':'')+'">'+(rank?recoLine(x,rank):'')+'<div class="hd"><div class="l">'+nmLink(x)+'<span class="meta">'+metaLine(x)+'</span></div><span class="pill p-'+v+'">'+VLABEL[v]+'</span></div>'
-   +(facts?'<div class="facts">'+facts+'</div>':'')
-   +'<div class="dec"><span class="q">'+esc(q)+(cur?' → <span style="color:#2563eb">'+esc(cur)+' 기록</span>':'')+'</span><span class="btns">'+(drop||(b('참여','참여',v!=='전')+b('관망','관망')+b('포기','포기 · 사유')))+eye(x)+'</span></div>'
+   +jd+(facts?'<div class="facts">'+facts+'</div>':'')
+   +'<div class="dec"><span class="q">'+esc(q)+(cur?' → <span style="color:#2563eb">'+esc(cur)+' 기록</span>':'')+'</span><span class="btns">'+btns+eye(x)+'</span></div>'
+   +((TAB==='prog'||x['제안'])?progLine(x):'')
    +(TAB==='prog'?outcomeLine(x):'')
    +(MSG[x['공고번호']]?'<div class="msg">'+esc(MSG[x['공고번호']])+'</div>':'')
    +(ev.length?'<details class="why"><summary>판정 근거 '+ev.length+'건 — 공고문 원문</summary><ul>'+ev.map(e=>'<li>「'+esc(e['인용'])+'」 — <b>'+esc(e['파일'])+'</b></li>').join('')+'</ul></details>':'')+'</article>';}
@@ -335,15 +381,93 @@ function outcomeLine(x){const no=esc(x['공고번호']);const cur=x['관심상�
 async function saveOutcome(no){const stt=document.getElementById('oc_'+no).value;const v=(document.getElementById('am_'+no).value||'').replace(/[^0-9]/g,'');
   try{const r=await sb.rpc('rpc_bid_outcome',{'_공고번호':no,'_상태':stt,'_투찰금액':v?parseInt(v,10):null});if(r.error){MSG[no]='저장하지 못했습니다: '+r.error.message;paint();return;}
   const x=ALL.find(y=>y['공고번호']===no);if(x)x['관심상태']=stt;MSG[no]='';paint();}catch(e){MSG[no]='저장하지 못했습니다: '+e;paint();}}
-function preRow(x){return '<article class="bid'+(past(x)?' past':'')+(x['확인일시']?' seen':'')+'"><div class="hd"><div class="l">'+nmLink(x)+'<span class="meta">'+metaLine(x)+'</span></div><span class="btns">'+(x['추천점수']!=null?'<span class="sc2 num">'+Math.round(Number(x['추천점수']))+'점</span>':'')+'<span class="pill p-전">판독 전</span>'+eye(x)+'</span></div></article>';}
-function noRow(x){return '<div class="r"><span class="pill p-불가">불가</span><span style="flex:1;min-width:220px">'+nmLink(x)+' <span style="color:#8a96ab">· '+esc(x['수요기관']||x['공고기관']||'')+' · 마감 '+fdt(x['마감일시'])+'</span></span><span class="why2">'+esc(x['판정사유']||'')+'</span></div>';}
+function preRow(x){return '<article class="bid'+(past(x)?' past':'')+(x['확인일시']?' seen':'')+'"><div class="hd"><div class="l">'+nmLink(x)+'<span class="meta">'+metaLine(x)+'</span></div><span class="btns">'+(x['추천점수']!=null?'<span class="sc2 num">'+Math.round(Number(x['추천점수']))+'점</span>':'')+'<span class="pill p-'+verdict(x)+'">'+VLABEL[verdict(x)]+'</span>'+eye(x)+'</span></div></article>';}
+function noRow(x){const no=esc(x['공고번호']);const done=x['관심상태']==='포기';return '<div class="r"><span class="pill p-불가">⛔ 불가</span><span style="flex:1;min-width:220px">'+nmLink(x)+' <span style="color:#8a96ab">· '+esc(x['수요기관']||x['공고기관']||'')+' · 마감 '+fdt(x['마감일시'])+'</span></span><span class="why2">'+esc(x['최종사유']||x['판정사유']||'')+'<span class="src" style="color:#7C8698;font-weight:400;font-size:12px"> · '+esc(x['판정출처']||'')+'</span></span>'+(done?'<span class="tag">포기 기록됨</span>':'<button class="b" onclick="dropBad(\''+no+'\')">포기로 정리</button>')+(MSG[x['공고번호']]?'<span class="msg">'+esc(MSG[x['공고번호']])+'</span>':'')+'</div>';}
 function pastRow(x){const v=verdict(x);return '<div class="r"><span class="pill p-'+v+'">'+VLABEL[v]+'</span><span style="flex:1;min-width:220px">'+nmLink(x)+' <span style="color:#8a96ab">· '+esc(x['사업부']||'')+' · 마감 '+fdt(x['마감일시'])+'</span></span>'+(x['관심상태']?'<span class="tag">'+esc(x['관심상태'])+'</span>':'')+'</div>';}
 async function seen(no){const r=ALL.find(x=>x['공고번호']===no);if(r&&!r['확인일시']){r['확인일시']=new Date().toISOString();paint();}try{await sb.rpc('rpc_bid_seen',{'_공고번호':no});}catch(e){}}
 async function decide(no,d){if(d==='포기'){DROPFOR=no;paint();const el=document.getElementById('dr_'+no);if(el)el.focus();return;}await sendDecide(no,d,null);}
 async function sendDrop(no){const el=document.getElementById('dr_'+no);const why=(el&&el.value||'').trim();if(!why){MSG[no]='포기 사유를 한 줄 적어 주세요.';paint();return;}await sendDecide(no,'포기',why);}
 async function sendDecide(no,d,why){MSG[no]='';try{const r=await sb.rpc('rpc_bid_decide',{'_공고번호':no,'_결정':d,'_사유':why});
   if(r.error){MSG[no]='기록하지 못했습니다: '+r.error.message;paint();return;}
-  const x=ALL.find(y=>y['공고번호']===no);if(x){x['관심상태']=d;x['확인일시']=x['확인일시']||new Date().toISOString();if(d==='포기')x['추천점수']=null;}DROPFOR=null;paint();}catch(e){MSG[no]='기록하지 못했습니다: '+e;paint();}}
+  const x=ALL.find(y=>y['공고번호']===no);if(x){x['관심상태']=d;x['확인일시']=x['확인일시']||new Date().toISOString();if(d==='포기')x['추천점수']=null;}DROPFOR=null;
+  if(d==='참여'){MSG[no]='📚 제안 자료 수집을 시작했습니다 — 10~20분 뒤 끝나면 텔레그램으로 알려 드립니다(⭐ 진행 중에서 단계별 확인).';paint();setTimeout(load,2500);return;}
+  paint();}catch(e){MSG[no]='기록하지 못했습니다: '+e;paint();}}
+function dropBad(no){const x=ALL.find(y=>y['공고번호']===no);sendDecide(no,'포기',('참가 불가 — '+((x&&(x['최종사유']||x['판정사유']))||'')).slice(0,120));}
+// ── v3.0 제안 자료 수집 진행 ──────────────────────────────
+function progLine(x){const no=esc(x['공고번호']);const p=x['제안'];
+  if(!p){return (x['관심상태']==='참여')?'<div class="prog"><span class="q">제안 자료 — 아직 모으지 않았습니다</span><span class="btns"><button class="b pri" onclick="reCollect(\''+no+'\')">📚 제안 자료 모으기 시작</button></span></div>':'';}
+  const st=p['단계']||{};const pc=Number(p['진행률']||0);
+  const cur=STEPS.find(([k])=>!['완료','건너뜀'].includes((st[k]||{})['상태']));
+  const row=([k,l],i)=>{const s=st[k]||{};const S=s['상태'];
+    const ic=S==='완료'?'<span class="ok">✓</span>':S==='건너뜀'?'<span class="skip">⚠</span>':(cur&&cur[0]===k&&p['상태']!=='완료'?'<span class="run">…</span>':'<span class="wait">'+(i+1)+'</span>');
+    const cl=S==='완료'?'ok':S==='건너뜀'?'skip':(cur&&cur[0]===k?'run':'wait');
+    return '<div class="'+cl+'">'+ic+' '+esc(l)+(s['메모']?'<small>'+esc(String(s['메모']).slice(0,90))+'</small>':'')+'</div>';};
+  const done=p['상태']==='완료';
+  return '<div class="prog"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="font-size:13px">📚 제안 자료 수집 · '+esc(p['상태']||'')+' '+pc+'%</b><span class="hint">요청 '+fdt(p['요청일시'])+(done&&p['완료일시']?' · 완료 '+fdt(p['완료일시']):'')+' · 자료 '+(x['자료수']||0)+'줄</span></div>'
+   +'<div class="pbar"><i style="width:'+Math.max(3,pc)+'%"></i></div><div class="steps">'+STEPS.map(row).join('')+'</div>'
+   +(p['오류']&&!done?'<div class="msg">최근 오류: '+esc(String(p['오류']).slice(0,140))+' — 실패 단계는 1번 다시 시도한 뒤 건너뜁니다</div>':'')
+   +'<div class="btns"><button class="b pri" onclick="openPack(\''+no+'\',\'book\')">📚 제안 자료집 열기</button><button class="b" onclick="openPack(\''+no+'\',\'prep\')">📝 제안서 준비</button><button class="b" onclick="reCollect(\''+no+'\')">자료 다시 모으기</button></div></div>';}
+async function reCollect(no){MSG[no]='';try{const r=await sb.rpc('rpc_bid_proposal_request',{p_no:no});if(r.error){MSG[no]='요청하지 못했습니다: '+r.error.message;paint();return;}
+  MSG[no]='📚 제안 자료 수집을 시작했습니다 — 10~20분 걸립니다.';setTimeout(load,2500);paint();}catch(e){MSG[no]='요청하지 못했습니다: '+e;paint();}}
+// ── v3.0 📚 제안 자료집 · 📝 제안서 준비 ──────────────────
+async function openPack(no,mode){PKNO=no;PKMODE=mode||'book';PKCH='방식';PACK={loading:true};paint();
+  try{const r=await sb.rpc('rpc_bid_proposal_pack',{p_no:no});if(r.error){PACK={err:r.error.message};paint();return;}PACK=r.data||{};}catch(e){PACK={err:String(e)};}
+  paint();window.scrollTo({top:0});}
+function closePack(){PACK=null;PKNO=null;paint();}
+function setCh(c){PKCH=c;paint();}
+function rightTag(r){r=r||'';const k=/인용/.test(r)?'인용':/구조/.test(r)?'구조':/금지/.test(r)?'금지':'내부';return '<span class="rt rt-'+k+'">'+esc(r||'내부 전용')+'</span>';}
+function copyTxt(id){const el=document.getElementById(id);if(!el)return;const t=el.innerText;const ok=()=>{const b=document.getElementById(id+'_b');if(b){b.textContent='✓ 복사됨';setTimeout(()=>{b.textContent='프롬프트 복사';},1600);}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,()=>{fallbackCopy(t);ok();});}else{fallbackCopy(t);ok();}}
+function fallbackCopy(t){const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();try{document.execCommand('copy');}catch(_){}a.remove();}
+function paintPack(){const st=document.getElementById('status'),li=document.getElementById('list');const x=ALL.find(y=>y['공고번호']===PKNO)||{};
+  const head='<div class="pk-h"><button class="b" onclick="closePack()">← 목록으로</button><h2>'+(PKMODE==='prep'?'📝 제안서 준비':'📚 제안 자료집')+'</h2><span class="hint">'+esc(x['공고명']||PKNO)+(x['마감일시']?' · 마감 '+fdt(x['마감일시']):'')+'</span><span class="sw"><button class="chip '+(PKMODE==='book'?'on':'')+'" onclick="PKMODE=\'book\';paint()">📚 자료집</button><button class="chip '+(PKMODE==='prep'?'on':'')+'" onclick="PKMODE=\'prep\';paint()">📝 제안서 준비</button></span></div>';
+  st.textContent='';
+  if(PACK.loading){li.innerHTML='<div class="card">'+head+'불러오는 중…</div>';return;}
+  if(PACK.err){li.innerHTML='<div class="card">'+head+'<div class="msg">불러오지 못했습니다: '+esc(PACK.err)+'</div></div>';return;}
+  const D=PACK['자료']||[];const by=k=>D.filter(d=>d['장']===k);
+  if(!D.length){li.innerHTML='<div class="card">'+head+EMPTY('아직 모인 자료가 없습니다 — 수집이 끝나면 채워집니다.')+'</div>';return;}
+  li.innerHTML='<div class="card">'+head+(PKMODE==='prep'?prepBody(by):bookBody(by))+'</div>';}
+function bookBody(by){const chips='<div class="chs">'+CHS.map(([k,l])=>'<button class="chip '+(PKCH===k?'on':'')+'" onclick="setCh(\''+k+'\')">'+l+' '+by(k).length+'</button>').join('')+'</div>';
+  let b='';const rows=by(PKCH);
+  if(PKCH==='방식'){const m=(rows.find(r=>r['원천']==='이 공고 첨부')||{})['내용']||{};const docs=rows.filter(r=>r['원천']==='보유서류 대장');
+    const bp=(m['배점']||[]);
+    b+=(m['사업요약']?'<p style="margin:4px 0 10px">'+esc(m['사업요약'])+'</p>':'')
+     +(bp.length?'<div style="overflow:auto"><table class="sch pk"><thead><tr><th>구분</th><th>평가 항목</th><th>배점</th><th>평가 요소</th></tr></thead><tbody>'+bp.map(p=>'<tr><td>'+esc(p['구분']||'')+'</td><td><b>'+esc(p['항목']||'')+'</b></td><td class="num">'+esc(p['배점']??'')+'</td><td>'+esc(p['세부']||'')+'</td></tr>').join('')+'</tbody></table></div>':EMPTY('배점표를 읽지 못했습니다 — 제안요청서 원문 확인'))
+     +'<dl class="kv"><dt>계약 방식</dt><dd>'+esc(m['평가방식']||'미판독')+(m['통과점수']?' · '+esc(m['통과점수']):'')+'</dd>'
+     +'<dt>제출</dt><dd>'+esc([m['제출']?.['마감'],m['제출']?.['방법'],m['제출']?.['부수'],m['제출']?.['분량'],m['제출']?.['형식']].filter(Boolean).join(' · ')||'원문 확인')+'</dd>'
+     +'<dt>발표</dt><dd>'+esc(m['발표']?.['있음']===false?'없음':[m['발표']?.['시간'],m['발표']?.['발표자']].filter(Boolean).join(' · ')||'원문 확인')+'</dd>'
+     +'<dt>실적 기준</dt><dd>'+esc([m['실적기준']?.['기간_년']?'최근 '+m['실적기준']['기간_년']+'년':'',m['실적기준']?.['단일금액_원']?'단일 '+Math.round(m['실적기준']['단일금액_원']/10000).toLocaleString()+'만원 이상':'',m['실적기준']?.['인정범위'],m['실적기준']?.['배점표']].filter(Boolean).join(' · ')||'원문 확인')+'</dd>'
+     +'<dt>인력 기준</dt><dd>'+esc(m['인력기준']?.['요약']||'원문 확인')+'</dd>'
+     +'<dt>목차 지정</dt><dd>'+((m['목차지정']||[]).length?esc(m['목차지정'].join(' / ')):'공고 지정 없음 → 정성 배점 순서로 목차')+'</dd>'
+     +'<dt>승부처</dt><dd>'+((m['승부처']||[]).length?'<ul style="margin:0 0 0 18px">'+m['승부처'].map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>':'—')+'</dd></dl>'
+     +(docs.length?'<div class="sech" style="margin:12px 0 6px"><h2 style="font-size:15px">필수 서류 대조</h2><span class="hint">보유 서류 대장 기준</span></div><div class="nol">'+docs.map(d=>'<div class="r"><span class="pill '+(/^보유/.test(d['요약']||'')?'p-가능':'p-확인')+'">'+(/^보유/.test(d['요약']||'')?'보유':'확인')+'</span><span style="flex:1">'+esc(d['제목'])+'</span><span class="hint">'+esc(d['요약']||'')+'</span></div>').join('')+'</div>':'');}
+  else if(PKCH==='이미지'){b+=imgCards(rows);}
+  else if(PKCH==='견적'){b+=quoteTable(rows);}
+  else{b+=rows.length?'<div style="overflow:auto"><table class="sch pk"><thead><tr><th>자료</th><th>요약</th><th>원천</th><th>등급</th><th>쓰는 법</th></tr></thead><tbody>'+rows.map(r=>'<tr><td><b>'+(r['url']?'<a href="'+esc(r['url'])+'" target="_blank" rel="noopener">'+esc(r['제목']||'')+'</a>':esc(r['제목']||''))+'</b></td><td>'+esc(r['요약']||'')+'</td><td class="s">'+esc(r['원천']||'')+'</td><td class="gd">'+esc(r['등급']||'')+'</td><td>'+rightTag(r['권리'])+'</td></tr>').join('')+'</tbody></table></div>':EMPTY('이 장은 아직 자료가 없습니다.');}
+  return chips+b+'<div class="note">줄마다 원천·등급(A 공식 / A* 공식 수치를 보도로 확인 / B 자사 / C 참고)·쓰는 법(인용 가능 · 구조만 참고 · 내부 전용)을 붙였습니다 · 타사 제안서 문장·이미지는 복제하지 않습니다 · 평가위원으로 받은 자료는 수집하지 않습니다</div>';}
+function quoteTable(rows){return rows.length?'<div style="overflow:auto"><table class="sch pk"><thead><tr><th>과업 품목</th><th>수량·구성</th><th>가격표 매칭</th></tr></thead><tbody>'+rows.map(r=>{const c=(r['내용']||{})['과업']||{};const m=(r['내용']||{})['매칭'];return '<tr><td><b>'+esc(r['제목']||'')+'</b></td><td>'+esc([c['수량'],c['비고']].filter(Boolean).join(' · '))+'</td><td>'+(m?'<span class="ok">'+esc(m['코드']||'')+' '+esc(m['품명']||'')+'</span> '+(m['기본_단가']?'· 단가 있음':'· <span class="k2">단가 비어 있음</span>'):'<span class="k2">단가 없음 — 가격표 보강</span>')+'</td></tr>';}).join('')+'</tbody></table></div><div class="note">고객에게 나가는 산출내역서와 내부 원가표는 따로 만듭니다 · 원가·마진은 대표 2명만 봅니다</div>':EMPTY('과업 품목을 읽지 못했습니다.');}
+function imgCards(rows){return rows.length?'<div class="imgs">'+rows.map((r,i)=>{const c=r['내용']||{};const id='pr_'+i;
+  return '<div class="img"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><b>'+esc(c['장']||'')+'</b><span class="tag">'+esc(c['자리']||'')+'</span>'+(c['자동']?'<span class="tag" style="background:#EAF7EF;color:#1E7A46">자동 · '+esc(c['자동'])+'</span>':'')+'</div><div class="hint">'+esc(c['용도']||'')+'</div>'
+   +(c['프롬프트']?'<div class="pr" id="'+id+'">'+esc(c['프롬프트'])+'</div><div class="btns"><button class="b pri" id="'+id+'_b" onclick="copyTxt(\''+id+'\')">프롬프트 복사</button><span class="hint">구글 플로우에 붙여 넣기 · 16:9</span></div>':'<div class="hint">데이터로 그리는 그림 — 플로우 불필요</div>')+'</div>';}).join('')+'</div>':EMPTY('이미지 자리가 아직 없습니다.');}
+function prepBody(by){const s=PACK['제안서']||{};const toc=s['목차']||[];const im=by('이미지');const ev=by('근거').length+by('사례').length;
+  const imgOf=t=>im.filter(r=>String((r['내용']||{})['장']||'').replace(/\s/g,'')===String(t||'').replace(/\s/g,'')).length;
+  return '<div class="sech" style="margin:2px 0 8px"><h2 style="font-size:15px">목차 — 공고 평가 항목 순서</h2><span class="hint">평가위원이 이 순서로 채점합니다 · 본문은 Claude(제안서 스킬) · 이미지는 구글 플로우 · 금액은 가격표</span></div>'
+   +(toc.length?'<div style="overflow:auto"><table class="sch pk"><thead><tr><th>장</th><th>배점</th><th>평가 요소</th><th>이미지 자리</th></tr></thead><tbody>'+toc.map((t,i)=>'<tr><td><b>'+['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ','Ⅷ','Ⅸ','Ⅹ'][i]+' '+esc(t['장']||'')+'</b></td><td class="num">'+esc(t['배점']??'')+'</td><td>'+esc(t['세부']||'')+'</td><td class="num">'+imgOf(t['장'])+'</td></tr>').join('')+'</tbody></table></div>':EMPTY('목차를 아직 만들지 못했습니다 — ① 제안 방식 수집이 끝나면 채워집니다.'))
+   +'<div class="note">근거·사례 자료 '+ev+'줄 · 상태 '+esc(s['상태']||'자료 수집')+' · 제안서 본문은 코워크에 「제안서 작성 '+esc(PKNO)+'」로 요청하세요(자료집을 읽고 목차 순서로 씁니다)</div>'
+   +'<div class="sech" style="margin:16px 0 8px"><h2 style="font-size:15px">이미지 자리 '+im.length+'개</h2><span class="hint">프롬프트 복사 → 구글 플로우에서 생성 → 제안서에 넣기</span></div>'+imgCards(im)
+   +'<div class="sech" style="margin:16px 0 8px"><h2 style="font-size:15px">과업 품목 ↔ 가격표</h2></div>'+quoteTable(by('견적'));}
+// ── v3.0 📋 사전규격 탭 ────────────────────────────────────
+function setSpF(f){SPF=f;paint();}
+function paintSpec(){const st=document.getElementById('status'),li=document.getElementById('list');
+  const open=x=>{const t=ts(x['의견마감']);return t===null||t>=Date.now();};
+  const F={open:x=>open(x)&&x['진행상태']!=='패스',prep:x=>['준비','의견제출','공고됨'].includes(x['진행상태']),pass:x=>x['진행상태']==='패스',all:x=>true};
+  const a=specRows().filter(F[SPF]);
+  const chips=[['open','의견 마감 전'],['prep','준비 중'],['pass','패스'],['all','전체 30일']].map(([k,l])=>'<button class="chip '+(SPF===k?'on':'')+'" onclick="setSpF(\''+k+'\')">'+l+' '+specRows().filter(F[k]).length+'</button>').join(' ');
+  st.textContent='사전규격 '+SPEC.length+'건(최근 30일) · 공고 1~2주 전 단계 · 규격서 자동 판독';
+  li.innerHTML='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'+chips+'</div>'+(a.length?a.map(specRow).join(''):EMPTY('조건에 맞는 사전규격이 없습니다.'))
+   +'<div class="note">텔레그램 회신도 같은 곳에 기록됩니다: <b>검토 P2</b>(준비) · <b>포기 P1</b>(패스) · <b>제출 P2</b>(의견 냈음)</div>';}
+async function spDecide(no,s){SPMSG[no]='';try{const r=await sb.rpc('rpc_bid_prespec_decide',{p_no:no,p_state:s});if(r.error||!(r.data&&r.data.ok)){SPMSG[no]='기록하지 못했습니다: '+((r.error&&r.error.message)||(r.data&&r.data.err)||'');paint();return;}
+  const x=SPEC.find(y=>y['등록번호']===no);if(x){x['진행상태']=(x['연결공고번호']&&s!=='패스')?'공고됨':s;}paint();}catch(e){SPMSG[no]='기록하지 못했습니다: '+e;paint();}}
 async function doSearch(){const st=document.getElementById('status');const li=document.getElementById('list');
   const body={'키워드':document.getElementById('kw').value.trim(),'기관':document.getElementById('org').value.trim(),'시작일':document.getElementById('sd').value,'종료일':document.getElementById('ed').value};
   st.textContent='조회 중…';li.innerHTML='';

@@ -305,7 +305,7 @@ async function boot(){
   const t=new Date(),a=new Date(t.getTime()-7*86400000);document.getElementById('ed').value=t.toISOString().slice(0,10);document.getElementById('sd').value=a.toISOString().slice(0,10);
   load();
 }
-function setTab(x){TAB=x;PACK=null;PKNO=null;['J','R','P','S','H','G'].forEach(k=>document.getElementById('t'+k).classList.toggle('on',{J:'judge',R:'spec',P:'prog',S:'search',H:'school',G:'plan'}[k]===x));
+function setTab(x){TAB=x;PACK=null;PKNO=null;['J','R','P','S','H','G','V'].forEach(k=>document.getElementById('t'+k).classList.toggle('on',{J:'judge',R:'spec',P:'prog',S:'search',H:'school',G:'plan',V:'vault'}[k]===x));
   document.getElementById('judgeBox').classList.toggle('hide',x!=='judge');document.getElementById('searchbar').classList.toggle('hide',x!=='search');
   document.getElementById('bar').classList.toggle('hide',x==='search'||x==='school'||x==='plan');
   if(x==='school'){loadSchool();return;}

@@ -226,6 +226,61 @@ const SECS=[['sReco','⭐ 추천'],['sLive','⏰ 마감 전 판정'],['sPre','�
 const STEPS=[['S1','이 공고 첨부 — 방식·배점·과업·실적 기준'],['S2','나라장터 낙찰 — 같은 유형·같은 발주처'],['S3','공개 자료 — 발주처·정책 통계·유사 사례'],['S4','우리 실적·사진·참고 제안서'],['S5','견적 대응 — 과업 품목 ↔ 가격표'],['S6','서류 대조 — 보유 서류 대장'],['S7','이미지 자리·플로우 프롬프트']];
 const CHS=[['방식','① 제안 방식'],['근거','② 과업 이해 근거'],['사례','③ 유사 사례'],['경쟁','④ 경쟁·가격'],['실적','⑤ 우리 실적'],['사진','⑥ 사진 후보'],['과업','⑦ 과업 대응'],['견적','⑧ 견적 대응'],['이미지','⑨ 이미지 프롬프트']];
 
+// ===== v3.1 (2026-10-05) 자격·실적 — 판정 카드 대조 + 🗂 탭 =====
+let MATCH={},VAULT=null,VSUB='docs',VBU='전체',VF={big:false,pub:false,y3:false,nocert:false},VOPEN=null,VMSG='';
+async function loadMatch(){try{const nos=ALL.filter(x=>!past(x)&&['가능','확인'].includes(verdict(x))).map(x=>x['공고번호']).slice(0,60);
+  if(!nos.length)return;const r=await sb.rpc('rpc_bid_match',{p_nos:nos});if(r.error)return;MATCH=r.data||{};if(['judge','prog'].includes(TAB)&&!PKNO)paint();}catch(_){}}
+function matchBox(x){const m=MATCH[x['공고번호']];if(!m)return '';const no=esc(x['공고번호']);
+  const ic={'보유':['y','✅'],'없음':['n','❌'],'대장 없음':['n','❓'],'제출 때 발급':['g','🖨'],'작성':['g','✍'],'실적':['w','📨']};
+  const docs=(m['서류']||[]).map(d=>{const c=ic[d['상태']]||['g',''];return '<span class="'+c[0]+'">'+c[1]+' '+esc(d['요구'])+(d['상태']==='보유'&&d['유효기간']?' ~'+esc(d['유효기간']):d['상태']==='대장 없음'?' (대장에 없음)':d['상태']==='없음'?' 없음':'')+'</span>';}).join('');
+  const anyp=(m['품명']||[]).some(p=>p['일치']);const pm=(m['품명']||[]).map(p=>'<span class="'+(p['일치']?'y':(anyp?'g':'n'))+'">'+(p['일치']?'✅':(anyp?'또는':'❌'))+' 직접생산 '+esc(p['품명'])+(!p['일치']&&!anyp?' 미보유':'')+'</span>').join('');
+  const pf=(m['실적']||[]);
+  const rows=pf.map(p=>{const big=Number(p['계약금액'])>=10000000;const cs=p['발급본유효']?'<span class="st st-y">'+esc(p['증명서_발급일'])+' 발급 · ~'+esc(p['발급본만료'])+' 유효</span>':p['증명서_상태']==='요청 중'?'<span class="st st-b">요청 중</span>':'<span class="st st-n">새로 받기</span>';
+    return '<tr><td>'+(big?'<span class="ok2">✔</span>':'<span class="gy">·</span>')+'</td><td>'+esc(p['발주처'])+' · '+esc(p['사업명'])+' <span class="gy">('+esc((p['기간_시작']||'').slice(0,7))+(p['공공']?' · 공공':' · 민간')+')</span></td><td class="n">'+won(p['계약금액'])+'</td><td>'+cs+'</td></tr>';}).join('');
+  const need=pf.filter(p=>!p['발급본유효']&&p['증명서_상태']!=='요청 중').length;
+  return '<div class="mbox"><h4>📄 서류 대조 <span>— 공고 요구 ↔ 우리 구비서류 · '+esc(m['요약']||'')+'</span></h4><div class="chk">'+(docs||'<span class="g">공고 「서류」 판독 전</span>')+pm+'</div>'
+   +'<h4>🏆 실적 대조 <span>— 최근 '+esc(m['기준년'])+'년 · '+esc(m['사업부']||'')+' · 공공·금액 큰 순 (금액 요건은 공고 원문 확인)</span></h4>'
+   +(rows?'<table class="mini"><tr><th></th><th>실적</th><th>금액</th><th>실적증명서</th></tr>'+rows+'</table>':'<span class="gy">해당 실적 없음</span>')
+   +(need&&verdict(x)!=='불가'?'<div><button class="b" style="border-color:#f59e0b;color:#B45309" onclick="certReq(\''+no+'\')">📨 실적증명서 요청 만들기 ('+need+')</button> <span class="msg" id="cm_'+no+'"></span></div>':'')+'</div>';}
+async function certReq(no){const m=MATCH[no];if(!m)return;const ids=(m['실적']||[]).filter(p=>!p['발급본유효']&&p['증명서_상태']!=='요청 중').map(p=>p['id']);
+  const el=document.getElementById('cm_'+no);if(el)el.textContent='만드는 중…';
+  const r=await sb.rpc('rpc_bid_cert_request',{p_no:no,p_ids:ids});if(r.error){if(el)el.textContent='오류: '+r.error.message;return;}
+  if(el)el.textContent='요청 '+r.data['요청']+'건 · 받을 기한 '+r.data['받을기한']+' → 🗂 자격·실적 › 📨 요청함';loadMatch();}
+async function loadVault(){const st=document.getElementById('status'),li=document.getElementById('list');document.getElementById('judgeBox').classList.add('hide');st.textContent='불러오는 중…';li.innerHTML='';
+  try{const r=await sb.rpc('rpc_bid_vault');if(r.error){st.textContent='오류: '+r.error.message;return;}VAULT=r.data;paintVault();}catch(e){st.textContent='불러오기 실패: '+e;}}
+function vSub(k){VSUB=k;VOPEN=null;paintVault();}
+function vBu(b){VBU=b;paintVault();}function vF(k){VF[k]=!VF[k];paintVault();}function vOpen(i){VOPEN=VOPEN===i?null:i;paintVault();}
+const LBL={'유효':'st-y','확인':'st-w','만료 임박':'st-w','없음':'st-n','제출 때 발급':'st-g','사용 금지':'st-n'};
+const CST={'보유':'st-y','재발급 필요':'st-w','요청 중':'st-b','미발급':'st-n','발급 불가':'st-g'};
+function paintVault(){if(TAB!=='vault'||!VAULT)return;const st=document.getElementById('status'),li=document.getElementById('list');const S=VAULT.sum||{};
+  const rq=document.getElementById('vReq');if(rq)rq.innerHTML=S['요청']?'<span class="st st-w">요청 '+S['요청']+'</span>':'';
+  st.textContent='기준일 '+(S['기준일']||'')+' · 리얼플랜제주 주식회사 명의만 · 원본은 D:\\리얼플랜\\01_경영\\입찰\\00_자격금고';
+  let h='<div class="tiles"><div><b class="c-go">'+(S['유효']||0)+'</b><span>유효 서류</span></div><div><b class="c-chk">'+(S['임박']||0)+'</b><span>만료 60일 이내</span></div><div><b class="c-no">'+(S['없음']||0)+'</b><span>없음·만료</span></div><div><b>'+(S['실적']||0)+'</b><span>법인 실적</span></div><div><b class="c-act">'+(S['천만']||0)+'</b><span>1천만원 이상</span></div><div><b class="c-go">'+(S['증명보유']||0)+'</b><span>실적증명서 보유</span></div></div>';
+  h+='<div class="sub2">'+[['docs','📄 구비서류'],['ledger','🏆 법인 실적 원장'],['fin','💰 재무·신용'],['reqs','📨 증명서 요청함'+(S['요청']?' '+S['요청']:'')]].map(([k,l])=>'<button class="'+(VSUB===k?'on':'')+'" onclick="vSub(\''+k+'\')">'+l+'</button>').join('')+'</div>';
+  if(VSUB==='docs'){const D=VAULT.docs||[];
+    h+='<div class="card vt" style="padding:0"><table class="mini"><tr><th>구분</th><th>서류</th><th>유효기간 / 발급일</th><th>상태</th><th>발급번호 · 진위 확인</th><th>원본</th></tr>'+D.map((d,i)=>{const per=d['유효기간']?((d['발급일']?d['발급일']+' ~ ':'~ ')+d['유효기간']+(d['남은일']!=null&&d['남은일']>=0?' <span class="gy">(D-'+d['남은일']+')</span>':'')):(d['발급일']?d['발급일']+' 발급':'<span class="gy">—</span>');
+      return '<tr class="cl" onclick="vOpen('+i+')"><td>'+esc(d['구분']||'')+'</td><td><b>'+esc(d['서류명'])+'</b>'+(d['세부품명']?'<br><span class="gy">'+esc(d['세부품명'])+(d['품목코드']?' ('+esc(d['품목코드'])+')':'')+'</span>':'')+'</td><td class="n">'+per+'</td><td><span class="st '+(LBL[d['상태라벨']]||'st-g')+'">'+esc(d['상태라벨'])+'</span></td><td>'+esc(d['발급번호']||'')+(d['진위확인']?'<br><span class="gy">'+esc(d['진위확인'])+'</span>':'')+'</td><td>'+(d['원본경로']?'📎':'<span class="gy">—</span>')+'</td></tr>'
+       +(VOPEN===i?'<tr class="dt"><td colspan="6">'+(d['메모']?esc(d['메모'])+'<br>':'')+(d['원본경로']?'원본: '+esc(d['원본경로']):'원본 파일 없음')+' · 명의 '+esc(d['명의']||'')+'</td></tr>':'');}).join('')+'</table></div>';}
+  if(VSUB==='ledger'){let L=VAULT.ledger||[];const bus=['전체','행사이벤트','국내여행','온라인마케팅','마케팅교육'];const cnt=b=>b==='전체'?L.length:L.filter(x=>x['사업부']===b).length;
+    const today=S['기준일'];const y3=(x)=>x['인정3년']>=today;
+    let F=L.filter(x=>(VBU==='전체'||x['사업부']===VBU)&&(!VF.big||x['천만이상'])&&(!VF.pub||x['공공'])&&(!VF.y3||y3(x))&&(!VF.nocert||!['보유'].includes(x['증명서_상태'])));
+    h+='<div class="bar">'+bus.map(b=>'<button class="chip '+(VBU===b?'on':'')+'" onclick="vBu(\''+b+'\')">'+(b==='전체'?'전체':b.replace('이벤트','').replace('온라인',''))+' '+cnt(b)+'</button>').join('')+'<span class="sp"></span>'
+      +[['big','1천만원↑'],['pub','공공만'],['y3','최근 3년'],['nocert','증명서 없음']].map(([k,l])=>'<button class="chip '+(VF[k]?'on':'')+'" onclick="vF(\''+k+'\')">'+l+'</button>').join('')+'</div>';
+    h+='<div class="status">'+F.length+'건 · 합계 '+won(F.reduce((a,x)=>a+Number(x['계약금액']||0),0))+' · 행을 누르면 세금계산서·계약·발급 경로가 펼쳐집니다</div>';
+    h+='<div class="card vt" style="padding:0"><table class="mini"><tr><th>수행</th><th>용역명 · 발주처</th><th>구분</th><th>계약금액</th><th>계약 경로</th><th>3년 인정</th><th>실적증명서</th></tr>'+F.map((x,i)=>{const y=y3(x);const soon=y&&x['인정3년']<=new Date(Date.now()+90*86400000).toISOString().slice(0,10);
+      return '<tr class="cl" onclick="vOpen('+i+')"><td class="n">'+esc((x['기간_시작']||'').slice(0,7))+'</td><td><b>'+esc(x['사업명'])+'</b><br><span class="gy">'+esc(x['발주처'])+' · '+esc(x['분야']||x['사업부'])+'</span></td><td>'+esc(x['발주처유형']||'')+'</td><td class="n">'+won(x['계약금액'])+(x['단일계약']===false?'<br><span class="gy">누계</span>':x['단일계약']==null?'<br><span class="gy">단일 여부 확인</span>':'')+'</td><td>'+esc(x['계약경로']||'')+'</td><td class="n">'+(y?(soon?'<span class="ng">~'+esc(x['인정3년'])+'</span>':'~'+esc(x['인정3년'])):'<span class="gy">지남 · 5년 ~'+esc((x['인정5년']||'').slice(0,7))+'</span>')+'</td><td><span class="st '+(CST[x['증명서_상태']]||'st-g')+'">'+esc(x['증명서_상태'])+'</span>'+(x['증명서_발급일']?'<br><span class="gy">'+esc(x['증명서_발급일'])+' 발급</span>':'')+'</td></tr>'
+       +(VOPEN===i?'<tr class="dt"><td colspan="7">발주처 사업자번호 '+esc(x['발주처_사업자번호']||'')+(x['발주처_담당']?' · 담당 '+esc(x['발주처_담당']):'')+' · 공급가액 '+won(x['공급가액'])+(x['계약번호']?' · 계약번호 '+esc(x['계약번호']):'')+'<br>세금계산서 승인번호: '+esc(x['증빙_세금계산서']||'—')+'<br>실적증명서 발급 경로: '+esc(x['증명서_경로']||'확인 필요')+(x['증명서_발급번호']?' · 발급번호 '+esc(x['증명서_발급번호']):'')+(x['증명서_파일']?'<br>파일: '+esc(x['증명서_파일']):'')+(x['포트폴리오']?'<br>실적 사례: '+esc(x['포트폴리오']):'')+(x['비고']?'<br><span class="gy">'+esc(x['비고'])+'</span>':'')+'</td></tr>':'');}).join('')+'</table></div>';}
+  if(VSUB==='fin'){const F=VAULT.fin||[];
+    h+='<div class="card vt" style="padding:0"><table class="mini"><tr><th>연도</th><th>매출</th><th>영업손익</th><th>당기순손익</th><th>자산</th><th>부채</th><th>자본총계</th><th>부채비율</th><th>출처</th></tr>'+F.map(f=>{const neg=v=>v!=null&&Number(v)<0;const w=v=>v==null?'<span class="gy">—</span>':(neg(v)?'<span class="ng">':'<span>')+won(v)+'</span>';
+      return '<tr><td>'+esc(f['연도'])+'</td><td class="n">'+w(f['매출액'])+'</td><td class="n">'+w(f['영업손익'])+'</td><td class="n">'+w(f['당기순손익'])+'</td><td class="n">'+w(f['자산총계'])+'</td><td class="n">'+w(f['부채총계'])+'</td><td class="n">'+w(f['자본총계'])+(f['자본잠식']?' <span class="st st-n">잠식</span>':'')+'</td><td class="n">'+(f['부채비율']!=null?esc(f['부채비율'])+'%':(f['자본총계']!=null&&Number(f['자본총계'])<=0?'<span class="ng">산정 불가</span>':'<span class="gy">—</span>'))+'</td><td class="gy">'+esc(f['출처']||'')+'</td></tr>';}).join('')+'</table></div>'
+      +'<div class="note">신용평가등급확인서: 없음(2023 B0 만료) → 입찰 시작을 정하면 발급 · 매년 결산 확정(3~5월) 후 갱신. 원본 = 00_자격금고\\03_재무</div>';}
+  if(VSUB==='reqs'){const R=VAULT.reqs||[];
+    h+=R.length?'<div class="card vt" style="padding:0"><table class="mini"><tr><th>받을 기한</th><th>실적</th><th>공고</th><th>발급 경로</th><th>상태</th><th></th></tr>'+R.map((q,i)=>'<tr><td class="n"><b>'+esc(q['받을기한']||'')+'</b></td><td><b>'+esc(q['발주처'])+'</b> · '+esc(q['사업명'])+' <span class="gy">'+won(q['계약금액'])+'</span></td><td>'+esc((q['공고명']||q['공고번호']||'').slice(0,34))+'<br><span class="gy">마감 '+fdt(q['마감일시'])+'</span></td><td>'+esc(q['증명서_경로']||'')+(q['발주처_담당']?'<br><span class="gy">'+esc(q['발주처_담당'])+'</span>':'')+'</td><td><span class="st '+({'요청 전':'st-n','요청함':'st-b','받음':'st-y'}[q['상태']]||'st-g')+'">'+esc(q['상태'])+'</span></td><td><span class="btns"><button class="b" onclick="vOpen('+i+')">공문 초안</button><button class="b" onclick="certSet(\''+q['id']+'\',\'요청함\')">요청했음</button><button class="b pri" onclick="certSet(\''+q['id']+'\',\'받음\')">받음</button><button class="b" onclick="certSet(\''+q['id']+'\',\'취소\')">취소</button></span></td></tr>'+(VOPEN===i?'<tr class="dt"><td colspan="6"><button class="b" onclick="navigator.clipboard.writeText(document.getElementById(\'df'+i+'\').textContent);this.textContent=\'복사됨\'">공문 초안 복사</button><div class="draft" id="df'+i+'">'+esc(q['공문초안']||'')+'</div></td></tr>':'')).join('')+'</table></div>'
+      :'<div class="empty">요청이 없습니다. 판정 목록 카드의 「📨 실적증명서 요청 만들기」로 만듭니다.</div>';
+    h+='<div class="note">받은 파일은 「실적_발급일_발주처_용역명_금액.pdf」 이름으로 00_자격금고\\02_실적증명서(법인)에 넣거나 Claude에게 보내면 원장에 연결합니다. 입찰 제출본은 기본 1개월 이내 발급본만 유효로 봅니다.</div>'+(VMSG?'<div class="msg">'+esc(VMSG)+'</div>':'');}
+  li.innerHTML=h;}
+async function certSet(id,stt){const r=await sb.rpc('rpc_bid_cert_set',{p_id:id,p_state:stt});VMSG=r.error?('오류: '+r.error.message):'';await loadVault();VSUB='reqs';paintVault();}
+
 async function boot(){
   const {data:{session}}=await sb.auth.getSession();
   if(!session){document.getElementById('gate').classList.remove('hide');return;}

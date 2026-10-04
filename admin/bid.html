@@ -442,7 +442,7 @@ function cardRow(x,rank){const v=verdict(x),no=esc(x['공고번호']);const k=x[
   const btns=drop||(v==='불가'&&!pst?(cur==='포기'?'<span class="b sel">포기 기록됨</span>':'<button class="b pri" onclick="dropBad(\''+no+'\')">포기로 정리</button>')
     :(b('참여',(cur==='참여'||v==='해당')?'참여':'참여 → 제안 자료 모으기',v!=='전'&&v!=='해당')+b('관망','관망')+b('포기','포기 · 사유')));
   return '<article class="bid v-'+v+(rank?' rec':'')+(pst?' past':'')+(x['확인일시']?' seen':'')+'">'+(rank?recoLine(x,rank):'')+'<div class="hd"><div class="l">'+nmLink(x)+'<span class="meta">'+metaLine(x)+'</span></div><span class="pill p-'+v+'">'+VLABEL[v]+'</span></div>'
-   +jd+(facts?'<div class="facts">'+facts+'</div>':'')
+   +jd+(facts?'<div class="facts">'+facts+'</div>':'')+matchBox(x)
    +'<div class="dec"><span class="q">'+esc(q)+(cur?' → <span style="color:#2563eb">'+esc(cur)+' 기록</span>':'')+'</span><span class="btns">'+btns+eye(x)+'</span></div>'
    +((TAB==='prog'||x['제안'])?progLine(x):'')
    +(TAB==='prog'?outcomeLine(x):'')

@@ -317,7 +317,7 @@ async function load(){const st=document.getElementById('status');st.textContent=
   try{const r=await sb.rpc('rpc_bid_list_v3',TAB==='prog'?{'_상태':'관심','_정렬':'deadline'}:{'_정렬':'deadline'});if(r.error){st.textContent='오류: '+r.error.message;return;}
     const rows=r.data||[];ALL=rows.filter(x=>x['최신차수']!==false);
     try{const sp=await sb.rpc('rpc_bid_prespec_list',{'_일수':30});SPEC=sp.error?[]:(sp.data||[]);}catch(_){SPEC=[];}
-    paint();}catch(e){st.textContent='불러오기 실패: '+e;}}
+    paint();loadMatch();}catch(e){st.textContent='불러오기 실패: '+e;}}
 async function loadPlan(){const st=document.getElementById('status'),li=document.getElementById('list');st.textContent='불러오는 중…';li.innerHTML='';
   try{const r=await sb.rpc('rpc_bid_plan_list',{'_개월':6});if(r.error){st.textContent='오류: '+r.error.message;return;}PLN=r.data||[];paintPlan();}catch(e){st.textContent='불러오기 실패: '+e;}}
 function setPlnF(f){PLNF=f;paintPlan();}

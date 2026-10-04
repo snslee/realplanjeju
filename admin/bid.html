@@ -308,7 +308,8 @@ async function boot(){
 }
 function setTab(x){TAB=x;PACK=null;PKNO=null;['J','R','P','S','H','G','V'].forEach(k=>document.getElementById('t'+k).classList.toggle('on',{J:'judge',R:'spec',P:'prog',S:'search',H:'school',G:'plan',V:'vault'}[k]===x));
   document.getElementById('judgeBox').classList.toggle('hide',x!=='judge');document.getElementById('searchbar').classList.toggle('hide',x!=='search');
-  document.getElementById('bar').classList.toggle('hide',x==='search'||x==='school'||x==='plan');
+  document.getElementById('bar').classList.toggle('hide',x==='search'||x==='school'||x==='plan'||x==='vault');
+  if(x==='vault'){loadVault();return;}
   if(x==='school'){loadSchool();return;}
   if(x==='plan'){loadPlan();return;}
   if(x==='search'){ALL=[];document.getElementById('list').innerHTML='';document.getElementById('status').textContent='';}else load();}

@@ -7030,7 +7030,7 @@ async function load(from,to){
     sb.from('mk_sns_slots').select('id,플랫폼,사업부,유형,핵심키워드,예정일시,상태,세트_id').gte('예정일시',f0).lt('예정일시',t1).limit(3000),
     sb.from('mk_sns_sets').select('id,게시일,계정,사업부,종류,제목,상태,형식,묶음,세트키,발송_예정').gte('게시일',from).lte('게시일',to).limit(1000),
     sb.from('mk_channel_cards').select('id,채널,사업부,주제,제목,상태,발송_시각').gte('발송_시각',f0).lt('발송_시각',t1).limit(1000),
-    sb.from('mk_youtube_slots').select('id,발행일,채널,영상형식,코너,상태,핵심키워드,최종제목').eq('채널','리얼플랜여행').gte('발행일',from).lte('발행일',to).limit(500),
+    sb.from('mk_youtube_slots').select('id,발행일,채널,영상형식,코너,상태,핵심키워드,최종제목,편태그').eq('채널','리얼플랜여행').gte('발행일',from).lte('발행일',to).limit(500),
     sb.from('customers').select('신청일시,created_at,사업부').is('deleted_at',null).gte('created_at',addD(from,-7)+'T00:00:00+09:00').lt('created_at',t1).limit(2000),
     sb.from('mk_channel_slots').select('id,예정일,채널,사업부,카드_id,상태,보류_사유').gte('예정일',from).lte('예정일',to).limit(500), /* v1.46.0 채널 편성 칸(P5-B 9/26 신설) */
     sb.from('mk_content_week_plan').select('주차_시작,예정일,트랙,슬롯키,사이트,사업부,주제,대상_url,상태').limit(2000), /* v1.56.0 주간 편성 원장(9/29 승인) */

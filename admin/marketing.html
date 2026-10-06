@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.65.0</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.66.0</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -513,7 +513,7 @@ html #t14 details.mv-old>summary{font-size:14px}
       </script>
       </div>
       </div>
-      <div id="cs-pane-kin" style="display:none"><div id="cs-list-kin"></div></div>
+      <div id="cs-pane-kin" style="display:none"><div id="cs-list-kin"></div><div id="cs-kin-ex"></div></div>
       <div id="cs-pane-etc" style="display:none"><div id="cs-list-etc"></div></div>
     </div>
     <!-- ══ CTR·색인 진단 — 2026-08-20 신설 ══════════════════════════════
@@ -1708,7 +1708,7 @@ async function loadCS(){
   Object.keys(grp).forEach(function(k){
     var g=grp[k], go=g.filter(function(r){return r.경과시간>r.sla시간;}).length;
     h+='<h3 style="font-size:.95rem;font-weight:700;margin:20px 0 8px">'+esc(k)+' <span style="color:#94a3b8;font-weight:400">'+g.length+'건</span>'+(go?' <span style="color:#dc2626;font-weight:400">· 초과 '+go+'</span>':'')+'</h3>';
-    h+='<table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">경과</th><th style="padding:8px">사업부</th><th style="padding:8px">내용</th><th style="padding:8px">할 일</th><th style="padding:8px">링크</th></tr></thead><tbody>';
+    h+='<table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">경과</th><th style="padding:8px">사업부</th><th style="padding:8px">내용</th><th style="padding:8px">할 일</th><th style="padding:8px">처리</th></tr></thead><tbody>';
     g.forEach(function(r){
       var o=r.경과시간>r.sla시간;
       h+='<tr style="border-top:1px solid #e2e8f0'+(o?';background:#fef2f2':'')+'">'
@@ -1731,6 +1731,7 @@ async function loadCS(){
        +b.label+' <span style="color:#64748b;font-weight:500">'+g.length+'</span>'
        +(go?' <span style="color:#dc2626;font-weight:700">⚠'+go+'</span>':'')+'</button>';}).join(''); }
   csTab(window._csTab||'thread');
+  if(typeof csKinEx==='function')csKinEx();
 }
 /* ★탭 전환. 이 화면은 상태를 바꾸지 않는다 — 보이는 패널만 바꾼다. */
 function csTab(k){
@@ -1751,6 +1752,8 @@ function csTab(k){
    같은 목록에 「자문자답 미완료」로 다시 떠서 답글까지 이어진다.
    ★DB 는 직접 UPDATE 하지 않고 반드시 rpc_sns_link_url 을 탄다(편성 오염 방지 관행). */
 function csLinkCell(r){
+  /* ★2026-10-06 v1.66.0 — 지식인 초안·보류 줄에 「답변 완료 / 제외」 (대표 승인). rpc_kin_reply_close 를 탄다. */
+  if((r.출처==='초안'||r.출처==='대조') && /^지식인/.test(String(r.구분||''))) return csKinCell(r);
   /* ★2026-09-02 sql122 — 「자문자답 완료」 출구.
      이 버튼이 없어서 실물로 답글을 달아도 받은편지함이 최장 12일간 안 내려갔다
      (자문자답_완료 를 true 로 바꾸는 경로가 시스템 전체에 0개였다). */
@@ -1770,6 +1773,96 @@ function csLinkCell(r){
       +'<div id="'+iid+'_m" style="font-size:.68rem;color:#94a3b8;margin-top:3px"></div>';
   }
   return '-';
+}
+/* ★2026-10-06 v1.66.0 RP-KIN-CLOSE — 지식인 처리 버튼(대표 승인).
+   답변 완료 = 게시 주소 필수(답변 사라짐 추적용) → 게시완료 / 제외 = 이유 4종 → 제외 / 최근 7일 제외 목록에서 되돌리기.
+   DB 는 직접 UPDATE 하지 않고 rpc_kin_reply_close · rpc_kin_reply_reopen · rpc_kin_reply_excluded 만 탄다.
+   롤백 = 이 블록·csLinkCell 첫 분기·pane·th·hook 패치 역적용 + 20261006_지식인처리_rollback.sql */
+var CS_KIN_WHY=['업무 무관','기간 초과','법률·분쟁','기타'];
+function csKinCell(r){
+  var k='csk_'+String(r.원본_id||'').replace(/[^a-zA-Z0-9]/g,''), id=esc(r.원본_id);
+  var box='margin-top:6px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;max-width:320px;display:none;white-space:normal';
+  var chip='padding:4px 10px;border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:6px;font-size:.73rem;cursor:pointer;margin:4px 4px 0 0';
+  return (r.링크?'<a href="'+esc(r.링크)+'" target="_blank" rel="noopener" style="color:#2563eb">열기</a> ':'')
+    +'<button onclick="csKinOpen(\''+k+'\',\'done\')" style="padding:4px 11px;border:1px solid #16a34a;background:#16a34a;color:#fff;border-radius:6px;font-size:.73rem;cursor:pointer">✅ 답변 완료</button> '
+    +'<button onclick="csKinOpen(\''+k+'\',\'ex\')" style="padding:4px 11px;border:1px solid #94a3b8;background:#fff;color:#475569;border-radius:6px;font-size:.73rem;cursor:pointer">🚫 제외</button>'
+    +'<div id="'+k+'_done" style="'+box+'"><b style="font-size:.73rem">게시 주소</b><br>'
+    +'<input id="'+k+'_url" placeholder="https://kin.naver.com/qna/detail.naver?…" style="border:1px solid #cbd5e1;border-radius:6px;padding:4px 7px;font-size:.73rem;width:210px;margin-top:4px"> '
+    +'<button onclick="csKinDone(\''+id+'\',\''+k+'\',this)" style="padding:4px 11px;border:1px solid #16a34a;background:#16a34a;color:#fff;border-radius:6px;font-size:.73rem;cursor:pointer">저장</button>'
+    +'<div style="font-size:.68rem;color:#64748b;margin-top:4px">주소 필수 — 답변 사라짐 추적에 씁니다 · 저장하면 게시완료</div></div>'
+    +'<div id="'+k+'_ex" style="'+box+'"><b style="font-size:.73rem">제외 이유</b><br>'
+    +CS_KIN_WHY.map(function(w,i){return '<button onclick="csKinExclude(\''+id+'\',\''+k+'\','+i+',this)" style="'+chip+'">'+w+'</button>';}).join('')
+    +'<div style="font-size:.68rem;color:#64748b;margin-top:4px">누르는 즉시 제외 → 목록에서 내려갑니다(아래 「최근 7일 제외」에서 되돌리기)</div></div>'
+    +'<div id="'+k+'_m" style="font-size:.68rem;color:#94a3b8;margin-top:3px"></div>';
+}
+function csKinOpen(k,mode){
+  var d=document.getElementById(k+'_done'), x=document.getElementById(k+'_ex');
+  if(!d||!x) return;
+  var tgt=(mode==='done'?d:x), oth=(mode==='done'?x:d);
+  oth.style.display='none';
+  tgt.style.display=(tgt.style.display==='none'?'block':'none');
+  if(mode==='done'&&tgt.style.display==='block'){var u=document.getElementById(k+'_url'); if(u)u.focus();}
+}
+function csKinSay(k,t,c){var m=document.getElementById(k+'_m'); if(m){m.textContent=t; m.style.color=c||'#94a3b8';}}
+async function csKinDone(id,k,btn){
+  var el=document.getElementById(k+'_url'); var u=((el&&el.value)||'').trim();
+  if(!/^https?:\/\/(m\.)?kin\.naver\.com\//i.test(u)){ csKinSay(k,'지식인 답변 주소(kin.naver.com)를 붙여넣으세요','#dc2626'); if(el)el.focus(); return; }
+  btn.disabled=true; var old=btn.textContent; btn.textContent='저장 중…'; csKinSay(k,'처리 중…');
+  try{
+    var res=await sb.rpc('rpc_kin_reply_close',{p_id:id,p_action:'완료',p_url:u,p_reason:null});
+    if(res.error) throw res.error;
+    var d=res.data||{};
+    if(!d.ok){ csKinSay(k,d.error||'처리 실패','#dc2626'); btn.disabled=false; btn.textContent=old; return; }
+    csKinSay(k,'답변 완료로 옮겼습니다','#16a34a'); setTimeout(loadCS,700);
+  }catch(e){ csKinSay(k,'처리 실패 — '+((e&&e.message)||e),'#dc2626'); btn.disabled=false; btn.textContent=old; }
+}
+async function csKinExclude(id,k,i,btn){
+  var w=CS_KIN_WHY[i]; if(!w) return;
+  var box=document.getElementById(k+'_ex'); if(box) box.querySelectorAll('button').forEach(function(b){b.disabled=true;});
+  csKinSay(k,'제외 중…');
+  try{
+    var res=await sb.rpc('rpc_kin_reply_close',{p_id:id,p_action:'제외',p_url:null,p_reason:w});
+    if(res.error) throw res.error;
+    var d=res.data||{};
+    if(!d.ok){ csKinSay(k,d.error||'처리 실패','#dc2626'); if(box) box.querySelectorAll('button').forEach(function(b){b.disabled=false;}); return; }
+    csKinSay(k,'제외했습니다 — '+w,'#16a34a'); setTimeout(loadCS,700);
+  }catch(e){ csKinSay(k,'처리 실패 — '+((e&&e.message)||e),'#dc2626'); if(box) box.querySelectorAll('button').forEach(function(b){b.disabled=false;}); }
+}
+async function csKinEx(){
+  var box=document.getElementById('cs-kin-ex'); if(!box) return;
+  var open=!!(box.querySelector('details')&&box.querySelector('details').open);
+  var res=await sb.rpc('rpc_kin_reply_excluded',{p_days:7});
+  if(res.error){ box.innerHTML='<p style="color:#dc2626;font-size:.78rem;margin-top:14px">제외 목록 조회 실패: '+esc(res.error.message)+'</p>'; return; }
+  var rows=res.data||[];
+  if(!rows.length){ box.innerHTML=''; return; }
+  var h='<details'+(open?' open':'')+' style="margin-top:16px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px">'
+   +'<summary style="cursor:pointer;font-size:.82rem;font-weight:700">🗂 최근 7일 제외 '+rows.length+'건 <span style="font-weight:400;color:#64748b;font-size:.73rem">잘못 제외했으면 되돌리기</span></summary>'
+   +'<table style="width:100%;border-collapse:collapse;font-size:.82rem;margin-top:8px"><thead><tr style="background:#f8fafc;text-align:left"><th style="padding:8px">제외일</th><th style="padding:8px">사업부</th><th style="padding:8px">내용</th><th style="padding:8px">이유</th><th style="padding:8px">처리</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    var dt=r.제외일시?new Date(r.제외일시):null;
+    var ds=dt?((dt.getMonth()+1)+'/'+('0'+dt.getDate()).slice(-2)+' '+('0'+dt.getHours()).slice(-2)+':'+('0'+dt.getMinutes()).slice(-2)):'-';
+    var rid='csr_'+String(r.id||'').replace(/[^a-zA-Z0-9]/g,'');
+    h+='<tr style="border-top:1px solid #e2e8f0"><td style="padding:8px;white-space:nowrap">'+ds+'</td>'
+     +'<td style="padding:8px;white-space:nowrap">'+esc(r.사업부||'-')+'</td>'
+     +'<td style="padding:8px">'+esc(r.내용||'')+'</td>'
+     +'<td style="padding:8px;color:#475569">'+esc(r.이유||'-')+'</td>'
+     +'<td style="padding:8px;white-space:nowrap">'+(r.되돌리기
+        ?'<button onclick="csKinReopen(\''+esc(r.id)+'\',\''+rid+'\',this)" style="padding:4px 11px;border:1px solid #94a3b8;background:#fff;color:#475569;border-radius:6px;font-size:.73rem;cursor:pointer">↩ 되돌리기</button>'
+        :'<span style="font-size:.72rem;color:#94a3b8">자동 제외</span>')
+     +'<div id="'+rid+'_m" style="font-size:.68rem;color:#94a3b8;margin-top:3px"></div></td></tr>';
+  });
+  box.innerHTML=h+'</tbody></table></details>';
+}
+async function csKinReopen(id,rid,btn){
+  var m=document.getElementById(rid+'_m');
+  btn.disabled=true; var old=btn.textContent; btn.textContent='되돌리는 중…';
+  try{
+    var res=await sb.rpc('rpc_kin_reply_reopen',{p_id:id});
+    if(res.error) throw res.error;
+    var d=res.data||{};
+    if(!d.ok){ if(m){m.textContent=d.error||'되돌리기 실패'; m.style.color='#dc2626';} btn.disabled=false; btn.textContent=old; return; }
+    if(m){m.textContent='되돌렸습니다'; m.style.color='#16a34a';} setTimeout(loadCS,700);
+  }catch(e){ if(m){m.textContent='되돌리기 실패 — '+((e&&e.message)||e); m.style.color='#dc2626';} btn.disabled=false; btn.textContent=old; }
 }
 async function csLinkSave(id,iid,btn){
   var el=document.getElementById(iid), msg=document.getElementById(iid+'_m');
@@ -5198,7 +5291,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.65.0';
+var VER='v1.66.0';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}

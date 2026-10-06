@@ -8761,6 +8761,55 @@ try{var mo=new MutationObserver(function(){var t8=document.querySelector('.nav-i
 })();
 </script>
 <!-- RP-YT-TOPIC-V1 end -->
+<!-- RP-YT-CARD13 start · v1.65.0 · 2026-10-06 유튜브 운영 › 리얼플랜여행 ③ 편 카드 아래 「기획 카드 13칸 체크」 (동영상 방 · 대표 「니가 직접 해」 · 규칙 10-19)
+     원천 mk_youtube_slots.편태그.기획카드 · 시험요소 — 읽기만 · 롤백 = 이 블록 제거 + 제목·VER v1.64.0 -->
+<style>
+#trv2-card13{margin-top:12px}
+#trv2-card13 h4{font-size:.9rem;font-weight:700;margin:0 0 4px;color:#1e293b}
+#trv2-card13 .c13-n{font-size:.72rem;color:#64748b;margin:0 0 8px}
+#trv2-card13 .c13-w{overflow-x:auto;border:1px solid #e2e8f0;border-radius:9px;background:#fff}
+#trv2-card13 table{width:100%;border-collapse:collapse;font-size:.76rem}
+#trv2-card13 th{background:#f8fafc;padding:7px 6px;white-space:nowrap;font-weight:700;color:#334155;text-align:center}
+#trv2-card13 th:first-child,#trv2-card13 td:first-child{text-align:left}
+#trv2-card13 td{padding:6px;border-top:1px solid #e2e8f0;text-align:center;white-space:nowrap}
+#trv2-card13 .y{color:#16a34a;font-weight:800}#trv2-card13 .o{color:#cbd5e1}
+#trv2-card13 .bar{display:inline-block;width:56px;height:6px;background:#e2e8f0;border-radius:3px;vertical-align:middle;overflow:hidden;margin-right:6px}
+#trv2-card13 .bar i{display:block;height:100%;background:#2563eb}
+</style>
+<script>
+(function(){
+  if(window.__rpYtCard13)return;window.__rpYtCard13=1;
+  var KEYS=[['1','노리는쪽'],['2','유형'],['3','구성틀'],['4','검색어·수요'],['5','화자문장'],['6','숫자약속'],['7','대상'],['8','피크까지주'],['9','썸네일장면'],['10','훅문장'],['11','재료비율'],['12','문의장치'],['13','시험요소']];
+  var D=null,busy=false;
+  function E(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function cv(s,k){var tg=s['편태그']||{},c=tg['기획카드']||{};
+    if(k==='유형')return tg['유형']||c['유형'];if(k==='시험요소')return s['시험요소']||c['시험요소'];
+    if(k==='검색어·수요')return c['검색어·수요']||c['검색어수요'];var v=c[k];
+    if(Array.isArray(v))return v.length&&!(v.length===1&&v[0]==='미정')?v.join(' '):null;return v;}
+  function box(){var p=document.getElementById('trv2-p3');if(!p)return null;var b=document.getElementById('trv2-card13');
+    if(!b){b=document.createElement('div');b.id='trv2-card13';b.className='trv-box';b.style.padding='12px';p.appendChild(b);}return b;}
+  async function load(){
+    var b=box();if(!b||typeof sb==='undefined'||busy)return;busy=true;
+    if(!D)b.innerHTML='<h4>기획 카드 13칸 체크</h4><p class="c13-n">불러오는 중…</p>';
+    var r=await sb.from('mk_youtube_slots').select('슬롯번호,발행일,상태,편태그,시험요소').eq('채널','리얼플랜여행').eq('영상형식','롱폼').neq('상태','발행').order('발행일',{ascending:true});
+    busy=false;D=r;render();
+  }
+  function render(){
+    var b=box();if(!b||!D)return;
+    if(D.error){b.innerHTML='<h4>기획 카드 13칸 체크</h4><p class="c13-n" style="color:#b91c1c">⛔ 편 기록 읽기 실패: '+E(D.error.message)+'</p>';return;}
+    var h='<h4>기획 카드 13칸 체크</h4><p class="c13-n">아직 발행 안 한 롱폼 · P1 기획 결재 전에 빈칸 0이 기준(규칙 10-19) · 1 노리는 쪽 · 2 유형 · 3 구성 틀 · 4 검색어·수요 · 5 화자 문장 · 6 숫자 약속 · 7 대상 · 8 피크까지 주 · 9 썸네일 장면 · 10 훅 문장 · 11 재료 비율 · 12 문의 장치 · 13 시험 요소 · 칸에 마우스를 올리면 값이 보입니다</p>';
+    h+='<div class="c13-w"><table><thead><tr><th>편 · 발행</th>'+KEYS.map(function(k){return '<th title="'+E(k[1])+'">'+k[0]+'</th>';}).join('')+'<th>채움</th></tr></thead><tbody>';
+    (D.data||[]).forEach(function(s){var n=0,cells=KEYS.map(function(k){var v=cv(s,k[1]),ok=v!=null&&v!=='';if(ok)n++;return '<td title="'+E(k[1])+': '+E(ok?v:'빈칸')+'">'+(ok?'<span class="y">●</span>':'<span class="o">○</span>')+'</td>';}).join('');
+      h+='<tr><td><b>'+E(s['슬롯번호'])+'</b> <span style="color:#94a3b8">'+E(String(s['발행일']||'').slice(5))+'</span></td>'+cells+'<td><span class="bar"><i style="width:'+Math.round(n/13*100)+'%"></i></span>'+n+'/13</td></tr>';});
+    if(!(D.data||[]).length)h+='<tr><td colspan="15" style="color:#94a3b8;text-align:left">발행 전 롱폼이 없습니다.</td></tr>';
+    b.innerHTML=h+'</tbody></table></div>';
+  }
+  var tries=0;(function boot(){var tabs=document.getElementById('trv2-tabs');
+    if(tabs&&box()){var btn=tabs.querySelector('button[data-p="p3"]');if(btn&&!btn.__c13){btn.__c13=1;btn.addEventListener('click',function(){load();});}
+      if(typeof sb!=='undefined')load();}else if(++tries<40)setTimeout(boot,500);})();
+})();
+</script>
+<!-- RP-YT-CARD13 end -->
 
 
 

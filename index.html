@@ -1086,6 +1086,22 @@ function photoBadges(on){
     }
   });
 }
+/* v1.6 (2026-10-09 회사 시스템 · 대표 승인): 사진을 올리기 전에 브라우저에서 자동 압축 — 긴 변 1920px · 화질 80 JPG
+   300KB 이하 · 투명 PNG · GIF/SVG 는 그대로 올린다. 압축해도 10% 이상 안 줄면 원본을 쓴다. 실패하면 원본으로 진행. */
+async function rpShrink(f){
+  if(!f||f.size<=300*1024||!/^image\/(jpeg|png|webp)$/.test(f.type))return f;
+  var u=URL.createObjectURL(f);
+  try{
+    var img=await new Promise(function(ok,no){var i=new Image();i.onload=function(){ok(i);};i.onerror=no;i.src=u;});
+    var w=img.naturalWidth,h=img.naturalHeight,s=Math.min(1,1920/Math.max(w,h));
+    var c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*s));c.height=Math.max(1,Math.round(h*s));
+    var x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);
+    if(f.type!=='image/jpeg'){var d=x.getImageData(0,0,c.width,c.height).data;for(var k=3;k<d.length;k+=4){if(d[k]<255)return f;}}
+    var b=await new Promise(function(ok){c.toBlob(ok,'image/jpeg',0.8);});
+    if(!b||b.size>=f.size*0.9)return f;
+    return new File([b],(f.name.replace(/\.[^.]+$/,'')||'photo')+'.jpg',{type:'image/jpeg'});
+  }finally{URL.revokeObjectURL(u);}
+}
 fileInput.onchange=async function(){
   var f=fileInput.files[0];fileInput.value='';
   if(!f||!photoTarget)return;

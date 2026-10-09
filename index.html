@@ -1105,6 +1105,7 @@ async function rpShrink(f){
 fileInput.onchange=async function(){
   var f=fileInput.files[0];fileInput.value='';
   if(!f||!photoTarget)return;
+  status('사진 줄이는 중…');try{f=await rpShrink(f);}catch(e){}
   if(f.size>10*1024*1024){alert('10MB 이하 이미지만 가능합니다.');return;}
   status('사진 업로드 중…');
   /* v1.2: 라이브러리 대신 직접 업로드 — 로그인 토큰을 요청에 확실히 부착 */

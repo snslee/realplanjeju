@@ -7268,7 +7268,7 @@ function summary(v){
   var bl=cnt(mon.filter(function(x){return x.lane==='blog';})),np=bl.length,nn=bl.reduce(function(s,x){return s+(x.pc||0);},0);
   var ns=mon.filter(function(x){return x.lane==='sns'&&!x.old;}).length,no=mon.filter(function(x){return x.lane==='sns'&&x.old;}).length;
   var hm=mon.filter(function(x){return x.lane==='home';}),hn=hm.filter(function(x){return !x.hb;}).length,hb=hm.filter(function(x){return x.hb;}).length,hw=hm.filter(function(x){return x.sub==='계획';}).length;
-  var yl=mon.filter(function(x){return x.lane==='yt'&&x.tm==='18:00';}).length,ys=mon.filter(function(x){return x.lane==='yt'&&x.tm!=='18:00';}).length;
+  var yl=mon.filter(function(x){return x.lane==='yt'&&x.tm==='18:00';}).length,ys=mon.filter(function(x){return x.lane==='yt'&&x.tm!=='18:00'&&x.tag!=='리얼플랜여행·게시물';}).length,yp=mon.filter(function(x){return x.lane==='yt'&&x.tag==='리얼플랜여행·게시물';}).length; /* 2026-10-10 게시물 따로 셈 */
   var c=[];
   if(S.on.blog)c.push('<div class="p4-card">📝 블로그 <b class="big">'+np+'쌍 · '+nn+'편</b>'+gtxt('blog','날','이번·다음 주 빈 날 없음')+'</div>');
   if(S.on.home)c.push('<div class="p4-card">🏠 홈 자료실 <b class="big">새 글 '+hn+(S.bu?'':' · 보강 '+hb)+'</b>'+gtxt('home','날')+(hw?'<br><span class="p4-mut">승인 대기(계획) '+hw+'칸 · 금요일 편성안에서 「다음주 편성 승인」</span>':'')+'</div>');

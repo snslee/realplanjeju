@@ -7274,7 +7274,7 @@ function summary(v){
   if(S.on.home)c.push('<div class="p4-card">🏠 홈 자료실 <b class="big">새 글 '+hn+(S.bu?'':' · 보강 '+hb)+'</b>'+gtxt('home','날')+(hw?'<br><span class="p4-mut">승인 대기(계획) '+hw+'칸 · 금요일 편성안에서 「다음주 편성 승인」</span>':'')+'</div>');
   if(S.on.sns)c.push('<div class="p4-card">📣 SNS <b class="big">'+ns+'세트</b>'+gtxt('sns','평일')+(no?'<br><span class="p4-mut">옛 쓰레드 단독 글 '+no+'건은 목록 맨 아래(9/17 폐지 전)</span>':'')+'</div>');
   if(S.on.ch){var chm=mon.filter(function(x){return x.lane==='ch';}),chg=chm.filter(function(x){return x.sub==='미배정';}).length,chd=chm.filter(function(x){return x.st==='중단';}).length;c.push('<div class="p4-card">📍 채널 소식 <b class="big">'+chm.length+'칸</b>'+(chg?' · <span class="p4-warn">미배정 '+chg+'</span>':'')+(chd?' · <span class="p4-warn">빠짐 '+chd+'</span>':'')+'<br><span class="p4-mut">대기 카드 '+(CTX?CTX.wait:'-')+'장 · 가장 오래된 것 <span class="'+(CTX&&CTX.old>14?'p4-warn':'')+'">'+(CTX?CTX.old:'-')+'일</span></span></div>');}
-  if(S.on.yt&&(!S.bu||S.bu==='여행'))c.push('<div class="p4-card">▶️ 유튜브 (리얼플랜여행) <b class="big">롱폼 '+yl+'편 · 쇼츠 '+ys+'편</b>'+gtxt('yt','금요일')+'</div>');
+  if(S.on.yt&&(!S.bu||S.bu==='여행'))c.push('<div class="p4-card">▶️ 유튜브 (리얼플랜여행) <b class="big">롱폼 '+yl+'편 · 쇼츠 '+ys+'편 · 게시물 '+yp+'개</b>'+gtxt('yt','금요일')+'</div>');
   return '<div class="p4-grid" style="grid-template-columns:repeat('+c.length+',1fr)">'+c.join('')+'</div>'
    +(v.err.length?'<div class="p4-warn" style="font-size:.78rem;margin-bottom:8px">⚠️ 일부 표를 읽지 못했습니다: '+E(v.err.join(' · '))+'</div>':'');
 }

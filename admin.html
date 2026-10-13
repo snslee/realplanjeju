@@ -4482,6 +4482,13 @@ function qtBuildCreateForm(){
 <label class="qt-toggle" id="qt-t-sale"><input type="checkbox" id="qt-opt-sale" onchange="qtUpdateAll()"> 판매가 컬럼</label>
 <label class="qt-toggle" id="qt-t-tour"><input type="checkbox" id="qt-opt-tour" onchange="qtUpdateAll()"> 여행업 등록번호 표기</label>
 </div>
+<!-- RP-AMT v1 2026-10-14: 견적서 금액 표시 체크 -->
+<div style="margin-top:12px"><label style="font-size:11px;color:var(--text-muted);font-weight:bold">견적서 금액 표시 (체크를 끄면 견적서에 금액이 빈칸으로 나갑니다)</label>
+<div class="qt-toggle-grid">
+<label class="qt-toggle"><input type="checkbox" id="qt-amt-sub" checked onchange="qtUpdAttach();qtUpdateAll()"> 소계·공급가액</label>
+<label class="qt-toggle"><input type="checkbox" id="qt-amt-vat" checked onchange="qtUpdAttach();qtUpdateAll()"> 부가세</label>
+<label class="qt-toggle"><input type="checkbox" id="qt-amt-total" checked onchange="qtUpdAttach();qtUpdateAll()"> 총합계</label>
+</div></div>
 <div style="margin-top:12px"><label style="font-size:11px;color:var(--text-muted);font-weight:bold">절사 단위</label>
 <div class="qt-radio-group" id="qt-trim-group">
 <div class="qt-radio" data-trim="없음" onclick="qtSetTrim('없음')">없음</div>
@@ -4631,6 +4638,7 @@ function qtSelectBU(bu){
   const $s=$('#qt-opt-sale'); if($s)$s.checked=d.salePrice;
   const $t=$('#qt-opt-tour'); if($t)$t.checked=d.tourReg;
   const $g=$('#qt-opt-gov'); if($g)$g.checked=false;
+  if(typeof qtAmtSet==='function') qtAmtSet({});  /* RP-AMT v1: 새 견적 = 전부 표시 */
   const $pay=$('#qt-payment'); if($pay)$pay.value=d.payment;
   const $acc=$('#qt-account'); if($acc)$acc.value=d.account;
   // 첨부 자동 (영역 F) — 회사소개서·사업자등록증 default ON / 여행=관광등록증 자동
@@ -5885,9 +5893,14 @@ function qtUpdAttach(){
     biz: ($('#qt-att-biz')||{}).checked||false,
     tour: ($('#qt-att-tour')||{}).checked||false,
     women: ($('#qt-att-women')||{}).checked||false,
-    merge: ($('#qt-att-merge')||{}).checked||false
+    merge: ($('#qt-att-merge')||{}).checked||false,
+    amt_show: qtAmtRead()
   };
 }
+/* RP-AMT v1 2026-10-14: 견적서 금액 표시 (소계·부가세·총합계) — 기본 전부 표시, 끄면 PDF 금액 빈칸 */
+function qtAmtRead(){ var g=function(id){var e=document.getElementById(id);return e?!!e.checked:true;}; return {sub:g('qt-amt-sub'),vat:g('qt-amt-vat'),total:g('qt-amt-total')}; }
+function qtAmtSet(a){ a=Object.assign({sub:true,vat:true,total:true},a||{}); [['sub','qt-amt-sub'],['vat','qt-amt-vat'],['total','qt-amt-total']].forEach(function(p){var e=document.getElementById(p[1]); if(e)e.checked=(a[p[0]]!==false);}); }
+window.qtAmtRead=qtAmtRead; window.qtAmtSet=qtAmtSet;
 
 function qtUpdateAll(){
   // 토글 ON/OFF DOM 반영
@@ -6553,38 +6566,41 @@ async function qtGeneratePDF(silent, docType){
     const ppStyleL = { halign:'left', fontStyle:'bold', textColor:[133,79,11], fillColor:[250,238,218] };
 
     const sumRows = [];
+    /* RP-AMT v1 2026-10-14: 견적서(quote)만 — 체크를 끈 줄은 금액 빈칸 */
+    const _amt = Object.assign({sub:true,vat:true,total:true}, (!docType || docType === 'quote') ? (((state.qt.attachments||{}).amt_show)||{}) : {});
+    const _av = (on, v) => (on !== false) ? v.toLocaleString() : '';
     /* v2.23: "항공을 포함한 투어피" 멘트 제거 (대표 요청 / 4사업부 모두 적용) → "소계" 표준 */
     sumRows.push([
       { content: '소계', colSpan: labelColSpan, styles: headerStyle },
-      { content: sub.toLocaleString(), styles: headerStyleR },
+      { content: _av(_amt.sub, sub), styles: headerStyleR },
       { content: '', styles: headerStyleE }
     ]);
     if(state.qt.options.feeShow){
       sumRows.push([
         { content: `대행료 (${state.qt.options.feeRate.toFixed(1)}%)`, colSpan: labelColSpan, styles: sumStyle },
-        { content: fee.toLocaleString(), styles: sumStyleR },
+        { content: _av(_amt.sub, fee), styles: sumStyleR },
         { content: '', styles: sumStyleE }
       ]);
     }
     sumRows.push([
       { content: '공급가액', colSpan: labelColSpan, styles: sumStyle },
-      { content: supply.toLocaleString(), styles: sumStyleR },
+      { content: _av(_amt.sub, supply), styles: sumStyleR },
       { content: '', styles: sumStyleE }
     ]);
     if(state.qt.options.vatShow){
       sumRows.push([
         { content: '부가세 (10%)', colSpan: labelColSpan, styles: sumStyle },
-        { content: vat.toLocaleString(), styles: sumStyleR },
+        { content: _av(_amt.vat, vat), styles: sumStyleR },
         { content: '', styles: sumStyleE }
       ]);
     }
     sumRows.push([
       { content: '총 합 계', colSpan: labelColSpan, styles: totalStyle },
-      { content: total.toLocaleString(), styles: totalStyleR },
+      { content: _av(_amt.total, total), styles: totalStyleR },
       { content: '', styles: totalStyleE }
     ]);
     /* v2.26-hotfix4: 1인 상품요금 = 국내여행 전용 (행사·마케팅·교육 차단 / 인원 개념 없음) */
-    if(state.qt.bu === '국내여행' && ppPrice > 0){
+    if(state.qt.bu === '국내여행' && ppPrice > 0 && _amt.total !== false){
       sumRows.push([
         { content: '', colSpan: labelColSpan, styles: ppStyle },
         { content: ppPrice.toLocaleString(), styles: ppStyleR },
@@ -6615,7 +6631,7 @@ async function qtGeneratePDF(silent, docType){
     });
 
     let y = doc.lastAutoTable.finalY + 4;
-    if(total !== totalOrig){
+    if(total !== totalOrig && _amt.total !== false){
       doc.setFontSize(8); doc.setTextColor(120,120,120);
       doc.text(`(절사 전: ${totalOrig.toLocaleString()}원 / ${state.qt.options.trim}단위 절사)`, 196, y, {align:'right'}); y+=5;
       doc.setTextColor(0,0,0);
@@ -7326,6 +7342,7 @@ function qtApplyCopySource(r){
   ['co','port','biz','tour','women','merge'].forEach(k=>{
     const e=$('#qt-att-'+k); if(e)e.checked=!!state.qt.attachments[k];
   });
+  if(typeof qtAmtSet==='function') qtAmtSet((state.qt.attachments||{}).amt_show);  /* RP-AMT v1 */
   // 옵션 토글 DOM
   const f=$('#qt-opt-fee'); if(f)f.checked=state.qt.options.feeShow;
   const v=$('#qt-opt-vat'); if(v)v.checked=state.qt.options.vatShow;

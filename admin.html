@@ -11453,24 +11453,67 @@ async function rpdVisit(days){
 }
 
 var _clkTok=0;
+/* RP-STATS v2.1 (2026-10-15 대표 승인 G·H·I·J·K): 들어온 경로 · 버튼 클릭 · 구글 검색어 탭 — rpc_web_inflow_detail · rpc_web_clicks_v2 · rpc_web_gsc_v2 */
+function rpdT(){return {th:'font-size:11px;color:#7a869c;font-weight:500;padding:5px 6px;border-bottom:1px solid #e3e9f4;text-align:right',td:'padding:6px 6px;border-bottom:1px solid #f0f3f9;text-align:right'};}
+function rpdBar(n,mx,col){return '<div style="height:10px;background:#eef2f8;border-radius:3px"><div style="height:10px;width:'+Math.max(2,Math.round((n||0)/(mx||1)*100))+'%;background:'+(col||'#5b8ad6')+';border-radius:3px"></div></div>';}
+function rpdRate(s,q){if(!s||!q)return '<span style="color:#b0b8c8">—</span>';var p=Math.round(q/s*1000)/10;return q>=3?'<b style="color:'+(p>=7?'#1d8a5a':'#1f2a3d')+'">'+p+'%</b>':'<span style="color:#b0b8c8">'+p+'%</span>';}
+function rpdCard(l,v,u,s,col){return '<div style="background:#f7faff;border:1px solid #e3e9f4;border-radius:10px;padding:12px 16px"><div style="font-size:12px;color:#56627a">'+l+'</div><div style="font-size:24px;font-weight:800;margin:2px 0;color:'+(col||'#1f2a3d')+'">'+v+' <small style="font-size:12px;color:#7a869c;font-weight:500">'+u+'</small></div><div style="font-size:11.5px;color:#7a869c">'+s+'</div></div>';}
+var RPD_PN={'/':'메인','':'(페이지 미기록)','/tour':'국내여행 상품','/tour/school-trip':'수학여행','/tour/group-trip':'단체여행','/tour/workshop':'워크숍','/event':'행사 대행','/event/sports-day':'체육대회','/event/rental':'장비 대여','/event/casting':'섭외','/insight':'자료실 목록','/contact':'문의하기','/contact.html':'문의하기','/works':'실적 게시판','/company':'회사소개','/marketing':'마케팅 상품','/marketing/sns':'SNS 마케팅','/marketing/blog':'블로그 마케팅','/marketing/place':'플레이스 마케팅','/marketing/aeo':'AI 검색 노출'};
+function rpdPn(p){p=String(p||'');if(RPD_PN[p]!=null)return RPD_PN[p];if(p.indexOf('/insight/')===0)return '자료실 · '+p.slice(9);if(p.indexOf('/story/')===0)return '현장 후기 · '+p.slice(7);return p;}
+
+var _inTok=0;
+async function rpdInflow(days){
+  var my=++_inTok; var pane=document.querySelector('.ws-pane[data-pane="channel"]'),post=document.querySelector('.ws-pane[data-pane="post"]');
+  if(!pane||!SB())return;
+  var site=((document.getElementById('ws-site')||{}).value)||'ALL';
+  var r=await SB().rpc('rpc_web_inflow_detail',{p_days:days,p_site:site}); if(my!==_inTok)return;
+  if(post&&!post._rpd){post._rpd=1;post.innerHTML='<div id="ws-top" hidden></div>';}
+  if(r.error||!r.data){pane.innerHTML='<div style="margin-top:14px;color:#c0392b;font-size:12.5px">들어온 경로를 불러오지 못했습니다: '+E(r.error&&r.error.message)+'</div><div id="ws-ch" hidden></div>';return;}
+  var d=r.data,T=rpdT(),ch=d['채널']||[],ct=d['콘텐츠']||[];
+  var NM={'AI검색-ChatGPT':'ChatGPT','AI검색-Gemini':'Gemini','AI검색-Perplexity':'Perplexity','AI검색-Claude':'Claude','AI검색-Copilot':'Copilot','네이버검색':'네이버 검색','구글검색':'구글 검색','다음검색':'다음 검색','빙검색':'빙 검색','직접유입':'직접 접속','블로그-네이버':'네이버 블로그','블로그-티스토리':'티스토리','블로그-기타':'블로그(채널 미상)','SNS-인스타그램':'인스타그램','SNS-쓰레드':'쓰레드','SNS-페이스북':'페이스북','SNS-틱톡':'틱톡','네이버플레이스':'네이버 플레이스','네이버플레이스-소식':'플레이스 소식','구글비즈니스':'구글 비즈니스'};
+  var G={},order=[]; ch.forEach(function(x){var g=x['묶음'];if(!G[g]){G[g]={s:0,q:0,c:[]};order.push(g);}G[g].s+=x['세션']||0;G[g].q+=x['문의']||0;G[g].c.push(x);});
+  order.sort(function(a,b){return G[b].s-G[a].s;});
+  var mx=1,ts=0,tq=0; order.forEach(function(g){if(G[g].s>mx)mx=G[g].s;ts+=G[g].s;tq+=G[g].q;});
+  var rows=order.map(function(g){var o=G[g];
+    var h='<tr style="background:#f7faff"><td style="'+T.td+';text-align:left;font-weight:800">'+E(g)+'</td><td style="'+T.td+';text-align:left;width:40%">'+rpdBar(o.s,mx,g==='AI 검색'?'#1d9e75':(g==='플레이스·기타'?'#b4b2a9':'#5b8ad6'))+'</td><td style="'+T.td+';font-weight:800">'+N(o.s)+'</td><td style="'+T.td+';font-weight:800;color:'+(o.q?'#2B62C4':'#b0b8c8')+'">'+N(o.q)+'</td><td style="'+T.td+'">'+rpdRate(o.s,o.q)+'</td></tr>';
+    if(o.c.length>1||(o.c[0]&&NM[o.c[0]['채널']]&&NM[o.c[0]['채널']]!==g))o.c.forEach(function(x){h+='<tr><td style="'+T.td+';text-align:left;padding-left:22px;color:#56627a">'+E(NM[x['채널']]||x['채널'])+'</td><td style="'+T.td+'"></td><td style="'+T.td+'">'+N(x['세션'])+'</td><td style="'+T.td+';color:'+(x['문의']?'#2B62C4':'#b0b8c8')+'">'+N(x['문의'])+'</td><td style="'+T.td+'">'+rpdRate(x['세션'],x['문의'])+'</td></tr>';});
+    return h;}).join('');
+  var left='<b style="font-size:14px">채널별 방문·문의</b><div style="font-size:11.5px;color:#7a869c;margin:2px 0 8px">사람 방문(세션) 기준 · 문의 = 고객이 고른 「알게 된 곳」</div><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr><th style="'+T.th+';text-align:left">채널</th><th style="'+T.th+';text-align:left">방문 비중</th><th style="'+T.th+'">방문</th><th style="'+T.th+'">문의</th><th style="'+T.th+'">전환</th></tr>'+rows
+    +'<tr style="background:#f7faff"><td style="'+T.td+';text-align:left;font-weight:800">합계</td><td style="'+T.td+'"></td><td style="'+T.td+';font-weight:800">'+N(ts)+'</td><td style="'+T.td+';font-weight:800;color:#2B62C4">'+N(tq)+'</td><td style="'+T.td+'">'+(ts?(Math.round(tq/ts*1000)/10)+'%':'—')+'</td></tr></table>'
+    +'<div style="font-size:11px;color:#98a3b8;margin-top:8px">ChatGPT는 링크에 표시를 자동으로 붙여 보냅니다 → AI 검색으로 셉니다 · 문의 3건 미만 전환율은 흐리게(판단 보류)</div>';
+  var GR={},go=['블로그 글','유튜브 영상','SNS 게시물','4채널 소식','그 밖 링크']; ct.forEach(function(x){(GR[x['구분']]=GR[x['구분']]||[]).push(x);});
+  var right='<b style="font-size:14px">어떤 콘텐츠에서 들어왔나</b><div style="font-size:11.5px;color:#7a869c;margin:2px 0 8px">링크 표시(UTM)가 붙은 바깥 유입 · 문의 = 그 링크로 들어온 방문에서 나온 문의</div>';
+  go.forEach(function(g){var L=GR[g];if(!L||!L.length)return;var m=1;L.forEach(function(x){if(x['방문']>m)m=x['방문'];});
+    var show=L.slice(0,8),rest=L.slice(8),rs=0;rest.forEach(function(x){rs+=x['방문']||0;});
+    right+='<div style="border:1px solid #e3e9f4;border-radius:10px;padding:10px 14px;margin-bottom:10px"><div style="font-size:12.5px;font-weight:800;margin-bottom:4px">'+E(g)+' <span style="font-weight:400;color:#7a869c;font-size:11px">'+L.length+'개</span></div>'
+      +show.map(function(x){var miss=/^제목을 못 찾은 코드/.test(x['항목']||'');return '<div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:4px 0;border-bottom:1px solid #f0f3f9"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+E(x['항목'])+'">'+E(x['항목'])+(x['부제']?' <span style="font-size:10.5px;color:#56627a;background:#eef2f8;border-radius:8px;padding:1px 6px">'+E(x['부제'])+'</span>':'')+(miss?' <span style="font-size:10.5px;color:#9a5b00;background:#fff4e0;border-radius:8px;padding:1px 6px">점검</span>':'')+'</span><span style="display:flex;gap:10px;align-items:center;flex:none"><span style="width:80px">'+rpdBar(x['방문'],m)+'</span><b style="width:22px;text-align:right">'+N(x['방문'])+'</b><span style="width:34px;text-align:right;color:'+(x['문의']?'#2B62C4':'#b0b8c8')+'">문의 '+N(x['문의'])+'</span></span></div>';}).join('')
+      +(rest.length?'<div style="font-size:11.5px;color:#7a869c;padding-top:4px">그 밖 '+rest.length+'개 · 방문 '+rs+'</div>':'')+'</div>';});
+  if(!ct.length)right+='<div style="font-size:12px;color:#98a3b8">링크 표시가 붙은 바깥 유입이 없습니다.</div>';
+  right+='<div style="font-size:11px;color:#98a3b8">사이트 안 버튼(시즌 상품·상품 견적·자료실·실적·후기 링크) '+N(d['사이트안_제외'])+'회는 바깥 유입이 아니라 여기서 빼고 「버튼 클릭」 탭에서 봅니다</div>';
+  pane.innerHTML='<div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:14px"><div style="flex:1 1 520px;min-width:0">'+left+'</div><div style="flex:1 1 460px;min-width:0">'+right+'</div></div><div id="ws-ch" hidden></div>';
+  var pb=pane.querySelector('b'); if(pb)pb._rpd=1;
+}
+
 async function rpdClicks(days){
   var my=++_clkTok;
   var el=document.getElementById('rpd-click'); if(!el||!SB())return;
   var site=((document.getElementById('ws-site')||{}).value)||'ALL';
-  var since=new Date(Date.now()-days*864e5).toISOString();
-  var qy=SB().from('web_클릭로그').select('사이트,유형,페이지,위치,클릭_시각').gte('클릭_시각',since).order('클릭_시각',{ascending:false}).limit(3000);
-  if(site!=='ALL')qy=qy.eq('사이트',site);
-  var r=await qy; if(my!==_clkTok)return;
-  if(r.error){el.innerHTML='<div style="color:#c0392b;font-size:12.5px;margin-top:8px">불러오기 실패: '+E(r.error.message)+'</div>';return;}
-  var rows=r.data||[]; var LBL={tel:'전화',kakao:'카카오톡',quote:'견적 요청',list:'목록 복귀',season:'시즌 상품(홈)'};
-  var byT={},byP={}; rows.forEach(function(x){var k=(x['사이트']||'?')+'|'+(x['유형']||'?');byT[k]=(byT[k]||0)+1; if(x['유형']!=='list'&&x['유형']!=='season'){var p=(x['사이트']||'')+' '+(x['페이지']||'/');byP[p]=(byP[p]||0)+1;}});
-  var cell='padding:5px 4px;border-bottom:1px solid #f0f3f9';
-  var tt=['tel','kakao','quote','list','season'].map(function(t){var a=byT['A|'+t]||0,b=byT['B|'+t]||0;
-    return '<tr><td style="'+cell+'">'+LBL[t]+'</td><td style="'+cell+';text-align:right">'+a+'</td><td style="'+cell+';text-align:right">'+b+'</td><td style="'+cell+';text-align:right;font-weight:700">'+(a+b)+'</td></tr>';}).join('');
-  var pages=Object.keys(byP).sort(function(a,b){return byP[b]-byP[a];}).slice(0,10).map(function(k){return '<tr><td style="'+cell+'">'+E(k)+'</td><td style="'+cell+';text-align:right;font-weight:700">'+byP[k]+'</td></tr>';}).join('');
-  el.innerHTML='<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px"><tr style="color:#7a869c;font-size:11.5px"><td style="padding:4px">버튼</td><td style="text-align:right">A</td><td style="text-align:right">B</td><td style="text-align:right">합계</td></tr>'+tt+'</table>'
-    +(pages?'<div style="margin-top:12px;font-size:12.5px;font-weight:700">문의 버튼이 눌린 페이지</div><table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:4px">'+pages+'</table>':'')
-    +'<div style="font-size:11px;color:#98a3b8;margin-top:6px">최근 '+days+'일 · 총 '+rows.length+'회 · 전화 버튼 0회면 전화번호 노출 위치를 점검하세요</div>';
+  var r=await SB().rpc('rpc_web_clicks_v2',{p_days:days,p_site:site}); if(my!==_clkTok)return;
+  var pane=el.closest('.ws-pane'); var hb=pane&&pane.querySelector('b'); if(hb&&hb.nextElementSibling&&hb.nextElementSibling.tagName==='SPAN'){hb.style.display='none';hb.nextElementSibling.style.display='none';}
+  if(r.error||!r.data){el.innerHTML='<div style="color:#c0392b;font-size:12.5px;margin-top:8px">불러오기 실패: '+E(r.error&&r.error.message)+'</div>';return;}
+  var d=r.data,B=d['버튼']||{},T=rpdT(); function g(k){return B[k]||{A:0,B:0,'합계':0,'사람':0,'문의':0};}
+  var q=g('quote'),k=g('kakao'),t=g('tel'),qp=q['사람']?Math.round(q['문의']/q['사람']*100):0;
+  var cards='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:4px 0 14px">'
+    +rpdCard('견적 요청 버튼',N(q['합계']),'회','그 뒤 문의 접수 <b style="color:#1d8a5a">'+N(q['문의'])+'건'+(q['사람']?' ('+qp+'%)':'')+'</b>')
+    +rpdCard('카카오톡 버튼',N(k['합계']),'회','카카오톡 접수로 등록된 문의 <b style="color:'+(d['카카오_접수등록']?'#1f2a3d':'#c0392b')+'">'+N(d['카카오_접수등록'])+'건</b>'+(d['카카오_접수등록']?'':' · 상담 오면 「문의 등록」에 카카오톡으로'))
+    +rpdCard('전화 버튼',N(t['합계']),'회',t['합계']?'최근 '+days+'일':'<b style="color:#c0392b">점검 필요</b> · 전화 링크가 문의 페이지 1곳뿐',t['합계']?'':'#c0392b')+'</div>';
+  function brow(n,o,w){return '<tr><td style="'+T.td+';text-align:left;font-weight:'+(w?'800':'500')+'">'+n+'</td><td style="'+T.td+'">'+N(o.A)+'</td><td style="'+T.td+'">'+N(o.B)+'</td><td style="'+T.td+';font-weight:800;color:'+(o['합계']?'#1f2a3d':'#c0392b')+'">'+N(o['합계'])+'</td><td style="'+T.td+'">'+N(o['사람'])+'</td><td style="'+T.td+';font-weight:700;color:'+(o['문의']?'#1d8a5a':'#b0b8c8')+'">'+(o['합계']?N(o['문의']):'—')+'</td></tr>';}
+  var t1='<b style="font-size:14px">문의 버튼</b><div style="font-size:11.5px;color:#7a869c;margin:2px 0 8px">로봇·관리자(직원) 클릭 '+N(d['제외'])+'회 제외 · 최근 '+days+'일</div><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr><th style="'+T.th+';text-align:left">버튼</th><th style="'+T.th+'">A 여행·행사</th><th style="'+T.th+'">B 마케팅·교육</th><th style="'+T.th+'">합계</th><th style="'+T.th+'">누른 사람</th><th style="'+T.th+'">그 뒤 문의</th></tr>'+brow('견적 요청',q,1)+brow('카카오톡',k,1)+brow('전화',t,1)+'</table>'
+    +'<div style="font-size:13.5px;font-weight:800;margin-top:16px">사이트 안 이동 버튼 <span style="font-weight:400;font-size:11px;color:#7a869c">(참고 · 문의 버튼 아님)</span></div><table style="width:100%;border-collapse:collapse;font-size:12.5px;color:#56627a"><tr><th style="'+T.th+';text-align:left">버튼</th><th style="'+T.th+'">A</th><th style="'+T.th+'">B</th><th style="'+T.th+'">합계</th><th style="'+T.th+'">누른 사람</th><th style="'+T.th+'">그 뒤 문의</th></tr>'+brow('시즌 추천 상품 (홈)',g('season'))+brow('자료실 목록 복귀',g('list'))+'</table>';
+  var P=d['페이지']||[];
+  var t2='<b style="font-size:14px">문의 버튼이 눌린 페이지</b><div style="font-size:11.5px;color:#7a869c;margin:2px 0 8px">버튼 종류별 · 그 뒤 실제 문의까지'+(d['페이지미기록']?' · 페이지 미기록 '+N(d['페이지미기록'])+'회(메인 화면 카카오 버튼)':'')+'</div><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr><th style="'+T.th+';text-align:left">페이지</th><th style="'+T.th+'">견적</th><th style="'+T.th+'">카카오</th><th style="'+T.th+'">전화</th><th style="'+T.th+'">그 뒤 문의</th></tr>'
+    +(P.length?P.slice(0,15).map(function(x){function c(v,col){return '<td style="'+T.td+';color:'+(v?col:'#b0b8c8')+';font-weight:'+(v?700:400)+'">'+N(v)+'</td>';}return '<tr><td style="'+T.td+';text-align:left">'+E(rpdPn(x['페이지']))+' <span style="font-size:10.5px;color:#a6b0c2">'+E(x['사이트'])+'</span></td>'+c(x['견적'],'#2B62C4')+c(x['카카오'],'#2B62C4')+c(x['전화'],'#2B62C4')+c(x['문의'],'#1d8a5a')+'</tr>';}).join(''):'<tr><td colspan="5" style="'+T.td+';text-align:left;color:#98a3b8">기간 안에 눌린 문의 버튼이 없습니다.</td></tr>')+'</table>';
+  el.innerHTML=cards+'<div style="display:flex;gap:22px;flex-wrap:wrap"><div style="flex:1 1 480px;min-width:0">'+t1+'</div><div style="flex:1 1 420px;min-width:0">'+t2+'</div></div>';
 }
 
 var _wr=window.wsRender;
@@ -11480,6 +11523,7 @@ if(typeof _wr==='function'){
     try{hpFix();}catch(e){}
     rpdVisit(days).catch(function(){});
     rpdClicks(days).catch(function(){});
+    rpdInflow(days).catch(function(){});
     return out;
   };
 }
@@ -11497,16 +11541,47 @@ if(typeof _wco==='function'){
 
 /* 5) 전환 탭의 블로그 표·죽은 블로그 조회 제거 — 구글 검색어만 남김 */
 window.wsBlogLoad=async function(){
+  /* RP-STATS v2.1 (2026-10-15 대표 승인 I): 구글 검색어 — 홈A(28일·매일)/홈B(90일·주1회) · 노출 순 전체 · 클릭률 · 할 일 표시 · 손볼 곳 */
   try{
     var ge=document.getElementById('ws-gsc'); if(!ge||!SB())return;
+    var hb=ge.previousElementSibling; if(hb&&hb.tagName==='B')hb.style.display='none';
     var site2=((document.getElementById('ws-site')||{}).value)||'ALL';
-    var gk=await SB().rpc('rpc_web_gsc_top');
-    var cell='padding:5px 4px;border-bottom:1px solid #f0f3f9';
-    ge.innerHTML=(!gk.error&&gk.data&&gk.data.length)
-      ?('<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px">'+gk.data.map(function(r){
-          return '<tr><td style="'+cell+'">'+E(r['검색어'])+'</td><td style="'+cell+';text-align:right;color:#7a869c">'+(r['노출']||0)+'노출</td><td style="'+cell+';text-align:right;color:#7a869c">'+(r['클릭']||0)+'클릭</td><td style="'+cell+';text-align:right;font-weight:700">'+(r['순위']!=null?r['순위']+'위':'-')+'</td></tr>';}).join('')
-        +'</table><div style="font-size:11px;color:#98a3b8;margin-top:6px">realplanjeju.com 구글 검색 성과 · 매일 07:50 자동수집'+(site2!=='ALL'?' · 사이트 필터 미적용(도메인 전체)':'')+'</div>')
-      :'<div style="font-size:12.5px;color:#98a3b8;margin-top:8px">데이터 없음</div>';
+    var gs=ge._rpdSite||(site2==='B'?'B':'A'); ge._rpdSite=gs;
+    var r=await SB().rpc('rpc_web_gsc_v2',{p_site:gs});
+    if(r.error||!r.data){ge.innerHTML='<div style="font-size:12.5px;color:#c0392b;margin-top:8px">구글 검색어를 불러오지 못했습니다: '+E(r.error&&r.error.message)+'</div>';return;}
+    var d=r.data,T=rpdT(),rows=d['행']||[],open=!!ge._rpdAll;
+    var gvis=null;
+    try{var dd=await SB().rpc('rpc_web_inflow_detail',{p_days:30,p_site:gs});(dd.data&&dd.data['채널']||[]).forEach(function(x){if(x['채널']==='구글검색')gvis=x['세션'];});}catch(_){}
+    function tag(x){var q=String(x['검색어']||''),p=Number(x['순위']),i=x['노출']||0,c=x['클릭']||0,pg=x['페이지수']||0,t=[];
+      if(/리얼플랜|realplan/i.test(q)&&p>1.5)t.push('<span style="font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:10px;background:#fdecea;color:#b42318">회사 이름인데 '+p+'위</span>');
+      else if(p<=10&&c===0&&i>=5)t.push('<span style="font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:10px;background:#fff4e0;color:#9a5b00">1페이지·클릭 0 → 제목·설명 손질</span>');
+      else if(p>10&&p<=20)t.push('<span style="font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:10px;background:#e8f0fc;color:#1B4FA8">1페이지 문턱</span>');
+      else if(p>30)t.push('<span style="font-size:10.5px;padding:2px 7px;border-radius:10px;background:#eef2f8;color:#56627a">순위 낮음</span>');
+      if(pg>=3)t.push('<span style="font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:10px;background:#fdecea;color:#b42318">내 페이지 '+pg+'개 겹침</span>');
+      return t.join(' ');}
+    var show=open?rows:rows.slice(0,20);
+    var tr=show.map(function(x){var i=x['노출']||0,c=x['클릭']||0;return '<tr><td style="'+T.td+';text-align:left">'+E(x['검색어'])+'</td><td style="'+T.td+'">'+N(i)+'</td><td style="'+T.td+';color:'+(c?'#2B62C4':'#b0b8c8')+';font-weight:'+(c?700:400)+'">'+N(c)+'</td><td style="'+T.td+';color:#98a3b8">'+(i?(Math.round(c/i*1000)/10)+'%':'—')+'</td><td style="'+T.td+'">'+(x['순위']!=null?x['순위']+'위':'—')+'</td><td style="'+T.td+';text-align:left">'+tag(x)+'</td></tr>';}).join('');
+    var brand=rows.filter(function(x){return /리얼플랜|realplan/i.test(x['검색어']||'');}),z=rows.filter(function(x){return x['순위']<=10&&!(x['클릭'])&&(x['노출']||0)>=5;}),ov=rows.filter(function(x){return (x['페이지수']||0)>=3;}),th=rows.filter(function(x){return x['순위']>10&&x['순위']<=20;});
+    var todo=[];
+    brand.forEach(function(x){if(x['순위']>1.5)todo.push('<span style="color:#c0392b;font-weight:700">회사 이름 「'+E(x['검색어'])+'」 '+x['순위']+'위</span>');});
+    if(z.length)todo.push('1페이지인데 클릭 0 — '+z.length+'개');
+    if(th.length)todo.push('조금만 올리면 1페이지(11~20위) — '+th.length+'개');
+    if(ov.length)todo.push('같은 검색어에 내 페이지 3개 이상 겹침 — '+ov.length+'개');
+    var chip=function(k,l){return '<button type="button" data-g="'+k+'" style="border:1px solid '+(gs===k?'#1f3a66':'#cfd8e3')+';background:'+(gs===k?'#1f3a66':'#fff')+';color:'+(gs===k?'#fff':'#1f2a3d')+';border-radius:14px;padding:3px 12px;font-size:12px;margin-right:6px;cursor:pointer">'+l+'</button>';};
+    ge.innerHTML='<div style="margin:12px 0 10px">'+chip('A','홈A 여행·행사')+chip('B','홈B 마케팅·교육')+'<span style="font-size:11.5px;color:#7a869c">구글 검색 성과 · '+E(d['주기'])+' · '+E(d['기간'])+' · '+E(d['수집일'])+' 수집</span></div>'
+      +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px">'
+      +rpdCard('검색 노출',N(d['노출']),'회','검색어 '+N(d['검색어수'])+'개')
+      +rpdCard('검색어 확인된 클릭',N(d['클릭']),'회','클릭률 '+(d['노출']?(Math.round(d['클릭']/d['노출']*1000)/10)+'%':'—'))
+      +rpdCard('1페이지(10위 안) 검색어',N(d['일페이지']),'개','11~20위 '+N(d['문턱'])+'개')
+      +rpdCard('구글에서 온 방문 (30일)',gvis==null?'—':N(gvis),'명','검색어가 가려진 방문 포함')+'</div>'
+      +'<div style="display:flex;gap:22px;flex-wrap:wrap"><div style="flex:1 1 640px;min-width:0"><b style="font-size:14px">검색어</b><div style="font-size:11.5px;color:#7a869c;margin:2px 0 8px">노출 많은 순 · '+(open?'전체 '+rows.length:'상위 '+Math.min(20,rows.length))+'개'+(rows.length>20?' · <a href="javascript:void(0)" id="rpd-gsc-all" style="color:#2B62C4;font-weight:700">'+(open?'접기':'전체 '+rows.length+'개 보기')+'</a>':'')+'</div>'
+      +'<table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr><th style="'+T.th+';text-align:left">검색어</th><th style="'+T.th+'">노출</th><th style="'+T.th+'">클릭</th><th style="'+T.th+'">클릭률</th><th style="'+T.th+'">평균 순위</th><th style="'+T.th+';text-align:left">할 일</th></tr>'+(tr||'<tr><td colspan="6" style="'+T.td+';text-align:left;color:#98a3b8">데이터 없음</td></tr>')+'</table>'
+      +'<div style="font-size:11px;color:#98a3b8;margin-top:8px">검색어 표의 클릭과 실제 구글 방문의 차이 = 구글이 개인정보 보호로 가린 검색어 · 순위는 기간 평균</div></div>'
+      +'<div style="flex:0 0 320px"><div style="border:1px solid #e3e9f4;border-radius:10px;padding:12px 14px"><div style="font-size:12.5px;font-weight:800;margin-bottom:6px">이번 달 손볼 곳</div>'
+      +(todo.length?todo.map(function(x){return '<div style="font-size:12px;padding:5px 0;border-bottom:1px solid #f0f3f9">'+x+'</div>';}).join(''):'<div style="font-size:12px;color:#98a3b8">특이사항 없음</div>')
+      +'<div style="font-size:11px;color:#98a3b8;margin-top:6px">글·제목 손질은 P5-A 방 · 이 칸은 찾아내는 일만</div></div></div></div>';
+    ge.querySelectorAll('button[data-g]').forEach(function(b){b.onclick=function(){ge._rpdSite=b.getAttribute('data-g');ge._rpdAll=false;window.wsBlogLoad();};});
+    var al=document.getElementById('rpd-gsc-all'); if(al)al.onclick=function(){ge._rpdAll=!ge._rpdAll;window.wsBlogLoad();};
   }catch(e){}
 };
 

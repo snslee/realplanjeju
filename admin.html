@@ -518,7 +518,7 @@ table.qt-items td.narrow input{text-align:right}
 <div class="kpi-card" data-kpi="top_bu"><div class="kpi-label">사업부 TOP</div><div class="kpi-value" style="font-size:18px;">-</div><div class="kpi-sub">문의 최다</div></div>
 </div>
 <!-- RP-WEB v3: 대시보드 홈페이지 방문 요약 (상세 = #website) -->
-<div id="inflow-box" style="background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:14px 18px;margin:14px 0"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><b style="font-size:13.5px">📥 유입 → 문의 전환</b><span style="font-size:11px;color:#98a3b8">내부접속·구홈페이지 제외</span></div><div id="inflow-body" style="font-size:12.5px;color:#98a3b8"><div style="height:13px;background:#eef2f8;border-radius:4px;margin:9px 0;width:92%"></div><div style="height:13px;background:#f3f6fb;border-radius:4px;margin:9px 0;width:78%"></div><div style="height:13px;background:#f7f9fc;border-radius:4px;margin:9px 0;width:60%"></div><div style="font-size:11px;color:#b6bfd0">유입·문의 데이터를 불러오는 중입니다…</div></div></div>
+<div id="inflow-box" style="background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:14px 18px;margin:14px 0"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><b style="font-size:13.5px">유입 → 문의 (최근 30일)</b><span style="font-size:11px;color:#98a3b8">불러오는 중…</span></div><div id="inflow-body" style="font-size:12.5px;color:#98a3b8"><div style="height:13px;background:#eef2f8;border-radius:4px;margin:9px 0;width:92%"></div><div style="height:13px;background:#f3f6fb;border-radius:4px;margin:9px 0;width:78%"></div><div style="height:13px;background:#f7f9fc;border-radius:4px;margin:9px 0;width:60%"></div><div style="font-size:11px;color:#b6bfd0">유입·문의 데이터를 불러오는 중입니다…</div></div></div>
 <div id="ws-dash" style="background:#fff;border:1px solid #e3e9f4;border-radius:12px;padding:14px 18px;margin:14px 0;display:flex;gap:22px;align-items:center;flex-wrap:wrap">
 <b style="font-size:13.5px">🌐 홈페이지 방문</b>
 <span style="font-size:12.5px;color:#7a869c">오늘 <b id="wsd-today" style="color:#2B62C4;font-size:16px">-</b></span>
@@ -11259,6 +11259,7 @@ async function kpiApply(force){
 var _infBusy=false;
 function dashVisible(){var v=document.getElementById('view-dashboard');return !!(v&&!v.hidden&&v.offsetParent!==null);}
 async function dashInflow(force){
+  /* RP-STATS v2 (2026-10-15 대표 승인 C): 30일 한 기간 · 카드 3 + 채널 묶음 7줄 · rpc_web_stats_v2 */
   var el=document.getElementById('inflow-body'),head=document.getElementById('inflow-box');
   if(!el||!head||!SB()||_infBusy)return;
   var at=Number(el.getAttribute('data-rpd-at')||0);
@@ -11266,44 +11267,46 @@ async function dashInflow(force){
   _infBusy=true;
   try{
     var ss=await SB().auth.getSession(); if(!ss||!ss.data||!ss.data.session){_infBusy=false;return;}
-    var res=await Promise.all([
-      SB().from('v_inflow_funnel').select('채널,세션,문의,전환율_pct,표본부족,집계시작일').limit(80),
-      SB().rpc('rpc_web_visit_summary',{p_days:30,p_site:'ALL'})
-    ]);
-    var r=res[0],v=res[1];
-    var t=head.querySelector('span'); if(t)t.textContent='사람 방문 기준 · 봇·관리자·사이트 내부 이동 제외';
-    var line=document.getElementById('rpd-inflow-line');
-    if(!line){line=document.createElement('div');line.id='rpd-inflow-line';line.style.cssText='font-size:12.5px;color:#56627a;margin:2px 0 8px';head.insertBefore(line,el);}
-    if(!v.error&&v.data){var d=v.data;
-      line.innerHTML='최근 30일 사람 방문 <b style="color:#2B62C4">'+N(d['합계'])+'</b>세션 (오늘 '+N(d['오늘'])+')'
-        +' · 홈페이지 경유 문의 <b style="color:#2B62C4">'+N(d['홈페이지_문의'])+'</b>건 · 전환 '+P(d['문의_전환_pct'])
-        +' <a href="#website" style="margin-left:6px;color:#2B62C4;font-weight:700">상세 →</a>';}
-    else{line.textContent='방문 요약을 불러오지 못했습니다: '+((v.error&&v.error.message)||'응답 없음');}
-    if(r.error){
-      el.innerHTML='<div style="color:#c0392b">전환표를 불러오지 못했습니다: '+E(r.error.message)+' <button type="button" id="rpd-inf-retry" style="margin-left:6px;border:1px solid #cfd8e3;background:#fff;border-radius:6px;padding:2px 8px;cursor:pointer">다시 시도</button></div>';
+    var r=await SB().rpc('rpc_web_stats_v2',{p_days:30,p_site:'ALL'});
+    var old=document.getElementById('rpd-inflow-line'); if(old&&old.parentNode)old.parentNode.removeChild(old);
+    var hb=head.querySelector('b'); if(hb)hb.textContent='유입 → 문의 (최근 30일)';
+    var hs=head.querySelector('span');
+    if(r.error||!r.data){
+      el.innerHTML='<div style="color:#c0392b">유입 통계를 불러오지 못했습니다: '+E((r.error&&r.error.message)||'응답 없음')+' <button type="button" id="rpd-inf-retry" style="margin-left:6px;border:1px solid #cfd8e3;background:#fff;border-radius:6px;padding:2px 8px;cursor:pointer">다시 시도</button></div>';
       var rb=document.getElementById('rpd-inf-retry'); if(rb)rb.onclick=function(){dashInflow(true);};
       el.setAttribute('data-rpd-at','0');
     }else{
-      var rows=(r.data||[]).filter(function(x){return (x['세션']||0)>0||(x['문의']||0)>0;});
-      rows.sort(function(a,b){return (b['문의']-a['문의'])||(b['세션']-a['세션']);});
-      var hid=rows.filter(function(x){return (x['문의']||0)===0&&(x['세션']||0)<5;});
-      rows=rows.filter(function(x){return (x['문의']||0)>0||(x['세션']||0)>=5;});
-      var since=(r.data&&r.data[0]&&r.data[0]['집계시작일'])||'';
-      var cell='padding:5px 4px;border-bottom:1px solid #f0f3f9';
-      var h='<table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="color:#7a869c"><th style="padding:4px;text-align:left;font-weight:600">채널</th><th style="text-align:right;font-weight:600">사람 세션</th><th style="text-align:right;font-weight:600">문의</th><th style="text-align:right;font-weight:600">전환율</th></tr>';
-      rows.forEach(function(x){var hot=(x['문의']||0)>0;
-        h+='<tr><td style="'+cell+'">'+E(x['채널'])+(x['표본부족']?' <span style="font-size:10.5px;color:#c08a00;border:1px solid #e8d7a8;border-radius:4px;padding:0 4px">표본부족</span>':'')+'</td>'
-          +'<td style="'+cell+';text-align:right;color:#7a869c">'+((x['세션']||0)?N(x['세션']):'—')+'</td>'
-          +'<td style="'+cell+';text-align:right;font-weight:700;color:'+(hot?'#2B62C4':'#98a3b8')+'">'+N(x['문의']||0)+'</td>'
-          +'<td style="'+cell+';text-align:right;font-weight:700">'+(x['전환율_pct']!=null?Number(x['전환율_pct'])+'%':'—')+'</td></tr>';});
-      if(hid.length){var hs=0;hid.forEach(function(x){hs+=(x['세션']||0);});
-        h+='<tr><td colspan="4" style="padding:6px 4px;color:#98a3b8;font-size:11.5px">· 세션 5 미만·문의 0 채널 '+hid.length+'개(세션 합 '+hs+') — '+hid.map(function(x){return E(x['채널']);}).join(', ')+'</td></tr>';}
-      h+='</table><div style="font-size:11px;color:#98a3b8;margin-top:6px">'+E(since)+' 이후 누적 · 직접문의·지인소개는 웹 방문이 없어 전환율을 계산하지 않습니다 · 문의 3건 미만은 표본부족</div>';
-      el.innerHTML=h; el.setAttribute('data-rpd-at',String(Date.now()));
+      var d=r.data,V=d['방문']||{},Q=d['문의']||{},ch=d['채널']||[];
+      function md(s){s=String(s||'');return Number(s.slice(5,7))+'/'+Number(s.slice(8,10));}
+      if(hs){hs.style.flex='1';hs.innerHTML=md(d['기간_시작'])+'~'+md(d['기간_끝'])+' · 사람 방문만 (로봇·관리자 제외)<a href="#website" style="float:right;color:#2B62C4;font-weight:700;font-size:12px;text-decoration:none">홈페이지 상세 →</a>';}
+      var card='background:#f3f6fb;border-radius:8px;padding:12px 16px;display:flex;align-items:baseline;gap:12px';
+      function c3(l,v,u,s,blue){return '<div style="'+card+'"><span style="font-size:12px;color:#56627a;width:96px;flex:none">'+l+'</span><span style="font-size:24px;font-weight:800;color:'+(blue?'#2B62C4':'#1f2a3d')+'">'+v+' <small style="font-size:12px;color:#7a869c;font-weight:500">'+u+'</small></span><span style="font-size:11.5px;color:#7a869c;margin-left:auto;text-align:right">'+s+'</span></div>';}
+      var pct=d['전환_pct'];
+      var left='<div style="flex:0 1 400px;min-width:280px;display:flex;flex-direction:column;gap:10px">'
+        +c3('사람 방문',N(V['합계']),'명','하루 평균 '+N(V['일평균'])+' · 오늘 '+N(V['오늘']))
+        +c3('문의',N(Q['합계']),'건','홈페이지 '+N(Q['홈페이지'])+' · 전화·소개 '+N(Q['전화소개']))
+        +c3('홈페이지 전환율',(pct==null?'—':pct),'%','방문 100명당 문의 '+(pct==null?'—':pct)+'건',true)+'</div>';
+      var mx=1,best=-1; ch.forEach(function(x){if((x['세션']||0)>mx)mx=x['세션'];});
+      ch.forEach(function(x){if((x['문의']||0)>=3&&x['세션']){var p=x['문의']/x['세션'];if(p>best)best=p;}});
+      var td='padding:7px 6px;border-bottom:1px solid #f0f3f9;text-align:right';
+      var rows=ch.map(function(x){var s=x['세션']||0,q=x['문의']||0,p=(s&&q)?Math.round(q/s*1000)/10:null,isB=(q>=3&&s&&q/s===best);
+        var w=Math.max(s?2:0,Math.round(s/mx*100));
+        return '<tr><td style="'+td+';text-align:left;font-weight:700;white-space:nowrap">'+E(x['묶음'])+'</td>'
+          +'<td style="'+td+';text-align:left;width:55%"><div style="height:12px;background:#eef2f8;border-radius:3px"><div style="height:12px;width:'+w+'%;background:'+(isB?'#1d9e75':(x['묶음']==='플레이스·기타'?'#b4b2a9':'#5b8ad6'))+';border-radius:3px"></div></div></td>'
+          +'<td style="'+td+'">'+N(s)+'</td>'
+          +'<td style="'+td+';font-weight:700;color:'+(q?'#2B62C4':'#b0b8c8')+'">'+N(q)+'</td>'
+          +'<td style="'+td+';'+(p==null?'color:#b0b8c8':(isB?'color:#1d8a5a;font-weight:800':(q>=3?'font-weight:700':'color:#b0b8c8')))+'">'+(p==null?'—':p+'%')+'</td></tr>';}).join('');
+      var th='font-size:11px;color:#7a869c;font-weight:500;padding:4px 6px;border-bottom:1px solid #e3e9f4;text-align:right';
+      var right='<div style="flex:1 1 480px;min-width:320px"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr><th style="'+th+';text-align:left">채널</th><th style="'+th+';text-align:left">방문 비중</th><th style="'+th+'">방문</th><th style="'+th+'">문의</th><th style="'+th+'">전환</th></tr>'+rows+'</table>'
+        +'<div style="font-size:11px;color:#98a3b8;margin-top:8px">문의 채널 = 고객이 고른 「알게 된 곳」 · 문의 3건 미만 전환율은 흐리게(판단 보류) · 채널·페이지 상세는 홈페이지 메뉴</div></div>';
+      el.style.color='#1f2a3d';
+      el.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:24px;margin-top:4px">'+left+right+'</div>';
+      el.setAttribute('data-rpd-at',String(Date.now()));
     }
   }catch(e){ try{el.setAttribute('data-rpd-at','0');}catch(_){} }
   _infBusy=false;
 }
+
 window.wsDashSummary=function(){return dashInflow(true);};
 
 /* 3) 문의 목록 — 견적 방치 배지 (표가 다시 그려질 때마다 상태·무접촉일 칸을 읽어 붙인다) */
@@ -11374,7 +11377,7 @@ window.wsSetTab=function(t){
   if(t==='summary')t='page'; if(t==='post')t='channel'; if(t==='conv')t='gsc';
   window.WS_TAB=t;
   hpFix();
-  var TABS=[['page','페이지별'],['channel','채널·글별'],['click','버튼 클릭'],['gsc','구글 검색어']];
+  var TABS=[['page','페이지별'],['channel','들어온 경로'],['click','버튼 클릭'],['gsc','구글 검색어']];
   var el=document.getElementById('ws-tabs');
   if(el)el.innerHTML=TABS.map(function(x){var on=(x[0]===t);
     return '<button type="button" onclick="wsSetTab(\''+x[0]+'\')" style="border:0;background:'+(on?'#4A85F6':'transparent')+';color:'+(on?'#fff':'#5a6478')+';font-weight:'+(on?'800':'600')+';font-size:13px;padding:9px 16px;border-radius:8px 8px 0 0;cursor:pointer">'+x[1]+'</button>';}).join('');
@@ -11384,40 +11387,68 @@ window.wsSetTab=function(t){
 
 var _visTok=0;
 async function rpdVisit(days){
+  /* RP-STATS v2 (2026-10-15 대표 승인 D): 카드 4 · 문의 점 막대 · 페이지별 방문자·문의 · 데이터 점검 — rpc_web_stats_v2 */
   var my=++_visTok;
   var site=((document.getElementById('ws-site')||{}).value)||'ALL';
   var kpi=document.getElementById('ws-kpi'),ab=document.getElementById('ws-ab'),chart=document.getElementById('ws-chart');
   if(!kpi||!SB())return;
-  var r=await SB().rpc('rpc_web_visit_summary',{p_days:days,p_site:site});
+  var r=await SB().rpc('rpc_web_stats_v2',{p_days:days,p_site:site});
   if(my!==_visTok)return;
-  if(r.error||!r.data){kpi.insertAdjacentHTML('beforeend','<div style="grid-column:1/-1;color:#c0392b;font-size:12px">방문 요약을 불러오지 못했습니다('+E(r.error&&r.error.message)+'). 위 숫자는 페이지뷰 기준입니다.</div>');return;}
-  var d=r.data;
-  function tile(k){return '<div style="background:#f7faff;border:1px solid #e3e9f4;border-radius:10px;padding:14px;text-align:center"><div style="font-size:12px;color:#7a869c">'+k[0]+'</div><div style="font-size:22px;font-weight:900;color:#2B62C4">'+k[1]+'</div><div style="font-size:10.5px;color:#a6b0c2;margin-top:2px">'+k[2]+'</div></div>';}
-  kpi.innerHTML=[
-    ['오늘 방문',N(d['오늘']),'사람 세션'],
-    ['최근 '+days+'일',N(d['합계']),'사람 세션 · 일평균 '+d['일평균']],
-    ['모바일 비율',P(d['모바일_pct']),'세션 기준'],
-    ['홈페이지 경유 문의',N(d['홈페이지_문의'])+'건','세션 대비 전환 '+P(d['문의_전환_pct'])]
-  ].map(tile).join('');
-  if(ab){
-    var s2=d['사이트별']||{};
-    ab.innerHTML=(site==='ALL')?('<span style="font-size:12px;color:#7a869c;margin-right:4px">사이트별(사람 세션):</span>'
-      +'<span style="display:inline-block;margin-right:6px;padding:3px 10px;border-radius:999px;background:#eef4ff;color:#2B62C4;font-weight:800;font-size:12px">A 여행·행사 '+N(s2.A||0)+'</span>'
-      +'<span style="display:inline-block;margin-right:6px;padding:3px 10px;border-radius:999px;background:#eefaf2;color:#1e8e4e;font-weight:800;font-size:12px">B 마케팅·교육 '+N(s2.B||0)+'</span>'
-      +((s2['미상']||0)?'<span style="font-size:11.5px;color:#98a3b8">사이트 미상 '+N(s2['미상'])+' (08-31~09-02 서버 로그 복원분)</span>':'')):'';
-  }
+  if(r.error||!r.data){kpi.insertAdjacentHTML('beforeend','<div style="grid-column:1/-1;color:#c0392b;font-size:12px">방문 통계를 불러오지 못했습니다('+E(r.error&&r.error.message)+'). 위 숫자는 페이지뷰 기준입니다.</div>');return;}
+  var d=r.data,V=d['방문']||{},Q=d['문의']||{},K=d['클릭']||{};
+  function md(s){s=String(s||'');return Number(s.slice(5,7))+'/'+Number(s.slice(8,10));}
+  document.querySelectorAll('#view-website span').forEach(function(sp){if(sp.textContent.indexOf('검색봇 제외')>-1&&sp.textContent.indexOf('IP 미저장')>-1){sp.textContent='사람 방문만 (로봇·관리자·사이트 안 이동 제외) · IP 미저장';}});
+  function tile(l,v,u,s,blue){return '<div style="background:#f7faff;border:1px solid #e3e9f4;border-radius:10px;padding:12px 16px"><div style="font-size:12px;color:#56627a">'+l+'</div><div style="font-size:26px;font-weight:800;color:'+(blue?'#2B62C4':'#1f2a3d')+';margin:2px 0">'+v+' <small style="font-size:13px;color:#7a869c;font-weight:500">'+u+'</small></div><div style="font-size:11.5px;color:#7a869c">'+s+'</div></div>';}
+  var w7=V['최근7']||0,p7=V['직전7']||0,dl=p7?Math.round((w7-p7)/p7*100):null;
+  var dls=dl==null?'':' 대비 <b style="color:'+(dl<0?'#c0392b':'#1d8a5a')+'">'+(dl>0?'+':'')+dl+'%</b>';
+  var SA=V['사이트별']||{},QA=Q['사이트별']||{};
+  kpi.innerHTML=tile('사람 방문 (최근 '+days+'일)',N(V['합계']),'명','하루 평균 '+N(V['일평균'])+' · 오늘 '+N(V['오늘']))
+    +tile('최근 7일',N(w7),'명','전주 '+N(p7)+dls)
+    +tile('홈페이지 문의',N(Q['홈페이지']),'건','전환율 '+(d['전환_pct']==null?'—':d['전환_pct']+'%')+(site==='ALL'?' · A '+N(QA.A)+' · B '+N(QA.B):''),true)
+    +tile('모바일 비율',(V['모바일_pct']==null?'—':V['모바일_pct']),'%',(site==='ALL'?'A '+N(SA.A)+'명 · B '+N(SA.B)+'명':(site==='A'?'A 여행·행사':'B 마케팅·교육')));
+  if(ab){ab.innerHTML='';ab.style.display='none';}
   if(chart){
-    var list=d['일별']||[]; var mx=1; list.forEach(function(x){if(x.n>mx)mx=x.n;});
-    var today=kst(new Date()); var L=list.length;
-    var bars=list.map(function(x){var v=x.n||0,isT=(x.d===today),h=v?Math.max(6,Math.round(v/mx*100)):0,col=isT?'#1B4FA8':'#4A85F6';
-      return '<div title="'+x.d+' · '+v+'세션" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:132px">'
-        +'<div style="font-size:9.5px;color:'+(v?'#5a6478':'#cfd6e4')+';font-weight:'+(isT?'800':'600')+';margin-bottom:2px">'+v+'</div>'
-        +(v?'<div style="width:100%;background:'+col+';height:'+h+'px;border-radius:3px 3px 0 0"></div>':'<div style="width:100%;border-top:1px dashed #dbe3f0;height:2px"></div>')+'</div>';}).join('');
-    var ticks=list.map(function(x,i){var show=(i===0)||(i===L-1)||((L-1-i)%7===0);
-      return '<div style="flex:1;text-align:center;font-size:9.5px;color:'+(x.d===today?'#1B4FA8':'#98a3b8')+';font-weight:'+(x.d===today?'800':'400')+'">'+(show?String(x.d).slice(5):'')+'</div>';}).join('');
-    chart.innerHTML='<div style="display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid #e3e9f4">'+bars+'</div>'
-      +'<div style="display:flex;gap:2px;margin-top:3px">'+ticks+'</div>'
-      +'<div style="font-size:10.5px;color:#a6b0c2;margin-top:5px">막대 = 그날 처음 들어온 사람 세션(봇·관리자·사이트 내부 이동 제외) · 짙은 막대 = 오늘 · 8/30 이전은 봇 판정 자료가 없어 참고치</div>';
+    var list=d['일별']||[],mx=1,L=list.length,today=d['기간_끝'],peak=null;
+    list.forEach(function(x){if(x.n>mx)mx=x.n; if(!peak||x.n>peak.n)peak=x;});
+    var bars=list.map(function(x){var v=x.n||0,q=x.q||0,isT=(x.d===today),dow=new Date(x.d+'T00:00:00+09:00').getDay(),wk=(dow===0||dow===6),h=v?Math.max(4,Math.round(v/mx*120)):0;
+      var dots=''; for(var i=0;i<Math.min(q,4);i++)dots+='<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#e8590c;margin:0 1px"></span>';
+      return '<div title="'+x.d+' · 방문 '+v+'명 · 문의 '+q+'건" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:170px;background:'+(wk?'#f6f8fc':'transparent')+'">'
+        +'<div style="height:12px;text-align:center;line-height:8px">'+dots+'</div>'
+        +'<div style="font-size:9.5px;color:#7a869c;text-align:center;font-weight:'+(isT?'800':'500')+'">'+v+'</div>'
+        +(v?'<div style="height:'+h+'px;background:'+(isT?'#1B4FA8':'#5b8ad6')+';border-radius:3px 3px 0 0"></div>':'<div style="border-top:1px dashed #dbe3f0;height:2px"></div>')+'</div>';}).join('');
+    var ticks=list.map(function(x,i){var dow=new Date(x.d+'T00:00:00+09:00').getDay(),isT=(x.d===today),show=(dow===1)||isT;
+      return '<div style="flex:1;text-align:center;font-size:10px;color:'+(isT?'#1B4FA8':'#7a869c')+';font-weight:'+(isT?'800':'400')+'">'+(show?md(x.d):'')+'</div>';}).join('');
+    chart.innerHTML='<div style="display:flex;align-items:flex-end;gap:'+(L>45?1:3)+'px;border-bottom:1px solid #e3e9f4">'+bars+'</div>'
+      +'<div style="display:flex;gap:'+(L>45?1:3)+'px;margin-top:4px">'+ticks+'</div>'
+      +'<div style="font-size:11px;color:#7a869c;margin-top:8px;display:flex;gap:16px;flex-wrap:wrap;align-items:center"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#e8590c"></span> 문의 들어온 날 (1개 = 1건)</span><span><span style="display:inline-block;width:12px;height:10px;background:#f6f8fc;border:1px solid #e3e9f4;vertical-align:-1px"></span> 주말</span><span>날짜 = 매주 월요일</span>'+(peak?'<span>가장 많은 날 '+md(peak.d)+' '+N(peak.n)+'명</span>':'')+'</div>';
+  }
+  var pane=document.querySelector('.ws-pane[data-pane="page"]');
+  if(pane){
+    var PN={'/':'메인','/tour':'국내여행 상품','/tour/school-trip':'수학여행','/tour/group-trip':'단체여행','/tour/workshop':'워크숍','/event':'행사 대행','/event/sports-day':'체육대회','/event/rental':'장비 대여','/event/casting':'섭외','/insight':'자료실 목록','/contact':'문의하기','/works':'실적 게시판','/company':'회사소개','/about':'대표 소개','/story':'현장 후기 목록','/season':'시즌 추천','/marketing/sns':'SNS 마케팅','/marketing/blog':'블로그 마케팅','/marketing/place':'플레이스 마케팅','/marketing/aeo':'AI 검색 노출','/marketing/youtube':'유튜브 마케팅','/marketing':'마케팅 상품'};
+    function pn(p){if(PN[p])return PN[p]; if(p.indexOf('/insight/')===0)return '자료실 · '+p.slice(9); if(p.indexOf('/story/')===0)return '현장 후기 · '+p.slice(7); return p;}
+    var pages=d['페이지']||[],pmx=1; pages.forEach(function(x){if(x['방문자']>pmx)pmx=x['방문자'];});
+    var open=!!pane._rpdAll, show=open?pages:pages.slice(0,10);
+    var td='padding:7px 6px;border-bottom:1px solid #f0f3f9;text-align:right';
+    var rows=show.map(function(x){var s=x['방문자']||0,q=x['문의']||0,p=(s&&q)?Math.round(q/s*1000)/10:null;
+      return '<tr><td style="'+td+';text-align:left;white-space:nowrap"><b>'+E(pn(x['페이지']))+'</b><span style="font-size:10.5px;color:#a6b0c2;margin-left:8px">'+E(x['페이지'])+'</span></td>'
+        +'<td style="'+td+';text-align:left;width:45%"><div style="height:12px;background:#eef2f8;border-radius:3px"><div style="height:12px;width:'+Math.max(2,Math.round(s/pmx*100))+'%;background:#5b8ad6;border-radius:3px"></div></div></td>'
+        +'<td style="'+td+'">'+N(s)+'</td><td style="'+td+';font-weight:700;color:'+(q?'#2B62C4':'#b0b8c8')+'">'+N(q)+'</td>'
+        +'<td style="'+td+';'+(p==null?'color:#b0b8c8':(q>=3?'color:#1d8a5a;font-weight:800':'color:#98a3b8'))+'">'+(p==null?'—':p+'%')+'</td></tr>';}).join('');
+    var th='font-size:11px;color:#7a869c;font-weight:500;padding:4px 6px;border-bottom:1px solid #e3e9f4;text-align:right';
+    var tel=K.tel||0;
+    function rw(a,b,warn){return '<div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:5px 0;border-bottom:1px solid #f0f3f9"><span style="color:#56627a">'+a+'</span><b style="color:'+(warn?'#c0392b':'#1f2a3d')+'">'+b+'</b></div>';}
+    var lastAt=d['마지막_수집']?new Date(d['마지막_수집']).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+    var side='<div style="flex:0 0 300px;display:flex;flex-direction:column;gap:12px">'
+      +'<div style="border:1px solid #e3e9f4;border-radius:10px;padding:12px 14px"><div style="font-size:12.5px;font-weight:800;margin-bottom:6px">데이터 점검</div>'
+      +rw('걸러낸 로봇 방문',N(d['로봇_제외'])+'세션')+rw('문의–방문 기록 연결',N(Q['방문연결'])+' / '+N(Q['홈페이지'])+'건')+rw('마지막 수집',E(lastAt))+rw('전화 버튼 클릭',tel?N(tel)+'회':'0회 · 점검 필요',!tel)+'</div>'
+      +'<div style="border:1px solid #e3e9f4;border-radius:10px;padding:12px 14px"><div style="font-size:12.5px;font-weight:800;margin-bottom:6px">문의 버튼 클릭 (최근 '+days+'일)</div>'
+      +rw('카카오톡',N(K.kakao||0))+rw('견적 요청',N(K.quote||0))+rw('전화',N(tel),!tel)+'</div></div>';
+    pane.innerHTML='<div style="margin-top:14px"><b style="font-size:13.5px">페이지별 — 방문자·문의</b><span style="font-size:11.5px;color:#98a3b8;margin-left:6px">방문자 = 그 페이지를 본 사람 수 · 문의 = 그 페이지를 보고 문의까지 한 사람</span>'
+      +'<div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:8px"><div style="flex:1 1 520px;min-width:0"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr><th style="'+th+';text-align:left">페이지</th><th style="'+th+';text-align:left">방문자 수</th><th style="'+th+'">방문자</th><th style="'+th+'">문의</th><th style="'+th+'">전환</th></tr>'+rows+'</table>'
+      +'<div style="font-size:11px;color:#98a3b8;margin-top:8px">문의 3건 미만 전환율은 흐리게(판단 보류) · 페이지 '+N(d['페이지_종류'])+'종 중 방문자 상위 '+(open?pages.length:Math.min(10,pages.length))+'개'
+      +(pages.length>10?' · <a href="javascript:void(0)" id="rpd-pg-all" style="color:#2B62C4;font-weight:700">'+(open?'접기':'상위 '+pages.length+'개 보기')+'</a>':'')+'</div><div id="ws-page" hidden></div></div>'+side+'</div></div>';
+    var pb=pane.querySelector('b'); if(pb)pb._rpd=1;
+    var al=document.getElementById('rpd-pg-all'); if(al)al.onclick=function(){pane._rpdAll=!pane._rpdAll;rpdVisit(days);};
   }
 }
 

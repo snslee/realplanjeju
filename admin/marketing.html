@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.67.0</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.68.0</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -2997,6 +2997,7 @@ async function openDraftReader(id){
   let imgs=data.이미지프롬프트; if(typeof imgs==='string'){try{imgs=JSON.parse(imgs);}catch(e){imgs=null;}}
   const imgArr=Array.isArray(imgs)?imgs:[];
   window.__dc={nav:nav,tis:tis,pub_url:data.발행_url||'',img:imgArr.map((p,i)=>'이미지 '+(i+1)+' — '+(typeof p==='string'?p:(p.prompt||p.설명||JSON.stringify(p)))).join('\n\n')};
+  var _imgSec=_imgCards(imgArr,id);
   const navLen=nav.replace(/\s/g,'').length,tisLen=tis.replace(/\s/g,'').length;
   const isDraft=data.상태==='draft';
   window.__openDraftId=id;
@@ -3028,7 +3029,7 @@ async function openDraftReader(id){
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;border-bottom:0.5px solid #e2e8f0;padding-bottom:14px">
       ${nav?`<button class="btn-sm btn-copy" onclick="copyDraftPart('nav',this)">📱 네이버 복사</button>`:''}
       ${tis?`<button class="btn-sm btn-copy" onclick="copyDraftPart('tis',this)">💻 티스토리 복사</button>`:''}
-      ${window.__dc.img?`<button class="btn-sm btn-copy" onclick="copyDraftPart('img',this)">🖼 이미지프롬프트</button>`:''}
+      ${window.__dc.img?`<button class="btn-sm btn-copy" onclick="copyDraftPart('img',this)">🖼 이미지프롬프트 전체</button>`:''}
       ${_phR.length?`<button class="btn-sm btn-copy" onclick="var s=document.getElementById('draft-photos-sec');if(s)s.scrollIntoView({behavior:'smooth',block:'center'})">📷 실사진 ${_phR.length}</button>`:''}
       ${_phM.length?`<button class="btn-sm btn-copy" onclick="var s=document.getElementById('draft-made-sec');if(s)s.scrollIntoView({behavior:'smooth',block:'center'})">🗺 제작물 ${_phM.length}</button>`:''}
       ${isDraft?`<button class="btn-sm btn-approve" onclick="approveDraft('${id}')">✅ 승인</button><button class="btn-sm btn-reject" onclick="openReject('${id}')">❌ 반려</button>`:''}
@@ -3036,9 +3037,9 @@ async function openDraftReader(id){
     ${nav?`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-weight:700;color:#1d4ed8;font-size:.92rem">📱 네이버 본문</span><button class="btn-sm btn-copy" onclick="copyDraftPart('nav',this)">📋 본문 전체 복사</button></div><div style="max-height:55vh;overflow-y:auto;padding-right:10px;font-size:.95rem;color:#1e293b">${fmtBody(nav)}</div>`:''}
     ${tis?`<div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 8px"><span style="font-weight:700;color:#7e22ce;font-size:.92rem">💻 티스토리 본문</span><button class="btn-sm btn-copy" onclick="copyDraftPart('tis',this)">📋 본문 전체 복사</button></div><div style="max-height:45vh;overflow-y:auto;padding-right:10px;font-size:.95rem;color:#1e293b">${fmtBody(tis)}</div>`:''}
     ${_phSec}
-    ${window.__dc.img?`<details style="margin-top:20px"><summary style="font-weight:700;color:#0e7490;cursor:pointer;font-size:.92rem">🖼 이미지 프롬프트 (${imgArr.length}장) — 펼쳐보기 · 위 버튼은 클립보드 복사</summary><div style="margin-top:8px;background:#f8fafc;border:0.5px solid #e2e8f0;border-radius:8px;padding:14px;white-space:pre-wrap;font-size:.82rem;line-height:1.55;color:#334155;max-height:55vh;overflow-y:auto">${window.__dc.img.replace(/</g,"&lt;")}</div></details>`:""}
+    ${_imgSec}
   </div>`;
-  secReveal(box);box.scrollIntoView({behavior:'smooth',block:'start'});
+  secReveal(box);_imgProg();box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function openWinningReader(id){
   const box=document.getElementById('winning-reader'); if(!box)return;
@@ -3073,6 +3074,75 @@ async function openWinningReader(id){
 }
 
 
+/* ★2026-10-16 v1.68.0 RP-IMGCP — 초안보관소 이미지 프롬프트 장별 복사(대표 승인).
+   이미지마다 카드 · 「📋 프롬프트 복사」= 그 장 프롬프트 본문만(머리말 제외) · alt 복사 · 넣을 곳(H2) · 비율·크기·텍스트 칩
+   · 복사함 표시·진행 막대는 이 브라우저에만 기억(localStorage · DB 무변경). 상단 「전체」 버튼은 기존 그대로. */
+function _ie(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function _imgNorm(p,i){
+  if(typeof p==='string')return{n:i+1,title:'',chips:[],h2:'',alt:'',prompt:p};
+  p=p||{};var pr=p.prompt||p.설명||'';if(!pr)pr=JSON.stringify(p);
+  var hd=String(p.header||'').trim().replace(/^\[|\]$/g,'');var parts=hd?hd.split(/\s*·\s*/):[];
+  var first=parts.shift()||'';var title=first.replace(/^이미지\s*\d+\s*[—-]\s*/,'').trim();
+  return{n:p.n||i+1,title:title,chips:parts.filter(function(c){return c;}),h2:p.h2||'',alt:p.alt||'',prompt:pr};
+}
+function _imgKey(id){return 'rp_imgcp_'+id;}
+function _imgDoneGet(id){try{var v=JSON.parse(localStorage.getItem(_imgKey(id))||'[]');return Array.isArray(v)?v:[];}catch(e){return[];}}
+function _imgDoneSet(id,arr){try{localStorage.setItem(_imgKey(id),JSON.stringify(arr));}catch(e){}}
+function _imgCards(arr,id){
+  if(!arr||!arr.length)return '';
+  var items=arr.map(_imgNorm);window.__dcImgs=items;window.__dcImgId=id;
+  var done=_imgDoneGet(id);
+  var css='<style>.ipc-wrap{margin-top:20px}.ipc-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}.ipc-card{border:1px solid #e2e8f0;background:#fff;border-radius:10px;padding:12px 14px}.ipc-card.done{border-color:#86efac;background:#f0fdf4}.ipc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.ipc-no{background:#0e7490;color:#fff;font-weight:800;border-radius:6px;padding:3px 9px;font-size:13px}.ipc-ttl{font-weight:700;font-size:14px;color:#1e293b}.ipc-chip{font-size:12px;padding:2px 7px;border-radius:5px;background:#f1f5f9;color:#475569}.ipc-chip.sz{background:#e0f2fe;color:#075985}.ipc-chip.tx{background:#fef3c7;color:#92400e}.ipc-btns{margin-left:auto;display:flex;gap:6px}.ipc-cp{background:#0e7490!important;border-color:#0e7490!important;color:#fff!important;font-weight:700}.ipc-card.done .ipc-cp{background:#dcfce7!important;border-color:#86efac!important;color:#166534!important}.ipc-meta{font-size:13px;color:#475569;margin-top:6px;line-height:1.5}.ipc-meta b{color:#1e293b}.ipc-pr{margin-top:7px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:8px 10px;font-size:12px;color:#334155;line-height:1.55;word-break:break-word;cursor:pointer}.ipc-tx{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.ipc-pr.open .ipc-tx{display:block;white-space:pre-wrap;overflow:visible}.ipc-more{font-size:12px;color:#0e7490;font-weight:700;cursor:pointer;margin-top:4px;display:inline-block}.ipc-bar{height:6px;background:#e2e8f0;border-radius:3px;margin-bottom:12px}.ipc-bar>i{display:block;height:6px;background:#22c55e;border-radius:3px}@media(max-width:640px){.ipc-btns{margin-left:0;width:100%}.ipc-btns .btn-sm{flex:1}}</style>';
+  var cards=items.map(function(it,i){
+    var isDone=done.indexOf(i)>=0;
+    var chips=it.chips.map(function(c){var cls=(/[:：]\s*\d|\d+\s*[×x]\s*\d/.test(c))?'sz':((/텍스트|브랜드\s*노출/.test(c)&&!/없음/.test(c))?'tx':'');return '<span class="ipc-chip '+cls+'">'+_ie(c)+'</span>';}).join('');
+    return '<div class="ipc-card'+(isDone?' done':'')+'" id="ipc-'+i+'">'
+      +'<div class="ipc-top"><span class="ipc-no">이미지 '+_ie(it.n)+'</span>'+(it.title?'<span class="ipc-ttl">'+_ie(it.title)+'</span>':'')+chips
+      +'<span class="ipc-btns">'+(it.alt?'<button class="btn-sm btn-copy" onclick="copyImgAlt('+i+',this)">🏷 alt 복사</button>':'')
+      +'<button class="btn-sm btn-copy ipc-cp" onclick="copyImgPrompt('+i+',this)">'+(isDone?'✅ 복사함 · 다시':'📋 프롬프트 복사')+'</button></span></div>'
+      +(it.h2?'<div class="ipc-meta">📍 넣을 곳: <b>'+_ie(it.h2)+'</b></div>':'')
+      +(it.alt?'<div class="ipc-meta">🏷 alt: '+_ie(it.alt)+'</div>':'')
+      +'<div class="ipc-pr" onclick="_imgMore('+i+')"><div class="ipc-tx">'+_ie(it.prompt)+'</div></div>'
+      +'<span class="ipc-more" onclick="_imgMore('+i+')">▸ 전체 보기 ('+it.prompt.length.toLocaleString()+'자)</span></div>';
+  }).join('');
+  return css+'<details class="ipc-wrap" open><summary style="font-weight:700;color:#0e7490;cursor:pointer;font-size:15px">🖼 이미지 프롬프트 ('+items.length+'장)</summary>'
+    +'<div class="ipc-head" style="margin-top:8px"><span style="font-size:12px;color:#475569">이미지마다 「📋 프롬프트 복사」 = 그 장 프롬프트 전문만 복사 (머리말 제외)</span>'
+    +'<span id="ipc-prog" style="margin-left:auto;font-size:13px;font-weight:700;color:#166534"></span>'
+    +'<button class="btn-sm btn-copy" onclick="_imgDoneClear()">↺ 표시 지우기</button></div>'
+    +'<div class="ipc-bar"><i id="ipc-bar" style="width:0"></i></div>'
+    +'<div style="display:grid;gap:10px">'+cards+'</div></details>';
+}
+function _imgProg(){
+  var items=window.__dcImgs||[],d=_imgDoneGet(window.__dcImgId).filter(function(i){return i<items.length;});
+  var p=document.getElementById('ipc-prog'),b=document.getElementById('ipc-bar');
+  if(p)p.textContent='진행 '+d.length+' / '+items.length+' 복사함';
+  if(b)b.style.width=(items.length?Math.round(d.length*100/items.length):0)+'%';
+}
+function _imgMore(i){
+  var c=document.getElementById('ipc-'+i);if(!c)return;var pr=c.querySelector('.ipc-pr'),m=c.querySelector('.ipc-more');
+  var open=pr.classList.toggle('open');var it=(window.__dcImgs||[])[i];
+  if(m&&it)m.textContent=(open?'▾ 접기':'▸ 전체 보기 ('+it.prompt.length.toLocaleString()+'자)');
+}
+function _imgCopyText(t,cb){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(cb).catch(function(){fallbackCopy(t,cb);});}else fallbackCopy(t,cb);}
+function copyImgPrompt(i,btn){
+  var it=(window.__dcImgs||[])[i];if(!it||!it.prompt){showToast('복사할 프롬프트가 없습니다');return;}
+  var t=it.prompt;
+  _imgCopyText(t,function(){
+    var id=window.__dcImgId,d=_imgDoneGet(id);if(d.indexOf(i)<0){d.push(i);_imgDoneSet(id,d);}
+    var c=document.getElementById('ipc-'+i);if(c)c.classList.add('done');
+    if(btn){btn.textContent='✅ 복사됨! ('+t.length.toLocaleString()+'자)';setTimeout(function(){btn.textContent='✅ 복사함 · 다시';},1500);}
+    showToast('이미지 '+it.n+' 프롬프트 복사 ('+t.length.toLocaleString()+'자)');_imgProg();
+  });
+}
+function copyImgAlt(i,btn){
+  var it=(window.__dcImgs||[])[i];if(!it||!it.alt){showToast('alt 문장이 없습니다');return;}
+  _imgCopyText(it.alt,function(){if(btn){var o=btn.textContent;btn.textContent='✅ 복사됨!';setTimeout(function(){btn.textContent=o;},1500);}showToast('이미지 '+it.n+' alt 복사');});
+}
+function _imgDoneClear(){
+  _imgDoneSet(window.__dcImgId,[]);
+  document.querySelectorAll('.ipc-card.done').forEach(function(c){c.classList.remove('done');var b=c.querySelector('.ipc-cp');if(b)b.textContent='📋 프롬프트 복사';});
+  _imgProg();showToast('복사 표시를 지웠습니다');
+}
 async function copyDraftPart(k,btn){
   const t=(window.__dc||{})[k]||'';
   if(!t){showToast('복사할 내용이 없습니다');return;}
@@ -5291,7 +5361,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.67.0';
+var VER='v1.68.0';
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}

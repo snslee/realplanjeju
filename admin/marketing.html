@@ -6689,7 +6689,85 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   if(typeof _rl==='function'){
     window.renderYtList=function(){if(S.plan){renderPlan();return;}var r=_rl.apply(this,arguments);try{addUsed();rfApply();addMonth();addVis();}catch(e){}return r;};
   }
-  window.__rpYtTravel='v1.42.0';
+  /* ══ v1.43.0 (2026-10-20 회사 총괄 시스템 방 · 대표 승인) 시청시간·구독 · 채널 컨셉 ══
+     정본 = mk_youtube_channel_rules 12-1~12-8 · 11-6 · 편 = mk_youtube_slots.편태그.답사시리즈 · 값이 없으면 「—」(숫자를 만들지 않는다)
+     롤백 = 이 블록 · conceptBox/wsBox 호출 2줄 · tbl 함수 · 측정 조회 「,평균시청시간_초」 · VER 를 v1.68.1 로 */
+  var T_RED=['#fef2f2','#b91c1c','#fecaca'],T_GRY=['#f1f5f9','#475569','#e2e8f0'],T_ORG=['#fff7ed','#b45309','#fdba74'],T_GRN=['#f0fdf4','#166534','#bbf7d0'];
+  var ST_INTRO=60,ST_DUR=40; /* 막힌 단계 기준 = 내부 목표(C) · DB 12-1·12-3 · 기준선 4편 뒤 다시 정함 */
+  function rulOf(j){var r=trv().filter(function(z){return z['절번호']===j&&z['상태']!=='폐기';})[0];return r?String(r['내용']||''):'';}
+  function lastAny(id){var M=S.more,met=M&&ok(M.met)?M.met:[],b=null;met.forEach(function(x){if(x['슬롯id']!==id)return;if(!b||String(x['수집_시각']||'')>String(b['수집_시각']||''))b=x;});return b;}
+  function stageChip(w){
+    if(!w)return cc(T_GRY,'측정 없음');
+    var it=w['첫30초유지_pct'],du=w['평균시청지속률_pct'];
+    if(w['노출클릭률_pct']==null&&(it==null||du==null))return cc(T_GRY,'확인 불가');
+    if((it!=null&&+it<ST_INTRO)||(du!=null&&+du<ST_DUR))return cc(T_RED,'② 시청');
+    if(!(+w['구독증가']>0))return cc(T_ORG,'③ 구독');
+    return cc(T_GRN,'④ 문의 확인');
+  }
+  function conceptBox(live){
+    var t=rulOf('12-4');if(!t)return '';
+    var m=t.match(/채널 한 문장 = 「(.+?)」 · 시리즈/),one=m?m[1]:'';
+    var ser=[],re=/[①②③](먼저 걸어본 [^(\s]+)\(([^)]*)\)/g,x;while((x=re.exec(t)))ser.push([x[1],x[2]]);
+    var SL=ok(S.slots)?S.slots.filter(function(s){return (s['영상형식']||'롱폼')==='롱폼';}):[];
+    function tagOf(s){var g=s['편태그'];return g&&typeof g==='object'?String(g['답사시리즈']||''):'';}
+    var none=SL.filter(function(s){return !tagOf(s)&&/^R\d+$/.test(String(s['슬롯번호']||''))&&s['상태']!=='보류';}).length;
+    var cards=ser.map(function(p){var mine=SL.filter(function(s){return tagOf(s)===p[0];}).sort(function(a,b){return String(a['슬롯번호']).localeCompare(String(b['슬롯번호']));});
+      var pub=mine.filter(function(s){return vid(s['영상url']);}),pre=mine.filter(function(s){return !vid(s['영상url'])&&s['상태']!=='보류';});
+      var nums=function(a){return a.map(function(s){return s['슬롯번호'];}).join('·');};
+      return '<div style="background:#fff;border:1px solid #bfdbfe;border-radius:10px;padding:10px"><b style="font-size:.86rem">'+E(p[0])+'</b><div style="font-size:.74rem;color:#334155;margin:3px 0">'+E(p[1])+'</div>'
+        +'<div style="font-size:.74rem"><b>공개 '+pub.length+'편'+(pub.length?' · '+E(nums(pub)):'')+'</b>'+(pre.length?' · 준비 '+pre.length+'편('+E(nums(pre))+')':'')+'</div>'
+        +'<div style="margin-top:4px">'+(pub.length?cc(T_ORG,'공식 시리즈 지정 대기'):cc(T_GRY,'재생목록 없음'))+'</div></div>';}).join('');
+    var rs=trv().filter(function(z){return /^12-\d+$/.test(String(z['절번호']||''))&&z['상태']!=='폐기';}).sort(function(a,b){return (+String(a['절번호']).split('-')[1])-(+String(b['절번호']).split('-')[1]);});
+    var rc=rs.map(function(z){var c=z['층']==='틀'?T_GRY:z['층']==='채택'?T_GRN:T_ORG;return '<a href="javascript:void(0)" onclick="trv2Go(\''+E(z['절번호'])+'\')" style="text-decoration:none">'+cc(c,z['절번호']+' '+String(z['항목']||'').split(/ — |\(/)[0].trim().slice(0,20)+' · '+(z['층']||'—'))+'</a>';}).join('');
+    var ban=[['12-6','유튜브 판매 없음'],['12-5','「먼저 걸어본」 = 실제 방문 편만'],['1-6','링크 = 물어본 분께 답글로만']].filter(function(q){return rulOf(q[0]);}).map(function(q){return cc(T_RED,q[1]+' ('+q[0]+')');}).join('');
+    return '<div style="background:#f8fbff;border:1px solid #bfdbfe;border-radius:12px;padding:12px;margin:0 0 12px">'
+      +'<div style="font-size:.7rem;color:#64748b;margin-bottom:4px">채널 컨셉 · 시청·구독 <span style="color:#94a3b8">· DB 12장 · 편 = 편태그.답사시리즈</span></div>'
+      +(one?'<div style="font-size:.9rem;font-weight:800;color:#1e3a8a;margin-bottom:8px">「'+E(one)+'」</div>':'')
+      +(cards?'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-bottom:8px">'+cards+'</div>':'')
+      +(none?'<div style="font-size:.7rem;color:#b45309;margin-bottom:6px">답사 시리즈 표시가 없는 R편 '+none+'편 — P1 기획 때 편태그.답사시리즈를 넣는다(DB 12-4)</div>':'')
+      +(ban?'<div style="font-size:.74rem;margin-bottom:6px"><b>금지선</b> '+ban+'</div>':'')
+      +(rc?'<div style="font-size:.74rem;line-height:2"><b>12장 조항 '+rs.length+'개</b> <span style="color:#64748b">— 누르면 아래 해당 조항으로 이동</span> · '+rc+'</div>':'')
+      +'</div>';
+  }
+  function wsBox(sl,met){
+    if(!met||!met.length)return '';
+    var L=sl.filter(function(s){return vid(s['영상url']);}),H=0,hn=0,first=null,iv=[],dv=[],ctr=0,home=0,bad=0,V=0,SU=0;
+    L.forEach(function(s){var w=lastAny(s.id);if(s['발행일']&&(!first||s['발행일']<first))first=s['발행일'];if(!w)return;
+      var v=+w['조회수']||0;V+=v;SU+=+w['구독증가']||0;
+      if(w['평균시청시간_초']!=null){H+=v*(+w['평균시청시간_초'])/3600;hn++;}
+      if(w['노출클릭률_pct']!=null)ctr++;if(w['홈A방문']!=null)home++;
+      var it=w['첫30초유지_pct'],du=w['평균시청지속률_pct'];if(it!=null)iv.push(+it);if(du!=null)dv.push(+du);
+      if((it!=null&&+it<ST_INTRO)||(du!=null&&+du<ST_DUR))bad++;});
+    var t=rulOf('11-6'),m1=t.match(/(\d{4}-\d{2}-\d{2})까지 롱폼 공개 시청 ([\d,]+)시간/),goalD=m1?m1[1]:null,goal=m1?+m1[2].replace(/,/g,''):null;
+    var m2=t.match(/구독 1,000은 충족\((\d{4}-\d{2}-\d{2}) 조회 ([\d,]+)/);
+    var t2=rulOf('12-2'),m3=t2.match(/(\d{4}-\d{2}-\d{2})부터 새로 신청하는 채널은 ([\d,]+)시간/);
+    var now=new Date(today()+'T00:00:00Z'),wk=first?Math.max(1,(now-new Date(String(first).slice(0,10)+'T00:00:00Z'))/6048e5):null;
+    var left=goalD?Math.max(0,(new Date(goalD+'T00:00:00Z')-now)/6048e5):null,pace=wk&&hn?H/wk:null,need=goal&&left?(goal-H)/left:null;
+    var pct=goal&&hn?H/goal*100:null;
+    function q(a,b,c,st){return '<div class="trv2-q"'+(st?' style="'+st+'"':'')+'><b>'+a+'</b>'+b+(c?'<br><span style="color:#64748b">'+c+'</span>':'')+'</div>';}
+    var h='<div style="background:#f8fbff;border:1px solid #bfdbfe;border-radius:12px;padding:12px;margin:0 0 12px">'
+      +'<div style="font-size:.7rem;color:#64748b;margin-bottom:4px">수익창출 진행 <span style="color:#94a3b8">· DB 12-2 · 11-6</span></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:.8rem"><b>롱폼 공개 시청시간 (R편 합)</b><b>'+(hn?H.toFixed(1)+'시간':'—')+(goal?' / '+N(goal)+'시간':'')+(pct!=null?' · '+pct.toFixed(1)+'%':'')+'</b></div>'
+      +'<div class="trv2-bar" style="height:14px"><i style="width:'+(pct!=null?Math.max(1.2,Math.min(100,pct)).toFixed(1):0)+'%;background:#2563eb"></i></div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;font-size:.76rem">'
+      +q('지금 속도',pace!=null?'주당 약 '+Math.round(pace)+'시간':'—',first?md(first)+'~ · '+wk.toFixed(1)+'주':'')
+      +q((goalD?md(goalD):'목표일')+'까지 필요',need!=null?'주당 약 '+Math.round(need)+'시간':'—',left!=null?'남은 '+left.toFixed(1)+'주':'')
+      +q('구독 1,000',m2?cc(T_GRN,'충족 · '+m2[2]):'—',m2?md(m2[1])+' 조회':'')
+      +(m3?q(m3[1]+'부터','새로 신청하면 '+m3[2]+'시간','YouTube 공식 블로그 2026-08-10'):'')
+      +'</div><div style="font-size:.7rem;color:#64748b;margin-top:6px">채널 전체 최근 12개월 값은 스튜디오에서만 보입니다(옛 영상 포함) · 자동 수집은 연결 전 · 목표일 판단은 DB 11-6(대표 결정)</div></div>';
+    var n=L.length,rng=function(a){return a.length?Math.round(Math.min.apply(null,a))+'~'+Math.round(Math.max.apply(null,a))+'%':'—';};
+    var blk=bad?'시청':'';
+    h+='<div style="background:#fff;border:1px solid #bfdbfe;border-radius:12px;padding:12px;margin:0 0 12px">'
+      +'<div style="font-size:.7rem;color:#64748b;margin-bottom:4px">판정 4단계 순서 <span style="color:#94a3b8">· DB 12-1 · 앞이 막히면 뒤는 고치지 않는다</span></div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;font-size:.76rem">'
+      +q('① 클릭',ctr?cc(T_GRN,ctr+'/'+n+'편 측정'):cc(T_GRY,'확인 불가'),ctr?'':'노출 클릭률 '+n+'/'+n+'편 비어 있음 · 수집 연결 전')
+      +q('② 시청'+(blk?' ← 지금 막힌 곳':''),bad?cc(T_RED,bad+'/'+n+'편 미달'):(iv.length?cc(T_GRN,'기준 통과'):cc(T_GRY,'측정 없음')),'인트로 '+rng(iv)+' · 지속률 '+rng(dv)+' · 기준 '+ST_INTRO+'% · '+ST_DUR+'%(내부 C)',blk?'border-color:#fecaca;background:#fef2f2':'')
+      +q('③ 구독·재방문',V?'롱폼 전환 '+(SU/V*100).toFixed(2)+'%':'—','내부 목표 0.5%(C · DB 12-3)')
+      +q('④ 문의',home?cc(T_GRN,home+'/'+n+'편 측정'):cc(T_GRY,'확인 불가'),home?'':'홈A 방문·문의 클릭 비어 있음')
+      +'</div></div>';
+    return h;
+  }
+  window.__rpYtTravel='v1.43.0'; /* 이전 v1.42.0 */
 })();
 </script>
 <!-- RP-YT-TRAVEL end -->

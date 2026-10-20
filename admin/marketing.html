@@ -6703,7 +6703,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   }
   /* ══ v1.43.0 (2026-10-20 회사 총괄 시스템 방 · 대표 승인) 시청시간·구독 · 채널 컨셉 ══
      정본 = mk_youtube_channel_rules 12-1~12-8 · 11-6 · 편 = mk_youtube_slots.편태그.답사시리즈 · 값이 없으면 「—」(숫자를 만들지 않는다)
-     롤백 = 이 블록 · conceptBox/wsBox 호출 2줄 · tbl 함수 · 측정 조회 「,평균시청시간_초」 · VER 를 v1.68.1 로 */
+     롤백 = 이 블록 · conceptBox/wsBox 호출 2줄 · tbl 함수 · 측정 조회 「,평균시청시간_초」 · VER 를 v1.68.1 로
+     되돌리기 묶음 = D:\리얼플랜\04_시스템\배포\20261020_유튜브운영탭_시청구독\ (patches·rollback json) · 배포 전 원본 = 04_시스템\화면\_백업\20261020_유튜브운영탭_시청구독\marketing.html */
   var T_RED=['#fef2f2','#b91c1c','#fecaca'],T_GRY=['#f1f5f9','#475569','#e2e8f0'],T_ORG=['#fff7ed','#b45309','#fdba74'],T_GRN=['#f0fdf4','#166534','#bbf7d0'];
   var ST_INTRO=60,ST_DUR=40; /* 막힌 단계 기준 = 내부 목표(C) · DB 12-1·12-3 · 기준선 4편 뒤 다시 정함 */
   function rulOf(j){var r=trv().filter(function(z){return z['절번호']===j&&z['상태']!=='폐기';})[0];return r?String(r['내용']||''):'';}

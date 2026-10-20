@@ -6507,7 +6507,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     function bar(l,n,t){var p=Math.min(100,Math.round(n/t*100));return '<div style="font-size:.74rem;display:flex;justify-content:space-between"><span>'+l+'</span><b>'+n+' / '+t+'</b></div><div class="trv2-bar"><i style="width:'+p+'%"></i></div>';}
     var q={A:[],B:[],C:[],D:[]};judged.forEach(function(s){if(q[s['판정']])q[s['판정']].push(s['슬롯번호']);});
     function qc(k,sub){return '<div class="trv2-q"><b>'+k+' '+QD[k]+'</b><span style="color:#64748b">'+sub+'</span><div>'+q[k].map(function(n){return '<span class="trv-chip" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;margin:2px 2px 0 0">'+E(n)+'</span>';}).join('')+'</div></div>';}
-    var h='<div class="trv2-two"><div><h4 class="trv2-h">4칸 판정 (롱폼) '+(bn<4?cc(['#f1f5f9','#475569','#e2e8f0'],'기준선 대기 '+bn+'/4편'):cc(['#f0fdf4','#166534','#bbf7d0'],'기준선 확정'))+'</h4>'
+    var h=wsBox(sl,met); /* v1.43.0 수익창출 진행 · 판정 4단계 (DB 12-1·12-2 · 2026-10-20) */
+    h+='<div class="trv2-two"><div><h4 class="trv2-h">4칸 판정 (롱폼) '+(bn<4?cc(['#f1f5f9','#475569','#e2e8f0'],'기준선 대기 '+bn+'/4편'):cc(['#f0fdf4','#166534','#bbf7d0'],'기준선 확정'))+'</h4>'
       +'<div class="trv2-quad">'+qc('A','조회↑ 문의↑')+qc('B','조회↑ 문의↓')+qc('C','조회↓ 문의↑')+qc('D','조회↓ 문의↓')+'</div>'
       +'<div style="font-size:.7rem;color:#64748b">첫 4편은 기록만 → 4번째 편 28일 값으로 기준선 확정(6-5) · 판정은 기준선 대비(6-6)</div></div>'
       +'<div><h4 class="trv2-h">L1 → L2 조건</h4>'+bar('발행 편(롱폼)',pub,12)+bar('판정 편',judged.length,8)+bar('검증 장점',ver,5)

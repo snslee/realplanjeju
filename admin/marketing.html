@@ -6430,7 +6430,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     S.moreBusy=true;var M={};
     try{
       var ids=S.slots.map(function(s){return s.id;});
-      var rm=ids.length?await sb.from('mk_youtube_metrics').select('슬롯id,측정시점,영상형식,영상id,수집_시각,노출수,노출클릭률_pct,조회수,평균시청지속률_pct,첫30초유지_pct,구독증가,공유,홈A방문,자료실체류_초,문의버튼클릭,문의수,단체댓글').in('슬롯id',ids).limit(2000):{data:[]};
+      var rm=ids.length?await sb.from('mk_youtube_metrics').select('슬롯id,측정시점,영상형식,영상id,수집_시각,노출수,노출클릭률_pct,조회수,평균시청지속률_pct,첫30초유지_pct,구독증가,공유,홈A방문,자료실체류_초,문의버튼클릭,문의수,단체댓글,평균시청시간_초').in('슬롯id',ids).limit(2000):{data:[]};
       var rg=ids.length?await sb.from('mk_youtube_segments').select('슬롯id,영상형식,순번,시작_초,끝_초,구간종류,장소,내용,주요순간,유지율_시작,유지율_끝').in('슬롯id',ids).order('순번',{ascending:true}).limit(3000):{data:[]};
       var rk=ids.length?await sb.from('mk_youtube_bench_picks').select('슬롯id,영상id,뽑은이유,가져온장점').in('슬롯id',ids).limit(1000):{data:[]};
       var rb=await sb.from('mk_youtube_benchmarks').select('채널id,채널명,핸들,층,구독자,상태,등재일,비고').eq('트랙',CH).order('구독자',{ascending:false}).limit(500);

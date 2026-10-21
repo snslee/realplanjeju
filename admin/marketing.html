@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.68.1</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.70.0</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -5361,7 +5361,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.69.0'; /* v1.69.0 · 2026-10-20 유튜브 운영 › 리얼플랜여행 ①기준판 채널 컨셉·시리즈 칸 + ④성과·판정 수익창출·판정 4단계·시청시간·구독 전환 (회사 총괄 시스템 방 · 대표 승인 22:35) */
+var VER='v1.70.0'; /* v1.70.0 · 2026-10-21 SNS 운영 ⑤ 성장판(팔로워 추이·게시물 순위·접속 시간·다음 주 근거 · rpc_sns_growth_board · P5-B · 대표 승인 11:27) · 이전: v1.69.0 · 2026-10-20 유튜브 운영 › 리얼플랜여행 ①기준판 채널 컨셉·시리즈 칸 + ④성과·판정 수익창출·판정 4단계·시청시간·구독 전환 (회사 총괄 시스템 방 · 대표 승인 22:35) */
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -7685,6 +7685,135 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 <!-- RP-SNS-LEDGER end -->
+<!-- RP-SNS-GROWTH start · v1.0 · 2026-10-21 SNS 운영 ⑤ 성장판 — 계정 성장(4플랫폼×2계정 팔로워 추이) · 게시물 순위(도달·저장·공유·계정 중앙값 배수) · 팔로워 접속 시간 · 다음 주 근거 (P5-B · 대표 「이방과 관련된 것은 시스템 직접 진행 · 권장 진행」 11:27) -->
+<script>
+/* 원천 = rpc_sns_growth_board(읽기 전용 · mk_channel_stats_daily · mk_sns_metrics_snap · mk_sns_sets · mk_sns_online_hours · mk_sns_post_time_rule). DB 쓰기 0.
+   수집 = API(인스타·쓰레드·페북 매일) + 크롬 공개화면(틱톡 화~토) · 안 잰 값은 「-」 · 표본 5건 미만은 「판정 보류」.
+   롤백 = 이 블록(RP-SNS-GROWTH start~end) 제거 + VER/제목 v1.69.0. */
+(function(){
+'use strict';
+if(window.__rpSnsGrowth)return; window.__rpSnsGrowth='v1.0';
+var S={data:null,busy:false,acct:'전체',days:28};
+var KIND={info:'정보',case:'실사례',poster:'포스터',reel:'릴스'};
+var PL_ORDER=['인스타','페북','쓰레드','틱톡'];
+function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function $(id){return document.getElementById(id);}
+function num(v){return v==null?'<span style="color:#cbd5e1">-</span>':Number(v).toLocaleString('ko-KR');}
+function pct(v){return v==null?'<span style="color:#cbd5e1">-</span>':Number(v).toFixed(2)+'%';}
+function md(s){if(!s)return '';var d=new Date(s+'T00:00:00Z');return (d.getUTCMonth()+1)+'/'+d.getUTCDate();}
+function delta(v){if(v==null)return '<span style="color:#94a3b8">기록 쌓는 중</span>';var c=v>0?'#16a34a':v<0?'#dc2626':'#64748b';return '<span style="color:'+c+';font-weight:700">'+(v>0?'+':'')+Number(v).toLocaleString('ko-KR')+'</span>';}
+var chip='padding:4px 11px;border-radius:999px;font-size:.74rem;cursor:pointer;border:1px solid ';
+function cbtn(on,attr,label){return '<button '+attr+' style="'+chip+(on?'#0f172a;background:#0f172a;color:#fff':'#cbd5e1;background:#fff;color:#334155')+'">'+E(label)+'</button>';}
+function acctBadge(a){var ceo=a==='대표';return '<span style="font-size:.7rem;font-weight:700;padding:1px 6px;border-radius:6px;white-space:nowrap;'+(ceo?'background:#fef3c7;color:#92400e">대표':'background:#dbeafe;color:#1e40af">회사')+'</span>';}
+function spark(pts){
+  if(!pts||pts.length<2)return '';
+  var v=pts.map(function(p){return +p.f;}),mn=Math.min.apply(null,v),mx=Math.max.apply(null,v),w=120,h=28,rg=(mx-mn)||1;
+  var d=v.map(function(x,i){return (i?'L':'M')+(i*(w/(v.length-1))).toFixed(1)+','+(h-2-(x-mn)/rg*(h-4)).toFixed(1);}).join(' ');
+  var c=v[v.length-1]>=v[0]?'#16a34a':'#dc2626';
+  return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" style="display:block;margin-top:4px" aria-hidden="true"><path d="'+d+'" fill="none" stroke="'+c+'" stroke-width="1.5"/></svg>';
+}
+function box(){
+  var p=$('tsns');if(!p)return null;
+  var b=$('sns-growth');
+  if(!b){
+    var h=document.createElement('h3');h.id='sns-growth-h';h.style.cssText='font-size:1rem;font-weight:700;margin:22px 0 8px';
+    h.innerHTML='⑤ 성장판 <span style="color:#94a3b8;font-weight:400;font-size:.78rem">팔로워 추이 · 잘된 게시물 · 접속 시간 · 다음 주 근거 · 인스타·페북·쓰레드 = API 매일 · 틱톡 = 크롬 공개화면 화~토</span>';
+    b=document.createElement('div');b.id='sns-growth';b.style.marginBottom='22px';
+    p.appendChild(h);p.appendChild(b);
+  }
+  return b;
+}
+function secAccounts(d){
+  var rows=(d.accounts||[]).filter(function(a){return S.acct==='전체'||a.계정===S.acct;});
+  rows.sort(function(a,b){return a.계정===b.계정?PL_ORDER.indexOf(a.플랫폼)-PL_ORDER.indexOf(b.플랫폼):(a.계정==='회사'?-1:1);});
+  var cards=rows.map(function(a){
+    return '<div style="flex:1 1 170px;min-width:0;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px">'
+      +'<div style="font-size:.76rem;color:#64748b;display:flex;gap:6px;align-items:center">'+acctBadge(a.계정)+E(a.플랫폼)+'</div>'
+      +'<div style="font-size:1.25rem;font-weight:700;margin-top:2px">'+num(a.팔로워)+'</div>'
+      +'<div style="font-size:.74rem;color:#475569">7일 '+delta(a['7일'])+' · '+(a['21일']!=null?'21일 '+delta(a['21일']):E(md(a.처음일))+' 대비 '+(a.기록수>1?delta(a.팔로워-a.처음):delta(null)))+'</div>'
+      +spark(a.추이)
+      +'<div style="font-size:.66rem;color:#94a3b8;margin-top:2px">'+E(md(a.처음일))+'~'+E(md(a.기준일))+' · '+E(a.기록수)+'회 · '+E(a.출처)+'</div></div>';
+  }).join('');
+  return '<div style="font-weight:700;font-size:.88rem;margin:4px 0 8px">1. 계정 성장</div><div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">'+(cards||'<p style="color:#94a3b8;font-size:.82rem">기록이 없습니다.</p>')+'</div>';
+}
+function secTop(d){
+  var med={};(d.medians||[]).forEach(function(m){med[m.계정+'|'+m.플랫폼]=m;});
+  var groups={};(d.top||[]).forEach(function(t){if(S.acct!=='전체'&&t.계정!==S.acct)return;var k=t.계정+'|'+t.플랫폼;(groups[k]=groups[k]||[]).push(t);});
+  var keys=Object.keys(groups).sort(function(a,b){var A=a.split('|'),B=b.split('|');return A[0]===B[0]?PL_ORDER.indexOf(A[1])-PL_ORDER.indexOf(B[1]):(A[0]==='회사'?-1:1);});
+  var h=keys.map(function(k){
+    var m=med[k]||{},A=k.split('|');
+    var head='<div style="padding:8px 10px;background:#f8fafc;font-size:.78rem;display:flex;flex-wrap:wrap;gap:10px;align-items:center">'+acctBadge(A[0])+'<b>'+E(A[1])+'</b>'
+      +'<span style="color:#64748b">'+E(m.건수)+'건 · 도달 중앙값 '+num(m.도달중앙값)+' · 저장률 '+pct(m.저장률)+' · 공유률 '+pct(m.공유률)+'</span>'
+      +(m.판정?'<span style="color:#b45309;font-weight:700">'+E(m.판정)+'</span>':'')+'</div>';
+    var tr=groups[k].map(function(t){
+      var hot=t.배수!=null&&t.배수>=3;
+      return '<tr style="border-top:1px solid #e2e8f0">'
+        +'<td style="padding:6px 8px;white-space:nowrap">'+E(md(t.게시일))+'</td>'
+        +'<td style="padding:6px 8px;white-space:nowrap;font-size:.74rem;color:#64748b">'+E(KIND[t.종류]||t.종류||'')+'</td>'
+        +'<td style="padding:6px 8px;min-width:180px">'+E(t.제목||'(제목 없음)')+'</td>'
+        +'<td style="padding:6px 8px;text-align:right;font-weight:700">'+num(t.도달)+'</td>'
+        +'<td style="padding:6px 8px;text-align:right">'+(t.배수==null?'-':'<span style="'+(hot?'color:#16a34a;font-weight:700':'color:#475569')+'">'+t.배수+'배</span>')+'</td>'
+        +'<td style="padding:6px 8px;text-align:right">'+num(t.저장)+'</td>'
+        +'<td style="padding:6px 8px;text-align:right">'+num(t.공유)+'</td>'
+        +'<td style="padding:6px 8px;text-align:right">'+num(t.프로필)+'</td></tr>';
+    }).join('');
+    return '<div style="margin-bottom:10px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">'+head
+      +'<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="text-align:left;font-size:.72rem;color:#475569"><th style="padding:6px 8px">게시</th><th style="padding:6px 8px">종류</th><th style="padding:6px 8px">제목</th><th style="padding:6px 8px;text-align:right">도달·조회</th><th style="padding:6px 8px;text-align:right" title="계정 중앙값 대비 · 3배 이상 = 잘됨 후보(realplan-sns §3-3)">중앙값 대비</th><th style="padding:6px 8px;text-align:right">저장</th><th style="padding:6px 8px;text-align:right">공유</th><th style="padding:6px 8px;text-align:right">프로필</th></tr></thead><tbody>'+tr+'</tbody></table></div></div>';
+  }).join('');
+  return '<div style="font-weight:700;font-size:.88rem;margin:4px 0 8px">2. 게시물 순위 <span style="color:#94a3b8;font-weight:400;font-size:.74rem">최근 '+E(d.days)+'일 게시 · 최신 측정값 · 계정·플랫폼별 상위 5 · 초록 = 계정 중앙값 3배 이상</span></div>'+(h||'<p style="color:#94a3b8;font-size:.82rem">측정값이 없습니다.</p>');
+}
+function secOnline(d){
+  var hrs=[8,10,12,14,15,16,17,18,19,20,21,22,23];
+  var pt={};(d.post_times||[]).forEach(function(p){var h=parseInt(String(p.시각).slice(0,2),10);(pt[p.계정]=pt[p.계정]||{})[h]=(pt[p.계정][h]?pt[p.계정][h]+'·':'')+p.형식;});
+  var rows=(d.online||[]).filter(function(o){return S.acct==='전체'||o.계정===S.acct;}).sort(function(a,b){return a.계정==='회사'?-1:1;}).map(function(o){
+    var by={};(o.시간||[]).forEach(function(x){by[x.h]=x;});
+    return '<tr><td style="padding:4px 6px;white-space:nowrap">'+acctBadge(o.계정)+'</td>'+hrs.map(function(h){
+      var x=by[h],p=x?x.pct:null,mark=pt[o.계정]&&pt[o.계정][h];
+      var bg=p==null?'#f8fafc':p>=95?'#1e40af':p>=90?'#2563eb':p>=85?'#60a5fa':'#bfdbfe',fg=p!=null&&p>=90?'#fff':'#1e3a8a';
+      return '<td title="'+(x?E(x.n)+'명':'')+(mark?' · 게시 '+E(mark):'')+'" style="padding:4px 0;text-align:center;font-size:.72rem;background:'+bg+';color:'+fg+';'+(mark?'outline:2px solid #f59e0b;outline-offset:-2px;':'')+'">'+(p==null?'-':p)+'</td>';
+    }).join('')+'</tr>';
+  }).join('');
+  var meta=(d.online&&d.online[0])?(E(md(d.online[0].측정일))+' 수집 · '+E(d.online[0].기간)+'일 평균'):'';
+  return '<div style="font-weight:700;font-size:.88rem;margin:14px 0 8px">3. 인스타 팔로워 접속 시간 <span style="color:#94a3b8;font-weight:400;font-size:.74rem">최고 시각 대비 % · 노란 테두리 = 지금 인스타 게시 시각 · '+meta+' · 매주 일요일 갱신</span></div>'
+    +(rows?'<div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:6px"><table style="border-collapse:separate;border-spacing:2px;font-size:.74rem;width:100%"><thead><tr><th></th>'+hrs.map(function(h){return '<th style="font-weight:400;color:#64748b">'+h+'시</th>';}).join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div>':'<p style="color:#94a3b8;font-size:.82rem">아직 수집 전입니다.</p>');
+}
+function secNext(d){
+  var k=(d.by_kind||[]).filter(function(x){return S.acct==='전체'||x.계정===S.acct;});
+  var tr=k.map(function(x){return '<tr style="border-top:1px solid #e2e8f0"><td style="padding:6px 8px">'+acctBadge(x.계정)+'</td><td style="padding:6px 8px">'+E(KIND[x.종류]||x.종류)+'</td><td style="padding:6px 8px;text-align:right">'+num(x.건수)+'</td><td style="padding:6px 8px;text-align:right;font-weight:700">'+num(x.평균도달)+'</td><td style="padding:6px 8px;text-align:right">'+pct(x.저장률)+'</td><td style="padding:6px 8px;text-align:right">'+pct(x.공유률)+'</td><td style="padding:6px 8px;color:#b45309">'+E(x.판정||'')+'</td></tr>';}).join('');
+  var down=(d.accounts||[]).map(function(a){var v=a['21일']!=null?a['21일']:(a.기록수>1?a.팔로워-a.처음:null);return {a:a,v:v};}).filter(function(x){return x.v!=null&&x.v<0&&(S.acct==='전체'||x.a.계정===S.acct);}).map(function(x){return x.a.계정+' '+x.a.플랫폼+' '+x.v;});
+  return '<div style="font-weight:700;font-size:.88rem;margin:14px 0 8px">4. 다음 주 근거 <span style="color:#94a3b8;font-weight:400;font-size:.74rem">인스타 형식별 평균 · 일요일 다음 주 설계에 쓴다</span></div>'
+    +(down.length?'<div style="font-size:.78rem;color:#dc2626;margin-bottom:6px">팔로워 감소(기록 시작 대비) — '+E(down.join(' · '))+'</div>':'')
+    +(tr?'<div style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:10px"><table style="width:100%;border-collapse:collapse;font-size:.78rem"><thead><tr style="text-align:left;font-size:.72rem;color:#475569;background:#f8fafc"><th style="padding:6px 8px">계정</th><th style="padding:6px 8px">형식</th><th style="padding:6px 8px;text-align:right">건수</th><th style="padding:6px 8px;text-align:right">평균 도달</th><th style="padding:6px 8px;text-align:right">저장률</th><th style="padding:6px 8px;text-align:right">공유률</th><th style="padding:6px 8px"></th></tr></thead><tbody>'+tr+'</tbody></table></div>':'<p style="color:#94a3b8;font-size:.82rem">측정값이 없습니다.</p>');
+}
+function render(){
+  var b=box();if(!b)return;var d=S.data||{};
+  var h='<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px">'
+    +['전체','회사','대표'].map(function(a){return cbtn(S.acct===a,'data-gr-acct="'+a+'"',a==='전체'?'계정 전체':a);}).join('')
+    +'<span style="width:8px"></span>'+[7,28,60].map(function(n){return cbtn(S.days===n,'data-gr-days="'+n+'"',n+'일');}).join('')
+    +'<span style="font-size:.72rem;color:#94a3b8;margin-left:6px">기준 '+E(d.as_of||'')+' · 안 잰 값은 - · 표본 5건 미만 = 판정 보류</span></div>';
+  b.innerHTML=h+secAccounts(d)+secTop(d)+secOnline(d)+secNext(d);
+}
+async function load(force){
+  var b=box();if(!b||S.busy)return;if(S.data&&!force){render();return;}
+  if(typeof sb==='undefined')return;S.busy=true;
+  if(!S.data)b.innerHTML='<p style="color:#94a3b8;font-size:.85rem">성장판 불러오는 중…</p>';
+  try{var r=await sb.rpc('rpc_sns_growth_board',{p_days:S.days});if(r.error)throw r.error;S.data=r.data||{};render();}
+  catch(e){b.innerHTML='<p style="color:#dc2626;font-size:.85rem">성장판 조회 실패: '+E((e&&e.message)||e)+'</p>';}
+  finally{S.busy=false;}
+}
+document.addEventListener('click',function(ev){
+  var t=ev.target.closest&&ev.target.closest('[data-gr-acct],[data-gr-days]');if(!t)return;
+  var b=$('sns-growth');if(!b||!b.contains(t))return;
+  if(t.hasAttribute('data-gr-acct')){S.acct=t.getAttribute('data-gr-acct');render();}
+  else{S.days=+t.getAttribute('data-gr-days');load(true);}
+});
+function init(){var n=0;(function t(){var p=$('tsns');if(p){box();
+  if(!p.__gr){p.__gr=1;new MutationObserver(function(){if(p.classList.contains('active'))load(false);}).observe(p,{attributes:true,attributeFilter:['class']});}
+  if(p.classList.contains('active'))load(false);return;}if(++n<40)setTimeout(t,500);})();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<!-- RP-SNS-GROWTH end -->
 <!-- RP-LINK-BAR start · v1.0 · 2026-10-01 편성 ↔ 채널 소식 ↔ SNS 운영 ↔ 유튜브 운영 연결 — 각 화면 맨 위 「이번 주 편성」 줄 + 편성 화면 「연결 점검」 띠 (회사 시스템 방 · 대표 「진행해」) -->
 <script>
 /* 원천 = rpc_content_link_check(14) 읽기 전용 · DB 쓰기 0. 롤백 = 이 블록 제거. */

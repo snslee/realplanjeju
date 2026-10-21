@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리얼플랜제주 마케팅 운영 v1.70.0</title><style>.rp-off{display:none!important}</style>
+<title>리얼플랜제주 마케팅 운영 v1.70.1</title><style>.rp-off{display:none!important}</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.js"></script>
@@ -5361,7 +5361,7 @@ document.addEventListener('change',function(e){
 'use strict';
 if(window.__rpMenuV2)return;
 window.__rpMenuV2='v1.35.1';
-var VER='v1.70.0'; /* v1.70.0 · 2026-10-21 SNS 운영 ⑤ 성장판(팔로워 추이·게시물 순위·접속 시간·다음 주 근거 · rpc_sns_growth_board · P5-B · 대표 승인 11:27) · 이전: v1.69.0 · 2026-10-20 유튜브 운영 › 리얼플랜여행 ①기준판 채널 컨셉·시리즈 칸 + ④성과·판정 수익창출·판정 4단계·시청시간·구독 전환 (회사 총괄 시스템 방 · 대표 승인 22:35) */
+var VER='v1.70.1'; /* v1.70.1 · 2026-10-21 번호 정리 ⑤ 성장판 → ⑥ 운영 규칙 · v1.70.0 · 2026-10-21 SNS 운영 ⑤ 성장판(팔로워 추이·게시물 순위·접속 시간·다음 주 근거 · rpc_sns_growth_board · P5-B · 대표 승인 11:27) · 이전: v1.69.0 · 2026-10-20 유튜브 운영 › 리얼플랜여행 ①기준판 채널 컨셉·시리즈 칸 + ④성과·판정 수익창출·판정 4단계·시청시간·구독 전환 (회사 총괄 시스템 방 · 대표 승인 22:35) */
 function $(id){return document.getElementById(id);}
 function E(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function warn(tag,e){try{console.warn('[menu-v2]',tag,e&&e.message?e.message:e);}catch(_){}}
@@ -7089,7 +7089,7 @@ function shell(){
   var h2=p.querySelector('h2');
   if(h2&&h2.nextElementSibling)h2.nextElementSibling.innerHTML='회사 @realplan_travel(여행·행사 · 월~금) · 대표 @snslee(마케팅·교육 · 화·목) — <b>일요일에 여기서</b> 지난주 성과 확인 → 소재 채택 → 다음 주 편성안 승인. 알림은 텔레그램 <b>「리얼플랜 SNS」</b> 방으로 옵니다.';
   var det=p.querySelector('details');
-  if(det){det.querySelector('summary').textContent='⑤ 운영 규칙 (현행 · 2026-10-01)';
+  if(det){det.querySelector('summary').textContent='⑥ 운영 규칙 (현행 · 2026-10-01)';
     var tb=det.querySelector('table');if(tb)tb.innerHTML=RULES.map(function(r){return '<tr><td style="padding:6px 10px;font-weight:700;white-space:nowrap;vertical-align:top;color:#334155">'+E(r[0])+'</td><td style="padding:6px 10px;color:#334155">'+E(r[1])+'</td></tr>';}).join('');}
   var hs=p.querySelectorAll('h3'),h3=null;
   for(var i=0;i<hs.length;i++){if(/편성 · 발송 세트/.test(hs[i].textContent)){h3=hs[i];break;}}
@@ -7692,7 +7692,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
    롤백 = 이 블록(RP-SNS-GROWTH start~end) 제거 + VER/제목 v1.69.0. */
 (function(){
 'use strict';
-if(window.__rpSnsGrowth)return; window.__rpSnsGrowth='v1.0';
+if(window.__rpSnsGrowth)return; window.__rpSnsGrowth='v1.0.1';
 var S={data:null,busy:false,acct:'전체',days:28};
 var KIND={info:'정보',case:'실사례',poster:'포스터',reel:'릴스'};
 var PL_ORDER=['인스타','페북','쓰레드','틱톡'];
@@ -7721,6 +7721,9 @@ function box(){
     b=document.createElement('div');b.id='sns-growth';b.style.marginBottom='22px';
     p.appendChild(h);p.appendChild(b);
   }
+  /* v1.0.1 순서 = ⑤ 성장판 → ⑥ 운영 규칙(2026-10-21 대표 「성장판으로 진행」) */
+  var det=[].filter.call(p.querySelectorAll('details'),function(x){var s=x.querySelector('summary');return s&&/운영 규칙/.test(s.textContent);})[0];
+  if(det&&(b.compareDocumentPosition(det)&Node.DOCUMENT_POSITION_PRECEDING))b.parentNode.insertBefore(det,b.nextSibling);
   return b;
 }
 function secAccounts(d){

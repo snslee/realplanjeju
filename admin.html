@@ -6169,6 +6169,163 @@ window.qtSendQuotationSafe = qtSendQuotationSafe;
 /* Phase 2a 단계 4 v2.3 — Supabase Edge Function (Make 폐기 / hook.us2.make.com 다운으로 전환) */
 const QT_SEND_ENDPOINT = SUPABASE_URL + '/functions/v1/send-quotation';
 
+/* ==== RP-SEND v1 2026-10-26 (대표 승인 「권장대로 승인」 · EVT 인수인계 견적메일 첨부확장) ====
+ * ① 메일 서버 호출에 로그인한 직원의 토큰을 보낸다(공개 키 X) → 서버가 대표·관리자만 허용
+ * ② prompt() 대신 발송 창: 받는 사람 여러 명·참조·숨은참조·제목·[변경]·본문·첨부 3종(견적서 PDF / 고객 파일함 / 회사 서류)
+ * ③ 원본 합계 7MB 까지 첨부, 넘으면 7일 다운로드 링크 (서버와 같은 규칙으로 미리 표시)
+ * ④ 발송 전 확인 화면 · 금액 빈칸·내부 서류 경고
+ */
+async function qtAuthToken(){
+  try{ const r = await sb.auth.getSession(); const t = r && r.data && r.data.session && r.data.session.access_token; if(t) return t; }catch(e){}
+  return (state.session && state.session.access_token) || '';
+}
+window.qtAuthToken = qtAuthToken;
+function rpUploaderName(){
+  return (state && (state.staffName || (state.user && state.user.email))) || 'unknown';
+}
+window.rpUploaderName = rpUploaderName;
+
+const QT_SEND_LIMIT = 7*1024*1024;
+function qtSendFmtMB(n){ return (n/1048576).toFixed(n<1048576?2:1)+'MB'; }
+function qtSendTotal(){
+  try{
+    const sub = qtSumQuote(state.qt.items);
+    const fee = state.qt.options.feeShow ? Math.round(sub*(state.qt.options.feeRate||0)/100) : 0;
+    const supply = sub + fee;
+    const vat = state.qt.options.vatShow ? Math.round(supply*0.1) : 0;
+    let total = supply + vat;
+    if(state.qt.options.trim==='천') total = Math.floor(total/1000)*1000;
+    else if(state.qt.options.trim==='만') total = Math.floor(total/10000)*10000;
+    return total;
+  }catch(e){ return null; }
+}
+async function qtSendLoadDocs(){
+  const out = { files:[], templates:[] };
+  try{
+    if(state.qt.customerId){
+      const r = await sb.rpc('rpc_list_files_by_customer',{_customer_id: state.qt.customerId});
+      if(!r.error) out.files = (r.data||[]).map(x=>({id:x.r_id, 카테고리:x.r_카테고리, 파일명:x.r_파일명||x.r_표시명, 크기:+x.r_파일크기||0, 견적:!!x.r_자동첨부_견적}));
+    }
+  }catch(e){ console.warn('[RP-SEND files]',e); }
+  try{
+    const r = await sb.from('contract_templates').select('id,사업부,카테고리,표시명,파일명,파일크기,자동첨부_견적,활성,비고').eq('카테고리','회사서류').eq('활성',true).order('표시명');
+    if(!r.error) out.templates = (r.data||[]).filter(t=>!t.사업부 || t.사업부==='공통' || t.사업부===state.qt.bu)
+      .map(t=>({id:t.id, 사업부:t.사업부, 이름:t.표시명||t.파일명, 파일명:t.파일명, 크기:+t.파일크기||0,
+        견적: !!t.자동첨부_견적 || (state.qt.isGovernment && /관공서/.test(t.비고||''))}));
+  }catch(e){ console.warn('[RP-SEND templates]',e); }
+  return out;
+}
+function qtSendDialog(docType, defaults){
+  return new Promise(async (resolve)=>{
+    const isQuote = (!docType || docType==='quote');
+    const label = docType==='delivery' ? '납품서' : docType==='statement' ? '거래명세서' : '견적서';
+    const esc = (s)=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const docs = await qtSendLoadDocs();
+    const total = qtSendTotal();
+    const amt = (state.qt.attachments && state.qt.attachments.amt_show) || {};
+    const amtHidden = isQuote && (amt.sub===false || amt.vat===false || amt.total===false);
+    const nm = (state.qt.recipient && state.qt.recipient.name || '').trim();
+    const co = (state.qt.recipient && state.qt.recipient.co || '').trim();
+    const greet = (nm && nm!==co) ? (nm+' 님') : '담당자님';
+    const qno = state.qt.currentQuotationNo || '';
+    const num = docType==='delivery' ? qno.replace(/^Q-/,'D-') : docType==='statement' ? qno.replace(/^Q-/,'T-') : qno;
+    const defSubject = ('[리얼플랜제주] '+(state.qt.title||'')+' '+label+' ('+num+')').replace(/\s+/g,' ').trim();
+    const INTERNAL = /(내부|원가|입금가|매입)/;
+    const wrap = document.createElement('div');
+    wrap.id = 'rp-send-modal';
+    wrap.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:10050;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:30px 12px';
+    const row = (k, inner)=>'<div style="display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:start;margin-bottom:8px"><label style="font-size:12.5px;color:#475569;padding-top:7px">'+k+'</label><div>'+inner+'</div></div>';
+    const inp = (id,val,ph)=>'<input id="'+id+'" type="text" value="'+esc(val)+'" placeholder="'+esc(ph||'')+'" style="width:100%;box-sizing:border-box;padding:7px 9px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;font-size:13px">';
+    const fileLine = (kind,f,checked,warn)=>'<label style="display:flex;gap:8px;align-items:center;padding:5px 6px;border-radius:6px;font-size:13px;'+(warn?'background:#FDECEC;':'')+'">'
+      +'<input type="checkbox" data-kind="'+kind+'" data-id="'+esc(f.id)+'" data-size="'+(f.크기||0)+'" '+(checked?'checked':'')+'>'
+      +'<span style="flex:1;min-width:0;word-break:break-all">'+esc(f.이름||f.파일명)+(warn?' <b style="color:#B42318">· 내부 서류일 수 있음 — 확인 후 보내세요</b>':'')+'</span>'
+      +'<span class="rp-send-way" style="font-size:11.5px;color:#64748b;white-space:nowrap">'+qtSendFmtMB(f.크기||0)+'</span></label>';
+    const filesHtml = docs.files.length ? docs.files.map(f=>{const w=INTERNAL.test(f.파일명||''); return fileLine('file',{id:f.id,이름:'['+(f.카테고리||'')+'] '+f.파일명,크기:f.크기}, f.견적 && !w, w);}).join('')
+      : '<div style="font-size:12.5px;color:#94a3b8;padding:4px 6px">이 고객의 파일함에 올린 서류가 없습니다 (고객 상세 → 파일 탭에서 올립니다)</div>';
+    const tplHtml = docs.templates.length ? docs.templates.map(t=>fileLine('tpl',t,t.견적,false)).join('')
+      : '<div style="font-size:12.5px;color:#94a3b8;padding:4px 6px">등록된 회사 서류가 없습니다</div>';
+    wrap.innerHTML =
+      '<div style="background:#fff;border-radius:12px;max-width:640px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.25);font-family:inherit">'
+      +'<div style="padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center"><b style="font-size:16px">✉ '+label+' 발송</b><span style="font-size:12px;color:#64748b">'+esc(num)+'</span></div>'
+      +'<div id="rp-send-step1" style="padding:16px 20px">'
+      + row('받는 사람', inp('rp-send-to', defaults.email||'', '여러 명이면 쉼표(,)로 구분') + (defaults.email?'':'<div style="font-size:12px;color:#B42318;margin-top:4px">고객 이메일이 비어 있습니다. 직접 입력해 주세요.</div>'))
+      + row('참조', inp('rp-send-cc','', '선택 · 쉼표로 구분'))
+      + row('숨은참조', inp('rp-send-bcc','', '선택') + '<div style="font-size:11.5px;color:#64748b;margin-top:3px">회사 메일(realplan01@naver.com)로 사본이 자동으로 함께 갑니다.</div>')
+      + row('제목', inp('rp-send-subject', defSubject, '') + '<label style="display:inline-flex;gap:6px;align-items:center;font-size:12.5px;margin-top:5px"><input type="checkbox" id="rp-send-change"> 변경 견적 — 제목 앞에 [변경]을 붙이고 변경 안내 문장을 넣습니다</label>')
+      + row('인사', '<div style="font-size:13px;padding-top:7px">'+esc(greet)+', 안녕하세요. <span style="color:#94a3b8">(수신 담당자 칸 기준)</span></div>')
+      + row('본문', '<textarea id="rp-send-msg" rows="4" placeholder="비우면 기본 문구가 들어갑니다" style="width:100%;box-sizing:border-box;padding:7px 9px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;font-size:13px;resize:vertical"></textarea>')
+      +'<div style="margin-top:6px;font-weight:600;font-size:13.5px">첨부 서류</div>'
+      +'<div style="font-size:11.5px;color:#64748b;margin:2px 0 6px">합계 7MB까지는 첨부로, 넘는 서류는 7일 동안 열리는 다운로드 링크로 본문에 넣습니다.</div>'
+      +'<div style="border:1px solid #e2e8f0;border-radius:8px;padding:6px;margin-bottom:8px">'
+      +   '<div style="font-size:12px;color:#475569;margin:2px 6px">① '+label+' PDF (화면에서 만든 것)</div>'
+      +   fileLine('pdf',{id:'pdf',이름:label+' PDF — '+(state.qt.title||''),크기:defaults.pdfSize||0},true,false)
+      +   '<div style="font-size:12px;color:#475569;margin:8px 6px 2px">② 고객 파일함</div>'+filesHtml
+      +   '<div style="font-size:12px;color:#475569;margin:8px 6px 2px">③ 회사 서류</div>'+tplHtml
+      +'</div>'
+      +'<div id="rp-send-size" style="font-size:12.5px;color:#334155"></div>'
+      +(amtHidden?'<div style="margin-top:8px;padding:8px 10px;background:#FFF7E6;border:1px solid #F5C26B;border-radius:6px;font-size:12.5px;color:#7A4A00">⚠ 이 견적은 견적서 PDF의 금액 칸(소계·부가세·총합계) 중 일부를 <b>빈칸</b>으로 보내도록 설정돼 있습니다. 맞는지 확인하세요. (견적 작성 4번 「견적서 금액 표시」)</div>':'')
+      +'<div id="rp-send-err" style="display:none;margin-top:8px;color:#B42318;font-size:12.5px"></div>'
+      +'<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button type="button" id="rp-send-cancel" style="padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;border:1px solid #cbd5e1;background:#fff;color:#334155">취소</button><button type="button" id="rp-send-next" style="padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer;border:1px solid #1F4E79;background:#1F4E79;color:#fff;font-weight:600">다음 — 발송 전 확인</button></div>'
+      +'</div>'
+      +'<div id="rp-send-step2" style="padding:16px 20px;display:none"></div>'
+      +'</div>';
+    document.body.appendChild(wrap);
+    const $ = (s)=>wrap.querySelector(s);
+    const picked = ()=>Array.from(wrap.querySelectorAll('input[type=checkbox][data-kind]')).filter(c=>c.checked)
+      .map(c=>({kind:c.dataset.kind,id:c.dataset.id,size:+c.dataset.size||0,label:c.parentElement.querySelector('span').textContent.replace(/ · 내부 서류일 수 있음.*$/,'')}));
+    const plan = ()=>{ let used=0; return picked().map(p=>{ const fits = p.kind==='pdf' || used+p.size<=QT_SEND_LIMIT; if(fits) used+=p.size; return Object.assign({},p,{way:fits?'첨부':'링크'}); }); };
+    const refresh = ()=>{
+      const pl = plan(); const byKey = {}; pl.forEach(p=>{byKey[p.kind+':'+p.id]=p.way;});
+      wrap.querySelectorAll('input[type=checkbox][data-kind]').forEach(c=>{
+        const s = c.parentElement.querySelector('.rp-send-way'); const w = byKey[c.dataset.kind+':'+c.dataset.id];
+        s.innerHTML = qtSendFmtMB(+c.dataset.size||0) + (w==='링크'?' · <b style="color:#1D4ED8">링크</b>':'');
+      });
+      const att = pl.filter(p=>p.way==='첨부'), lnk = pl.filter(p=>p.way==='링크');
+      $('#rp-send-size').textContent = '선택 '+pl.length+'개 · 첨부 '+att.length+'개('+qtSendFmtMB(att.reduce((a,p)=>a+p.size,0))+')' + (lnk.length?' · 링크 '+lnk.length+'개':'');
+    };
+    wrap.addEventListener('change', (e)=>{ if(e.target && e.target.dataset && e.target.dataset.kind) refresh(); });
+    refresh();
+    const close = (v)=>{ try{ wrap.remove(); }catch(e){} resolve(v); };
+    $('#rp-send-cancel').onclick = ()=>close(null);
+    const split = (s)=>String(s||'').split(/[,;\s]+/).map(x=>x.trim()).filter(Boolean);
+    const err = (m)=>{ const e=$('#rp-send-err'); e.textContent='⚠ '+m; e.style.display='block'; };
+    const RE = /^[^@\s,;<>]+@[^@\s,;<>]+\.[^@\s,;<>]+$/;
+    $('#rp-send-next').onclick = ()=>{
+      const to = split($('#rp-send-to').value), cc = split($('#rp-send-cc').value), bcc = split($('#rp-send-bcc').value);
+      const bad = [...to,...cc,...bcc].filter(x=>!RE.test(x));
+      if(!to.length){ err('받는 사람 이메일을 입력해 주세요'); return; }
+      if(bad.length){ err('이메일 형식 오류: '+bad.join(', ')); return; }
+      const pl = plan();
+      if(!pl.length){ err('보낼 서류를 1개 이상 고르세요'); return; }
+      const change = $('#rp-send-change').checked;
+      let subject = $('#rp-send-subject').value.trim() || defSubject;
+      if(change && !/^\[변경\]/.test(subject)) subject = '[변경] '+subject;
+      const v = { to, cc, bcc, subject, change, message: $('#rp-send-msg').value,
+        includePdf: pl.some(p=>p.kind==='pdf'),
+        attachmentIds: pl.filter(p=>p.kind==='file').map(p=>p.id),
+        templateIds: pl.filter(p=>p.kind==='tpl').map(p=>p.id) };
+      const li = (p)=>'<li style="margin:2px 0">'+esc(p.label)+' <span style="color:'+(p.way==='링크'?'#1D4ED8':'#64748b')+'">('+p.way+')</span></li>';
+      const s2 = $('#rp-send-step2');
+      s2.innerHTML = '<div style="font-weight:600;margin-bottom:8px">발송 전 확인</div>'
+        +'<table style="font-size:13px;border-collapse:collapse;width:100%">'
+        +'<tr><td style="color:#64748b;padding:4px 10px 4px 0;width:90px">받는 사람</td><td>'+esc(to.join(', '))+'</td></tr>'
+        +(cc.length?'<tr><td style="color:#64748b;padding:4px 10px 4px 0">참조</td><td>'+esc(cc.join(', '))+'</td></tr>':'')
+        +'<tr><td style="color:#64748b;padding:4px 10px 4px 0">숨은참조</td><td>'+esc(bcc.concat(['realplan01@naver.com (자동)']).join(', '))+'</td></tr>'
+        +'<tr><td style="color:#64748b;padding:4px 10px 4px 0">제목</td><td>'+esc(subject)+'</td></tr>'
+        +(isQuote && total!=null?'<tr><td style="color:#64748b;padding:4px 10px 4px 0">견적 총액</td><td><b>'+total.toLocaleString('ko-KR')+'원</b>'+(amtHidden?' <span style="color:#B42318">(PDF에는 금액 일부 빈칸)</span>':'')+'</td></tr>':'')
+        +'<tr><td style="color:#64748b;padding:4px 10px 4px 0;vertical-align:top">서류 '+pl.length+'개</td><td><ul style="margin:0;padding-left:18px">'+pl.map(li).join('')+'</ul></td></tr>'
+        +'</table>'
+        +'<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button type="button" id="rp-send-back" style="padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;border:1px solid #cbd5e1;background:#fff;color:#334155">← 고치기</button><button type="button" id="rp-send-go" style="padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer;border:1px solid #1F4E79;background:#1F4E79;color:#fff;font-weight:600">✉ 발송</button></div>';
+      $('#rp-send-step1').style.display='none'; s2.style.display='block';
+      $('#rp-send-back').onclick = ()=>{ s2.style.display='none'; $('#rp-send-step1').style.display='block'; };
+      $('#rp-send-go').onclick = ()=>close(v);
+    };
+  });
+}
+window.qtSendDialog = qtSendDialog;
+/* ==== /RP-SEND v1 ==== */
+
+
 /* qtSendPlaceholder — 호환 래퍼 (영역 E 상세 화면 [재발송] 버튼) */
 function qtSendPlaceholder(){
   qtSendQuotation();

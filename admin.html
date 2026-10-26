@@ -6350,13 +6350,8 @@ async function qtSendQuotation(docType){
     if(!quotationId){toast('저장 실패로 발송 중단','error');return;}
   }
 
-  // 3) 수신자 이메일 확보 (간단 prompt — 다음 세션에 customers 테이블 email 필드로 대체)
-  const _defaultEmail = (state.qt.customerInfo && state.qt.customerInfo['이메일']) || (state.currentRow && state.currentRow['이메일']) || 'snslee82@gmail.com';   /* v2.8.4 — customerInfo 우선 (정확) → currentRow (fallback) */
-  const recipient = prompt('수신자 이메일 ('+docLabel+' 발송)', _defaultEmail);
-  if(!recipient){return;}
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(recipient.trim())){toast('이메일 형식 오류','warn');return;}
-
-  // 4) PDF base64 생성 (jsPDF)
+  // 3) RP-SEND v1: PDF를 먼저 만들고, 발송 창에서 받는 사람·제목·서류를 고른다 (prompt 폐지)
+  const _defaultEmail = (state.qt.customerInfo && state.qt.customerInfo['이메일']) || (state.currentRow && state.currentRow['이메일']) || '';
   showLoading('PDF 생성 중…');
   let pdfBase64 = null;
   try {
@@ -6367,8 +6362,12 @@ async function qtSendQuotation(docType){
     toast('PDF 생성 실패: '+(e.message||e),'error');
     return;
   }
+  hideLoading();
+  const sendOpt = await qtSendDialog(docType, { email: _defaultEmail, pdfSize: pdfBase64 ? Math.floor(pdfBase64.length*3/4) : 0 });
+  if(!sendOpt){ return; }
+  const recipient = sendOpt.to[0];
 
-  // 5) Webhook POST (Make S-12)
+  // 5) 메일 서버 호출 (send-quotation v8 · 로그인 토큰)
   showLoading('메일 발송 중…');
   const payload = {
     quotation_id: quotationId,
@@ -6418,7 +6417,11 @@ async function qtSendQuotation(docType){
     })(),
     sent_at: new Date().toISOString(),
     test_mode: false,
-    schema_version: 'v1.0'
+    schema_version: 'v2.0',
+    /* RP-SEND v1 */
+    to: sendOpt.to, cc: sendOpt.cc, bcc: sendOpt.bcc,
+    subject_override: sendOpt.subject, change_notice: sendOpt.change, message_text: sendOpt.message,
+    include_pdf: sendOpt.includePdf, attachment_ids: sendOpt.attachmentIds, template_ids: sendOpt.templateIds
   };
 
   try {

@@ -6410,7 +6410,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         var col=gm==='!'?';background:#fef2f2;color:#b91c1c':'';
         c+='<td class="trv2-pc" style="width:38px"><span class="'+k+'" style="font-size:.6rem'+col+'" title="P'+i+' '+E(PN[i])+(r?' · '+E((r['완료']||'진행 중')+' · '+(r['내용']||'')):'')+(gm==='!'?' · 관문 결재 기록 없음':'')+'">'+E(txt)+'</span></td>';}
       return c;}
-    var rows=sl.map(function(s){
+    var rows=sl.concat(sh.filter(function(x){return !x['부모슬롯id'];})).map(function(s){
       var ci=pix(s['공정단계']);
       var t=s['최종제목']?E(s['최종제목']):(s['핵심키워드']?'<span style="color:#64748b">'+E(s['핵심키워드'])+'</span>':'<span style="color:#cbd5e1">—</span>');
       var lu=layoutUrl(s);

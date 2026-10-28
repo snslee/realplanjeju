@@ -6467,7 +6467,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       +blk('성과',kv('롱폼',mline('롱폼'))+kv('쇼츠',mline('쇼츠'))+kv('4칸 판정',s['판정']?'<b>'+E(s['판정'])+' '+E(QD[s['판정']]||'')+'</b> · '+md(s['판정일']):'<span style="color:#94a3b8">발행 28일 뒤</span>'))
       +'</div>';
     var sp=steps(s),rq=s['조사']||{},fq=s['적합성']||{},cq=s['고객판단']||{};
-    h+='<h4 class="trv2-h" style="margin-top:0">7단계 진행 <span style="font-weight:500;color:#94a3b8;font-size:.72rem">· 지침 v2.2 제1조의2 · '+stepCount(s)+'/7</span></h4><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;margin-bottom:8px">'
+    h+='<h4 class="trv2-h" style="margin-top:0">7단계 진행 <span style="font-weight:500;color:#94a3b8;font-size:.72rem">· 지침 제1조의2 · '+stepCount(s)+'/7</span></h4><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;margin-bottom:8px">'
       +sp.map(function(x){return '<div style="border:1px solid '+(x.ok?'#bbf7d0':'#e2e8f0')+';background:'+(x.ok?'#f0fdf4':'#fff')+';border-radius:8px;padding:6px 8px;font-size:.72rem"><b>'+x.n+' '+E(x.t)+'</b> '+(x.ok?'✔':'')+'<div style="color:#64748b">'+E(x.d)+'</div></div>';}).join('')+'</div>';
     h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-bottom:10px">'
       +blk('조사 출처 7종 (제1조의3)',SRC.map(function(k){var o=rq[k[0]]||{},st=o['상태']||'미조사';return '<div>'+(srcDone(o)?'✔':'<span style="color:#b45309">·</span>')+' '+E(k[1])+' <span style="color:'+(srcDone(o)?'#166534':'#b45309')+'">'+E(st)+'</span>'+(o['근거']?'<div style="color:#64748b;font-size:.68rem;margin-left:12px">'+E(o['근거'])+(o['조회일']?' · '+E(o['조회일']):'')+'</div>':'')+'</div>';}).join(''))

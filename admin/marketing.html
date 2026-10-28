@@ -6519,7 +6519,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     else if(!ok(M.met))h+=errBox('측정(mk_youtube_metrics)',M.met.err);
     else{
       function tbl(fm,list){var by={};met.forEach(function(x){if(x['영상형식']!==fm)return;(by[x['슬롯id']]=by[x['슬롯id']]||{})[x['측정시점']]=x;});
-        var ks=Object.keys(by),LG=fm==='롱폼';
+        var ks=Object.keys(by);all.forEach(function(s){if((s['영상형식']||'롱폼')===fm&&vid(s['영상url'])&&!by[s.id]){by[s.id]={};ks.push(s.id);}});var LG=fm==='롱폼';
         if(!ks.length)return why(fm+' 측정 없음 — 스튜디오 동영상 분석 화면에서 2·7·28일 기록(2일 = 발행 +2일 18:00)');
         var tv=0,th=0,tsu=0;
         var hd='<tr><th>편</th><th style="text-align:right">2일 조회</th><th style="text-align:right">7일 조회</th><th style="text-align:right">28일 조회</th><th style="text-align:right">클릭률</th><th style="text-align:right">지속률</th>'

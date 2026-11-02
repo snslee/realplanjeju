@@ -10778,13 +10778,13 @@ async function wsBlogLoad(){
     if(ce){
       var since2=new Date(Date.now()-7*864e5).toISOString();
       var site2=((document.getElementById('ws-site')||{}).value)||'ALL';
-      var vq=window.sb.from('web_방문로그').select('유입_출처').gte('방문_시각',since2).not('봇여부','is',true);if(site2!=='ALL')vq=vq.eq('사이트',site2);
+      var vq=window.sb.from('web_방문로그').select('유입_출처,세션_id').gte('방문_시각',since2).not('봇여부','is',true);if(site2!=='ALL')vq=vq.eq('사이트',site2);
       var v=await vq.limit(8000);
-      var cq=window.sb.from('customers').select('유입경로').gte('created_at',since2).is('deleted_at',null);if(site2!=='ALL')cq=cq.like('유입경로','홈페이지'+site2+'%');
+      var cq=window.sb.from('customers').select('유입경로,데이터출처,유입_세션').gte('created_at',since2).is('deleted_at',null);
       var cu=await cq.limit(2000);
       var vs=(v.data||[]);var blog=vs.filter(function(x){return x['유입_출처']==='naver_blog'||x['유입_출처']==='tistory';}).length;
-      var inq=(cu.data||[]).filter(function(x){return /^홈페이지/.test(x['유입경로']||'');});
-      var inqBlog=inq.filter(function(x){return /(naver_blog|tistory)/.test(x['유입경로']||'');}).length;
+      var sidSet={};vs.forEach(function(x){if(x['세션_id'])sidSet[x['세션_id']]=1;});var inq=(cu.data||[]).filter(function(x){var p=x['유입경로']||'';if(x['데이터출처']!=='문의유입')return false;if(site2==='ALL')return true;if(p.indexOf('홈페이지'+site2)===0)return true;if(/^홈페이지[AB]/.test(p))return false;return !!(x['유입_세션']&&sidSet[x['유입_세션']]);});
+      var inqBlog=inq.filter(function(x){return /(naver_blog|tistory|블로그)/.test(x['유입경로']||'');}).length;
       ce.innerHTML='<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:8px">'
         +'<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9">블로그발 홈페이지 방문</td><td style="text-align:right;font-weight:700;border-bottom:1px solid #f0f3f9">'+blog+' / '+vs.length+'건</td></tr>'
         +'<tr><td style="padding:5px 4px;border-bottom:1px solid #f0f3f9">홈페이지 경유 신규문의</td><td style="text-align:right;font-weight:700;border-bottom:1px solid #f0f3f9">'+inq.length+'건</td></tr>'

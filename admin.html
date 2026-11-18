@@ -11455,7 +11455,7 @@ async function dashInflow(force){
       var mx=1,best=-1; ch.forEach(function(x){if((x['세션']||0)>mx)mx=x['세션'];});
       ch.forEach(function(x){if((x['문의']||0)>=3&&x['세션']){var p=x['문의']/x['세션'];if(p>best)best=p;}});
       var td='padding:7px 6px;border-bottom:1px solid #f0f3f9;text-align:right';
-      var rows=ch.map(function(x){var s=x['세션']||0,q=x['문의']||0,p=(s&&q)?Math.round(q/s*1000)/10:null,isB=(q>=3&&s&&q/s===best);
+      var rows=ch.map(function(x){var s=x['세션']||0,q=x['문의']||0,p=(s&&q&&q<=s)?Math.round(q/s*1000)/10:null,isB=(q>=3&&s&&q/s===best);
         var w=Math.max(s?2:0,Math.round(s/mx*100));
         return '<tr><td style="'+td+';text-align:left;font-weight:700;white-space:nowrap">'+E(x['묶음'])+'</td>'
           +'<td style="'+td+';text-align:left;width:55%"><div style="height:12px;background:#eef2f8;border-radius:3px"><div style="height:12px;width:'+w+'%;background:'+(isB?'#1d9e75':(x['묶음']==='플레이스·기타'?'#b4b2a9':'#5b8ad6'))+';border-radius:3px"></div></div></td>'
@@ -11881,6 +11881,7 @@ setTimeout(tick,300);
   function dow(s){var p=String(s).slice(0,10).split('-');return new Date(Date.UTC(+p[0],+p[1]-1,+p[2])).getUTCDay();}
   function md(s){if(!s)return '';var p=String(s).slice(0,10).split('-');return (+p[1])+'/'+(+p[2])+'('+'일월화수목금토'[dow(s)]+')';}
   function mdS(s){if(!s)return '';var p=String(s).slice(0,10).split('-');return (+p[1])+'/'+(+p[2]);}
+  function liveFrom(r){var s=r&&r['게시_시작일'],a=(r&&r['승인_시각'])?new Date(new Date(r['승인_시각']).getTime()+9*3600e3).toISOString().slice(0,10):'';return (a&&s&&a>s)?a:s;} /* 2026-11-18 실제 반영일 = 게시 시작일과 승인일 중 늦은 날 */
   function hm(s){if(!s)return '';var d=new Date(new Date(s).getTime()+9*3600e3);return (d.getUTCMonth()+1)+'/'+d.getUTCDate()+' '+String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');}
   function shiftM(k,n){var p=k.split('-');var y=+p[0],m=+p[1]+n;while(m>12){m-=12;y++;}while(m<1){m+=12;y--;}return y+'-'+String(m).padStart(2,'0');}
   function mNum(k){return +String(k).slice(5,7);}
@@ -12062,7 +12063,7 @@ setTimeout(tick,300);
     else h+='<div class="ss-poster">'+E(o.bu)+'<br>기본 카드</div>';
     h+='<div>';
     if(cur){
-      h+='<div class="ss-kv"><span>게시 기간</span><span><b>'+md(cur['게시_시작일'])+'</b>'+(cur['게시_종료일']?' ~ '+md(cur['게시_종료일']):' ~ '+m+'월 말')+'</span></div>';
+      h+='<div class="ss-kv"><span>게시 기간</span><span><b>'+md(liveFrom(cur))+'</b>'+(cur['게시_종료일']?' ~ '+md(cur['게시_종료일']):' ~ '+m+'월 말')+'</span></div>';
       h+='<div class="ss-kv"><span>홈 표시</span><span><span class="ss-bdg">'+m+'월 추천</span> · 버튼 '+E((cur['버튼']||[]).map(function(b){return b['이름'];}).join(' · '))+'</span></div>';
       if(o.fix)h+='<div class="ss-kv"><span>지금 글자</span><span style="text-decoration:line-through;color:#94a3b8">'+E(o.ok['헤드라인']||'')+' · '+E(o.ok['상세문안']||'')+'</span></div>';
       h+='<div class="ss-kv"><span>'+(o.fix?'바꿀 글자':'홈 글자')+'</span><span>'+(cur['헤드라인']?'<b>'+E(cur['헤드라인'])+'</b><br>':'<span class="ss-warn">제목 없음</span><br>')+(cur['상세문안']?E(cur['상세문안']):'<span class="ss-warn">요약 없음 — 검색·AI가 읽을 글자가 줄어듭니다</span>')+'</span></div>';
@@ -12083,7 +12084,7 @@ setTimeout(tick,300);
     var cur=o.cur,S=startOf(st.m);
     var th=cur?'<span class="ss-th" data-act="pv" data-id="'+cur.id+'" title="크게 보기"><img src="'+E(cur['포스터_url'])+'" alt="" loading="lazy"></span>':'<span class="ss-th"></span>';
     var title=cur?(cur['헤드라인']?E(cur['헤드라인']):'<span class="ss-warn">제목 없음</span>'):'<span class="ss-muted">클로드 제작 필요'+(st.m>=curM()?' — 비워 두면 '+mNum(st.m)+'/1부터 기본 카드':'')+'</span>';
-    var per=cur?(mdS(cur['게시_시작일'])+' ~ '+(cur['게시_종료일']?mdS(cur['게시_종료일']):mNum(st.m)+'월 말')):'<span class="ss-muted">'+(st.m>curM()?mdS(S)+' 시작 예정':'—')+'</span>';
+    var per=cur?(mdS(liveFrom(cur))+' ~ '+(cur['게시_종료일']?mdS(cur['게시_종료일']):mNum(st.m)+'월 말')):'<span class="ss-muted">'+(st.m>curM()?mdS(S)+' 시작 예정':'—')+'</span>';
     return '<tr><td>'+th+'</td><td style="white-space:nowrap"><span class="ss-site ss-s'+o.site+'">홈'+o.site+'</span> <b>'+o.bu+'</b></td>'
       +'<td><span class="ss-pill" style="color:'+o.pc+';border-color:'+o.pc+'">'+o.pill+'</span></td>'
       +'<td>'+title+(st.msg[o.slot]?'<div class="ss-note" style="color:#15803d">'+st.msg[o.slot]+'</div>':'')+'</td>'

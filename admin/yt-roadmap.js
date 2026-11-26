@@ -1,3 +1,4 @@
+/* v1.1.0 · 2026-11-26 동영상 방 · 대표 승인(11:33 「승인」 · 11:31 「직접 진행 허용」) — 4칸 칸에 편태그.판정초안 표시(초안 A~D · 기준선 편 · 유형 기준선 대기) · 확정 「판정」 칸은 그대로 · 롤백 = 커밋 4d1c82a 판 */
 /* 리얼플랜여행 성장 로드맵 데이터 칸 v1.0.1 · 2026-10-28 동영상 방 · 대표 「니가 직접 권장 진행해」
    marketing.html RP-GROWTH 의 ytCard 가 #gr-yt-l1 칸을 만들고 ytFill() 이 이 파일의 window.__rpYtFill 을 부른다.
    원천 = mk_youtube_slots(발행) · mk_youtube_metrics · mk_youtube_strengths · 규칙 6-5(기준선 = 4번째 편 28일) · 지침 제12조 */
@@ -12,7 +13,7 @@ async function ytFill(){
   var el=$('gr-yt-l1');if(!el||typeof sb==='undefined')return;
   try{
     var CH='리얼플랜여행',T=new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
-    var r1=await sb.from('mk_youtube_slots').select('id,슬롯번호,영상형식,발행일,상태,판정').eq('채널',CH).eq('상태','발행').in('영상형식',['롱폼','쇼츠']).order('발행일',{ascending:true});
+    var r1=await sb.from('mk_youtube_slots').select('id,슬롯번호,영상형식,발행일,상태,판정,편태그').eq('채널',CH).eq('상태','발행').in('영상형식',['롱폼','쇼츠']).order('발행일',{ascending:true});
     if(r1.error)throw r1.error;
     var S=(r1.data||[]).filter(function(s){return /^R\d/.test(s['슬롯번호']||'');});
     var ids=S.map(function(s){return s.id;});
@@ -50,7 +51,8 @@ async function ytFill(){
       var ctr=s['영상형식']==='쇼츠'?'<span style="color:#94a3b8">—</span>':cl?(+cl['노출클릭률_pct']).toFixed(1)+'%'+(c7?'':' <span style="color:#94a3b8;font-size:.68rem">('+md2(cl['수집_시각'])+')</span>'):'<span style="color:#b45309">기록 필요</span>';
       var ds=lastv(s,'평균시청지속률_pct');
       var due=add(s['발행일'],28);
-      var k4=s['판정']?'<b>'+E(s['판정'])+'</b>':(!BL.ok&&s['영상형식']!=='쇼츠')?'<span style="color:#94a3b8">기준선 대기</span>':(T<due?'<span style="color:#94a3b8">28일 '+md2(due)+'</span>':'<span style="color:#b45309">판정 필요</span>');
+      var dr=(s['편태그']||{})['판정초안']||null,dk=dr&&dr['칸'];
+      var k4=s['판정']?'<b>'+E(s['판정'])+'</b>':(dk&&/^[ABCD]$/.test(dk))?'<span style="color:#7c3aed" title="'+E((dr['이유']||'')+' · '+(dr['다음']||''))+'">초안 <b>'+E(dk)+'</b>'+(dr['잠정']?' (잠정 · 문의 '+E((dr['문의확정일']||'').slice(5).replace('-','/'))+' 확정)':'')+'</span>':(dk==='기준선 편')?'<span style="color:#94a3b8" title="'+E(dr['이유']||'')+'">기준선 편</span>':(dk==='기준선 대기')?'<span style="color:#94a3b8" title="'+E(dr['이유']||'')+'">유형 기준선 대기</span>':(!BL.ok&&s['영상형식']!=='쇼츠')?'<span style="color:#94a3b8">기준선 대기</span>':(T<due?'<span style="color:#94a3b8">28일 '+md2(due)+'</span>':'<span style="color:#b45309">판정 필요</span>');
       if(s['영상형식']==='쇼츠')k4='<span style="color:#94a3b8">쇼츠 따로</span>';
       return '<tr style="border-top:1px solid #e2e8f0"><td style="padding:5px">'+E(s['슬롯번호'])+'</td><td style="padding:5px">'+(m7?N(m7['조회수']):'—')+'</td><td style="padding:5px;color:'+rc+';font-weight:700">'+(ratio==null?'—':ratio.toFixed(1)+'배')+'</td><td style="padding:5px">'+ctr+'</td><td style="padding:5px">'+(ds?Math.round(+ds['평균시청지속률_pct'])+'%':'—')+'</td><td style="padding:5px">'+k4+'</td></tr>';
     }
